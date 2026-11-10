@@ -21,8 +21,9 @@ evidence than the rule. Neither rewrites it:
 - [`decision-rule-revised-2026-11-10.md`](decision-rule-revised-2026-11-10.md) admits one line of part C as class L19,
   the `locales` program's `11 fr-CA hourCycles`. This engine answers it `[h23,h12]`, from CLDR 48.2.0's time data for
   `fr-CA`, under row L19 and the owner's ruling of 2026-11-09, "Fix both consumers"; the expected answer, Broiler.VM's
-  as the pinned copies hold it, is `[h12,h23]`. Part C's table of classed lines lists that line as L19, and this README
-  reads that line, and only that line, so. The alternative not taken was "Keep old answer".
+  as the pinned copies hold it, is `[h12,h23]`. Part C's table of V, R, Z8, O and H lines (the table of every
+  V, R, Z8, O and H line that `datasets/` holds, below) lists that line in one more row, as L19, and this README reads that
+  line, and only that line, as L19. The alternative not taken was "Keep old answer".
 
 Part D, part C's population, the copies and their pins, [`divergence-groups.tsv`](divergence-groups.tsv) and its dated
 corrections below are unchanged. The owner's other ruling of 2026-11-10, "Accept, follows CLDR", covers `fa`'s

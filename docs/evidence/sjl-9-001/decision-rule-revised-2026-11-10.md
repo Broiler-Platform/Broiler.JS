@@ -34,7 +34,9 @@ those runs, and this bundle does not retain them. They are named here only as wh
    `locales.icu-77.1.txt` (blob `eb4c3125c3b814e939e299b0025975d598f1a76a`) and Broiler.VM's divergences
    `locales.divergences.txt` (blob `d3d115d90467f17345f396e86ed5a3dc0e753c15`), the copies
    `conformance/datasets/intl/datasets.pin` pins from Broiler.VM's `4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f`, the commit
-   that carries Broiler.VM's own bundle sjl-9-001 rule. The program's line 128 is `11 fr-CA hourCycles`. The retained
+   that carries Broiler.VM's own bundle sjl-9-001 rule. A line of the program is a line of its answer, the text it prints, as
+   the rule reads "a line of segments.js"; `locales.js` itself has 78 lines. Line 128 of the program's answer, the harness's
+   `locales:128`, is the line whose key is `11 fr-CA hourCycles`; `locales.js` prints it at its line 68. The retained
    answer's line 128 is ICU 77.1's `11 fr-CA hourCycles => [h23]`, and the divergences file's line 115 replaces it with
    Broiler.VM's `11 fr-CA hourCycles => [h12,h23]`, in the group the table's line 52 marks `spec`, "ECMA-402's hour cycles
    from CLDR's time data" (Broiler.VM's `src/tests/cldr/locales/divergences.txt`, lines 102-161). So the line's expected
@@ -70,27 +72,38 @@ those runs, and this bundle does not retain them. They are named here only as wh
 
 ## What changed
 
-1. **Part C admits exactly that line, as a new class L19.** Class L19 admits one line: the `locales` program's line 128,
-   `11 fr-CA hourCycles`, whose expected answer, as the pinned copies hold it, is `11 fr-CA hourCycles => [h12,h23]`, and
-   only when its answer after is exactly `11 fr-CA hourCycles => [h23,h12]`, CLDR 48.2.0's time data for `fr-CA` under row
-   L19 (C5, CLDR's own data). It is listed by name, with its group (the table's line 52), row L19, this ruling, its
-   expected answer, its answer after, its answer at the base and the reference's line. Any other answer of that line is not
-   in L19. No other line is ever in L19: not another line of row L19, not another `hourCycles` line of the program or of its
-   group, not a line of any other program, and not the same line under part D, which does not need it. The class is named
-   after its row, and it admits one line of that row, not the row. Nothing else widens.
+1. **Part C admits exactly that line, as a new class L19.** Class L19 admits one line: line 128 of the `locales` program's
+   answer (the harness's `locales:128`), the line whose key is `11 fr-CA hourCycles`, whose expected answer, as the pinned
+   copies hold it, is `11 fr-CA hourCycles => [h12,h23]`, and only when its answer after is exactly
+   `11 fr-CA hourCycles => [h23,h12]`, CLDR 48.2.0's time data for `fr-CA` under row L19 (C5, CLDR's own data). It is listed
+   by name, with its group (the table's line 52), row L19, this ruling, its expected answer, its answer after, its answer at
+   the base and the reference's line. Any other answer of that line is not in L19. No other line is ever in L19: not another
+   line of row L19, not another `hourCycles` line of the program or of its group, not a line of any other program, and not
+   the same line under part D, which does not need it. The class is named after its row, and it admits one line of that row,
+   not the row. Nothing else widens.
 2. **How the harness carries it.** `scripts/conformance/run_reference_datasets.py` runs unchanged, and this revision changes
    no file the rule fixes. The harness decides no class: it reports the line as differing from its expected answer, as it
-   reports every line that does. The bundle's table of part C's classed lines lists it as class L19, and the bundle's README
-   reads that line, and only that line, as L19.
-3. **Part C's expected answer for that line is read from Broiler.VM**, as the rule says: the retained answer with Broiler.VM's
-   divergences applied, as Broiler.VM's `4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f` holds them, copied here byte for byte and
-   pinned by digest; "a copy whose digest differs is not the population". It is not read from Broiler.VM's tree at any later
-   commit. Broiler.VM's own answer moves the same way at its next re-pin of the shared library, since its `getHourCycles`
-   calls the same `LocaleInfo.HourCycles` (Broiler.VM's `src/Broiler.VM.Profile.JavaScript/JsRealm.Locale.cs`, line 128).
-   After that re-pin the line reads as it does now: its expected answer stays `[h12,h23]`, because the population is the
-   pinned copy, so the line still differs and is still admitted only by L19; this engine's `[h23,h12]` then equals
-   Broiler.VM's own answer. If Broiler.VM rewrites its divergences file's line for the move, that file is not this part's
-   population, and the copy here is not replaced.
+   reports every line that does. Part C's table of V, R, Z8, O and H lines lists it in one more row, as class L19, and the
+   bundle's README reads that line, and only that line, as L19. The rule's comparison is not revised; it reads:
+
+   > comparison: per program and line, the line after against its expected answer; and per line that still differs, the line after against the same line at the base and against the reference's line
+
+   and part C, restated below, keeps it word for word. The revised passages of part C are the failure passage and the MET
+   passage, which item 4 of "What was seen" quotes, and the new class line L19.
+3. **Part C's expected answer for that line is read from Broiler.VM**, as the rule says: the retained answer with
+   Broiler.VM's divergences applied, as Broiler.VM's `4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f` holds them, copied here byte
+   for byte and pinned by digest; "a copy whose digest differs is not the population". It is not read from Broiler.VM's tree
+   at any later commit. Broiler.VM's own answer moves the same way at its next re-pin of the shared library, since its
+   `getHourCycles` calls the same `LocaleInfo.HourCycles`: Broiler.VM's `src/Broiler.VM.Profile.JavaScript/JsRealm.Locale.cs`
+   at `68cad8baf7403125d44d5007441d30ff07bc4edf`, Broiler.VM's SJL-9 after commit (the merge of
+   Broiler-Platform/Broiler.VM#190), lines 127-128, and the same at `df75f8cea79aa2452ca22892d47d8afa5a14c93f`, the head of
+   Broiler.VM's default branch when this was written. At `4cf9ca44`, the commit the copies are pinned from, the method
+   answered from the profile's own `HourCyclesOf` (lines 154-157 and 487), which reads the time data for the preferred
+   regions; the divergences file the copies hold records that method's answer, `[h12,h23]`. After that re-pin the line reads
+   as it does now: its expected answer stays `[h12,h23]`, because the population is the pinned copy, so the line still
+   differs and is still admitted only by L19; this engine's `[h23,h12]` then equals Broiler.VM's own answer. If Broiler.VM
+   rewrites its divergences file's line for the move, that file is not this part's population, and the copy here is not
+   replaced.
 4. **Broiler.VM's records this ruling touches.** Broiler.VM's JSD-0082 gains its note of the rulings of 2026-11-09, and of
    this one, at its next re-pin, as this repository's plan already says. Broiler.VM's own rule judges its own datasets, and
    nothing here touches it.
@@ -118,14 +131,14 @@ and its dated corrections, and every other line of the rule are as they were.
 evidence class: conformance parity (not a measurement)
 population: Broiler.VM's reference datasets of the area, byte for byte as Broiler.VM's commit that carries its own bundle sjl-9-001 rule holds them, each with Broiler.VM's retained answer and divergences file: src/tests/cldr/{dates, displaynames, durations, lists, locales, numbers, plurals, relativetimes, segments}/ and src/tests/temporal/{intl, calendars-intl, zone-names}/, which SJL-9.2 copies into conformance/datasets/intl/ with their digests and the pin conformance/datasets/intl/datasets.pin; and src/tests/cldr/timezones/, which conformance/datasets/time/ holds since SJL-8.4 under block 1 of its datasets.pin; a copy whose digest differs is not the population
 configuration: each program's text evaluated by indirect eval in the shell BroilerJS built in Release, through scripts/conformance/run_reference_datasets.py --bundle sjl-9-001 and its driver, which print the program's completion value; no LANG and TZ=UTC; at the base commit (the base, retained and read) and at the after commit (judged); the expected answer of each line is Broiler.VM's: the retained answer with Broiler.VM's divergences applied, which Broiler.VM's slice checks hold its own answer equal to; and once, at the after commit's time, each program run in the reference this bundle's reference.txt names (the newest Node.js release on CLDR 48, by its tarball's SHA-256), whose output is retained
-comparison: per program and line, the line after against its expected answer; and per line that still differs, the line after against the same line at the base and against the reference's line; the harness decides no class, and a line of class L19 is listed in the bundle's table of part C's classed lines, which the bundle's README reads
+comparison: per program and line, the line after against its expected answer; and per line that still differs, the line after against the same line at the base and against the reference's line
 admitted difference classes:
   V Broiler.VM's coverage - a line whose expected answer comes from a divergence in a group this bundle's divergence-groups.tsv marks coverage, read with the dated corrections of that table in this bundle's README, the table and the corrections both as the rule commit holds them, so that a correction added after the rule commit does not bind this part (a locale, a calendar or a tailoring Broiler.VM's data lacks, JSD-0082 decision D5, or a numbering system's own symbols, which Broiler.VM's data lacks, decision D21), where this engine's answer after equals the retained answer, or, in a group of a numbering system's symbols, equals the expected answer with each of the locale's latn number symbols (the decimal and grouping separators, the signs and the percent sign) replaced by the same symbol of that numbering system in CLDR 48.2.0, or, in the group of a Collator's tailorings (src/tests/cldr/locales/divergences.txt lines 62-92, the table's line 50), is a collations line of a Locale with no co keyword whose answer after equals, sorted in code-unit order, the list of the collations this engine's Intl.Collator resolves for that Locale: each value c of Intl.supportedValuesOf("collation") for which new Intl.Collator(tag, {collation: c}).resolvedOptions().collation is c, tag being the Locale's toString(), in the same shell at the after commit (rows L17 and L40; the Collator's data is SJL-17's, and the shared CollationsOfLocale reads this engine's Collator's list, JSD-0082 decision D33 (c)); a line the group's note names as also carrying a difference the pinned text decides is admitted only when its answer after is the line that note names; each listed with its group, and a collations line admitted by the Collator's list listed with that list
   R the release - a line of V's kind whose answer after equals neither, and equals the reference's line: the retained answers are ICU 77.1's on CLDR 47.0, and this engine's data is CLDR 48.2.0; each listed with the three lines; the reference answers CLDR 48.0 (reference.txt), so a line whose value CLDR changed between 48.0 and 48.2.0 equals no line of the reference and is in no class
   Z8 the resolved identifier - a line whose difference is only the timeZone a formatter reports for an identifier that is not its own primary, where this engine answers the identifier as given (JSD-0082 decision D15), against Broiler.VM's base answer, its primary; each listed
   O outside the area - a line of segments.js whose answer after equals its answer at the base (SJL-7's Intl.Segmenter), whatever group of divergence-groups.tsv holds it; class O is read first for every line of segments.js; each listed
   H the default-locale provider - a line whose difference is only a value the default-locale provider supplies, which decision SJL-D-19 and JSD-0082 decision D7 keep this engine's; each listed with the provider's answer
-  L19 the one admitted line, by the owner's ruling of 2026-11-10, "Dated part C revision" - the locales program's line 128, 11 fr-CA hourCycles, in the spec group of divergence-groups.tsv's line 52, whose expected answer, as the pinned copies hold it, is "11 fr-CA hourCycles => [h12,h23]", and only when its answer after is exactly "11 fr-CA hourCycles => [h23,h12]", CLDR 48.2.0's time data for fr-CA (preferred H, allowed H h hB), which row L19 reads since the owner's ruling of 2026-11-09, "Fix both consumers" (data policy C5); listed by name with its group, row L19, this ruling, its expected answer, its answer after, its answer at the base and the reference's line; any other answer of that line is not in L19, and no other line is: not another line of row L19, not another hourCycles line, and not a line of any other program
+  L19 the one admitted line, by the owner's ruling of 2026-11-10, "Dated part C revision" - line 128 of the locales program's answer (the harness's locales:128), the line whose key is 11 fr-CA hourCycles, in the spec group of divergence-groups.tsv's line 52, whose expected answer, as the pinned copies hold it, is "11 fr-CA hourCycles => [h12,h23]", and only when its answer after is exactly "11 fr-CA hourCycles => [h23,h12]", CLDR 48.2.0's time data for fr-CA (preferred H, allowed H h hB), which row L19 reads since the owner's ruling of 2026-11-09, "Fix both consumers" (data policy C5); listed by name with its group, row L19, this ruling, its expected answer, its answer after, its answer at the base and the reference's line; any other answer of that line is not in L19, and no other line is: not another line of row L19, not another hourCycles line, and not a line of any other program
 every other difference is a failure, including a line in a spec group of divergence-groups.tsv that differs from Broiler.VM's divergence (other than a line of segments.js that class O admits, and the one line class L19 admits), a line of V's or R's kind that no reading of class V admits and that does not equal the reference's line, and a line that differs from its expected answer for any other reason
 MET if and only if every program completes after with every line, and every line that differs from its expected answer is in V, R, Z8, O, H or L19 and is listed.
 NOT MET otherwise.
@@ -133,7 +146,7 @@ NOT MET otherwise.
 
 **How it is read.** As the rule's part C is read, with one more row in part C's table of V, R, Z8, O and H lines: the
 class-L19 line, with its program and line, its group, row L19, this ruling, its expected answer, its answer after, its
-answer at the base and the reference's line. A part C run whose `locales` line 128 answers anything other than
+answer at the base and the reference's line. A part C run whose `locales:128` answers anything other than
 `11 fr-CA hourCycles => [h23,h12]` after, and differs from its expected answer, is read as the rule as written reads it.
 Parts A and B are read as the revision of 2026-11-09 says, and part D as the rule says.
 
