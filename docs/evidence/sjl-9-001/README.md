@@ -362,6 +362,13 @@ which has no budget rule." No other record states them.
   the shared data absorbs at SJL-9.5, names a default numbering system for 54 locales. Only `ar-EG`, `fa` and `sa` are
   on decision D5's list, so the shared tables carry no default for the other 51 (`bn`, `mr`, `ne`, `my` and the
   regional `ar-*` among them): a reading SJL-9.3 and SJL-9.5 take up, which the plan's dated note names.
+  *(Noted 2026-11-10, at SJL-9.5's records: SJL-9.5 takes it up through decision D6's host-culture provider, not
+  through the shared tables. `HostCultureLocaleData`, revised at task 8.4, answers the number table's
+  `defaultNumberingSystem` for a host culture the shared data lacks from .NET's native digits: `latn` where they are
+  ASCII's, and otherwise the numbering system of the shared numbering-system table whose ten digits they are
+  (`bn` `beng`, `ar-SA` `arab`). So the default of a locale of the deleted table that decision D5's list lacks depends
+  on the host's cultures; `DefaultNumberingSystemTests` and `HostCultureLocaleDataTests` pin this host's answers, and
+  the changelog's "Intl moves to the shared Intl library" says so under its data changes.)*
 
 ## The library's differential check (SJL-9.3)
 

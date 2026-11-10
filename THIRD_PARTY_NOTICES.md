@@ -401,8 +401,10 @@ and need no bullet.*
 
 - Each locale's default numbering system is no longer generated into this engine's code. From milestone SJL-9.5
   `Broiler.JavaScript.BuiltIns` reads it from the Intl data home's tables, CLDR 48.2.0 (section "The Intl data home"
-  above), and the CLDR 47.0.0 table `Intl/JSIntlDefaultNumberingSystems.g.cs` and its generator
-  `scripts/intl/generate_default_numbering_systems.py` are deleted (Broiler.VM's JSD-0082, decision D13).
+  above), for a locale of decision D5's list, and the CLDR 47.0.0 table `Intl/JSIntlDefaultNumberingSystems.g.cs` and
+  its generator `scripts/intl/generate_default_numbering_systems.py` are deleted (Broiler.VM's JSD-0082, decision D13).
+  For a locale the data home lacks, the default is the host culture's native digits (decision D6), which no generated
+  data gives.
 
 *Added 2026-10-15, at milestone SJL-5.6, when the table was added. Revised 2026-11-10, at milestone SJL-9.5's records,
 when the table and its generator were deleted: the bullet read "`JSIntlDefaultNumberingSystems`
