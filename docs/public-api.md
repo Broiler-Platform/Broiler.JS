@@ -98,6 +98,60 @@ row's second cell read "`0.1.0-preview.1`, the first version the stream will pub
 row's second cell began "`0.1.0-preview.1` published; `0.1.0-preview.2`, with the numerics area, the
 next", and its third cell ended at "`BigIntText` and `BigIntPolicy`".*
 
+## Public API changes, 2026-11-10 (Intl moves to the shared Intl library, milestone SJL-9.5)
+
+Milestone SJL-9.5 moves Intl onto `Broiler.ECMAScript.Intl`, which `BuiltIns` takes by project reference (Broiler.VM's
+JSD-0082, decision D9), over the data home's CLDR 48.2.0 tables, which `BuiltIns` embeds: all five sub-areas, locale
+identifiers and negotiation, the Intl mathematical value and plural rules, number and the small formatters, date-time
+formatting and duration formatting. It applies decision SJL-D-25 (JSD-0082, decision D24) to each public member the move
+changes. **No public member is removed, and none changes its signature**: every member of the area's deletion list is
+internal or private, and the public `JSIntl*` types stay as the engine's Intl objects over the library, disposition (a).
+The check: every `public` or `protected` declaration of `Broiler.JavaScript.BuiltIns`' sources at the cut-over's base,
+main at `b9ae4b5a`, is compared with the cut-over's head `21bed66c`; each that is gone is a member of an internal or
+private type (the deleted `JSIntlDateTimeFormatEngine`'s nested types, `JSIntlNumberFormatResolved`, the private
+`TemporalMeta`), and each that is new is a member of an internal or private type (`JSIntlData`, `HostCultureLocaleData`,
+`JSIntlLocaleProviders`, the Collator's private adapter of its locale data). No other assembly of the engine changes.
+The observable corrections, implementation-defined changes and data changes are in
+[`Broiler.JS/CHANGELOG.md`](../Broiler.JS/CHANGELOG.md), "Intl moves to the shared Intl library", by row.
+
+| Member | Assembly | Disposition | What it does now |
+| --- | --- | --- | --- |
+| `JSIntl`, `JSIntlCollator`, `JSIntlDateTimeFormat`, `JSIntlDisplayNames`, `JSIntlDurationFormat`, `JSIntlListFormat`, `JSIntlLocale`, `JSIntlNumberFormat`, `JSIntlPluralRules`, `JSIntlRelativeTimeFormat` and `JSIntlSegmenter`, and their exported members | `BuiltIns` | kept, results corrected | Each reads its options in the specification's order and hands them to the shared library; the answers that change are the changelog's rows. `JSIntlCollator`'s data and comparison stay this engine's until milestone SJL-17.5, and `JSIntlSegmenter` is SJL-7's |
+| `JSIntlLocale(string tag = "und")` | `BuiltIns` | kept, results corrected | The tag goes through the library's `LocaleRecord`: canonicalized with CLDR 48.2.0's aliases, and refused with a `RangeError` where it is not ASCII or not well formed (rows L2, L45), where it was kept as given |
+| `JSIntlDateTimeFormat.Get(CultureInfo)` | `BuiltIns` | kept, over the library | The format of `new Intl.DateTimeFormat(tag)` for the culture's name, cached by that name, a name that is no well-formed tag read as no locale (the default); it ran this engine's English engine over the culture |
+| `JSIntlDateTimeFormat.ToDateTimeOptions` and `JSIntlDateTimeFormat.ApplyAllDefaults` | `BuiltIns` | kept, no caller | Hand-written, as before; nothing in this repository calls them any more, since `Date.prototype`'s `toLocale*` methods pass their required and defaults to the library's CreateDateTimeFormat (row T2), and neither calls the library. JSD-0082's D24 reads "stay, over the library"; they stay, and do not reach it |
+| `JSIntlDurationFormat(string locale, JSObject options)` | `BuiltIns` | kept, results corrected | The locale goes through CanonicalizeLocaleList and is matched against the available locales, as the constructor from `Arguments` does; an ill-formed tag is a `RangeError`. It took the locale as already resolved and negotiated only its `-u-nu-` keyword by hand |
+| `JSIntlListFormat(string locale, string type, string style)` | `BuiltIns` | kept, refuses more | An unknown `type` (outside `conjunction`, `disjunction` and `unit`) or `style` (outside `long`, `short` and `narrow`) throws `ArgumentOutOfRangeException` with `ParamName` `type` or `style`. The base stored and reported the strings as given |
+
+**Removed internal and private members**, with no public surface:
+
+- *Whole files and types:* `Intl/JSIntlDateTimeFormatEngine.cs` (the internal static `JSIntlDateTimeFormatEngine`,
+  with its internal nested types `Fields`, `Token`, `Part` and `Pattern`, whose public members were never public API),
+  `Intl/JSIntlDefaultNumberingSystems.g.cs` (the internal `JSIntlDefaultNumberingSystems`), `JSIntlDateTimeFormat`'s
+  private struct `TemporalMeta`, `JSIntlNumberFormatResolved` and `JSIntlResolvedOptionsExtensions`, both internal; and
+  `NumberingSystemDecimalData`,
+  an internal adapter the cut-over itself added and then deleted, once the library wrote a numbering system's decimal
+  symbol.
+- *In the types:* the members the changelog's "Where they were" lists. Bundle `sjl-9-001`'s
+  [`cutover/deletion-search.txt`](evidence/sjl-9-001/cutover/deletion-search.txt) is the search for them.
+
+The new internal members are, in `BuiltIns`, `JSIntlData` (the embedded tables as the library's `IIntlDataSet`),
+`HostCultureLocaleData` (decision D6's host-culture provider), `JSIntlLocaleProviders` (the default-locale and
+available-locale providers, decision D7), and the adapters in `JSIntl` around the library's records.
+
+**Packages.** `BuiltIns` references `Broiler.ECMAScript.Intl` by project reference, so a `Broiler.JavaScript.BuiltIns`
+package packed from this tree depends on the package `Broiler.ECMAScript.Intl` at the shared stream's version. No
+version of `Broiler.ECMAScript.Intl` is published yet: the shared changelog's entry is "Unreleased", and its publication
+is the owner's to approve (JSD-0082, decision D29). `eng/pack.ps1`'s expected-version check reads
+`Broiler.ECMAScript.Algorithms`' version alone; the Intl package shares that version, and the check is not widened here.
+`Broiler.Unicode.Cldr.LocaleData` stays a dependency of `BuiltIns`, and its version stays in `Directory.Packages.props`:
+`Intl.supportedValuesOf`'s currency and unit lists, sub-area (a), still read its `IntlEnumerationData`, and the shared
+library's `SupportedValues` is not wired for them. The plan's task 8.7 says to remove the package; it stays until those
+two lists move.
+
+**Compatibility.** Binary-compatible: every public member is kept with its signature. Source-compatible.
+Behaviour-breaking where the rows say, and for `JSIntlListFormat`'s constructor above.
+
 ## Milestone SJL-14.2, window W1: the bridge behind a test-only switch (2026-11-03)
 
 **No public member is added, removed or changed.** The bridge to the shared syntax library
