@@ -1,0 +1,6 @@
+# compare_test262_paths.py blob e951dd478a858ac06c4178c28164325b06506d00; classification file test262/comparison-utc/classifications.json
+$ /usr/bin/python3 -I <repo>/scripts/compliance/compare_test262_paths.py --base <scratch>/base-A-test262-results.json --after <scratch>/after-A-test262-results.json --output <scratch>/comparison-A.json --base-rerun <repo>/docs/evidence/sjl-9-001/test262/base/rerun-timeouts.json --after-rerun <repo>/docs/evidence/sjl-9-001/test262/after/rerun-timeouts.json --classifications <repo>/docs/evidence/sjl-9-001/test262/comparison-utc/classifications.json
+# cwd <repo>; started 2026-11-10T13:01:45Z; exit 1
+regression     passed -> failed   test/intl402/DateTimeFormat/prototype/format/numbering-system.js [original]
+regression     passed -> failed   test/intl402/DateTimeFormat/prototype/format/numbering-system.js [terser]
+rows 106058; changed 2; admitted 0; unclassified 0; regressions 2

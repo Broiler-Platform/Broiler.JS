@@ -1,0 +1,7 @@
+# imported: the run was taken by .github/workflows/test262-evidence.yml, not locally
+workflow run: https://github.com/Broiler-Platform/Broiler.JS/actions/runs/42800071052 (attempt 1), dispatched 2026-11-10T10:32:54Z from main at a5f2692e, completed 2026-11-10T11:39:33Z with the conclusion success
+tested commit: 8841799642ff61499faa01dc894b6fec768c8af6 (the base commit, the after commit's first parent); the commit the rule names: True
+configuration: part A's, in the runner's own zone (time_zone empty: TZ unset, UTC), with negative-metadata tests (include_negative true); includeNegative True in run.txt
+runner: ubuntu24 20261101.360.1; Linux X64; logical processors 4; dotnetVersion 10.0.403
+artifact: test262-evidence, id 13762111531, 3,533,604 bytes, sha256 17b777d1d9c1a437557a51af7ecc7d103f47e73d2f5e98dd417d4ce440ebfc8a (the zip as downloaded)
+retained: every file of the artifact, unchanged, in this directory (26 entries); this file is the only one added

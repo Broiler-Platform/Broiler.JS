@@ -1,0 +1,10 @@
+{
+  "test/intl402/DateTimeFormat/prototype/format/numbering-system.js|original": {
+    "class": "C5",
+    "reason": "L (T12, the owner's ruling of 2026-11-09, \"Follow CLDR\"): the file passes at the base and fails after on its assertion \"en-US-u-nu-hanidec: display all time units in 2-digit\", because the shared library writes CLDR 48.2.0's en time pattern hh:mm:ss a with U+202F NARROW NO-BREAK SPACE before the day period (row T12, data policy C5; JSD-0082 decision D25), where the file asks for U+0020; admitted only with the probe test262/revised-2026-11-09/class-l-probe.<part>.txt, which decision-rule-revised-2026-11-09.md asks for. The script admits no class L, so it reports this row as a regression with this classification refused, and the bundle's README reads it as class L."
+  },
+  "test/intl402/DateTimeFormat/prototype/format/numbering-system.js|terser": {
+    "class": "C5",
+    "reason": "L (T12, the owner's ruling of 2026-11-09, \"Follow CLDR\"): the file passes at the base and fails after on its assertion \"en-US-u-nu-hanidec: display all time units in 2-digit\", because the shared library writes CLDR 48.2.0's en time pattern hh:mm:ss a with U+202F NARROW NO-BREAK SPACE before the day period (row T12, data policy C5; JSD-0082 decision D25), where the file asks for U+0020; admitted only with the probe test262/revised-2026-11-09/class-l-probe.<part>.txt, which decision-rule-revised-2026-11-09.md asks for. The script admits no class L, so it reports this row as a regression with this classification refused, and the bundle's README reads it as class L."
+  }
+}
