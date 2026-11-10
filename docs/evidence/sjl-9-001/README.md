@@ -380,6 +380,75 @@ classified under that row's data policy. Against SJL-9.3e's own reports, the sec
 as well, because corpus revision 33, merged from `origin/main`, adds the collation vectors' String inputs to their
 population; they equal `origin/main`'s. *(Added 2026-11-02, at SJL-9.3f.)*
 
+## The cut-over's records (SJL-9.5), 2026-11-10
+
+*Added 2026-11-10, at SJL-9.5's records (plan task 8.7), before the merge that lands SJL-9.5. Nothing here is a verdict:
+no part's base or after run has been taken, and the local checks the branch ran are not evidence.*
+
+**The branch.** SJL-9.5 is written on `sjl-9-5-cutover`, one merge, prepared as one commit per task:
+- task 8.1, `BuiltIns` references the library and embeds the tables: `340f27ea54b70aba798cc2af5c7c0fc4c66a14e2`;
+- task 8.2, the host-culture provider: `c37cb469635a54123a282add57fe67be7ccf9adc`;
+- task 8.3, sub-area (a): `52092d51036077bb106e25a70f60a84ad9f71ae1`, with the review's `4ba95d2d570d73c1cae82c8ede3568d4871aac25`;
+- task 8.4, sub-areas (b) and (c): `df5e90821b1e997aa6fc0af870ced1f8de49ca53` and `87b70e9df902e700f1219d55dd83e52c53ec3301`,
+  with the review's `66840f727a5ef69e2bf4a30f045516cdf4f368c9`;
+- tasks 8.5 and 8.6, sub-areas (d) and (e): `129d94cc89366cf28ebf9f27332a4ea7924a311d` and
+  `2e3ada852494a76d2a20e3ce7ef5b97000fee501`, with the review's `1f99fa5dee93b086f4e7762f41b80699e05adbac`; finished on
+  the library's fix in `ddd970e135e93a25f4662a6053179746275cdac4`, with the review's
+  `21bed66c2d17e3f9b453bef6e516bd8a62ca0d27`;
+- the merges of `main`: `e76015f2756a715ad7df0b01f191837ae95ef3a7`, `f407c132b139f53cd13d3b1be712b90f31aba337` and
+  `28cfaa3081f2b98dab7d6d61ad236897121217d3` (Broiler-Platform/Broiler.JS#1108, the date-time format's locale-data fix);
+- task 8.7, these records, which change no code.
+
+**The deletion search** is [`cutover/deletion-search.txt`](cutover/deletion-search.txt), written by
+[`cutover/deletion-search.py`](cutover/deletion-search.py) from the cut-over's own change, `main` at `b9ae4b5a` to
+`21bed66c`, with the names the branch declared and deleted itself (`NumberingSystemDecimalData`, `DatesBySystem` and
+their kind). No deleted type or member is referenced by code. The names with a code hit are each another declaration of
+the same name, and the file classifies each by hand: ILPack's own `IsField`
+(`Broiler.JS/Broiler.JavaScript/ILPack/AssemblyGenerator.Attributes.cs`); the library's `RegionHourCycles.Preferred`;
+the option names (`style`, `notation`, `numberingSystem`, `dateStyle`, `timeStyle`, `timeZoneName`, `unitDisplay` and
+the rest) as strings, keys, parameters and locals; the Collator's parameters named `localeTag`; and English words. The
+earlier stages' reviews named three more unrelated hits, `HostCultureLocaleData`'s private `DefaultNumberingSystem`,
+the library runner's `NumberParts` and the library's `TemporalCalendars.ResolveFields`: each is declared at the head, so
+the search does not count it as gone, and none is the engine's deleted member of that name.
+
+**One hit is a script, recorded and not changed.** `docs/evidence/sjl-8-001/collect.py:185` names the deleted
+`Intl/JSIntlDateTimeFormatEngine.cs` among the paths one of its searches reads. It is bundle `sjl-8-001`'s collector,
+run with `--tree` at that bundle's after commit, where the file exists, so the line is correct for the tree it reads;
+changing it would change a closed bundle's collector, not this engine.
+
+**`Broiler.Unicode.Cldr.LocaleData` stays.** `Intl.supportedValuesOf`, sub-area (a), still reads the package's
+`IntlEnumerationData` for its currency and unit lists, and the shared library's `SupportedValues` is not wired for those
+two keys. So `BuiltIns` keeps its package reference and `Directory.Packages.props` its version, where the plan's task
+8.7 says to remove both; this engine's other uses of the package, every one for Intl data, are gone. The package goes
+when those two lists move.
+
+**Part C, read before the judged run.** The rule's part C table of V, R, Z8, O and H lines is written from the after
+run (section "State", `datasets/`). Two readings it takes are fixed here, from the branch's local runs at `21bed66c`:
+- **Durations lines 263, 264, 533 and 534** (`numberingSystem: "arab"` with negative fields, in `en` and `de`) are in
+  the group of `src/tests/cldr/durations/divergences.txt` lines 205-219, this bundle's `divergence-groups.tsv` line 43,
+  a numbering system's own symbols (decision D21; row U16). Their answer equals neither the retained answer, which
+  repeats the sign on each unit, nor Broiler.VM's line, so the first reading of class V does not admit them. **The
+  table cites class V's second reading for each**: the line equals the expected answer with each of the locale's `latn`
+  number symbols replaced by `arab`'s own CLDR 48.2.0 symbol, here the minus sign written as U+061C before it. Lines
+  260, 265, 266, 530, 535 and 536 of the same group equal the retained answer, class V's first reading.
+- **Locales line 128** (`fr-CA` `hourCycles`) answers `[h23,h12]`, where the expected answer is `[h12,h23]`. Row L19's
+  move (the library's merge of 2026-11-09, ruling "Fix both consumers") causes it, and the line is in a `spec` group,
+  `divergence-groups.tsv` line 52, which no class of the rule admits. On the owner's ruling of 2026-11-10, "Dated part C
+  revision" (the alternative not taken was "Keep old answer"), a dated revision of this rule admits it, filed on `main` in
+  a merge of its own; this branch merges `main` after it lands, and part C is run again to show the line admitted
+  before the merge that lands SJL-9.5. Part D's run moves the same line; part D judges no line's answer.
+
+**The fa minute and second** moved with row T16's calendar preference: `fa`'s default calendar is now `persian`, whose
+CLDR 48.2.0 `availableFormats` have `ms` "m:ss" and no `mmss`, so `{ minute: "2-digit", second: "2-digit" }` writes
+`۳:۰۵` with minute `"numeric"` (row T13). The owner ruled on 2026-11-10, "Accept, follows CLDR" (the alternative not
+taken was "Revert the test change"): `DateTimeFormatMinuteSecondPartsTests` asks `fa-u-ca-gregory` for its two-digit
+row, and `IntlDateTimeFormatLibraryTests` pins both answers. No part's line is this one.
+
+**Owed to others' records.** `Broiler.ECMAScript/docs/intl/design.md:243` ends its note on row T37 with "This replaces
+SJL-9.5's engine-side adapter, `NumberingSystemDecimalData`." The adapter is deleted. The sentence is true of the merge
+it records, but it names a type that no longer exists; the library's next records merge revises it by a dated note,
+since this branch changes nothing under `Broiler.ECMAScript/`.
+
 ## State
 
 **2026-10-26, at SJL-9.1: the rule and its data only. Nothing here is a verdict, and nothing has been taken.**
@@ -423,6 +492,8 @@ Those runs are in `engine/`, which the list below did not foresee. They are no p
 - `algorithms/`: the summary of SJL-9.3's differential check against Broiler.VM's code (decision D22);
 - `controls/`: each control a part or a home clause runs, with its patch, its output and its revert;
 - `home/`: the data home's sizes, `sizes.txt`, as decision D5 states them (added 2026-10-26, at SJL-9.2b).
+- `cutover/`: the cut-over's deletion search and its script, section "The cut-over's records (SJL-9.5)" (added
+  2026-11-10, at SJL-9.5's records; the list ended at `home/`).
 
 **It holds no figure of a run until that run is taken**, and then only in the run's own files and this README's
 reading of them. The data home's figures are those of its inputs and tables, which decision D5 asks this bundle to

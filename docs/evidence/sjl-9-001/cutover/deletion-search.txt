@@ -1,0 +1,1559 @@
+# SJL-9.5: the name search for the deletion list, at the cut-over's final code
+#
+# Tree: Broiler.JS sjl-9-5-cutover at 21bed66c2d17e3f9b453bef6e516bd8a62ca0d27; base: main at
+# b9ae4b5ad1e5b9d74b1b26516900e151b50fd252 (Broiler-Platform/Broiler.JS#1108), the last main the branch merged, so that
+# `git diff b9ae4b5a 21bed66c` is the cut-over's own change. The records' commits after 21bed66c change no code.
+# Command: python3 -I docs/evidence/sjl-9-001/cutover/deletion-search.py <repo> b9ae4b5a... 21bed66c... (taken 2026-11-10,
+# at SJL-9.5's records). The script's docstring says what it searches; the classification of each name with a code hit
+# is the records' own, written in the script and printed beside the name.
+#
+# Reading. No deleted type or member is referenced by code: the cut-over's build at 21bed66c has no error or warning, and
+# every code hit below is another declaration that shares the name (an option's name as a string, a parameter, a local,
+# a record property of the library), never a copy of the area's code left in the engine. The deleted file names appear
+# in dated records and comments, and in one script, docs/evidence/sjl-8-001/collect.py:185, which is bundle sjl-8-001's
+# collector, run with --tree at that bundle's after commit, where the file exists; it is correct for that tree and is
+# left as it is (bundle sjl-9-001's README, "The cut-over's records").
+#
+# The names the earlier stages' reviews named as unrelated same-name hits are among them: the library runner's
+# NumberParts and HostCultureLocaleData's private DefaultNumberingSystem are declared at 21bed66c, so they are not
+# searched (a name still declared is not gone); TemporalCalendars.ResolveFields is the library's, declared likewise; and
+# ILPack's IsField is classified under IsField below.
+#
+# names declared on removed lines: 458; still declared at 21bed66c: 154; declared and removed within the branch: 9 (DatesBySystem HostCultureLocales HostLocales NumberingSystemDecimalData NumberingSystemDigit NumberingSystemRelevantKeys ReadHostLocales States own); searched: 313; with a hit: 152; with no hit: 161
+## The deleted files, searched by file name in every tracked file at 21bed66c
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs: 73
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2950:// Deleted (2026-11-09): JSIntlDateTimeFormatEngine.cs whole (the en-only pattern resolution, field formatting, interval
+    docs/evidence/sjl-10-001/README.md:1026:- outside `Temporal/`: `JSIntlDateTimeFormatEngine.cs` (28 added, 16 removed), whose projection of a date into a
+    docs/evidence/sjl-10-001/simplification/line-counts.log:5:    28      16  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs
+    docs/evidence/sjl-3-001/simplification/duplicate-search.log:33:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:554:            else if (order.Length == 1 && separator == null
+    docs/evidence/sjl-4-001/simplification/duplicate-search.log:34:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:125:        var minutes = (int)(Math.Round(offsetMs / 60000.0))
+    docs/evidence/sjl-5-001/simplification/duplicate-search.log:14:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:758:                return ("fractionalSecond", digits <= 3 ? m
+    docs/evidence/sjl-6-001/simplification/duplicate-search.log:19:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:20:    // valid date range (±8.64e15 ms / ±275760 years) is sup
+    docs/evidence/sjl-6-001/simplification/duplicate-search.log:20:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:119:        var clamped = Math.Clamp(epochMs, -8.64e15, 8.64e15
+    docs/evidence/sjl-6-001/simplification/duplicate-search.log:21:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:221:        ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "
+    docs/evidence/sjl-6-001/simplification/duplicate-search.log:22:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:223:        ["January", "February", "March", "April", "May", "J
+    docs/evidence/sjl-6-001/simplification/duplicate-search.log:23:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:229:        ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    docs/evidence/sjl-6-001/simplification/duplicate-search.log:24:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:656:        var clamped = Math.Clamp(clippedMs, -8.64e15, 8.64e
+    docs/evidence/sjl-7-001/README.md:172:  | Intl: the host culture as the default locale (`JSIntl.cs:2380`), locale tags' ASCII casing, number, unit and date-time formatting, the date-time pattern reade
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:95:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:510:        CultureInfo culture;
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:96:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:513:            culture = CultureInfo.GetCultureInfo(tag);
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:97:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:551:            else if (order.Length == 1 && separator == null && !cha
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:98:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:586:            if (char.IsLetter(c))
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:99:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:673:        if (!int.TryParse(body.Substring(0, 2), NumberStyles.None, 
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:100:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:676:        if (body.Length == 4 && !int.TryParse(body.Substring(2, 2)
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:101:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:698:                return ("relatedYear", f.Year.ToString(CultureInfo
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:102:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:714:                    ? (year % 100).ToString("D2", CultureInfo.Inva
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:103:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:715:                    : year.ToString(CultureInfo.InvariantCulture))
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:104:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:728:                    5 => islamic ? f.Month.ToString(CultureInfo.In
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:105:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:730:                    2 => f.Month.ToString("D2", CultureInfo.Invari
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:106:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:731:                    _ => f.Month.ToString(CultureInfo.InvariantCul
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:107:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:735:                    ? f.Day.ToString("D2", CultureInfo.InvariantCu
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:108:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:736:                    : f.Day.ToString(CultureInfo.InvariantCulture)
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:109:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:739:                return ("hour", token.Count == 2 ? h12.ToString("D
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:110:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:741:                return ("hour", token.Count == 2 ? f.Hour.ToString
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:111:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:744:                return ("hour", token.Count == 2 ? k.ToString("D2"
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:112:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:747:                return ("hour", token.Count == 2 ? kk.ToString("D2
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:113:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:749:                return ("minute", token.Count == 2 ? f.Minute.ToSt
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:114:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:751:                return ("second", token.Count == 2 ? f.Second.ToSt
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:115:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:754:                var ms = f.Millisecond.ToString("D3", CultureInfo.
+    docs/evidence/sjl-7-001/cutover/host-api-search.txt:116:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:858:                monthLabel = cm.ToString(CultureInfo.InvariantCult
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:113:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:510:        CultureInfo culture;
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:114:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:513:            culture = CultureInfo.GetCultureInfo(tag);
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:115:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:551:            else if (order.Length == 1 && separator == nul
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:116:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:586:            if (char.IsLetter(c))
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:117:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:673:        if (!int.TryParse(body.Substring(0, 2), NumberStyl
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:118:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:676:        if (body.Length == 4 && !int.TryParse(body.Substri
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:119:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:698:                return ("relatedYear", f.Year.ToString(Cul
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:120:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:714:                    ? (year % 100).ToString("D2", CultureI
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:121:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:715:                    : year.ToString(CultureInfo.InvariantC
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:122:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:728:                    5 => islamic ? f.Month.ToString(Cultur
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:123:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:730:                    2 => f.Month.ToString("D2", CultureInf
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:124:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:731:                    _ => f.Month.ToString(CultureInfo.Inva
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:125:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:735:                    ? f.Day.ToString("D2", CultureInfo.Inv
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:126:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:736:                    : f.Day.ToString(CultureInfo.Invariant
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:127:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:739:                return ("hour", token.Count == 2 ? h12.ToS
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:128:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:741:                return ("hour", token.Count == 2 ? f.Hour.
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:129:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:744:                return ("hour", token.Count == 2 ? k.ToStr
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:130:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:747:                return ("hour", token.Count == 2 ? kk.ToSt
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:131:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:749:                return ("minute", token.Count == 2 ? f.Min
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:132:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:751:                return ("second", token.Count == 2 ? f.Sec
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:133:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:754:                var ms = f.Millisecond.ToString("D3", Cult
+    docs/evidence/sjl-7-001/simplification/cutover-searches.log:134:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:858:                monthLabel = cm.ToString(CultureInfo.Invar
+    docs/evidence/sjl-7-001/simplification/duplicate-search.log:50:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:65:        if (!string.IsNullOrEmpty(timeZone) && timeZone.Equa
+    docs/evidence/sjl-7-001/simplification/duplicate-search.log:51:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:98:            if (string.Equals(id, timeZone, StringComparison
+    docs/evidence/sjl-7-001/simplification/duplicate-search.log:52:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:100:            if (!string.Equals(Temporal.Tz.IanaTimeZoneData
+    docs/evidence/sjl-7-001/simplification/duplicate-search.log:53:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:506:        var uPos = tag.IndexOf("-u-", StringComparison.Ordi
+    docs/evidence/sjl-7-001/simplification/duplicate-search.log:54:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:520:        if (culture.IsNeutralCulture && tag.Equals("en", St
+    docs/evidence/sjl-7-001/simplification/duplicate-search.log:55:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:645:        if (string.Equals(timeZone, "UTC", StringComparison
+    docs/evidence/sjl-8-001/README.md:296:| After | `79a0506c` (`79a0506c870302cefa6d7105146c65feab898879`), the merge into the default branch (Broiler-Platform/Broiler.JS#1048) that lands row Z16's corre
+    docs/evidence/sjl-8-001/collect.py:185:     [JS + "Intl/JSIntlDateTimeFormatEngine.cs"],
+    docs/evidence/sjl-8-001/identity.txt:53:    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs
+    docs/evidence/sjl-8-001/identity.txt:66:  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs
+    docs/evidence/sjl-8-001/identity.txt:72:  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs
+    docs/evidence/sjl-8-001/simplification/deletion-check.log:71:# in Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs: \bTryParseOffset\b|IanaTimeZoneDatabase|EcmaLocalTime\.Loca
+    docs/evidence/sjl-8-001/simplification/deletion-check.log:73:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:94:        var database = Temporal.TemporalTimeZones.Database;
+    docs/evidence/sjl-8-001/simplification/deletion-check.log:74:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:119:        return Temporal.TemporalTimeZones.Rules(timeZone).IsD
+    docs/evidence/sjl-8-001/simplification/deletion-check.log:75:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:707:            return EcmaLocalTime.LocalTime(clippedMs, JSDate.
+    docs/evidence/sjl-8-001/simplification/deletion-check.log:76:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:710:        var offsetSeconds = Temporal.TemporalTimeZones.Rules(
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDefaultNumberingSystems.g.cs: 11
+    Broiler.ECMAScript/docs/intl/design.md:575:same CLDR 48.2.0 data, which replaces this engine's CLDR 47.0.0 table, `JSIntlDefaultNumberingSystems.g.cs`, and its
+    THIRD_PARTY_NOTICES.md:394:- `JSIntlDefaultNumberingSystems` (`Broiler.JavaScript.BuiltIns`, `Intl/JSIntlDefaultNumberingSystems.g.cs`),
+    docs/evidence/sjl-5-001/README.md:131:| After | `1ebde70`: SJL-5.5's cut-over (`37ece76`) and corpus revision 13 (`bb1fc66`), as merged into the default branch in `473dc46`, with the fix of the defect
+    docs/evidence/sjl-5-001/identity.txt:8:  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDefaultNumberingSystems.g.cs
+    docs/evidence/sjl-7-001/simplification/duplicate-search.log:56:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDefaultNumberingSystems.g.cs:16:        new(System.StringComparer.OrdinalIgnoreCase)
+    docs/evidence/sjl-7-001/simplification/duplicate-search.log:57:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDefaultNumberingSystems.g.cs:82:        var singleton = tag.IndexOf("-u-", System.Strin
+    docs/evidence/sjl-7-001/simplification/duplicate-search.log:58:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDefaultNumberingSystems.g.cs:85:            var at = tag.IndexOf(marker, System.StringC
+    docs/evidence/sjl-9-001/README.md:361:- **Decision D13's table**, `Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDefaultNumberingSystems.g.cs`, which
+    docs/roadmap/SharedLibraries.md:399:comes from the shared CLDR 48.2.0 data, `JSIntlDefaultNumberingSystems.g.cs` and
+    docs/roadmap/SharedLibraries.md:1607:  comes from the same data: the CLDR 47.0.0 table, `JSIntlDefaultNumberingSystems.g.cs`, and its script are deleted,
+    docs/roadmap/SharedLibraries.md:1718:  - `JSIntlDefaultNumberingSystems.g.cs` and `scripts/intl/generate_default_numbering_systems.py` (decision D13);
+scripts/intl/generate_default_numbering_systems.py: 6
+    Broiler.JS/CHANGELOG.md:1445:option still chooses another. The table is generated by `scripts/intl/generate_default_numbering_systems.py`
+    THIRD_PARTY_NOTICES.md:395:  each locale's default numbering system, is generated by `scripts/intl/generate_default_numbering_systems.py`
+    docs/evidence/sjl-5-001/README.md:256:`scripts/intl/generate_default_numbering_systems.py` generates from the `cldr-json` release's
+    docs/roadmap/SharedLibraries.md:389:`scripts/intl/generate_default_numbering_systems.py` from the `cldr-json` release's `cldr-numbers-full`
+    docs/roadmap/SharedLibraries.md:400:`scripts/intl/generate_default_numbering_systems.py` are deleted, and the move from 47.0.0 to 48.2.0 is a data change
+    docs/roadmap/SharedLibraries.md:1718:  - `JSIntlDefaultNumberingSystems.g.cs` and `scripts/intl/generate_default_numbering_systems.py` (decision D13);
+
+## The names, searched in every tracked .cs file at 21bed66c
+(A name with more than 40 hits is listed by file, with each file's code hits; every other hit is
+listed by line.)
+AlgorithmicDigits: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2442: // AssembleUnitParts, AppendUnitText, MapNumberingSystemDigits, MapDigit with ContiguousDigitZero and AlgorithmicDigits,
+AppendIntegerParts: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2441: // BuildDigitParts, AppendIntegerParts, SplitIntoGroups, AssemblePlainParts, AssembleCurrencyParts, AssemblePercentParts,
+AppendUnitText: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2442: // AssembleUnitParts, AppendUnitText, MapNumberingSystemDigits, MapDigit with ContiguousDigitZero and AlgorithmicDigits,
+ApplyPattern: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1997: // FormatList, ApplyPattern, GetPatterns and the type and style fields. Its public members stay (decision SJL-D-25,
+AssembleCurrencyParts: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2441: // BuildDigitParts, AppendIntegerParts, SplitIntoGroups, AssemblePlainParts, AssembleCurrencyParts, AssemblePercentParts,
+AssemblePercentParts: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2441: // BuildDigitParts, AppendIntegerParts, SplitIntoGroups, AssemblePlainParts, AssembleCurrencyParts, AssemblePercentParts,
+AssemblePlainParts: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2441: // BuildDigitParts, AppendIntegerParts, SplitIntoGroups, AssemblePlainParts, AssembleCurrencyParts, AssemblePercentParts,
+AssembleUnitParts: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2442: // AssembleUnitParts, AppendUnitText, MapNumberingSystemDigits, MapDigit with ContiguousDigitZero and AlgorithmicDigits,
+BuildDigitParts: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2441: // BuildDigitParts, AppendIntegerParts, SplitIntoGroups, AssemblePlainParts, AssembleCurrencyParts, AssemblePercentParts,
+BuildParts: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1996: // the (element, literal) parts Intl.DurationFormat reads until task 8.6. Deleted (2026-11-08): BuildParts, ExpandPattern,
+CanonicalCurrencyValue: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2445: // CanonicalCurrencyValue, ReadStringOption and UnsignedRounding. Its public members stay (decision SJL-D-25, disposition (a)).
+CheckTemporalCalendar: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2953: // ResolveFields, the TemporalFields flags, RequestedFields, ClassifyTemporal, CheckTemporalCalendar, EffectiveTemporalFields,
+ClassifyTemporal: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2953: // ResolveFields, the TemporalFields flags, RequestedFields, ClassifyTemporal, CheckTemporalCalendar, EffectiveTemporalFields,
+CoerceRangeOperand: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2443: // ComputeRangeParts, CoerceRangeOperand, CoerceRangeValue, ResolveFractionDigits, DefaultFractionDigits, ReadIntOption,
+CoerceRangeValue: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2443: // ComputeRangeParts, CoerceRangeOperand, CoerceRangeValue, ResolveFractionDigits, DefaultFractionDigits, ReadIntOption,
+    [comment] Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue693Tests.cs:24: //   `formatRangeToParts/...` tests expect a TypeError. CoerceRangeValue now throws
+CompactDisplayValues: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:885: // NotationValues, SignDisplayValues, CompactDisplayValues and UnitDisplayValues, each the same set; they are deleted.
+CompactMagnitude: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2440: // FormatCompact, FormatCompactMantissa, CompactMagnitude, GetCompactUnits, LocaleHasRegion and the CompactUnits* tables,
+CompareToPowerOfTen: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2439: // RawPrecisionDigits, ToRawPrecision, ComputeExponent, CompareToPowerOfTen, FormatScientificEngineering, FormatMantissa,
+ComputeFormatParts: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1172: // JSIntlNumberFormat.ComputeFormatParts and JSIntlListFormat.FormatPartsForUnits are deleted with their last reader.
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1818: // Intl.NumberFormat through JSIntlNumberFormat.ComputeFormatParts), the inner Intl.ListFormat through
+ComputeRangeParts: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2443: // ComputeRangeParts, CoerceRangeOperand, CoerceRangeValue, ResolveFractionDigits, DefaultFractionDigits, ReadIntOption,
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2954: // FormatTemporalToParts, FormatTemporalRangeToParts, ResolveTemporalPattern, StyleMonthWidth, ComputeRangeParts, MapNumbering,
+ContiguousDigitZero: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2442: // AssembleUnitParts, AppendUnitText, MapNumberingSystemDigits, MapDigit with ContiguousDigitZero and AlgorithmicDigits,
+CreateArrayFromListAndPreferred: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue650LocaleInfoTests.cs:52: // (CreateArrayFromListAndPreferred)." and expected "buddhist gregory" and "arab latn".)
+CurrencyDisplayValues: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:884: // CurrencyDisplayValues ["code", "symbol", "narrowSymbol", "name"], CurrencySignValues, NumberFormatStyleValues,
+CurrencySignOption: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2444: // HasOption, Culture, GroupSeparator, DecimalSeparator, NanSymbol, StyleOption, CurrencySignOption, ResolveCurrency,
+CurrencySignValues: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:884: // CurrencyDisplayValues ["code", "symbol", "narrowSymbol", "name"], CurrencySignValues, NumberFormatStyleValues,
+DateTimeFormatRelevantKeys: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1164: // reader: ResolveCalendar, IsAvailableCalendar, IsRenderableCalendar, ReadCalendarOption, DateTimeFormatRelevantKeys,
+DateTimeFormatRelevantKeysWithoutHourCycle: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1165: // DateTimeFormatRelevantKeysWithoutHourCycle, DropHourCycleExtension, FilterUnicodeExtensionKeywords, the
+DateTimeStyleValues: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2958: // written once (DateTimeStyleValues among them), and the members row T42 names: the constructor from a CultureInfo,
+DatesBySystem: 3 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:3004: // DatesBySystem, a ConcurrentDictionary of that per-system data, followed. The library's DateTimeFormat now writes a
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:3006: // DatesBySystem is deleted.
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:3162: // NumberingSystemDecimalData (DatesBySystem's). The library reads that symbol itself now (row T37), so it returns the
+DayPeriodName: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2956: // DayPeriodStyle, WallHourMinute, DayPeriodRuleOverrides, DayPeriodWidth, DayPeriodNameForStyle, DayPeriodName,
+DayPeriodNameForStyle: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2956: // DayPeriodStyle, WallHourMinute, DayPeriodRuleOverrides, DayPeriodWidth, DayPeriodNameForStyle, DayPeriodName,
+DayPeriodRuleOverrides: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2956: // DayPeriodStyle, WallHourMinute, DayPeriodRuleOverrides, DayPeriodWidth, DayPeriodNameForStyle, DayPeriodName,
+DayPeriodStyle: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2956: // DayPeriodStyle, WallHourMinute, DayPeriodRuleOverrides, DayPeriodWidth, DayPeriodNameForStyle, DayPeriodName,
+DayPeriodWidth: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2956: // DayPeriodStyle, WallHourMinute, DayPeriodRuleOverrides, DayPeriodWidth, DayPeriodNameForStyle, DayPeriodName,
+DecimalSeparator: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2444: // HasOption, Culture, GroupSeparator, DecimalSeparator, NanSymbol, StyleOption, CurrencySignOption, ResolveCurrency,
+DefaultFractionDigits: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2443: // ComputeRangeParts, CoerceRangeOperand, CoerceRangeValue, ResolveFractionDigits, DefaultFractionDigits, ReadIntOption,
+DefaultHourCycle: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1153: //   DefaultHourCycle and Prefers11HourCycle with their tag parsers LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1166: // TwelveHourRegions table, DefaultHourCycle, Prefers11HourCycle, LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+DropHourCycleExtension: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1152: // - task 8.5: ResolveCalendar, DateTimeFormat's hc (DropHourCycleExtension, FilterUnicodeExtensionKeywords), and
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1165: // DateTimeFormatRelevantKeysWithoutHourCycle, DropHourCycleExtension, FilterUnicodeExtensionKeywords, the
+DurationToFractional: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1817: // separator for every locale), Format, DurationToFractional, DurationToFractionalString, FormatNumberParts (an inner
+DurationToFractionalString: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1817: // separator for every locale), Format, DurationToFractional, DurationToFractionalString, FormatNumberParts (an inner
+EffectiveTemporalFields: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2953: // ResolveFields, the TemporalFields flags, RequestedFields, ClassifyTemporal, CheckTemporalCalendar, EffectiveTemporalFields,
+ExactMagnitude: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2437: // Deleted with the engine's own formatter (2026-11-08): ExactRational, ExactMagnitude, TryParseExactDecimal,
+ExactRational: 4 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedNumericsSurvivorsTests.cs:368: // Revised 2026-11-08, at SJL-9.5 (task 8.4; row M1a): ExactRational is deleted; the comment read "A subnormal
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedNumericsSurvivorsTests.cs:369: // Number's exact value is its significand × 2^-1074 (ExactRational scaled it by 2^-1075), in standard notation too."
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1079: // binary value, ExactRational's, rounded where ECMA-402 rounds its decimal digits). A String the ToPrimitive gives is read
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2437: // Deleted with the engine's own formatter (2026-11-08): ExactRational, ExactMagnitude, TryParseExactDecimal,
+ExpandPattern: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1996: // the (element, literal) parts Intl.DurationFormat reads until task 8.6. Deleted (2026-11-08): BuildParts, ExpandPattern,
+FillRelativeTimePattern: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1460: // Deleted (2026-11-08): SingularUnit, PartitionRelativeTimePattern and FillRelativeTimePattern, and the locale, numbering
+FilterUnicodeExtensionKeywords: 4 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1152: // - task 8.5: ResolveCalendar, DateTimeFormat's hc (DropHourCycleExtension, FilterUnicodeExtensionKeywords), and
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1165: // DateTimeFormatRelevantKeysWithoutHourCycle, DropHourCycleExtension, FilterUnicodeExtensionKeywords, the
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1282: // Revised 2026-11-09, at SJL-9.5 (task 8.5): FilterUnicodeExtensionKeywords is deleted with DateTimeFormat's hand
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1283: // negotiation; the comment ended "Sibling of FilterUnicodeExtensionKeywords, which keeps a set instead of removing one."
+FormatCompact: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2440: // FormatCompact, FormatCompactMantissa, CompactMagnitude, GetCompactUnits, LocaleHasRegion and the CompactUnits* tables,
+FormatCompactMantissa: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2440: // FormatCompact, FormatCompactMantissa, CompactMagnitude, GetCompactUnits, LocaleHasRegion and the CompactUnits* tables,
+FormatDayPeriod: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2960: // branches), FormatDayPeriod and the locale field. Its public members stay (decision SJL-D-25, disposition (a)): the
+FormatEnglishHour: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2959: // Format(DateTimeOffset, JSObject), FormatEnglishHour (both overloads; the int one's last readers were the dayPeriod
+FormatFiniteMagnitude: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2438: // FormatFiniteMagnitude, FormatNumericToString, RoundFractionDigits, RoundSignificantDigits, RoundWithPriority, RoundFixed,
+FormatList: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.ECMAScript/Broiler.ECMAScript.Intl/ListFormatter.cs:127: /// <summary>FormatList (<c>sec-formatlist</c>): the String CreatePartsFromList's parts make.</summary>
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1997: // FormatList, ApplyPattern, GetPatterns and the type and style fields. Its public members stay (decision SJL-D-25,
+FormatMantissa: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2439: // RawPrecisionDigits, ToRawPrecision, ComputeExponent, CompareToPowerOfTen, FormatScientificEngineering, FormatMantissa,
+FormatNumberParts: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1817: // separator for every locale), Format, DurationToFractional, DurationToFractionalString, FormatNumberParts (an inner
+FormatPartsForUnits: 3 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1172: // JSIntlNumberFormat.ComputeFormatParts and JSIntlListFormat.FormatPartsForUnits are deleted with their last reader.
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1819: // JSIntlListFormat.FormatPartsForUnits, ToDurationFormatRecord and ValidateDurationArgument. Its public members stay
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2005: // DurationFormatCore, so FormatPartsForUnits, the (element, literal) parts it read, is deleted; the engine keeps
+FormatScientificEngineering: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2439: // RawPrecisionDigits, ToRawPrecision, ComputeExponent, CompareToPowerOfTen, FormatScientificEngineering, FormatMantissa,
+FormatTemporalRangeToParts: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2954: // FormatTemporalToParts, FormatTemporalRangeToParts, ResolveTemporalPattern, StyleMonthWidth, ComputeRangeParts, MapNumbering,
+FormatTemporalToParts: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2954: // FormatTemporalToParts, FormatTemporalRangeToParts, ResolveTemporalPattern, StyleMonthWidth, ComputeRangeParts, MapNumbering,
+GetCompactUnits: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2440: // FormatCompact, FormatCompactMantissa, CompactMagnitude, GetCompactUnits, LocaleHasRegion and the CompactUnits* tables,
+GetPatterns: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1997: // FormatList, ApplyPattern, GetPatterns and the type and style fields. Its public members stay (decision SJL-D-25,
+GroupSeparator: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2444: // HasOption, Culture, GroupSeparator, DecimalSeparator, NanSymbol, StyleOption, CurrencySignOption, ResolveCurrency,
+HasInvalidTransformedExtension: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue840Tests.cs:502: // structural validation. ValidateLanguageTag now also runs HasInvalidTransformedExtension,
+HasOption: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2444: // HasOption, Culture, GroupSeparator, DecimalSeparator, NanSymbol, StyleOption, CurrencySignOption, ResolveCurrency,
+IsAllAlphaSubtag: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1153: //   DefaultHourCycle and Prefers11HourCycle with their tag parsers LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1166: // TwelveHourRegions table, DefaultHourCycle, Prefers11HourCycle, LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+IsAllDigitSubtag: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1154: //   IsAllDigitSubtag (row T10);
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1167: // IsAllDigitSubtag; so are NumberingSystemDigit (the digits are the library's, from the data's numbering-system table)
+IsAvailableCalendar: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1164: // reader: ResolveCalendar, IsAvailableCalendar, IsRenderableCalendar, ReadCalendarOption, DateTimeFormatRelevantKeys,
+IsField: 1 (1 code)
+  classified: the deleted engine's Token.IsField. The one code hit is ILPack's own attribute encoder, Broiler.JS/Broiler.JavaScript/ILPack/AssemblyGenerator.Attributes.cs, a member of System.Reflection's custom attribute model of the same name
+    [code] Broiler.JS/Broiler.JavaScript/ILPack/AssemblyGenerator.Attributes.cs:136: enc.AddArgument(a.IsField, out var typeEnc, out var nameEnc, out var litEnc);
+IsRenderableCalendar: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1164: // reader: ResolveCalendar, IsAvailableCalendar, IsRenderableCalendar, ReadCalendarOption, DateTimeFormatRelevantKeys,
+IsSupportedNumberingSystem: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1220: // IsSupportedNumberingSystem and its HashSet (both deleted); a nu value is supported where the data's numbering-system
+JSIntlDateTimeFormatEngine: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2950: // Deleted (2026-11-09): JSIntlDateTimeFormatEngine.cs whole (the en-only pattern resolution, field formatting, interval
+JSIntlDefaultNumberingSystems: 6 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/DefaultNumberingSystemTests.cs:11: // Revised 2026-11-08, at SJL-9.5 (task 8.4; decision D13, row L22): JSIntlDefaultNumberingSystems is deleted and the
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/DefaultNumberingSystemTests.cs:13: // (JSIntlDefaultNumberingSystems, generated from CLDR 47.0.0), where every locale defaulted to "latn"".
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCultureLocaleData.cs:47: /// row L22) now that the CLDR 47.0.0 table JSIntlDefaultNumberingSystems is deleted. The provider answers it for a host
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1148: // - task 8.4: ResolveNumberingSystem (NumberFormat, RelativeTimeFormat, DurationFormat; with JSIntlDefaultNumberingSystems,
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2254: // "else the default numbering system NumberFormat uses, which JSIntlDefaultNumberingSystems gives until SJL-9.5's task
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2256: // "locale.record.NumberingSystem ?? JSIntlDefaultNumberingSystems.Of(locale.record.Locale)".
+JSIntlNumberFormatResolved: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:906: // SanctionedSingleUnits set and IsWellFormedUnitIdentifier, and JSIntlNumberFormatResolved (deleted 2026-11-08).
+JSIntlResolvedOptionsExtensions: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2963: // Revised 2026-11-09, at SJL-9.5 (review of task 8.5): the deletion list above also covers JSIntlResolvedOptionsExtensions
+KnownCollations: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue838Tests.cs:70: //   broader KnownCollations, including values like "big5han" that are accepted as an option
+LanguageSubtag: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1153: //   DefaultHourCycle and Prefers11HourCycle with their tag parsers LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1166: // TwelveHourRegions table, DefaultHourCycle, Prefers11HourCycle, LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+LocaleHasRegion: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2440: // FormatCompact, FormatCompactMantissa, CompactMagnitude, GetCompactUnits, LocaleHasRegion and the CompactUnits* tables,
+LookupSupportedLocales: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue693Tests.cs:11: //   instead of only the supported ones. SupportedLocales / LookupSupportedLocales
+MapDigit: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2442: // AssembleUnitParts, AppendUnitText, MapNumberingSystemDigits, MapDigit with ContiguousDigitZero and AlgorithmicDigits,
+MapNumbering: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2954: // FormatTemporalToParts, FormatTemporalRangeToParts, ResolveTemporalPattern, StyleMonthWidth, ComputeRangeParts, MapNumbering,
+MapNumberingSystemDigits: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2442: // AssembleUnitParts, AppendUnitText, MapNumberingSystemDigits, MapDigit with ContiguousDigitZero and AlgorithmicDigits,
+MatchDayPeriodRules: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2957: // ResolveDayPeriodKey, MatchDayPeriodRules, ReadTimeZoneOption, TimeClipRange), the value tables of the option reads now
+NanSymbol: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2444: // HasOption, Culture, GroupSeparator, DecimalSeparator, NanSymbol, StyleOption, CurrencySignOption, ResolveCurrency,
+NotationValues: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:885: // NotationValues, SignDisplayValues, CompactDisplayValues and UnitDisplayValues, each the same set; they are deleted.
+NumberFormatRelevantKeys: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1171: // (ResolveNumberingSystemLocale), so ResolveNumberingSystem (both overloads), NumberFormatRelevantKeys, NumberParts,
+NumberFormatStyleValues: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:884: // CurrencyDisplayValues ["code", "symbol", "narrowSymbol", "name"], CurrencySignValues, NumberFormatStyleValues,
+NumberingSystemDecimalData: 4 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/IntlDateTimeFormatLibraryTests.cs:24: //   NumberingSystemDecimalData.
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/IntlDateTimeFormatLibraryTests.cs:26: //   the moved answers, and the commit that added it called it one; but the deleted adapter NumberingSystemDecimalData gave
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:3162: // NumberingSystemDecimalData (DatesBySystem's). The library reads that symbol itself now (row T37), so it returns the
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:3505: // Deleted 2026-11-09, at SJL-9.5's stage 4: NumberingSystemDecimalData, the internal ILocaleData adapter that answered
+NumberingSystemDigit: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1167: // IsAllDigitSubtag; so are NumberingSystemDigit (the digits are the library's, from the data's numbering-system table)
+Preferred: 11 (10 code)
+  classified: the deleted private Preferred(string) of JSIntl's keyword tables. The code hits are the library's RegionHourCycles.Preferred, a record property, its readers, and the differential check's copy of Broiler.VM's time data
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DateTimeSection.cs:667: !region.Contains('-', StringComparison.Ordinal) && inner.HourCycles(region) is { } cycles ? cycles with { Allowed = cycles.Preferred } : null;
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DecoderSection.cs:216: section.Compare("hour cycles " + region, allowed + "|" + preferred, library.HourCycles(region) is { } h ? h.Allowed + "|" + h.Preferred : null);
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DecoderSection.cs:219: section.Compare("hour cycles " + region, dates.TimeData.TryGetValue(region, out var h) ? h.Allowed + "|" + h.Preferred : null, library.HourCycles(region) is { }
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/LocaleSection.cs:620: foreach (var format in (time.Preferred + " " + time.Allowed).Split(' ', StringSplitOptions.RemoveEmptyEntries))
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsDateData.cs:41: internal Dictionary<string, (string Allowed, string Preferred)> TimeData { get; } = new(StringComparer.Ordinal);
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsDateData.cs:112: return data.Preferred.Length != 0 ? data.Preferred[0] : 'H';
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.Locale.cs:467: foreach (var format in (data.Preferred + " " + data.Allowed).Split(' '))
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimeData.cs:194: cycles is { } time && time.Preferred.Length != 0 ? time.Preferred[0] : 'H';
+    [comment] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleDataAnswers.cs:122: /// <param name="Preferred">The preferred hour format, for example <c>h</c>.</param>
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleDataAnswers.cs:125: public readonly record struct RegionHourCycles(string Allowed, string Preferred);
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleInfo.cs:175: foreach (var format in (time.Preferred + " " + time.Allowed).Split(' '))
+Prefers11HourCycle: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1153: //   DefaultHourCycle and Prefers11HourCycle with their tag parsers LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1166: // TwelveHourRegions table, DefaultHourCycle, Prefers11HourCycle, LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+PrivateExtensionPreserved: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue751Tests.cs:340: // PrivateExtensionPreserved and expected "en-US-x-priv".)
+RawPrecisionDigits: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2439: // RawPrecisionDigits, ToRawPrecision, ComputeExponent, CompareToPowerOfTen, FormatScientificEngineering, FormatMantissa,
+ReadCalendarOption: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1164: // reader: ResolveCalendar, IsAvailableCalendar, IsRenderableCalendar, ReadCalendarOption, DateTimeFormatRelevantKeys,
+ReadIntOption: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2443: // ComputeRangeParts, CoerceRangeOperand, CoerceRangeValue, ResolveFractionDigits, DefaultFractionDigits, ReadIntOption,
+ReadStringOption: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2445: // CanonicalCurrencyValue, ReadStringOption and UnsignedRounding. Its public members stay (decision SJL-D-25, disposition (a)).
+ReadTimeZoneOption: 3 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2957: // ResolveDayPeriodKey, MatchDayPeriodRules, ReadTimeZoneOption, TimeClipRange), the value tables of the option reads now
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2965: // last reader was ReadTimeZoneOption. The OptionString it names was the option snapshot's instance reader; the private
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:75: // JSIntlDateTimeFormat's ReadTimeZoneOption, went with task 8.5; Intl.DateTimeFormat's timeZone option now resolves
+RegionSubtag: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1153: //   DefaultHourCycle and Prefers11HourCycle with their tag parsers LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1166: // TwelveHourRegions table, DefaultHourCycle, Prefers11HourCycle, LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+RequestedFields: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2953: // ResolveFields, the TemporalFields flags, RequestedFields, ClassifyTemporal, CheckTemporalCalendar, EffectiveTemporalFields,
+RequiresExactCalendar: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2964: // whole with its SetIfDefined, Has and RequiresExactCalendar, and, in TemporalTimeZones, ResolveFormatterTimeZone, whose
+ResolveCalendar: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1152: // - task 8.5: ResolveCalendar, DateTimeFormat's hc (DropHourCycleExtension, FilterUnicodeExtensionKeywords), and
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1164: // reader: ResolveCalendar, IsAvailableCalendar, IsRenderableCalendar, ReadCalendarOption, DateTimeFormatRelevantKeys,
+ResolveCurrency: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2444: // HasOption, Culture, GroupSeparator, DecimalSeparator, NanSymbol, StyleOption, CurrencySignOption, ResolveCurrency,
+ResolveDayPeriodKey: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2957: // ResolveDayPeriodKey, MatchDayPeriodRules, ReadTimeZoneOption, TimeClipRange), the value tables of the option reads now
+ResolveEnginePattern: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2952: // ResolveHour12, ResolveHourCycle, ResolveEnginePattern, ResolvedCalendar, ResolvedCalendarId, UnicodeKeyword,
+ResolveFormatterTimeZone: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2964: // whole with its SetIfDefined, Has and RequiresExactCalendar, and, in TemporalTimeZones, ResolveFormatterTimeZone, whose
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:74: // Deleted 2026-11-09, at SJL-9.5 (review of task 8.5, sub-area (d)): ResolveFormatterTimeZone, whose last reader,
+ResolveFractionDigits: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2443: // ComputeRangeParts, CoerceRangeOperand, CoerceRangeValue, ResolveFractionDigits, DefaultFractionDigits, ReadIntOption,
+ResolveHour12: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2952: // ResolveHour12, ResolveHourCycle, ResolveEnginePattern, ResolvedCalendar, ResolvedCalendarId, UnicodeKeyword,
+ResolveHourCycle: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2952: // ResolveHour12, ResolveHourCycle, ResolveEnginePattern, ResolvedCalendar, ResolvedCalendarId, UnicodeKeyword,
+ResolveNumberingSystem: 6 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1097: // (b) and (c), ResolveLocaleFromCanonical's keyword filter and ResolveNumberingSystem's hand negotiation).
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1148: // - task 8.4: ResolveNumberingSystem (NumberFormat, RelativeTimeFormat, DurationFormat; with JSIntlDefaultNumberingSystems,
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1158: // the data's; ResolveNumberingSystem stays, its values now the data's (decision D13), for DateTimeFormat's (task 8.5) and
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1171: // (ResolveNumberingSystemLocale), so ResolveNumberingSystem (both overloads), NumberFormatRelevantKeys, NumberParts,
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1177: // - The 2026-11-08 note's "ResolveNumberingSystem stays, its values now the data's (decision D13), for DateTimeFormat's
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1867: // by hand (ResolveNumberingSystem); the locale is now matched against the available locales by the shared negotiation.
+ResolveTemporalPattern: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2954: // FormatTemporalToParts, FormatTemporalRangeToParts, ResolveTemporalPattern, StyleMonthWidth, ComputeRangeParts, MapNumbering,
+ResolveUseGrouping: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:905: // It replaces ValidateNumberFormatOptions, SnapshotDigitOptions, ReadRoundingOptions, ResolveUseGrouping, the
+ResolvedCalendar: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/BuiltInsTests.cs:7612: // OPTION must reach ResolvedCalendar"; ResolvedCalendar was deleted with task 8.5, and the
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2952: // ResolveHour12, ResolveHourCycle, ResolveEnginePattern, ResolvedCalendar, ResolvedCalendarId, UnicodeKeyword,
+ResolvedCalendarId: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2952: // ResolveHour12, ResolveHourCycle, ResolveEnginePattern, ResolvedCalendar, ResolvedCalendarId, UnicodeKeyword,
+RoundFixed: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2438: // FormatFiniteMagnitude, FormatNumericToString, RoundFractionDigits, RoundSignificantDigits, RoundWithPriority, RoundFixed,
+RoundFractionDigits: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2438: // FormatFiniteMagnitude, FormatNumericToString, RoundFractionDigits, RoundSignificantDigits, RoundWithPriority, RoundFixed,
+RoundSignificantDigits: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2438: // FormatFiniteMagnitude, FormatNumericToString, RoundFractionDigits, RoundSignificantDigits, RoundWithPriority, RoundFixed,
+RoundWithPriority: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2438: // FormatFiniteMagnitude, FormatNumericToString, RoundFractionDigits, RoundSignificantDigits, RoundWithPriority, RoundFixed,
+SanctionedSingleUnits: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:906: // SanctionedSingleUnits set and IsWellFormedUnitIdentifier, and JSIntlNumberFormatResolved (deleted 2026-11-08).
+SetIfDefined: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2964: // whole with its SetIfDefined, Has and RequiresExactCalendar, and, in TemporalTimeZones, ResolveFormatterTimeZone, whose
+SignDisplayValues: 2 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:885: // NotationValues, SignDisplayValues, CompactDisplayValues and UnitDisplayValues, each the same set; they are deleted.
+    [comment] Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue695Tests.cs:14: //   SignDisplayValues table omitted it. So the whole
+SingularUnit: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1460: // Deleted (2026-11-08): SingularUnit, PartitionRelativeTimePattern and FillRelativeTimePattern, and the locale, numbering
+SingularUnits: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1815: // Deleted (2026-11-09): the Units, SingularUnits and style tables, the locale, numberingSystem, style, unitStyle, unitDisplay
+SnapshotDigitOptions: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:905: // It replaces ValidateNumberFormatOptions, SnapshotDigitOptions, ReadRoundingOptions, ResolveUseGrouping, the
+SplitIntoGroups: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2441: // BuildDigitParts, AppendIntegerParts, SplitIntoGroups, AssemblePlainParts, AssembleCurrencyParts, AssemblePercentParts,
+States: 1 (1 code)
+  classified: NumberingSystemDecimalData's member, declared at stage 3 and deleted at stage 4. The code hit is the English word in a library test's expected string, "United States"
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/NumbersAndTextTests.cs:317: Assert.Equal("United States", Of("en", DisplayNamesType.Region, "us"));
+StyleMonthWidth: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2954: // FormatTemporalToParts, FormatTemporalRangeToParts, ResolveTemporalPattern, StyleMonthWidth, ComputeRangeParts, MapNumbering,
+StyleOption: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2444: // HasOption, Culture, GroupSeparator, DecimalSeparator, NanSymbol, StyleOption, CurrencySignOption, ResolveCurrency,
+SupportsDayPeriod: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2955: // the dayPeriod branches and their CLDR day-period reads through CldrLocaleData, SupportsDayPeriod, UsesHourFormatting,
+TemporalFields: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2953: // ResolveFields, the TemporalFields flags, RequestedFields, ClassifyTemporal, CheckTemporalCalendar, EffectiveTemporalFields,
+TimeClipRange: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2957: // ResolveDayPeriodKey, MatchDayPeriodRules, ReadTimeZoneOption, TimeClipRange), the value tables of the option reads now
+ToDurationFormatRecord: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1819: // JSIntlListFormat.FormatPartsForUnits, ToDurationFormatRecord and ValidateDurationArgument. Its public members stay
+TryParseExactDecimal: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2437: // Deleted with the engine's own formatter (2026-11-08): ExactRational, ExactMagnitude, TryParseExactDecimal,
+TwelveHourRegions: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1166: // TwelveHourRegions table, DefaultHourCycle, Prefers11HourCycle, LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+UnicodeKeyword: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2952: // ResolveHour12, ResolveHourCycle, ResolveEnginePattern, ResolvedCalendar, ResolvedCalendarId, UnicodeKeyword,
+UnitDisplayValues: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:885: // NotationValues, SignDisplayValues, CompactDisplayValues and UnitDisplayValues, each the same set; they are deleted.
+UnsignedRounding: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2445: // CanonicalCurrencyValue, ReadStringOption and UnsignedRounding. Its public members stay (decision SJL-D-25, disposition (a)).
+UsesHourFormatting: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2955: // the dayPeriod branches and their CLDR day-period reads through CldrLocaleData, SupportsDayPeriod, UsesHourFormatting,
+ValidateCode: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2113: // with no name answers itself or undefined by the fallback option. Deleted (2026-11-08): ValidateCode and the locale and
+ValidateDurationArgument: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1819: // JSIntlListFormat.FormatPartsForUnits, ToDurationFormatRecord and ValidateDurationArgument. Its public members stay
+ValidateNumberFormatOptions: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:905: // It replaces ValidateNumberFormatOptions, SnapshotDigitOptions, ReadRoundingOptions, ResolveUseGrouping, the
+WallHourMinute: 1 (0 code)
+  classified: comments only
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2956: // DayPeriodStyle, WallHourMinute, DayPeriodRuleOverrides, DayPeriodWidth, DayPeriodNameForStyle, DayPeriodName,
+availableLocales: 20 (14 code)
+  classified: the deleted private static field of JSIntl. The code hits are the library's LocaleNegotiation parameters of that name and the generator tests' reads of CLDR's availableLocales.json
+    [comment] Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/IntlPinTests.cs:288: /// cldr-core's availableLocales.json names among its <c>full</c> locales, and every other tag one of CLDR's
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/IntlPinTests.cs:302: using var available = JsonDocument.Parse(archive["cldr-48.2.0/json/cldr-core/availableLocales.json"]);
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/IntlPinTests.cs:304: var full = available.RootElement.GetProperty("availableLocales").GetProperty("full").EnumerateArray().Select(static tag => tag.GetString()!).ToHashSet(StringCom
+    [comment] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:99: /// <param name="availableLocales">The service's available locales.</param>
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:105: public static LocaleMatch? LookupMatchingLocaleByPrefix(IReadOnlyList<string> availableLocales, IReadOnlyList<string> requestedLocales, WorkCharge? charge = nul
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:107: ArgumentNullException.ThrowIfNull(availableLocales);
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:114: if (Lookup(availableLocales, locale) is { } match)
+    [comment] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:127: /// <param name="availableLocales">The service's available locales.</param>
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:130: public static LocaleMatch? LookupMatchingLocaleByBestFit(IReadOnlyList<string> availableLocales, IReadOnlyList<string> requestedLocales, WorkCharge? charge = nu
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:131: LookupMatchingLocaleByPrefix(availableLocales, requestedLocales, charge);
+    [comment] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:137: /// <param name="availableLocales">The service's available locales.</param>
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:142: public static IReadOnlyList<string> FilterLocales(IReadOnlyList<string> availableLocales, IReadOnlyList<string> requestedLocales, WorkCharge? charge = null)
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:144: ArgumentNullException.ThrowIfNull(availableLocales);
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:153: if (Lookup(availableLocales, locale) is not null)
+    [comment] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:167: /// <param name="availableLocales">The service's available locales.</param>
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:173: public static LocaleMatch MatchLocale(IReadOnlyList<string> availableLocales, IReadOnlyList<string> requestedLocales, string defaultLocale, WorkCharge? charge =
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:176: return LookupMatchingLocaleByBestFit(availableLocales, requestedLocales, charge) ?? new LocaleMatch(defaultLocale, []);
+    [comment] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:299: /// <param name="availableLocales">The service's available locales.</param>
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:308: public static ResolvedLocale ResolveLocale(IReadOnlyList<string> availableLocales, IReadOnlyList<string> requestedLocales, string defaultLocale, IReadOnlyList<R
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleNegotiation.cs:309: ResolveLocale(MatchLocale(availableLocales, requestedLocales, defaultLocale, charge), relevantKeys, data);
+dateStyle: 91 (81 code)
+  classified: the deleted option snapshot's private field. The code hits are the option's name as a string, its key and the library's parameters and properties of that name
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DateTimeLocaleDataTests.cs: 6 (6 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DateTimeTests.cs: 19 (19 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DateTimePopulation.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DateTimeSection.cs: 2 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DifferentialCheckTests.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DateTimeFormat.Create.cs: 14 (14 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimeFormat.cs: 14 (13 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimeFormatOptions.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/IntlStatus.cs: 2 (0 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlDateTimes.cs: 4 (4 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/IntlDateTimeFormatLibraryTests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs: 10 (8 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/IntlDateTimeFormatRangeTests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue753Tests.cs: 4 (3 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue783Tests.cs: 6 (5 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue786Tests.cs: 3 (2 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/BuiltInHeavyBenchmarks.cs: 1 (1 code)
+digitOptions: 32 (31 code)
+  classified: the deleted option snapshot's private field. The code hits are locals and parameters of that name in the engine's adapter and the library
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs:130: var digitOptions = SetNumberFormatDigitOptions(engine, options, mnfdDefault, mxfdDefault, notation);
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs:147: MinimumIntegerDigits = digitOptions.MinimumIntegerDigits,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs:148: MinimumFractionDigits = digitOptions.MinimumFractionDigits,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs:149: MaximumFractionDigits = digitOptions.MaximumFractionDigits,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs:150: MinimumSignificantDigits = digitOptions.MinimumSignificantDigits,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs:151: MaximumSignificantDigits = digitOptions.MaximumSignificantDigits,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs:152: RoundingType = digitOptions.RoundingType,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs:153: ComputedRoundingPriority = digitOptions.ComputedRoundingPriority,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs:154: RoundingIncrement = digitOptions.RoundingIncrement,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs:155: RoundingMode = digitOptions.RoundingMode,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs:156: TrailingZeroDisplay = digitOptions.TrailingZeroDisplay,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.PluralRules.cs:61: var digitOptions = SetNumberFormatDigitOptions(engine, options, 0, 3, notation);
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.PluralRules.cs:67: MinimumIntegerDigits = digitOptions.MinimumIntegerDigits,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.PluralRules.cs:68: MinimumFractionDigits = digitOptions.MinimumFractionDigits,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.PluralRules.cs:69: MaximumFractionDigits = digitOptions.MaximumFractionDigits,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.PluralRules.cs:70: MinimumSignificantDigits = digitOptions.MinimumSignificantDigits,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.PluralRules.cs:71: MaximumSignificantDigits = digitOptions.MaximumSignificantDigits,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.PluralRules.cs:72: RoundingType = digitOptions.RoundingType,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.PluralRules.cs:73: ComputedRoundingPriority = digitOptions.ComputedRoundingPriority,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.PluralRules.cs:74: RoundingIncrement = digitOptions.RoundingIncrement,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.PluralRules.cs:75: RoundingMode = digitOptions.RoundingMode,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.PluralRules.cs:76: TrailingZeroDisplay = digitOptions.TrailingZeroDisplay,
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/PluralRulesRecord.cs:64: private PluralRulesRecord(ILocaleData data, string locale, PluralRuleType type, NumberNotation notation, CompactDisplay compactDisplay, DigitOptions digitOption
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/PluralRulesRecord.cs:71: DigitOptions = digitOptions;
+    [comment] Broiler.ECMAScript/Broiler.ECMAScript.Intl/PluralRulesRecord.cs:109: /// <param name="digitOptions">What SetNumberFormatDigitOptions resolved, with 0 and 3 as the fraction-digit defaults.</param>
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/PluralRulesRecord.cs:113: public static PluralRulesRecord Create(ILocaleData data, string locale, string dataLocale, PluralRuleType type, NumberNotation notation, CompactDisplay compactD
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/PluralRulesRecord.cs:118: ArgumentNullException.ThrowIfNull(digitOptions);
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl/PluralRulesRecord.cs:120: return new PluralRulesRecord(data, locale, type, notation, compactDisplay, digitOptions, PluralEngine.Create(data, language, type));
+    [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:938: var digitOptions = SetNumberFormatDigitOptions(options, DigitOptionRules.NumberFormatDefaults(numberStyle, currency, notation, data), notation);
+    [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:953: DigitOptions = digitOptions,
+    [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2375: var digitOptions = JSIntl.SetNumberFormatDigitOptions(options, new FractionDigitDefaults(0, 3), notation);
+    [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2378: type == "ordinal" ? PluralRuleType.Ordinal : PluralRuleType.Cardinal, notation, compactDisplay, digitOptions);
+fractionalDigits: 45 (32 code)
+  classified: the deleted option snapshot's private field. The code hits are DurationFormat's option name as a string, its key, and locals and parameters of that name
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/J/NumberParser.cs: 3 (3 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DifferentialCheckTests.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DurationPopulation.cs: 2 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DurationSection.cs: 6 (4 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DurationFormat.cs: 3 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DurationTests.cs: 7 (7 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DurationFormatCore.cs: 11 (6 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlDurations.cs: 5 (3 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs: 6 (4 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue721Tests.cs: 1 (1 code)
+localeTag: 10 (10 code)
+  classified: a parameter of the deleted ResolveNumberingSystem and ResolveCalendar overloads. The code hits are parameters of that name of the members the Collator keeps until SJL-17.5
+    [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1271: internal static string ReflectExtensionKeyword(string localeTag, string key, string optionValue, string extValue)
+    [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1274: return localeTag;
+    [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1276: ? localeTag
+    [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1277: : RemoveUnicodeExtensionKeyword(localeTag, key);
+    [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2680: private static CompareInfo ResolveCompareInfo(string localeTag, string collation, string usage)
+    [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2682: var bareLocale = StripUnicodeExtension(localeTag);
+    [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2786: private static bool LocaleDefaultIgnorePunctuation(string localeTag)
+    [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2788: if (string.IsNullOrEmpty(localeTag))
+    [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2790: var dash = localeTag.IndexOf('-');
+    [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2791: var language = dash < 0 ? localeTag : localeTag.Substring(0, dash);
+notation: 274 (198 code)
+  classified: the deleted snapshots' private field and JSIntlNumberFormatResolved's constructor parameter. The code hits are the option's name as a string and the library's parameters and locals of that name
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/J/JSNumber.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/J/JSNumberPrototype.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Numbers/NumberText.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Conformance/Ascii.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Conformance/LibraryRun.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Conformance/Outcome.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Conformance/TypedValue.cs: 9 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Conformance/VectorValidator.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DecimalAndPluralTests.cs: 15 (14 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DecimalPopulation.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DecimalSection.cs: 24 (22 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DifferentialCheckTests.cs: 5 (4 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/NumberTextPopulation.cs: 3 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/NumberTextSection.cs: 7 (7 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsNumberFormatter.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs: 8 (8 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.PluralRules.cs: 5 (4 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/NumbersAndTextTests.cs: 23 (22 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DigitOptions.cs: 12 (6 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/NumberFormatOptions.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/NumberFormatter.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/PluralEngine.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/PluralRulesRecord.cs: 13 (4 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.Intl.cs: 1 (0 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlNumbers.cs: 6 (6 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlValues.cs: 13 (12 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.Syntax.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/BuiltInsTests.cs: 6 (5 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue824NumberFormatGroupingTests.cs: 5 (5 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue824PluralRulesOrderTests.cs: 4 (3 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue830NumberFormatOrderTests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue830NumberFormatResolvedOrderTests.cs: 5 (3 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedNumericsSurvivorsTests.cs: 8 (4 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedRoundingTests.cs: 21 (18 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs: 16 (14 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlLocaleProviders.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Json/JSJSON.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue687Tests.cs: 9 (7 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue707Tests.cs: 10 (7 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue725Tests.cs: 5 (3 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue747Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue836IntlOptionOrderTests.cs: 3 (3 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue838Tests.cs: 8 (6 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue840Tests.cs: 5 (5 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue845Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/RegExpValidator.cs: 1 (0 code)
+numberingSystem: 190 (161 code)
+  classified: the deleted services' private fields. The code hits are the option's name as a string and parameters, locals and properties of that name
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DateTimeLocaleDataTests.cs: 5 (5 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DateTimeTests.cs: 6 (6 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DateTimeSection.cs: 3 (3 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DecimalSection.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DifferentialCheckTests.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DurationPopulation.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DurationSection.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/LocalePopulation.cs: 5 (5 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/LocaleSection.cs: 2 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/NumberTextPopulation.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/NumberTextSection.cs: 2 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsNumberFormatter.cs: 3 (3 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DateTimeFormat.Create.cs: 4 (4 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DateTimeFormat.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DurationFormat.cs: 5 (5 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.Locale.cs: 2 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs: 4 (4 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.RelativeTimeFormat.cs: 8 (7 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DurationTests.cs: 3 (3 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/LocaleIdentifierTests.cs: 3 (3 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/NumbersAndTextTests.cs: 6 (6 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimeFormat.cs: 8 (7 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimeFormatOptions.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DurationFormatCore.cs: 6 (5 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleId.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleRecord.cs: 4 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/NumberFormatter.cs: 7 (6 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/RelativeTimeFormatter.cs: 4 (3 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/SupportedValues.cs: 2 (1 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.Intl.cs: 2 (2 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlDateTimes.cs: 4 (4 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlDurations.cs: 4 (4 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlNumbers.cs: 7 (7 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlValues.cs: 3 (3 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/BuiltInsTests.cs: 6 (6 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/DefaultNumberingSystemTests.cs: 3 (3 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/IntlDurationFormatLibraryTests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue824CollatorCalendarTests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue824NumberFormatGroupingTests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue830DateTimeFormatOrderTests.cs: 5 (3 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue830NumberFormatOrderTests.cs: 9 (6 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue830NumberFormatResolvedOrderTests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedIntlLocaleTests.cs: 2 (2 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs: 31 (20 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/IntlDateTimeFormatRangeTests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue753Tests.cs: 6 (6 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue836DateTimeFormatOptionsTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue836IntlOptionOrderTests.cs: 2 (2 code)
+own: 1866 (128 code)
+  classified: NumberingSystemDecimalData's field, declared at stage 3 and deleted at stage 4. The hits are the English word, in comments and strings, and other members' locals of that name
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/DateTests.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/NumericsTests.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/DateArms.J.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/DateArms.cs: 4 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/J/JSDateParse.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/V/JsRealmDate.cs: 4 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/J/JSNumber.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/J/JSNumberPrototype.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/J/NumberParser.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/Float16.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/IntegerHelpers.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/JSMath.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/JSValue.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/TemporalRounding.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/TypedArrays.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/NumericsPopulation.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/V/JsBigInt.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/V/JsBinary.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/V/JsNumberFormat.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/V/JsNumberFormatter.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/V/JsRealmArray.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/V/JsRealmBinary.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/V/JsRealmMath.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/V/JsValue.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Population.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSJsonText.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSStringText.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSUInt8ArrayText.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/UriHelper.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/V/JsJsonModule.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/V/JsRealmJson.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/V/JsRealmText.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/V/JsNumberFormat.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/V/JsParser.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/V/JsRealmNumber.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/CalendarTestSupport.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/DurationApiTests.cs: 4 (3 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/TemporalFormatTests.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/TextTests.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/TimeZoneTests.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Failure.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Limits.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Numbers/BigIntPolicy.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Numbers/BigIntText.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Numbers/Fdlibm.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Numbers/Float16.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Numbers/NumberText.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Numbers/NumericKeys.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Numbers/NumericLiterals.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Numbers/RadixDigits.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Numbers/StrWhiteSpace.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarId.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarStatus.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/GregorianCalendarSystem.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Calendars/TemporalCalendars.cs: 6 (4 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/IsoArithmetic.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/TemporalOptionRules.Durations.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/TemporalOptionRules.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/TemporalRecords.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Text/StringPadding.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Time/EcmaDateParser.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Time/EcmaTime.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Time/LocalTime.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Time/TimeZoneDatabase.cs: 2 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/SharedRuleTests.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/SharedRules.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/Witness.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/LibraryRunTests.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/SyntaxAdapterTests.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Conformance/LibraryRun.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Conformance/VectorCorpus.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Conformance/VectorRun.cs: 2 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Conformance/VectorValidator.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/CorrespondenceTests.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/DeterminismTests.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/EarlyErrorTests.cs: 5 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/LimitsTests.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/ParserTests.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs: 6 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/IRegularExpressionValidator.cs: 9 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseGoal.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseLimits.cs: 7 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseSwitches.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Parser.Expressions.cs: 6 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Parser.Functions.cs: 4 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Parser.Modules.cs: 4 (4 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Parser.cs: 6 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ProposalFlags.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SyntaxDiagnostic.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SyntaxParser.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SyntaxTree.Expressions.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SyntaxTree.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Token.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/TokenKind.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Tokenizer.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/GeneratedTableTests.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/IntlCompletenessTests.cs: 8 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/IntlPinTests.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/IntlTableSourceTests.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/PinTests.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/TableSourceTests.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/TzdbCompilerTests.cs: 2 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Collation.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Dates.cs: 6 (4 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Intl/CldrUcd.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Intl/IntlGeneratorOptions.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Intl/IntlLocaleList.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Intl/IntlTableSource.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Intl/IntlUcdPin.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Time/CalendarPin.cs: 5 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Time/CalendarTableSource.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Time/CldrPin.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Time/TableSourceOptions.cs: 4 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Time/TzdbCompiler.cs: 4 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Time/TzdbPin.cs: 5 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Time/TzdbTableSource.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/CompositeLocaleDataTests.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/CurrencyNamesAndGroupingTests.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DateTimeLocaleDataTests.cs: 9 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DateTimeTests.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DecimalAndPluralTests.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/CollationSection.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DateTimePopulation.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DateTimeSection.cs: 8 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DecimalPopulation.cs: 6 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DecimalSection.cs: 11 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DecoderSection.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DifferentialCheck.cs: 6 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DifferentialCheckTests.cs: 7 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DurationPopulation.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DurationSection.cs: 4 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/LocaleSection.cs: 4 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/NumberTextPopulation.cs: 5 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/NumberTextSection.cs: 10 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsCollationData.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsCollator.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsDateIntervalFormat.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsIntlData.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsNumberData.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsNumberFormatter.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DateTimeFormat.Create.cs: 3 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DisplayNames.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DurationFormat.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.RelativeTimeFormat.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsZoneNames.cs: 5 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/VmEngine.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/NumbersAndTextTests.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/TableLocaleDataTests.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/Collation/UcaCollationData.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/Collation/UcaCollator.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateIntervalFormatter.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimeFormat.cs: 10 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimeFormatOptions.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimeFormatter.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DigitOptions.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DisplayNamesCore.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DurationFormatCore.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/IIntlDataSet.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/ILocaleData.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/IntlDecimal.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/IntlStatus.cs: 7 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleDataAnswers.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleInfo.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/LocaleTag.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/NumberFormatter.cs: 12 (4 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/PluralRulesRecord.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/RelativeTimeFormatter.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/TableLocaleData.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/ZoneNamer.cs: 5 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Probe/Limits.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Probe/Program.cs: 3 (0 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.Date.cs: 3 (0 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.Intl.cs: 1 (0 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlDateTimes.cs: 2 (0 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlDurations.cs: 2 (0 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.Temporal.cs: 1 (0 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.Text.cs: 1 (0 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.TimeZones.cs: 3 (0 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.cs: 1 (0 code)
+    Broiler.ECMAScript/runners/IntlDataHome.cs: 2 (0 code)
+    Broiler.ECMAScript/runners/SyntaxDump.cs: 3 (0 code)
+    Broiler.ECMAScript/runners/TemporalAdapter.Methods.cs: 13 (13 code)
+    Broiler.ECMAScript/runners/TimeDataHome.cs: 2 (0 code)
+    Broiler.ECMAScript/runners/UnicodeDataHome.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Architecture.Tests/ParserArchitectureTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Architecture.Tests/ParserFixtures.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Architecture.Tests/Subject.cs: 2 (1 code)
+    Broiler.JS/Broiler.JavaScript.Architecture.Tests/TreeText.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Architecture.Tests/TypeUniverse.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Ast.Tests/JSUnicodeTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Ast.Tests/UnicodeTableRegenerationTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Ast/AstExpressionExtensions.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Ast/AstMapVisitor.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Ast/AwaitYieldParameterDetector.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Ast/Expressions/AstFunctionExpression.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Ast/Statements/AstExportStatement.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Ast/Unicode/JSUnicode.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Ast/Unicode/JSUnicodePropertyNames.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Ast/Unicode/JSUnicodeTables.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/AsyncResumeAfterRejectionTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/BuiltInsTests.cs: 22 (5 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/DateTimeFormatEraWithoutYearTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/DateTimeFormatMinuteSecondPartsTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/DateTimeFormatMinuteSecondTimeZoneTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/EvalEventDispatchTests.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/HostCultureLocaleDataTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/IntlDataLocalePluralRulesTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/IntlDateTimeFormatLibraryTests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/IntlDurationFormatLibraryTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/IntrinsicPrototypeTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/InvariantGlobalizationChild.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue808ArrayFromStringIteratorTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue808BindNonNumberLengthTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue808IteratorHelperBrandCheckTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue808ObjectLiteralProtoAndAccessorTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue810ArrayCopyMethodsBypassSettersTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue810ReplaceAllThisToStringTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue818DurationFloat64Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue824RelatedYearZhTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue824RelativeToLimitsTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue826PlainYearMonthExtremesTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue828ProxySetReceiverTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue830WithProxyEnvTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue830ZipKeyedTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/JobQueueSettlementTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/JsealAuditEngineFixesTests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/LegacyCallerArgumentsTests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/ReflectSetReceiverAttributesTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedDateAlgorithmTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedIntlDataTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedNumericsSurvivorsTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedRoundingTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedUnicodeTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/StrictModeFlowTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SuppressedErrorPrototypeTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/TemporalZonedDateTimeDifferenceTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Array/JSArray.cs: 11 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Array/JSArrayPrototype.Iteration.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Array/JSArrayPrototype.Search.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Array/JSArrayPrototype.Utility.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Array/JSArrayStatic.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/JSArrayBuffer.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/JSTypedArray.cs: 8 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/JSTypedArray.prototype.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/BuiltInsAssemblyInitializer.cs: 17 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Class/JSClass.cs: 13 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDateStatic.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/DefaultBuiltInRegistry.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Disposable/JSDisposableStack.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Disposable/JSSuppressedError.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Error/JSError.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Function/JSAsyncFunction.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Function/JSFunction.cs: 22 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Function/JSGeneratorFunctionV2.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Generator/JSGenerator.cs: 12 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs: 23 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlData.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlLocaleProviders.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intrinsics.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Iterator/JSIteratorObject.cs: 7 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Json/JSJSON.cs: 9 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSReflect.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Promise/JSPromise.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Promise/JSPromiseRejectionTracker.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Promise/JSPromiseStatic.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Proxy/JSProxy.cs: 8 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.Broiler.cs: 6 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs: 20 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExpPrototype.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/RegexTiering.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/RegexTieringDiagnostics.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/ShadowRealm/JSShadowRealm.cs: 6 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSString.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Pattern.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Symbol/JSSymbol.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalRoundingOptions.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Calendars.cs: 6 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Durations.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Grammar.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/AnonymousProgramDumpTests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/AnonymousProgramNamingTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/ArithmeticOperandCensusTests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/BlockScopedVarNumericLocalTests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/CaptureLayoutTests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/CapturedNumericLocalTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/CapturedScopeCallbackTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/CompilerTests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/DeclarationDenseSourceTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/DeeplyNestedSourceTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/DeferralPopulationTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/DeferredBodyReentryTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/DeferredCompilationTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/DirectEvalClosureScopeTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/ForLoopPreparationTests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/FreeNameScanTests.cs: 10 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/ImportedOuterNumericPopulationTests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/InMethodFallbackTests.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/IndexedNullishReadTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/LexicalNumericLocalTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/NullishAccessMessageTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/NumberBoxingConversionSiteTests.cs: 6 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/NumericDropCauseTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/NumericLocalDefeatTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/NumericLocalWriteVisibilityTests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/NumericSpeculationTests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/NumericTreeOrderTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/NumericUpdateReuseTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/Phase3CompilerSpecializationTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/PropertyShapeCacheTests.cs: 21 (18 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/PropertyStoreCacheTests.cs: 28 (16 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/RecompileContractTests.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/RelayRewriteTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/RestartContractTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/ScalarParameterTests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/ShapeOnlyPropertyStorageTests.cs: 4 (4 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/SpecializingTierTests.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/SpeculativeNumericReadPathTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/StrictModeMirrorTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/UndefinedPropertyReadMessageTests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/UpdateTargetCensusTests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/AnonymousProgramDump.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/CompilerSpecializationDiagnostics.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateClass.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateFunction.cs: 29 (3 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateMemberExpression.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.DeferredBody.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FreeNameScan.cs: 20 (5 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Declarations/NumericLocalAnalysis.cs: 20 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/DeferrableFunctions.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/DirectEvalSupport.cs: 9 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/ElementReadNumericLocals.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.NumericSpeculation.cs: 11 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitAssignmentExpression.cs: 6 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs: 13 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitIdentifier.cs: 15 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMemberExpression.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMeta.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitObjectLiteral.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTaggedTemplateExpression.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitUnaryExpression.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/FastCompiler.cs: 18 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs: 15 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/ImportedOuterNumerics.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Scope/FastFunctionScope.cs: 7 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Scope/LoopScope.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.Module.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitBlock.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitDoWhileStatement.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitFor.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitIfStatement.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitLabeledStatement.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitProgram.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitSwitchStatement.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitTryStatement.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitWhileStatement.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitWithStatement.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/SyntaxValidation.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/TieringRecompileContract.cs: 6 (0 code)
+    Broiler.JS/Broiler.JavaScript.Core.Tests/SharedCodeCacheConcurrencyTests.cs: 7 (0 code)
+    Broiler.JS/Broiler.JavaScript.Debugger/V8Runtime.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Engine/ArgumentsCoreExtensions.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Engine/CallFrames.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Engine/Core/ObjectClassFactory.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Engine/JSContext.cs: 35 (0 code)
+    Broiler.JS/Broiler.JavaScript.Engine/JSContextOptions.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Core/ILTryBlock.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/FinallyBranchScanner.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/ILCodeGenerator.VisitAssign.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/ILCodeGenerator.VisitParameter.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Runtime/DeferredMethod.cs: 6 (0 code)
+    Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Runtime/MethodRepository.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Expressions/CompilationStack.cs: 7 (0 code)
+    Broiler.JS/Broiler.JavaScript.Expressions/DeferredCaptureLayout.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Expressions/LambdaRewriter.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Expressions/Runtime/ClosureRewriteDiagnostics.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Expressions/StackSegment.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Globals/JSGlobal.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/AsyncGeneratorExclusionTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/CallFrameStackTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/ClassFieldInitializerEvalSuperTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/ConstructNonConstructorMessageTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/EngineErrorOriginFrameTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/ExceptionStackTraceReadTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/ForAwaitUnsettledResultTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/ForLoopTemporaryEvalTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/GeneratorCatchFinallyTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/GeneratorJumpFinallyTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/GeneratorReturnCompletionTests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/GlobalReplaceStreamingTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/IntlDateTimeFormatRangeTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue623Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue634Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue640Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue650Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue661Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue671Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue675Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue683Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue691Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue693Tests.cs: 15 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue695Tests.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue697Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue701Tests.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue703Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue709Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue711Tests.cs: 6 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue715FollowupTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue715Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue717Tests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue719Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue721Tests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue723Tests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue725Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue737Tests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue739Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue741Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue745Tests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue747Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue749Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue753Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue755Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue761Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue765Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue781Tests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue783Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue786Tests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue788Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue794Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue812Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue814NamedFunctionExpressionEvalTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue814Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue826Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue828GlobalLexicalEvalTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue834Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue836ArrayLengthKeyOrderTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue836DateTimeFormatTimeZoneTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue836Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue838Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue840Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue845FunctionTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue847Tests.cs: 6 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue849Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue859Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue914ArgumentsParamVarEnvTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue914ProxyGlobalReceiverTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue914Tests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue921AutoAccessorTests.cs: 2 (2 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue921Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue944ForLetPerIterationCopyTests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue966InertEvalTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue966PropertyEscapeShapeTests.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue968Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue971Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue975Tests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/LegacyRegExpStaticsAllocationTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/M8ValidationTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/MinifiedScriptParsingTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/MinifiedSourceTests.cs: 9 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/SessionIsolationTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/SharedTemporalAdapterTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/SuspendedCallArgumentTests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/TaggedTemplateMemberTagTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/TopLevelAwaitCodeCacheTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/TopLevelAwaitEvalCodeTests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Track1LanguageTests.cs: 11 (0 code)
+    Broiler.JS/Broiler.JavaScript.JSClassGenerator/ClassGenerator.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.JSClassGenerator/JSClassGenerator.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.LinqExpressions/LinqExpressions/CallStackItemBuilder.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.LinqExpressions/LinqExpressions/GeneratorsV2/GeneratorRewriter.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.LinqExpressions/LinqExpressions/GeneratorsV2/GeneratorTypes.cs: 7 (0 code)
+    Broiler.JS/Broiler.JavaScript.LinqExpressions/LinqExpressions/JSNumberBuilder.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.LinqExpressions/LinqExpressions/LexicalScopeBuilder.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.LinqExpressions/LinqExpressionsAssemblyInitializer.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules.Tests/EngineModuleImportBindingTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules.Tests/ExportClauseTests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules.Tests/ImportAttributeEnforcementTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules.Tests/ImportMetaTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules.Tests/JsonModuleTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules.Tests/ModuleAttributeClauseTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules.Tests/ModuleDuplicateBindingTests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules.Tests/ModuleImportImmutabilityTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules.Tests/ModuleScopeIsolationTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules.Tests/ModuleSemanticsTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules.Tests/ModulesTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules/JSArguments.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules/JSModule.Record.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules/JSModule.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs: 13 (0 code)
+    Broiler.JS/Broiler.JavaScript.Modules/JSModuleNamespace.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser.Tests/CoverParenthesizedExpressionTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser.Tests/ExplicitParserOptionsTests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser.Tests/ParserTests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser.Tests/SharedSyntaxBridgeTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser.Tests/TruncatedInputAndLineTerminatorTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeRegularExpressions.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTokens.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.AssignmentLeftPattern.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.Class.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.Export.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.Expression.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.ForStatement.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.Function.cs: 6 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.Identifier.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.Import.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.NextExpression.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.ObjectLiteral.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.PropertyName.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.SingleExpression.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.SingleMemberExpression.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.SinglePostfixPrefixExpression.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.Statement.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.Switch.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.WhileStatement.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParserGoal.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParserOptions.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs: 7 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastScopeItem.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Portable.Tests/BytecodeClosureIsEmitFreeTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime.Tests/AsyncPumpTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/ArithmeticOperandDiagnostics.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/AsyncIterationStep.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/CallPathDiagnostics.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/CoreScript.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/DictionaryCodeCache.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/EvalShadowVariable.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/FunctionTiering.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/IAsyncDelegateIterator.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/IElementEnumerator.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/IJSCompiler.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/IJSFunction.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/IJSJobPump.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/IntKeyEnumerator.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSCode.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSException.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSIterator.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSModuleLinkage.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSObject.PropertyStorage.cs: 47 (9 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSObject.ProtoChain.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSObject.ShapeStorage.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSObject.cs: 20 (7 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSObjectBuilder.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSObjectPrototype.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSObjectStatic.Construction.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSObjectStatic.Introspection.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSPrimitive.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSPrimitiveObject.cs: 8 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/JSVariable.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/KeyEnumerator.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/NullishAccess.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/NumberBoxingConversionSite.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/NumericLocalLeafReadCensus.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/ObjectShape.cs: 27 (3 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/ObjectStatus.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/SpecializingTier.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/Speculation.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/TypeFeedback.cs: 5 (0 code)
+    Broiler.JS/Broiler.JavaScript.Storage.Tests/StorageTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Storage/JSErrorFactory.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Storage/KeyStrings.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Storage/PropertySequence.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs: 3 (0 code)
+    Broiler.JS/Broiler.JavaScript.Vectors.Tests/Home.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Vectors.Tests/Runners/BroilerJsEngine.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Vectors.Tests/Runners/BroilerJsRealm.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Vectors.Tests/Runners/CorpusRun.cs: 8 (0 code)
+    Broiler.JS/Broiler.JavaScript/AssemblyCodeCache.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript/Program.cs: 7 (0 code)
+    Broiler.JS/Broiler.JavaScript/Utils/PackageManager.cs: 1 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/CallEntryCostMetrics.cs: 6 (1 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/CompilePhaseMetrics.cs: 8 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/CompileProfileMetrics.cs: 1 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/CompileScalingMetrics.cs: 1 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/DeferPopulationMetrics.cs: 4 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/DeferredCellCostMetrics.cs: 2 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/ElementAllocationMetrics.cs: 2 (1 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/GenericArithmeticCostMetrics.cs: 3 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/HotPathProbeBenchmarks.cs: 2 (2 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/InlineCacheMetrics.cs: 1 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/LegacyFrameShapeMetrics.cs: 1 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/LocalAllocationMetrics.cs: 9 (4 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/ObjectAllocationMetrics.cs: 1 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/PropertyMapDistributionMetrics.cs: 1 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/RegexCallEnvelopeMetrics.cs: 3 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/RegexProfileMetrics.cs: 5 (1 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/RegexTieringMetrics.cs: 4 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/SpecializingTierMetrics.cs: 11 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/TypeFeedbackMetrics.cs: 1 (0 code)
+    docs/evidence/sjl-12-001/tools/parse-corpus/CanonicalDump.cs: 3 (0 code)
+    docs/evidence/sjl-12-001/tools/parse-corpus/Program.cs: 4 (0 code)
+    docs/evidence/sjl-14-001/tools/side-by-side/Program.cs: 1 (0 code)
+style: 481 (317 code)
+  classified: the deleted services' private fields. The code hits are the option's name as a string and parameters, locals and properties of that name
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Parser.Statements.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SyntaxDiagnostic.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.Dates.cs: 12 (12 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/CurrencyNamesAndGroupingTests.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DateTimeTests.cs: 2 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DateTimePopulation.cs: 2 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DecimalPopulation.cs: 3 (3 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DecimalSection.cs: 6 (6 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DurationPopulation.cs: 2 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DurationSection.cs: 7 (7 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/NumberTextPopulation.cs: 16 (15 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/NumberTextSection.cs: 14 (14 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsDatePatternGenerator.cs: 6 (6 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsNumberFormatter.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DateTimeFormat.Create.cs: 5 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DateTimeFormat.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DisplayNames.cs: 2 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DurationFormat.cs: 24 (21 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.ListFormat.cs: 9 (5 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs: 13 (13 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.RelativeTimeFormat.cs: 4 (4 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DurationTests.cs: 14 (11 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/NumbersAndTextTests.cs: 7 (7 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimeFormat.cs: 8 (3 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimePatternGenerator.cs: 6 (6 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DigitOptions.cs: 6 (3 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DisplayNamesCore.cs: 6 (5 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DurationFormatCore.cs: 28 (14 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/IntlStatus.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/ListFormatter.cs: 12 (5 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/NumberFormatOptions.cs: 5 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/NumberFormatter.cs: 12 (3 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/RelativeTimeFormatter.cs: 5 (4 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlDurations.cs: 9 (7 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlNumbers.cs: 12 (12 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlValues.cs: 4 (4 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/BuiltInsTests.cs: 12 (12 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/IntlDataLocalePluralRulesTests.cs: 4 (3 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/IntlDurationFormatLibraryTests.cs: 4 (3 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue818EraOptionTests.cs: 2 (2 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue818NumberFormatRangeTests.cs: 3 (3 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue824NumberFormatGroupingTests.cs: 2 (2 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue824SupportedValuesOfTests.cs: 2 (2 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue824ToLocaleStringTests.cs: 4 (4 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue830NumberFormatOrderTests.cs: 5 (4 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue830NumberFormatResolvedOrderTests.cs: 3 (3 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue871Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue914NumberRangeTests.cs: 8 (8 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDatePrototype.Formatters.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs: 41 (29 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/CompilerTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler.Tests/ForLoopPreparationTests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/ForLoopPreparation.cs: 9 (0 code)
+    Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitFor.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Expressions/StackSegment.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue625Tests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue650PromiseCombinatorTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue661Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue669Tests.cs: 5 (5 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue685Tests.cs: 3 (3 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue687Tests.cs: 3 (2 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue705Tests.cs: 6 (3 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue721Tests.cs: 7 (5 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue723Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue725Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue727Tests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue765Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue783Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue786Tests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue812Tests.cs: 4 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue814Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue814UsingSyntaxEdgeCaseTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue838Tests.cs: 35 (24 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue845ClusterTests3.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue847Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue849Tests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue857Tests.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Track1LanguageTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.LinqExpressions/LinqExpressions/JSValueBuilder.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser.Tests/ParserTests.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.ForStatement.cs: 9 (0 code)
+    Broiler.JS/Broiler.JavaScript.Parser/FastParser.VariableDeclaration.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/IJSCompiler.cs: 2 (0 code)
+    Broiler.JS/Broiler.JavaScript.Runtime/NullishAccess.cs: 1 (0 code)
+    Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/BuiltInHeavyBenchmarks.cs: 1 (1 code)
+timeStyle: 74 (63 code)
+  classified: the deleted option snapshot's private field. The code hits are the option's name as a string, its key and the library's parameters and properties of that name
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DateTimeLocaleDataTests.cs: 4 (4 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DateTimeTests.cs: 11 (11 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DateTimePopulation.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DateTimeSection.cs: 2 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DateTimeFormat.Create.cs: 11 (11 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimeFormat.cs: 11 (10 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimeFormatOptions.cs: 2 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/IntlStatus.cs: 2 (0 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlDateTimes.cs: 4 (4 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/IntlDateTimeFormatLibraryTests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs: 10 (8 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/IntlDateTimeFormatRangeTests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue711Tests.cs: 2 (1 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue753Tests.cs: 2 (1 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue783Tests.cs: 7 (6 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue786Tests.cs: 3 (2 code)
+timeZoneName: 92 (71 code)
+  classified: a parameter of the deleted engine's Fields constructors. The code hits are the option's name as a string, its key, and other parameters and locals of that name
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/TemporalDatasetTests.cs: 2 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/TemporalFormatTests.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/TemporalFormat.cs: 1 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Temporal/TemporalOptionRules.cs: 3 (0 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Generation/Intl/CldrTableGenerator.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DateTimeTests.cs: 2 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DateTimePopulation.cs: 3 (3 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DateTimeSection.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DifferentialCheckTests.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/NumberTextPopulation.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsDateTimeFormatter.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DateTimeFormat.Create.cs: 7 (7 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DisplayNames.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimeFormat.cs: 6 (6 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimeFormatOptions.cs: 4 (3 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DateTimeFormatter.cs: 2 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl/DisplayNamesCore.cs: 1 (1 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlDateTimes.cs: 2 (2 code)
+    Broiler.ECMAScript/runners/TemporalAdapter.Methods.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/BuiltInsTests.cs: 4 (4 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/DateTimeFormatMinuteSecondPartsTests.cs: 2 (2 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/TemporalZonedDateTimeToStringOptionsTests.cs: 5 (4 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs: 3 (2 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs: 1 (0 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalAdapter.Serialization.cs: 4 (2 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/IntlDateTimeFormatRangeTests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue745Tests.cs: 2 (1 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue781Tests.cs: 4 (2 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue786Tests.cs: 19 (15 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue836DateTimeFormatOptionsTests.cs: 3 (2 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue836TemporalOptionsReadTests.cs: 3 (2 code)
+unitDisplay: 42 (36 code)
+  classified: the deleted DurationFormat field and JSIntlNumberFormatResolved's constructor parameter. The code hits are the option's name as a string and locals and parameters of that name
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/DecimalSection.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/NumberTextPopulation.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/NumberTextSection.cs: 4 (4 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.DurationFormat.cs: 1 (1 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsRealm.NumberFormat.DigitOptions.cs: 2 (2 code)
+    Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/NumbersAndTextTests.cs: 7 (7 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlNumbers.cs: 3 (3 code)
+    Broiler.ECMAScript/runners/AlgorithmsLibrary.IntlValues.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue830NumberFormatOrderTests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Issue830NumberFormatResolvedOrderTests.cs: 4 (2 code)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs: 5 (4 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue687Tests.cs: 6 (4 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue705Tests.cs: 1 (1 code)
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue838Tests.cs: 5 (4 code)
+unitStyle: 3 (2 code)
+  classified: the deleted DurationFormat field. The code hits are locals of that name
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DurationTests.cs:29: DurationUnitStyle? unitStyle = given.TryGetValue(name, out var s) ? s switch
+    [code] Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/DurationTests.cs:38: var status = DurationFormatCore.GetDurationUnitOptions(unit, unitStyle, display, style, previous, twoDigitHours, out var options);
+    [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1815: // Deleted (2026-11-09): the Units, SingularUnits and style tables, the locale, numberingSystem, style, unitStyle, unitDisplay
+
+## Names with no hit (161)
+ApplyLocaleOptions ApplySubtagAliases ArithmeticCalendars BooleanUnicodeKeywordKeys CalendarValueAliases CanonicalizeBaseName CanonicalizeKeywordValue CanonicalizeLanguageTagCase CanonicalizeMainTagVariants CanonicalizeTransformedExtension CanonicalizeTransformedPayload CanonicalizeUnicodeKeywordValues Casing_does_not_read_the_host_culture CollationStrengthValueAliases CollationValueAliases CompactUnitsDe CompactUnitsDeLong CompactUnitsEn CompactUnitsEnIn CompactUnitsEnInLong CompactUnitsEnLong CompactUnitsJa CompactUnitsKo CompactUnitsZhHans CompactUnitsZhHant ComplexLanguageAliases ConvertToCalendar CyclicYearCalendars DateDefaults DateStyles DateTimeComponentKeys DayKey DayPeriodKey DefaultNumericDate EraCalendars EraCode EraKey EraName FieldLetterFor FieldSignificance FindFieldValue FirstTimeFieldIndex FormatField FormatIntervalPattern FormatTimeZoneName GetBaseName GetLanguage GetRegion GetScript GetUnicodeKeyword GetVariants GmtOffset GreatestDifference HasDateFieldBefore HasDuplicateSingletonSubtag HasDuplicateVariantSubtag HasInvalidUnicodeExtensionKey HebrewMonthName HostCultureLocales HostLocales HourKey IntervalPatterns InvalidGrandfatheredLanguageTags IsAffix IsAllAlpha IsAllAlphaNumeric IsAllDigit IsAllDigitTag IsDateFieldLetter IsDaylight IsLanguageSubtag IsLocaleAvailable IsRegionSubtag IsScriptSubtag IsSign IsSupportedCalendar IsTKey IsTValue IsTimeFieldLetter IsTimeFieldType IsVariantSubtag IslamicCalendars IslamicMonthShort IslamicMonthWide JapaneseDate JoinCore LanguageVariantAliases MeasurementSystemValueAliases MinuteKey MonthLabel MonthNarrow MonthShort MonthValues MonthWide MultiRegionAliases NameForEquivalentZone NarrowShortLong NeedsCalendarConversion NextFieldSource NumberingSystemRelevantKeys NumericDateLayout NumericRegionAliases NumericTwoDigit Overrides PartsEqual PartsToString PreferredCalendarComesFirst PreferredNumberingSystemComesFirst PrevFieldSource RangeSeparator ReadFirstDayOfWeekOption ReadHostLocales ReadTypeOption RegularGrandfatheredMappings RemoveExtensionSequences ReplaceYearField ResolveEraDisplay ResolvePattern RightToLeftLanguages RightToLeftScripts SanctionedRoundingIncrements SecondKey SelectRegionByLikelySubtags SetKeyword SexagenaryBranches SexagenaryStems SexagenaryYearName SignLanguageAliases SimpleLanguageAliases SimpleRegionAliases SingleVariantAliases SkeletonDistance SortExtensions SovietUnionSuccessors SpliceSubtag SplitCore StructurallyValidLanguageTagPattern SubSecondStyles SubdivisionValueAliases SundayFirstRegions SupplementaryFields SupportedNumberingSystems TemporalMeta TimeDefaults TimeStyles TimeZoneNameKey TimeZoneNameValues TimezoneValueAliases Titlecase ToZone UnicodeKeywordTypePattern ValidateLocaleOptions WeekdayKey WeekdayNarrow WeekdayShort WeekdayToNumber WeekdayToString WeekdayWide YearKey dateDefaultsApplied twoPow32
