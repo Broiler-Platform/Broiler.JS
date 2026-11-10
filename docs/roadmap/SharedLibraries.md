@@ -1912,7 +1912,10 @@ owner's choice of 2026-11-10, "Fold into #1110"); its first parent, `88417996`, 
 - **Part D**, the providers under invariant globalization: MET as written; no line is an `abort:` line and
   `default-locale-is-supported.js` passes after in both variants.
 - **The home** at the after commit: the shared folder's tests pass, the data home's and the Intl library's included,
-  and the Native AOT probe runs the corpus with no failure; the pristine consumer of the engine set runs, its Intl
+  but for one SJL-13 frontend test that reads a bundle folder the archive left out and that passes with it restored
+  (the bundle's README), and the Native AOT probe runs the corpus with no failure *(revised 2026-11-10, at review;
+  read "the shared folder's tests pass, the data home's and the Intl library's included, and the Native AOT probe runs
+  the corpus with no failure")*; the pristine consumer of the engine set runs, its Intl
   checks hold, and the shared Intl package carries no table's bytes, which this engine's `BuiltIns` package embeds.
 
 Each part met only as revised is weaker evidence than a part met as written, as each revision says. Not done here, and
