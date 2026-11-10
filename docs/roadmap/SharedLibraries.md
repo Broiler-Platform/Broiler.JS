@@ -1702,6 +1702,18 @@ This repository's part of it:
   its next re-pin, which also records the archived file and the rulings in its JSD-0082. The design's dated note of 2026-11-09
   on sub-area (d), [`Broiler.ECMAScript/docs/intl/design.md`](../../Broiler.ECMAScript/docs/intl/design.md), has the
   readings.)*
+  *(Noted 2026-11-10, on the owner's decisions of 2026-11-10, "Dated part C revision" and "Accept, follows CLDR", each asked
+  and answered after SJL-9.5's stage 4 local pre-check, which is not evidence. Row L19's move reaches one line of part C of
+  bundle `sjl-9-001`'s rule: the `locales` program's `11 fr-CA hourCycles`, which this engine now answers `[h23,h12]`, from
+  CLDR 48.2.0's time data for `fr-CA`, where the line's expected answer, Broiler.VM's as the pinned copies hold it, is
+  `[h12,h23]`. The line is in a `spec` group, and no class of part C admitted it. The rule is revised for it, before
+  SJL-9.5's judged runs, by the dated file
+  [`docs/evidence/sjl-9-001/decision-rule-revised-2026-11-10.md`](../evidence/sjl-9-001/decision-rule-revised-2026-11-10.md),
+  which admits that one line, by name, as class L19; the alternative not taken was "Keep old answer". The expected answer
+  stays the pinned copy's after Broiler.VM's re-pin moves its own answer the same way, so the class still admits the line
+  then. Part D compares no line with its expected answer, and is not revised. `fa`'s default `persian` calendar writes its
+  minute and second as CLDR's `fa` data does, `۳:۰۵` with `minute` resolved `"numeric"` (rows T16 and T13). SJL-9.5's
+  branch pins that answer in a unit test; no line of parts C and D reads it, so it needs no rule text.)*
 - **What stays as it is.** The rows that are the same in both engines; and the engine policies, which the library's
   parameters keep this engine's: the default locale and zone, the available locales, the Collator's list, the meter
   and this engine's extensions (rows L28, L33, L40, L43, M9, N16, T3, T11, T40 and U19). Row L35 is the one engine
