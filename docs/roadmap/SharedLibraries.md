@@ -1685,7 +1685,9 @@ This repository's part of it:
   record, since no task answers it, as revision 35 does for a host that lacks a locale; on the ICU 74.2 host the
   corpus is classified on, which lists neither locale, this engine answers their expected value. No expected value
   and no Broiler.VM expectation changes. The open point's other locales, `ab`, `en-Shaw`, `en-Shaw-GB` and `jbo`,
-  are not answered from their own data on either host of that run's engine vectors jobs.)*
+  are not answered from their own data on either host of that run's engine vectors jobs. The same revision restates,
+  in the same form, the fields of the 14 `aa` and `pap` vectors already classified whose closing clause, "answered by
+  SJL-9.5", that run's windows-latest job contradicts, since SJL-9.5 answers them there from the same data.)*
   *(Noted 2026-11-09, on the owner's decision of 2026-11-09, "Keep + fix library first", and the owner's rulings of that day
   "Add file, same tarball", "Fix both consumers" and "Follow CLDR, dated ruling", each asked and answered: SJL-9.5's cut-over of
   sub-areas (d) and (e) stays held at its stage 3, and before it merges the shared library and the data home take, in a merge
