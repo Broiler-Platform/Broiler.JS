@@ -59,9 +59,9 @@ bundle `sjl-9-001`'s [`cutover/deletion-search.txt`](../docs/evidence/sjl-9-001/
 engine did not:
 
 - *Sub-area (a):*
-  - **Tags and option values are ASCII** (L2, L14, L45): `Intl.getCanonicalLocales("en-KE")` (KELVIN SIGN),
-    `"ſr"`, `"en\n"` and `"de-١٢٣"` are `RangeError`s, where they were accepted and lowered; and so is an option value
-    with such a letter.
+  - **Tags and option values are ASCII** (L2, L14, L45): `Intl.getCanonicalLocales("en-KE")` (U+212A KELVIN SIGN),
+    `"ſr"` (U+017F), `"en\n"` and `"de-١٢٣"` are `RangeError`s, where they were accepted and lowered; and so is an
+    option value with such a letter.
   - **A `-t-` language whose alias adds a subtag** (L10): `Intl.getCanonicalLocales("en-t-sh")` is `["en-t-sr-latn"]`,
     where an internal `IndexOutOfRangeException` reached the script.
   - **`Zzzz` and `ZZ` in likely subtags** (L12): `new Intl.Locale("und-Zzzz-ZZ").maximize()` is `en-Latn-US`, where the
@@ -133,7 +133,7 @@ engine did not:
   - **The default zone's names** (T27): with no `timeZone` option under `TZ=America/New_York`, `timeZoneName: "short"`
     writes `"EST"`/`"EDT"`, where it wrote a GMT offset.
   - **A range that differs only in fields the format does not show** (T29): `{ weekday: "short" }` Friday to Sunday is
-    `"Fri – Sun"`, where it was `"Fri"`.
+    `"Fri – Sun"` (U+2009 on each side of the dash), where it was `"Fri"`.
   - **A non-Gregorian date's weekday** (T34): Friday 2024-01-05 is Friday in every calendar.
   - **The order of a Temporal value's checks** (T39): the calendar's `RangeError` comes before the `TypeError` of no
     common field.
@@ -151,42 +151,50 @@ engine did not:
 
 **Implementation-defined changes** (C3), where the library keeps Broiler.VM's answer: every other `selectRange` (P5b);
 `unit: "percent"`'s long form, which keeps the percent pattern (N2c, decision D35), `"50%"` where it was `"50 percent"`;
-a compound unit with no CLDR pattern (N5b), `"2 L/km"` where it was `"2 liter-per-kilometer"`; a unit name's plural
-from the formatted digits (N5c), `"1.0 liters"` where it was `"1.0 liter"`; range spacing and the collapse of shared
-affixes (N9a, N17c), `"-1 – 1"`; ranges written with names (N9d), `"3–5 kilometers"`; pattern selection (T13),
-`{ minute: "2-digit" }` `"7"`; noon and midnight (T18); `dayPeriod` with a 24-hour cycle (T20), `de` `"15 Uhr"`; generic
-zone names (T23), `"Central European Time"` for `Europe/Berlin`; the names of `UTC`, `Etc/GMT` and `+00:00` (T26,
-decision D15); interval patterns (T30), `"Jan 5 – 7, 2024"`, whose fields keep the skeleton's widths, so that
-`{ year: "numeric", month: "2-digit", day: "2-digit" }` writes `"1/2/2020 – 1/5/2020"` as ICU 78.3 and 77.1 do (the
-library's merge of 2026-11-09, item 5), and the range test that stage 3 skipped asserts it again; and `islamic` and
+a compound unit with no CLDR pattern (N5b), `"2 L/km"` where it was `"2 liter-per-kilometer"`; a unit name's plural from
+the formatted digits (N5c), `"1.0 liters"` where it was `"1.0 liter"`; range spacing and the collapse of shared affixes
+(N9a, N17c), `"-1 – 1"`; ranges written with names (N9d), `"3–5 kilometers"`; pattern selection (T13), `{ minute:
+"2-digit" }` `"7"`; noon and midnight (T18); `dayPeriod` with a 24-hour cycle (T20), `de` `"15 Uhr"`; generic zone names
+(T23), `"Central European Time"` for `Europe/Berlin`; the names of `UTC`, `Etc/GMT` and `+00:00` (T26, decision D15);
+interval patterns (T30), `"Jan 5 – 7, 2024"` (U+2009 on each side of the dash), whose fields keep the skeleton's widths,
+so that `{ year: "numeric", month: "2-digit", day: "2-digit" }` writes `"1/2/2020 – 1/5/2020"` as ICU 78.3 and 77.1 do
+(the library's merge of 2026-11-09, item 5), and the range test that stage 3 skipped asserts it again; and `islamic` and
 `islamic-rgsa`, which fall back to `islamic-tbla` (T33), where they fell back to `gregory`.
 
 **Data changes** (C5), each by its row and decision: the generated CLDR 48.2.0 tables replace the hand tables, the CLDR
 package, the host's ICU and the CLDR 47.0.0 table.
-- Locale data: language, script, region and BCP 47 aliases (L5 to L8), `und-Qaai` to `und-Zinh` and `-u-tz-usnavajo`
-  to `usden`; `getHourCycles`' preferred cycle (L19); `getNumberingSystems`' default (L22, decision D13);
-  `getTextInfo`'s direction (L24); `getWeekInfo` (L26), `ar-EG` `{ firstDay: 6, weekend: [5, 6] }` where it was
-  `{ 1, [6, 7] }`.
+- Locale data: language, script, region and BCP 47 aliases (L5 to L8), `und-Qaai` to `und-Zinh` and `-u-tz-usnavajo` to
+  `usden`, and the subdivision aliases whose replacement is a region, written as the region followed by `zzzz` (rows L8
+  and L9): `-u-sd-fi01` is `-u-sd-axzzzz`, `-u-rg-cn71` `-u-rg-twzzzz` and `zh-u-sd-cn91` `zh-u-sd-hkzzzz`, where the
+  hand table lacked them and kept the value as given (`intl/locales/subdivision/`); `getHourCycles`' preferred cycle
+  (L19); `getNumberingSystems`' default (L22, decision D13); `getTextInfo`'s direction (L24); `getWeekInfo` (L26),
+  `ar-EG` `{ firstDay: 6, weekend: [5, 6] }` where it was `{ 1, [6, 7] }`.
 - Plural rules (P3): every language's rules are CLDR 48.2.0's, where they were the CLDR package's; no answer of the
   corpus moves.
 - Numbers and the small formatters: decimal symbols and grouping (N1b); other locales' percent patterns (N2b), `sv`
-  `"−50 %"` with U+2212; currency code spacing (N3b) and currency
-  patterns (N3c), with the currency fix's `currencyGroup`, so `de-AT` is `"-€ 1.234,50"`; other locales' unit patterns
-  (N5d); compact patterns and plurals per locale (N6d), `de` `"1 Million"` where it was `"1 Millionen"`; other locales'
-  exponent symbols (N7b), `sv` `"−1,5×10^−7"` where it was `"-1,5E-7"`; a locale's own default or native numbering
-  system (N8b), with each system's own symbols (N8a, decision D21); the approximately sign (N9c), `de` `"≈1"` where it
-  was `"~1"`; other locales' range patterns (N9e), `es` `"3,00-5,00 €"`; the separators under a host culture (N14), now
-  the data's, `de-CH` `"1'234.5"` where the host wrote `"1’234.5"`; list patterns (S1b); other locales' relative-time patterns (S4b); and display names (S8),
-  `"British English"` where the code was written. Under corpus revision 36 (the owner's decision of 2026-11-08,
-  "Revision 36: follow CLDR"), `en-150`, `en-DK` and `en-FR` write `"-1,234.50 €"` and `gv` and `ln` write
-  `"A, B, C"`, CLDR 48.2.0's patterns.
+  `"−50 %"` with U+2212 and U+00A0; currency code spacing (N3b) and currency patterns (N3c), with the currency fix's
+  `currencyGroup`, so `de-AT` is `"-€ 1.234,50"` (U+00A0); other locales' unit patterns (N5d); compact patterns and
+  plurals per locale (N6d), `de` `"1 Million"` where it was `"1 Millionen"`; other locales' exponent symbols (N7b), `sv`
+  `"−1,5×10^−7"` where it was `"-1,5E-7"`; a locale's own default or native numbering system (N8b), with each system's
+  own symbols (N8a, decision D21); the approximately sign (N9c), `de` `"≈1"` where it was `"~1"`; other locales' range
+  patterns (N9e), `es` `"3,00-5,00 €"` (U+00A0); the separators under a host culture (N14), now the data's, `de-CH`
+  `"1'234.5"` where the host wrote `"1’234.5"`; list patterns (S1b); other locales' relative-time patterns (S4b); and
+  display names (S8), `"British English"` where the code was written. Under corpus revision 36 (the owner's decision of
+  2026-11-08, "Revision 36: follow CLDR"), `en-150` writes `"-1,234.50 €"` and `en-DK` `"-1.234,50 €"`, each with U+00A0
+  before the euro sign, and `gv` and `ln` write `"A, B, C"`, CLDR 48.2.0's patterns; `en-FR` writes CLDR's pattern only
+  on a host that lists `en-FR` (row L28), and on this host, which does not, it resolves to `en`, `"-€1,234.50"`.
 - Date-time formatting: hour cycles (T10); U+202F before the day period and the `atTime` joins (T12, decision D25);
   layouts and locales outside English (T15, T16); `en`'s flexible day periods (T17); specific zone names (T22); the metazone
   at the date (T24); the range separator (T31); calendar patterns (T36); numbering systems (T37).
 - Durations: the clock's separators (U13), `da` `"1.02.03"`; two-digit hours (U14), `af` and `lt` `"01:02:03"`; unit
   and list patterns (U15); and a numbering system's own symbols (U16, decision D21), `en` `{ numberingSystem: "arab" }`
   writes U+066C and U+061C.
-- Each locale's default numbering system is CLDR 48.2.0's, where it was 47.0.0's table (decision D13).
+- Each locale's default numbering system is CLDR 48.2.0's for a locale of decision D5's list, where it was the CLDR
+  47.0.0 table (decision D13). Of that table's locales only `ar-EG`, `fa` and `sa` are on the list. For the others,
+  `bn`, `mr`, `ne`, `my`, `ks`, `ar-SA` and the other regional `ar-*` among them, the default is the host culture's
+  native digits, through decision D6's host-culture provider: `latn` where they are ASCII's, and otherwise the
+  numbering system whose ten digits they are, so `bn` is `beng` and `ar-SA` `arab` on this host. Those defaults
+  depend on the host's cultures (decisions D6 and D7).
 
 **The library's merge of 2026-11-09** (Broiler-Platform/Broiler.JS#1108, on the owner's decision of 2026-11-09, "Keep +
 fix library first", and the rulings "Add file, same tarball", "Fix both consumers" and "Follow CLDR, dated ruling") moves
@@ -218,15 +226,16 @@ these answers, each data policy (C5):
 - **`getCalendars` and the date-time format disagree for `fa` and `th`** (rows L16 and T16):
   `new Intl.Locale("th").getCalendars()` and `new Intl.Locale("fa").getCalendars()` stay `["gregory"]`, which row L16
   keeps, while the date-time format's default calendar is `buddhist` and `persian`.
-- **A numbering system's own decimal symbol** (T37, decision D21) is now the library's: `en-u-nu-arab` writes a
-  fractional second with U+066B, and so do `fa`, `fa-IR` (`arabext`) and `ar-EG` (`arab`) with no keyword; `deva`'s is
-  `"."`. These answers did not move at this merge: the engine's interim adapter `NumberingSystemDecimalData`, now
-  deleted, gave the same.
 - **Intl.Locale's hour cycles** (L19): `getHourCycles()` of `ar-001` and `en-001` is `["h12", "h23"]` and of `fr-CA`
   `["h23", "h12"]`. Bundle `sjl-9-001`'s part C expects `fr-CA`'s `hourCycles` line of the locales program,
   `locales:128`, to answer `[h12,h23]`, Broiler.VM's answer when its rule was committed; on the owner's ruling of
   2026-11-10, "Dated part C revision" (the alternative not taken was "Keep old answer"), a dated revision of that rule,
   filed on the default branch in its own merge, admits the line's `[h23,h12]`.
+
+At this merge the library also writes a numbering system's own decimal symbol (T37, decision D21): `en-u-nu-arab`
+writes a fractional second with U+066B, and so do `fa`, `fa-IR` (`arabext`) and `ar-EG` (`arab`) with no keyword;
+`deva`'s is `"."`. No answer moved with it: the engine's interim adapter `NumberingSystemDecimalData`, which the
+branch then deleted, gave the same.
 
 **One test262 file is lost under row T12**, by the owner's ruling of 2026-11-09, "Follow CLDR, dated ruling":
 `intl402/DateTimeFormat/prototype/format/numbering-system.js` passed and now fails, in UTC and in `America/New_York`, on
@@ -237,14 +246,25 @@ admit that one path as class L
 ([`decision-rule-revised-2026-11-09.md`](../docs/evidence/sjl-9-001/decision-rule-revised-2026-11-09.md)), and the
 probe its class L asks for is retained beside each judged run.
 
-**A public constructor that refuses more**: `JSIntlListFormat(string locale, string type, string style)` throws
-`ArgumentOutOfRangeException` (`ParamName` `type` or `style`) for a type outside `conjunction`, `disjunction` and `unit`
-or a style outside `long`, `short` and `narrow`, where it stored the strings as given.
+**A public constructor that refuses more**: `JSIntlListFormat(string locale = "en-US", string type = "conjunction",
+string style = "long")` throws `ArgumentOutOfRangeException` (`ParamName` `type` or `style`) for a type outside
+`conjunction`, `disjunction` and `unit` or a style outside `long`, `short` and `narrow`, where it stored the strings as
+given.
 
-**Answers that still differ from the corpus's expectation**, each classified there: `intl/numbers-and-text/families/0152`
-(`en-FR`, which this host's ICU does not list, rows L28 and N4), and the `{0}, {1}` lists of `aa` and `pap`
-(`families/0008`, `0514`, row S1b), which match where the host's ICU lacks those locales; the windows-latest engine
-vectors job lists them, which corpus revision 36 leaves open.
+**Answers that still differ from the corpus's expectation** are each a classified divergence there, under its row. Some
+depend on the host (row L28): this host's ICU lists no `en-FR`, `jbo` or `pap`, so each resolves to `en`, and its
+vectors answer for `en`: `intl/numbers-and-text/families/0149`, `0152`, `0153`, `0154` and `0156` (rows N1b, N4, N6d,
+N5d and S1b), `intl/date-times/families/0090` to `0094` (rows T10, T12, T16, T20, T30 and T31), and
+`intl/values-and-plurals/families/0166` to `0168` and `0203` (row P3). The others are classified under these rows:
+currency patterns (N3c) of `ar-EG`, `en-150`, `en-DK`, `fa` and `fa-IR` (`intl/numbers-and-text/families/0051`, `0121`,
+`0141`, `0237`, `0247`); list patterns (S1b) of `gv`, `ln`, `he` and `he-IL` (`families/0309`, `0454`, `0319`, `0329`,
+and `list/0027`); `ar`'s long `hour` (N5d, `unit/0076`, `0077`); `sa`'s plural categories (P3,
+`intl/values-and-plurals/families/0234` to `0236`); `ja`'s hour cycle with `hour12: true` (T10,
+`intl/date-times/resolved/0012`); and duration unit and list patterns (U15) of `af`, `ar`, `ar-001`, `ar-EG`, `he`,
+`he-IL` and `lt` (`intl/durations/data/0004` and `families/0003` to `0006`, `0033`, `0034` and `0048`). The Collator's
+vectors are not among these: its data and comparison stay this engine's until milestone SJL-17.5. The `{0}, {1}` lists
+of `aa` and `pap` (`intl/numbers-and-text/families/0008`, `0514`, row S1b) are normative and match here, where the
+host's ICU lacks those locales; the windows-latest engine vectors job lists them, which corpus revision 36 leaves open.
 
 Tests: `SharedIntlDataTests`, `HostCultureLocaleDataTests`, `SharedIntlLocaleTests`, `IntlDataLocalePluralRulesTests`,
 `IntlDateTimeFormatLibraryTests`, and the tests that pinned this engine's host-ICU or hand-table answers, each revised
@@ -1687,8 +1707,10 @@ from CLDR's `cldr-numbers-full` 47.0.0, which [`THIRD_PARTY_NOTICES.md`](../THIR
 under the owner's data decision of 2026-10-15 recorded in
 [`docs/roadmap/SharedLibraries.md`](../docs/roadmap/SharedLibraries.md); milestone SJL-9 moves it into the
 shared locale data. *(Noted 2026-11-10, at SJL-9.5: it has. The table and its script are deleted, and each locale's
-default numbering system is CLDR 48.2.0's, from the data home's tables (Broiler.VM's JSD-0082, decision D13); "Intl
-moves to the shared Intl library", above, lists the move as a data change.)*
+default numbering system is CLDR 48.2.0's, from the data home's tables (Broiler.VM's JSD-0082, decision D13), for a
+locale of decision D5's list. Of this entry's locales only `ar-EG` and `fa` are on it; `ar-SA`, `bn`, `mr`, `ne`, `my`
+and the rest take the host culture's native digits through decision D6's host-culture provider, so their default
+depends on the host. "Intl moves to the shared Intl library", above, lists the move as a data change.)*
 
 - **A Temporal value's digits follow the numbering system.** `Intl.DateTimeFormat.prototype.format` and
   `formatToParts`, and the Temporal types' `toLocaleString`, wrote a Temporal value's digits in ASCII
