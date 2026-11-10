@@ -125,7 +125,7 @@ DIVERGENCES = SCRIPTS / "collation-divergences.txt"
 # follows REVISIONS.md's last row on its own from revision 35 (2026-11-04), which classified another area; until then
 # it was SINCE + 1 and this comment began "THE ONE CONSTANT".
 SINCE = 33
-CORPUS_REVISION = 36  # the corpus revision this generator writes: REVISIONS.md's last row (SINCE + 1, the
+CORPUS_REVISION = 37  # the corpus revision this generator writes: REVISIONS.md's last row (SINCE + 1, the
                       # classification, until revision 35 of 2026-11-04 classified the Intl area's again)
 
 ECMA402 = "spec:ecma402@3d4c558#"
