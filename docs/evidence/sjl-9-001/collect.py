@@ -364,8 +364,14 @@ class Collector:
                               text=True).stdout.strip()
         zone_summer = subprocess.run(["date", "-d", "2021-07-15T12:00:00Z", "+%Z %z"], env=env, capture_output=True,
                                      text=True).stdout.strip()
+        root = shell.parents[5]
+        built = (f"# shell tree: <probe-tree>, {self.git('rev-parse', 'HEAD', tree=root) or '(not a git checkout)'}, origin "
+                 f"{self.git('remote', 'get-url', 'origin', tree=root) or '-'}, paths not clean: "
+                 f"{len(self.git('status', '--porcelain', tree=root).splitlines())}; built as "
+                 f"{self.args.shell_build or '(not given)'}")
         lines = [
             f"# The class-L probe of decision-rule-revised-2026-11-09.md, part {self.args.part}, taken {utc()}",
+            built,
             f"# program: {REVISED}/class-l-probe.js (sha256 {sha256(program)})",
             f"# zone: TZ {env.get('TZ', 'unset')}; 2021-01-15T12:00:00Z {zone}; 2021-07-15T12:00:00Z {zone_summer}; "
             f"no LANG, LC_ALL or LANGUAGE; {INVARIANT} unset",
@@ -379,7 +385,7 @@ class Collector:
         ]
         if result.stderr.strip():
             lines += ["", "# stderr", result.stderr.rstrip("\n")]
-        self.write(f"{REVISED}/class-l-probe.{self.args.part}.txt", "\n".join(lines) + "\n")
+        self.write(f"{REVISED}/class-l-probe.{self.args.part}.txt", "\n".join(lines).replace(str(root), "<probe-tree>") + "\n")
 
     # -- part C ----------------------------------------------------------------------------------
 
@@ -529,6 +535,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--run-times", help="test262: when the run was dispatched and completed")
     parser.add_argument("--shell", help="probe: the BroilerJS.dll to probe")
     parser.add_argument("--after-run", help="probe: the part's imported after run (its folder)")
+    parser.add_argument("--shell-build", help="probe: how the shell was built, recorded in the probe's file")
     parser.add_argument("--tree", help="datasets, invariant: the scratch tree git archive wrote, its shell built")
     parser.add_argument("--archive", help="datasets, invariant: the archive that tree was written from")
     parser.add_argument("--suite-root", help="invariant: a checkout of test262 at ccaac100")
