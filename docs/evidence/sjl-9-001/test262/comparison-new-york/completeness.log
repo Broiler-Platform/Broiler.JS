@@ -1,0 +1,27 @@
+# Part B's completeness conditions for each run, read from the files the workflow wrote:
+# every expected shard reported, no configuration failure, one suite revision, one shell, every
+# shard in the zone, includeNegative true.
+
+## base: test262/base-new-york/
+tested commit (run.txt): 8841799642ff61499faa01dc894b6fec768c8af6
+workflow run (run.txt): https://github.com/Broiler-Platform/Broiler.JS/actions/runs/42800082920 (attempt 1)
+runner (run.txt): ubuntu24 20261101.360.1; Linux X64; logical processors 4; dotnetVersion 10.0.403
+expected shards: [0, 1, 2, 3, 4, 5, 6, 7]; reported: [0, 1, 2, 3, 4, 5, 6, 7]; incomplete: []; retried: []; status files: 8, phases ['full']
+configuration failures: []
+suite revisions (suiteRefs): ['ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e']
+includeNegative: run.txt True; merged results True; re-run True
+selection: all-script-host-verifiable; workers 4; timeout 30.0 s; memory limit 0; minifier terser 5.50.0
+shell: shards: 8; distinct lists: 1; the re-run's shell hashes as the shards' did
+zone: expected: TZ: America/New_York; expected: 2021-01-15T12:00:00Z: EST -0500; expected: 2021-07-15T12:00:00Z: EDT -0400; expected: tzdata: 2026e; shards: 8; in the expected zone: 8
+
+## after: test262/after-new-york/
+tested commit (run.txt): a5f2692e88a9aafeaa850bebe9c3399f6263353b
+workflow run (run.txt): https://github.com/Broiler-Platform/Broiler.JS/actions/runs/42800090851 (attempt 1)
+runner (run.txt): ubuntu24 20261101.360.1; Linux X64; logical processors 4; dotnetVersion 10.0.403
+expected shards: [0, 1, 2, 3, 4, 5, 6, 7]; reported: [0, 1, 2, 3, 4, 5, 6, 7]; incomplete: []; retried: []; status files: 8, phases ['full']
+configuration failures: []
+suite revisions (suiteRefs): ['ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e']
+includeNegative: run.txt True; merged results True; re-run True
+selection: all-script-host-verifiable; workers 4; timeout 30.0 s; memory limit 0; minifier terser 5.50.0
+shell: shards: 8; distinct lists: 1; the re-run's shell hashes as the shards' did
+zone: expected: TZ: America/New_York; expected: 2021-01-15T12:00:00Z: EST -0500; expected: 2021-07-15T12:00:00Z: EDT -0400; expected: tzdata: 2026e; shards: 8; in the expected zone: 8

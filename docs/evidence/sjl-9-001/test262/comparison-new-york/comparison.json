@@ -1,0 +1,85 @@
+{
+  "admitted": 0,
+  "afterCommit": "",
+  "allChangesAdmitted": false,
+  "baseCommit": "",
+  "changed": [
+    {
+      "after": "failed",
+      "base": "passed",
+      "hostMode": "script",
+      "path": "test/intl402/DateTimeFormat/prototype/format/numbering-system.js",
+      "variant": "original",
+      "verdict": "regression"
+    },
+    {
+      "after": "failed",
+      "base": "passed",
+      "hostMode": "script",
+      "path": "test/intl402/DateTimeFormat/prototype/format/numbering-system.js",
+      "variant": "terser",
+      "verdict": "regression"
+    }
+  ],
+  "regressions": 2,
+  "replacedByRerun": {
+    "after": [
+      {
+        "before": "timedOut",
+        "path": "test/staging/sm/regress/regress-1507322-deep-weakmap.js",
+        "rerun": "timedOut",
+        "rerunReport": "<repo>/docs/evidence/sjl-9-001/test262/after-new-york/rerun-timeouts.json",
+        "variant": "original"
+      },
+      {
+        "before": "timedOut",
+        "path": "test/staging/sm/regress/regress-1507322-deep-weakmap.js",
+        "rerun": "timedOut",
+        "rerunReport": "<repo>/docs/evidence/sjl-9-001/test262/after-new-york/rerun-timeouts.json",
+        "variant": "terser"
+      }
+    ],
+    "base": [
+      {
+        "before": "timedOut",
+        "path": "test/staging/sm/regress/regress-1507322-deep-weakmap.js",
+        "rerun": "timedOut",
+        "rerunReport": "<repo>/docs/evidence/sjl-9-001/test262/base-new-york/rerun-timeouts.json",
+        "variant": "original"
+      },
+      {
+        "before": "timedOut",
+        "path": "test/staging/sm/regress/regress-1507322-deep-weakmap.js",
+        "rerun": "timedOut",
+        "rerunReport": "<repo>/docs/evidence/sjl-9-001/test262/base-new-york/rerun-timeouts.json",
+        "variant": "terser"
+      }
+    ]
+  },
+  "rows": 106058,
+  "suiteRef": "ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e",
+  "unclassified": 0,
+  "uncomparedFields": {
+    "dotnetVersion": {
+      "after": "10.0.403",
+      "base": "10.0.403"
+    },
+    "maxWorkers": {
+      "after": 4,
+      "base": 4
+    },
+    "runnerArch": {
+      "after": "X64",
+      "base": "X64"
+    },
+    "runnerOs": {
+      "after": "Linux",
+      "base": "Linux"
+    },
+    "shardCount": {
+      "after": 8,
+      "base": 8
+    }
+  },
+  "unusedClassifications": []
+}

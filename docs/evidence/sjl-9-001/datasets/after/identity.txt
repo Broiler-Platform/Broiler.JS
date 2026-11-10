@@ -1,0 +1,64 @@
+harness: scripts/conformance/run_reference_datasets.py, format 3, for docs/evidence/sjl-9-001/decision-rule.md, parts C and D
+bundle: sjl-9-001; programs: dates, displaynames, durations, lists, locales, numbers, plurals, relativetimes, segments, temporal-intl, calendar-formats, zone-names, timezones
+label: after
+started (UTC): 2026-11-10T17:44:50+00:00
+shell tree: <tree>
+shell commit: unknown
+shell commit subject: unknown
+shell tree clean (git status --porcelain --untracked-files=all is empty): no
+shell: <tree>/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+shell BroilerJS.dll SHA-256: 68268038bd0d955d9046535fdc0cf1327a5c36fbe031422b3a71d1426213a74c
+shell binaries: shell-binaries.sha256, every *.dll beside it
+shell built by the harness: no, the one already built was used
+dotnet SDK: 10.0.401
+dotnet runtime: Microsoft.NETCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.NETCore.App]
+machine: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v338 x86_64; Intel(R) Xeon(R) Processor @ 2.10GHz; 4 logical CPUs
+child environment: TZ=UTC; LANG, LANGUAGE and every LC_ variable removed; DOTNET_SYSTEM_GLOBALIZATION_INVARIANT removed
+harness environment: TZ=UTC, LANG=(unset), LC_ALL=(unset), DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=(unset)
+host ICU: libicuuc.so.74
+host tzdata: 2026c
+harness commit: 2b468d6119a973962007d573371b8862646e35ec
+harness, driver and copies unchanged from that commit: yes
+harness SHA-256: 5465858904a9a6e504373060095eb089e690a1eac165eeadca187c9536fa00f1
+driver template SHA-256: 18aad752c1bc164639cc696b5f8472a11d79c547d13b8770cf5f326d0b4b542a
+datasets (intl): <repo>/conformance/datasets/intl, every copy equal to its datasets.pin; the run's population there, copies of Broiler.VM at the commits it names:
+  dates.js 8742 ef63d907b04e0f6b42421e92b14703a1bf7f948390ebcd1e4348ba31c1120638 (Broiler.VM 4cf9ca4:src/tests/cldr/dates/dates.js)
+  dates.icu-77.1.txt 360793 83aba5f97f848ce2b635aac303c2a1606dba0a362ba9b584e71b8903f415f56c (Broiler.VM 4cf9ca4:src/tests/cldr/dates/dates.icu-77.1.txt)
+  dates.divergences.txt 79526 de43ef1ec930738f2a92f0a53ade3c8caddc145c718907633a15c6c0881f1c54 (Broiler.VM 4cf9ca4:src/tests/cldr/dates/divergences.txt)
+  displaynames.js 4421 58c4d73d7ab422a31d8b7e4c0c798b0f3d6116e63bb01fae519532f1389eab89 (Broiler.VM 4cf9ca4:src/tests/cldr/displaynames/displaynames.js)
+  displaynames.icu-77.1.txt 79934 d6531691b1558350f9becd7761c5becf900d0024b64813ca469f662fe397e6e3 (Broiler.VM 4cf9ca4:src/tests/cldr/displaynames/displaynames.icu-77.1.txt)
+  displaynames.divergences.txt 8297 486a85cea510d59bda27dc20045ec0feb334d61b59713ebede8a772794de1ca2 (Broiler.VM 4cf9ca4:src/tests/cldr/displaynames/divergences.txt)
+  durations.js 4494 8dc33e7de2bfd86a4b433bc40c9349595fe9684ce972f8413e939933f177e4a6 (Broiler.VM 4cf9ca4:src/tests/cldr/durations/durations.js)
+  durations.icu-77.1.txt 80779 5ed0c5754a18ffa648dceed67b9f806b0b866c53d3ad5465c6114e13affef0ae (Broiler.VM 4cf9ca4:src/tests/cldr/durations/durations.icu-77.1.txt)
+  durations.divergences.txt 38596 1155cd7d1c3e1c6f77c88b8276f41c6f14aae0e08112f152ece8984be808db7f (Broiler.VM 4cf9ca4:src/tests/cldr/durations/divergences.txt)
+  lists.js 3401 512384f875e5a588227d51c1b3009c321fdfec770b59ddbe0d467cdf5c427dc7 (Broiler.VM 4cf9ca4:src/tests/cldr/lists/lists.js)
+  lists.icu-77.1.txt 45700 33260664d866aa94fd20da8ee8ad8fea02def22a491e3aa277c8ae557277d012 (Broiler.VM 4cf9ca4:src/tests/cldr/lists/lists.icu-77.1.txt)
+  lists.divergences.txt 7722 f919dba7f40c843ac291d43499a1a34a1a48a956feeea25f0eb47aaf3191df29 (Broiler.VM 4cf9ca4:src/tests/cldr/lists/divergences.txt)
+  locales.js 4310 86c48f27b95ef062ad986bf6189a348b78837720982a19108680c8e38529b52f (Broiler.VM 4cf9ca4:src/tests/cldr/locales/locales.js)
+  locales.icu-77.1.txt 45208 1ca3ee394520f721f220ec39d672dcd74d550d2df26608983efcbcd259106ed0 (Broiler.VM 4cf9ca4:src/tests/cldr/locales/locales.icu-77.1.txt)
+  locales.divergences.txt 10143 15793d18d72039b6198b7b0b8558ac3a38480987ca668b0230760cd4a6cece61 (Broiler.VM 4cf9ca4:src/tests/cldr/locales/divergences.txt)
+  numbers.js 5754 45297237ec3213fb16e64cf9139b5d1d4320c6187b431d2493bec852cc225db1 (Broiler.VM 4cf9ca4:src/tests/cldr/numbers/numbers.js)
+  numbers.icu-77.1.txt 359207 4fb65171fe20a37d8f035eaec9317384e3a2751eb7fdc21923b3f5928b689925 (Broiler.VM 4cf9ca4:src/tests/cldr/numbers/numbers.icu-77.1.txt)
+  numbers.divergences.txt 5199 6d60f3b1b51bc4b5ce6d4020aaeea842c5ba0463a4a059578781d276437facd1 (Broiler.VM 4cf9ca4:src/tests/cldr/numbers/divergences.txt)
+  plurals.js 3754 50cb38e2c6bd182e7051c542e1b1c9a46a01e377314a41c95aa6fb7ee712f08d (Broiler.VM 4cf9ca4:src/tests/cldr/plurals/plurals.js)
+  plurals.icu-77.1.txt 88979 277b7a15bbe40299b438235f40849debb7c9db0341d1e221cb946358138b3c2c (Broiler.VM 4cf9ca4:src/tests/cldr/plurals/plurals.icu-77.1.txt)
+  plurals.divergences.txt 17110 d266fa48747322ee7db647ce9a88ba8d1b0b51175d6878cc681053ccf9ba8c4f (Broiler.VM 4cf9ca4:src/tests/cldr/plurals/divergences.txt)
+  relativetimes.js 3845 a080a0850be70c037c9a47d30f912ca07ab09418f3897f506e4fc96358debc0c (Broiler.VM 4cf9ca4:src/tests/cldr/relativetimes/relativetimes.js)
+  relativetimes.icu-77.1.txt 169277 bfa0d944bd0e32c6c6bb06562734a7ecd50d6e49ae8f030a5b9b0fdcde009cae (Broiler.VM 4cf9ca4:src/tests/cldr/relativetimes/relativetimes.icu-77.1.txt)
+  relativetimes.divergences.txt 6876 38bd3aaafcbcf1e1a57b63b8b4a4b389d44a6d9687bb47b7cd7b938d2a53c7d9 (Broiler.VM 4cf9ca4:src/tests/cldr/relativetimes/divergences.txt)
+  segments.js 4020 7ff168dd0075d2daef8f03fb7af6410d1a8b578363cbdf2418cb448e390bd368 (Broiler.VM 4cf9ca4:src/tests/cldr/segments/segments.js)
+  segments.icu-77.1.txt 16732 9996a94ce3ffa8822a38078a4575fe76f06dbd66dd9c265776f931a7ba127f2e (Broiler.VM 4cf9ca4:src/tests/cldr/segments/segments.icu-77.1.txt)
+  segments.divergences.txt 1112 bc17e9ddd83bd075cdc9fd905365367b2e57da2d3cb4f225200f0788e2084c81 (Broiler.VM 4cf9ca4:src/tests/cldr/segments/divergences.txt)
+  temporal-intl.js 4497 54b25e6b06083e83fd5d14c3974c6a8d2ff3d1214e98ac9177111ba48265758b (Broiler.VM 4cf9ca4:src/tests/temporal/intl/temporal-intl.js)
+  temporal-intl.polyfill-e8cc03fc.txt 121507 0be0ed22c4d0847033fca3c815cdc1d9c1a1a03d5725007111fe9ea44fcfdb22 (Broiler.VM 4cf9ca4:src/tests/temporal/intl/temporal-intl.polyfill-e8cc03fc.txt)
+  temporal-intl.divergences.txt 8195 b22d0a3bfe38a7a3d736808451dfdc98fea2671112c8bf0782cbc53a42aca31c (Broiler.VM 4cf9ca4:src/tests/temporal/intl/divergences.txt)
+  calendar-formats.js 6439 c4a04d422eca75aa2c39014f0a6341e3cd49cb933a7674d50c2de7107a793f12 (Broiler.VM 4cf9ca4:src/tests/temporal/calendars-intl/calendar-formats.js)
+  calendar-formats.polyfill-e8cc03fc.txt 607186 c2170098996f49f52890be7b1308e7fade1782fc134fc486986e4971c6622606 (Broiler.VM 4cf9ca4:src/tests/temporal/calendars-intl/calendar-formats.polyfill-e8cc03fc.txt)
+  calendar-formats.divergences.txt 148512 858cbb9de2fa948e294bafca5c54caf983a2f73065194cdc7f88dc50ae3838e2 (Broiler.VM 4cf9ca4:src/tests/temporal/calendars-intl/divergences.txt)
+  zone-names.js 12189 3f47c84802e66ee988182e5e6412d3df730cb69de9b4fbd37181a7cec6fe47a9 (Broiler.VM 4cf9ca4:src/tests/temporal/zone-names/zone-names.js)
+  zone-names.polyfill-e8cc03fc.txt 296279 1ce2ea5767272e2914bd992bb38379711e3930db315a72654b5c575b294f9c13 (Broiler.VM 4cf9ca4:src/tests/temporal/zone-names/zone-names.polyfill-e8cc03fc.txt)
+  zone-names.divergences.txt 31634 2522c9ede8175161243203bbc67f4b0f09afad149fca45ec269c5547d3fcaf3f (Broiler.VM 4cf9ca4:src/tests/temporal/zone-names/divergences.txt)
+datasets (time): <repo>/conformance/datasets/time, every copy equal to its datasets.pin; the run's population there, copies of Broiler.VM at the commits it names:
+  timezones.js 13368 901a74066cec6ed13c160c941fd874d52ed390f74b1dc22974debd2c1954cbc1 (Broiler.VM 9508bd5:src/tests/cldr/timezones/timezones.js)
+  timezones.icu-77.1.txt 77558 d3da1c10f7a87cb5fc5b6125f5b83648e4cfb4130b194848196a0a42f854473f (Broiler.VM 9508bd5:src/tests/cldr/timezones/timezones.icu-77.1.txt)
+  timezones.divergences.txt 15224 b020772f515fb822de8a7edb06e41649e167f31e437e03420be62c921b387a58 (Broiler.VM 9508bd5:src/tests/cldr/timezones/divergences.txt)

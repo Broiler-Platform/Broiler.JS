@@ -1,0 +1,6 @@
+# the first attempt at the probe's shell build, which failed in Nerdbank.GitVersioning's SetCloudBuildVariables before GITHUB_ENV was given
+== start 2026-11-10T17:36:37Z  17:36:37 up 10:41,  0 user,  load average: 0.54, 2.17, 2.09
+# tree: a git clone of https://github.com/Broiler-Platform/Broiler.JS at a5f2692e88a9aafeaa850bebe9c3399f6263353b, clean: 0 paths; origin https://github.com/Broiler-Platform/Broiler.JS
+# SDK: <scratch>/dotnet-403 (10.0.403, the after run's dotnetVersion); env GITHUB_ACTIONS=true CI=true, as on the runner
+exit=1
+== end 2026-11-10T17:38:09Z

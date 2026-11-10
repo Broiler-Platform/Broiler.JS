@@ -1,0 +1,122 @@
+$ /usr/bin/python3 -I <repo>/scripts/conformance/run_reference_datasets.py compare --base <repo>/docs/evidence/sjl-9-001/datasets/base --after <repo>/docs/evidence/sjl-9-001/datasets/after --out <repo>/docs/evidence/sjl-9-001/datasets/after/compare-with-base
+# cwd <repo>; started 2026-11-10T17:45:12Z; exit 0
+Reference datasets, bundle sjl-9-001's rule, part C: an after run against a base run
+
+base: base, shell commit unknown, BroilerJS.dll ff8f483b66578c7ef864ca3a6c2cb8ce9b775ff429df021698eb1dcee5fbd1bf
+after: after, shell commit unknown, BroilerJS.dll 68268038bd0d955d9046535fdc0cf1327a5c36fbe031422b3a71d1426213a74c
+copies: Broiler.VM 4cf9ca449fc96a1a5be810f6d0ca31c42b855c8f 9508bd5b9b6d0f6d009418dda351fb0e7d846745, the same SHA-256 in both runs
+
+dates: base completed yes, after completed yes
+  lines: 1430; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 1430; differing: 0
+  of those differing, the same as at the base: 0; moved since the base: 0
+  differing at the base and equal after: 962; equal at the base and differing after: 0
+
+displaynames: base completed no, after completed yes
+  lines: 823; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 823; differing: 0
+  of those differing, the same as at the base: 0; moved since the base: 0
+  differing at the base and equal after: 823; equal at the base and differing after: 0
+
+durations: base completed yes, after completed yes
+  lines: 553; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 543; differing: 10
+  of those differing, the same as at the base: 0; moved since the base: 10
+  differing at the base and equal after: 23; equal at the base and differing after: 10
+  differing lines that moved since the base (10), by number and key:
+    260	en {"style":"short","numberingSystem":"arab"} {"milliseconds":1500}
+    263	en {"style":"short","numberingSystem":"arab"} {"years":-1,"months":-2}
+    264	en {"style":"short","numberingSystem":"arab"} {"hours":-1,"minutes":-2,"seconds":-3}
+    265	en {"style":"short","numberingSystem":"arab"} {"minutes":-5,"seconds":0}
+    266	en {"style":"short","numberingSystem":"arab"} {"days":1000,"hours":12345}
+    530	de {"style":"short","numberingSystem":"arab"} {"milliseconds":1500}
+    533	de {"style":"short","numberingSystem":"arab"} {"years":-1,"months":-2}
+    534	de {"style":"short","numberingSystem":"arab"} {"hours":-1,"minutes":-2,"seconds":-3}
+    535	de {"style":"short","numberingSystem":"arab"} {"minutes":-5,"seconds":0}
+    536	de {"style":"short","numberingSystem":"arab"} {"days":1000,"hours":12345}
+
+lists: base completed yes, after completed yes
+  lines: 481; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 481; differing: 0
+  of those differing, the same as at the base: 0; moved since the base: 0
+  differing at the base and equal after: 0; equal at the base and differing after: 0
+
+locales: base completed yes, after completed yes
+  lines: 780; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 754; differing: 26
+  of those differing, the same as at the base: 2; moved since the base: 24
+  differing at the base and equal after: 135; equal at the base and differing after: 0
+  differing lines that moved since the base (24), by number and key:
+    7	1 en collations
+    19	2 en-US collations
+    31	3 en-GB collations
+    43	4 en-Latn collations
+    55	5 en-Arab collations
+    67	6 en-Shaw collations
+    79	7 de collations
+    91	8 de-AT collations
+    103	9 de-CH collations
+    128	11 fr-CA hourCycles
+    235	20 zh collations
+    247	21 zh-Hant collations
+    259	22 zh-TW collations
+    271	23 zh-Hans-SG collations
+    283	24 ja collations
+    295	25 ko collations
+    607	51 en-u-nu-thai-hc-h23 collations
+    631	53 en-u-fw-mon collations
+    643	54 en-u-rg-gbzzzz collations
+    655	55 en-u-sd-usca collations
+    691	58 en-t-iw collations
+    739	62 de-u-kn-false {"numeric":true} collations
+    751	63 en {"firstDayOfWeek":"tue"} collations
+    763	64 ja-JP {"region":"US"} collations
+
+numbers: base completed yes, after completed yes
+  lines: 2241; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 2241; differing: 0
+  of those differing, the same as at the base: 0; moved since the base: 0
+  differing at the base and equal after: 402; equal at the base and differing after: 0
+
+plurals: base completed yes, after completed yes
+  lines: 1299; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 1299; differing: 0
+  of those differing, the same as at the base: 0; moved since the base: 0
+  differing at the base and equal after: 181; equal at the base and differing after: 0
+
+relativetimes: base completed yes, after completed yes
+  lines: 2460; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 2460; differing: 0
+  of those differing, the same as at the base: 0; moved since the base: 0
+  differing at the base and equal after: 1; equal at the base and differing after: 0
+
+segments: base completed yes, after completed yes
+  lines: 118; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 117; differing: 1
+  of those differing, the same as at the base: 1; moved since the base: 0
+  differing at the base and equal after: 0; equal at the base and differing after: 0
+
+temporal-intl: base completed yes, after completed yes
+  lines: 1233; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 1233; differing: 0
+  of those differing, the same as at the base: 0; moved since the base: 0
+  differing at the base and equal after: 492; equal at the base and differing after: 0
+
+calendar-formats: base completed yes, after completed yes
+  lines: 5951; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 5951; differing: 0
+  of those differing, the same as at the base: 0; moved since the base: 0
+  differing at the base and equal after: 4166; equal at the base and differing after: 0
+
+zone-names: base completed yes, after completed yes
+  lines: 2713; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 2713; differing: 0
+  of those differing, the same as at the base: 0; moved since the base: 0
+  differing at the base and equal after: 2423; equal at the base and differing after: 0
+
+timezones: base completed yes, after completed yes
+  lines: 610; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 458; differing: 152
+  of those differing, the same as at the base: 152; moved since the base: 0
+  differing at the base and equal after: 0; equal at the base and differing after: 0
+

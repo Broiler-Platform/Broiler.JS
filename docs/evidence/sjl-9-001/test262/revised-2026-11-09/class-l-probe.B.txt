@@ -1,0 +1,21 @@
+# The class-L probe of decision-rule-revised-2026-11-09.md, part B, taken 2026-11-10T17:39:20Z
+# shell tree: <probe-tree>, a5f2692e88a9aafeaa850bebe9c3399f6263353b, origin https://github.com/Broiler-Platform/Broiler.JS, paths not clean: 0; built as a shallow git clone of https://github.com/Broiler-Platform/Broiler.JS at the after commit, as actions/checkout makes one; dotnet restore Broiler.JS.slnx and dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release --no-restore (with --disable-build-servers), the commands of .github/actions/run-test262-shard, with the .NET SDK 10.0.403 the after run records (its tarball's SHA-512 the release metadata's), and GITHUB_ACTIONS=true and CI=true as on the runner; run by that SDK's runtime, Microsoft.NETCore.App 10.0.14
+# program: test262/revised-2026-11-09/class-l-probe.js (sha256 a41d3589ba73e004ac846cc7c39f50430d6973d65c92f01430a962f5a6c23449)
+# zone: TZ America/New_York; 2021-01-15T12:00:00Z EST -0500; 2021-07-15T12:00:00Z EDT -0400; no LANG, LC_ALL or LANGUAGE; DOTNET_SYSTEM_GLOBALIZATION_INVARIANT unset
+# shell: <probe-tree>/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll; BroilerJS.dll sha256 4cbcaf77b1b62dda2265fd8754976a99e5b1f238241484710be3b60524ca2c71
+# the after run's record of the binaries it ran: <repo>/docs/evidence/sjl-9-001/test262/after-new-york/shell-binaries.sha256 (sha256 e033cd3bde8ff8afab98eb8ae888a78dac44c4b7787a1fe4546bf1d2960b0937)
+# every *.dll beside the shell has the digest that record gives it, and no other: True
+# binaries that differ from the record: none
+# command: dotnet <shell> <program>; exit 0
+
+2-digit: "〇二:三五:〇六 AM"
+2-digit code points: U+3007 U+4E8C U+003A U+4E09 U+4E94 U+003A U+3007 U+516D U+202F U+0041 U+004D
+2-digit is exactly "〇二:三五:〇六" U+202F "AM": true
+2-digit with U+0020 for its U+202F, the file's expected String: "〇二:三五:〇六 AM"
+second numeric: "六"
+second numeric code points: U+516D
+second numeric includes "六": true
+resolved: {"locale":"en-US-u-nu-hanidec","calendar":"gregory","numberingSystem":"hanidec","timeZone":"America/New_York","hourCycle":"h12","hour12":true,"hour":"2-digit","minute":"2-digit","second":"2-digit"}
+Intl.DateTimeFormat().resolvedOptions().timeZone: America/New_York
+new Date(2024, 0, 1, 2, 35, 6, 789).toISOString(): 2024-01-01T07:35:06.789Z
+[object Object]

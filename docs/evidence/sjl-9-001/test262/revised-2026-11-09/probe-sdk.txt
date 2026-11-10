@@ -1,0 +1,7 @@
+# The .NET SDK the class-L probe's shell was built with (probe-shell-build.log), added 2026-11-10, at review
+file: dotnet-sdk-10.0.403-linux-x64.tar.gz, the file the release metadata names at https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.403/dotnet-sdk-10.0.403-linux-x64.tar.gz
+SHA-512 of the tarball as downloaded: b7b3d8461cf98b07d2552ce9199702fa3ad010ac2671a5f8cd5136f7534e50f6855ba7bbb02b11494563f1d04156276a31cda1103b900e5eecd0d9473dc7b9c5
+SHA-512 the release metadata gives that file (https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json, release 10.0.14 of 2026-10-25, SDK 10.0.403, file dotnet-sdk-linux-x64.tar.gz): b7b3d8461cf98b07d2552ce9199702fa3ad010ac2671a5f8cd5136f7534e50f6855ba7bbb02b11494563f1d04156276a31cda1103b900e5eecd0d9473dc7b9c5
+equal: yes
+runtime that release bundles, as its metadata gives it: Microsoft.NETCore.App 10.0.14
+The digest of the tarball was taken when it was downloaded, before the probe's build; the metadata was read again on 2026-11-10, at review, and gives the same digest.

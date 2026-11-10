@@ -1,0 +1,20 @@
+GO-LOCAL seen 2026-11-10T17:36:25Z
+-rw-r--r-- 1 root root 234 2026-11-10 17:36:19.046538818 +0000 <scratch>/GO-LOCAL
+GO-LOCAL created 2026-11-10T17:36:19Z by the orchestrator: the SJL-13 evidence stage (wf_f76806c5-839) completed and verified at b8b4b37; no SJL-13 process remains.
+uptime:  17:36:19 up 10:41,  0 user,  load average: 0.76, 2.33, 2.14
+ 17:36:25 up 10:41,  0 user,  load average: 0.64, 2.25, 2.12
+/dev/vda        252G   33G  7.0G  83% /
+
+load before part C base: 2.83 2.24 2.13 1/104 29141; other dotnet: 0 (the count of 3 was this shell's own command line; pgrep -x dotnet found none)
+load before part D base: 1.57 2.00 2.06 1/106 29336; dotnet processes: 0
+load before part C and D after: 2.58 2.32 2.16 1/111 30541; dotnet processes: 0
+# Added 2026-11-10, at review. The lines above are the three runs whose start line is not in their own log. Every
+# other local run's load and count of .NET processes are on its own log's "== start" line, with two exceptions:
+# - the base build, local/base-build.log, reads "# other .NET processes: 2" at 2026-11-10T17:40:18Z, with the load
+#   0.60 1.75 1.98. What the two were was not recorded and cannot now be confirmed; whether they were this shell's own
+#   command line, as part C base's count of 3 was, is not known. The probe's build before it had ended at 17:38:38Z
+#   (test262/revised-2026-11-09/probe-shell-build.log), the two probes were taken at 17:39:18Z and 17:39:20Z, and the
+#   after build's start line, at 17:43:25Z, reads 0.
+# - the reference run, datasets/reference/, has no start time and no load: neither was recorded. Its answer files are
+#   dated 17:46:07Z to 17:46:09Z, after part D after's test262 run (started 17:45:40Z) and part C after's collations
+#   probe (17:45:56Z), and before the home's tests (17:46:39Z), so no other run of this stage overlapped it.

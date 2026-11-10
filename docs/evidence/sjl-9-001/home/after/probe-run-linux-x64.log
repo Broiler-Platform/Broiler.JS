@@ -1,0 +1,14 @@
+== start 2026-11-10T17:50:00Z load: 6.15 5.69 3.57 2/111 1438; dotnet processes: 0
+/dev/vda        252G   32G  7.3G  82% /
+$ dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -r linux-x64 --nologo --disable-build-servers -p:NuGetAudit=false
+publish exit=0; warning lines: 0
+# managed assemblies in the publish directory: 0
+Broiler.ECMAScript.Probe: corpus revision 37, 72 files, 111175 vectors, 0 failures
+Broiler.ECMAScript.Probe: judged at the parse (syntax): 549 vectors, 230 match, 319 differ, 0 not implemented, 549 agree at the parse
+aot exit=0
+Broiler.ECMAScript.Probe: corpus revision 37, 72 files, 111175 vectors, 0 failures
+Broiler.ECMAScript.Probe: judged at the parse (syntax): 549 vectors, 230 match, 319 differ, 0 not implemented, 549 agree at the parse
+jit exit=0
+# the Native AOT report is byte-identical to the JIT's: True
+== end 2026-11-10T17:50:42Z
+/dev/vda        252G   32G  7.0G  83% /
