@@ -1506,7 +1506,11 @@ This repository's part of it:
   data for both engines, each of which embeds its own tables (SJL-D-6 (c)). `Broiler.Unicode.Cldr.LocaleData` is not
   extended, and this engine's uses of it for Intl data go at SJL-9.5, with the package reference. This engine keeps a
   host-culture provider for the locales the shared data lacks. **Decision SJL-D-24 (c)**: collation is shared later,
-  by SJL-17.
+  by SJL-17. *(Noted 2026-11-10, at SJL-9.5's records: this engine's uses of the package for Intl data are gone, but
+  not "with the package reference". `Intl.supportedValuesOf`, sub-area (a), still reads the package's
+  `IntlEnumerationData` for its currency and unit lists, and the shared library's `SupportedValues` is not wired for
+  them, so `BuiltIns` keeps the reference and `Directory.Packages.props` the version until those lists move. Bundle
+  [`sjl-9-001`](../evidence/sjl-9-001/README.md), "The cut-over's records (SJL-9.5)", records why.)*
 - **The data home** (decisions D10 to D12), `Broiler.ECMAScript/data/intl/` from SJL-9.2:
   - the CLDR 48.2.0 pin, a superset of Broiler.VM's whose entries are byte-identical to Broiler.VM's, with this engine's
     extra main-data files from the same packages; Broiler.VM's rule I4 holds its pin to the home's entry by entry;
@@ -1724,6 +1728,10 @@ This repository's part of it:
   engine's Intl objects with every public member, disposition (a), and nothing public is removed.
   `JSIntlDateTimeFormat`'s public static `Get(CultureInfo)` and `ApplyAllDefaults` stay, over the library, a culture's
   name taken as the locale. SJL-9.5 records them in [`docs/public-api.md`](../public-api.md).
+  *(Noted 2026-11-10, at SJL-9.5's records: `Get(CultureInfo)` runs over the library, a culture's name taken as the
+  locale. `ApplyAllDefaults` and `ToDateTimeOptions` stay, hand-written, but no caller in this repository reaches them
+  any more and neither calls the library, since `Date.prototype`'s `toLocale*` methods hand their required and defaults
+  to the library's CreateDateTimeFormat (row T2); `docs/public-api.md`'s section of 2026-11-10 records it.)*
 - **The leftover items of this repository's bundles** (decision D26, as revised for finding F15) each have a row:
   `sjl-3-001/README.md:207` (the plan cited `:194`), `sjl-4-001/README.md:267-268, 278`, `sjl-6-001/README.md:356, 368`
   and `sjl-7-001/README.md:172, 548`. The correspondence's section "The leftover items (D26)" gives each verdict; the
@@ -1823,6 +1831,35 @@ replacement.
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses 11 to 15 are judged in its bundle of
 the same name, and SJL-9 may not meet its gate before SJL-7 and SJL-8 meet theirs, and so not before SJL-3 meets
 SJL-3's.
+
+**This engine's cut-over (SJL-9.5), its state on 2026-11-10.** *(Added 2026-11-10, at SJL-9.5's records, plan task
+8.7.)* All five sub-areas are cut over on branch `sjl-9-5-cutover`, one merge prepared as one commit per task, with
+the review's fixes and merges of the default branch, the last of them the library's date-time fix
+(Broiler-Platform/Broiler.JS#1108). The branch is not merged, and no part of bundle `sjl-9-001`'s rule has been run as
+evidence: the bases and the after runs are taken at the merge that lands SJL-9.5 (decision D4).
+- **The records are filed on the branch.** [`Broiler.JS/CHANGELOG.md`](../../Broiler.JS/CHANGELOG.md), "Intl moves to
+  the shared Intl library", lists every correction, implementation-defined change and data change by its row
+  (decision D25); [`docs/public-api.md`](../public-api.md) records that no public member is removed or changes its
+  signature (decision SJL-D-25, D24); the root `THIRD_PARTY_NOTICES.md` names the archived
+  `calendarPreferenceData.json`, as the note of 2026-11-09 above said it would at SJL-9.5, and the embedded Intl
+  tables, and no longer names the deleted CLDR 47.0.0 table and its script; and bundle
+  [`sjl-9-001`](../evidence/sjl-9-001/README.md) holds the deletion search, which finds no deleted type or member
+  referenced by code, in `cutover/`.
+- **The owner's rulings of 2026-11-10**, each asked and answered. "Dated part C revision": part C's `fr-CA`
+  `hourCycles` line, which row L19's move makes differ from Broiler.VM's expected answer in a `spec` group, is admitted
+  by a dated revision of the rule, filed on the default branch in a merge of its own; the alternative not taken was
+  "Keep old answer". "Accept, follows CLDR": `fa`'s default `persian` calendar writes its minute and second as CLDR's
+  `m:ss` (rows T16 and T13), and the test that pinned the `gregory` answer asks `fa-u-ca-gregory`; the alternative not
+  taken was "Revert the test change".
+- **Where the records depart from this plan.** Task 8.7 says to remove `Broiler.Unicode.Cldr.LocaleData`; it stays for
+  `supportedValuesOf` (the note on decision SJL-D-22 above). Bundle `sjl-8-001`'s collector names the deleted engine
+  file and is left as it is, since it reads that bundle's own after commit. `Broiler.ECMAScript/docs/intl/design.md`
+  still names the deleted adapter `NumberingSystemDecimalData`, and the library's next records merge owes it a dated
+  note.
+- **Before the merge.** The branch merges the default branch once the part C revision has landed and runs part C again
+  to show the line admitted; the windows-latest engine vectors job shows how `aa` and `pap` answer (corpus revision
+  36's open point); and each judged run of parts A and B keeps the class-L probe the rule revision of 2026-11-09 asks
+  for.
 
 **The frontend's syntax half (SJL-13.1), filed 2026-10-26: all five sub-areas accepted, the library's shape and its
 request decided, the stage table and the classification filed, and the owner's decisions of 2026-10-26 recorded.**
