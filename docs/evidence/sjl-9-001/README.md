@@ -13,6 +13,22 @@ clause 8 under invariant globalization, and SJL-9.6's "the Intl reference datase
 - part D is part C's programs, and test262's `intl402/default-locale-is-supported.js`, under invariant
   globalization.
 
+*(Noted 2026-11-10, on the owner's decision of that day, "Dated part C revision".)* The rule is read beside two dated
+revisions, each written after SJL-9.5's local pre-check runs had been seen and before any judged run, and so weaker
+evidence than the rule. Neither rewrites it:
+- [`decision-rule-revised-2026-11-09.md`](decision-rule-revised-2026-11-09.md) admits one test262 path in parts A and B
+  as class L, `intl402/DateTimeFormat/prototype/format/numbering-system.js` (row T12, the ruling "Follow CLDR");
+- [`decision-rule-revised-2026-11-10.md`](decision-rule-revised-2026-11-10.md) admits one line of part C as class L19,
+  the `locales` program's `11 fr-CA hourCycles`. This engine answers it `[h23,h12]`, from CLDR 48.2.0's time data for
+  `fr-CA`, under row L19 and the owner's ruling of 2026-11-09, "Fix both consumers"; the expected answer, Broiler.VM's
+  as the pinned copies hold it, is `[h12,h23]`. Part C's table of classed lines lists that line as L19, and this README
+  reads that line, and only that line, so. The alternative not taken was "Keep old answer".
+
+Part D, part C's population, the copies and their pins, [`divergence-groups.tsv`](divergence-groups.tsv) and its dated
+corrections below are unchanged. The owner's other ruling of 2026-11-10, "Accept, follows CLDR", covers `fa`'s
+minute-and-second answer under its `persian` calendar (rows T16 and T13). No line of parts C and D reads that answer, so
+it needs no rule text.
+
 The data home's clauses 1 to 3 and the home clauses 4 to 6 are judged by their own mechanisms, the tests SJL-9.2 and
 SJL-9.3 commit, each with its witness. Clauses 7 and 10 are read from the tree and from `Broiler.JS/CHANGELOG.md`. The
 rule names them and does not decide them.
