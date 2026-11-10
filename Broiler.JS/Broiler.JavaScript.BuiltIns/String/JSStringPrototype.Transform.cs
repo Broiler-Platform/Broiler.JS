@@ -187,15 +187,18 @@ public partial class JSString
     // ECMA-402 TransformCase, steps 1 to 6: the requested locales are canonicalized (null is a TypeError
     // and a malformed tag a RangeError), the first is taken, or the default locale when there is none,
     // and its language, which a Unicode extension does not change, chooses the language-sensitive
-    // mappings. The default locale is this engine's, en-US, never the host's culture (C8), and a list of
-    // locales is read as a list (C7).
+    // mappings. A list of locales is read as a list (C7). The default locale is the one every Intl
+    // service reads, the default-locale provider's (JSD-0082, decision D7; row L35): SJL-7.5's C8 reads
+    // as "casing reads the host's culture only through that provider", so with no locale under a tr, az
+    // or lt host culture the Turkic or Lithuanian mappings apply, as that culture's Intl services resolve.
+    // (Revised 2026-11-04, at SJL-9.5; the comment read "The default locale is this engine's, en-US, never the
+    // host's culture (C8), and a list of locales is read as a list (C7).")
     private static CaseLanguage TransformCaseLanguage(JSValue locales)
     {
         var requested = Intl.JSIntl.CanonicalizeLocaleList(locales);
-        if (requested[KeyStrings.length].UIntValue == 0)
-            return CaseLanguage.Default;
-
-        var tag = requested[0u].StringValue;
+        var tag = requested[KeyStrings.length].UIntValue == 0
+            ? Intl.JSIntlLocaleProviders.DefaultLocale
+            : requested[0u].StringValue;
         var dash = tag.IndexOf('-');
         return (dash < 0 ? tag : tag[..dash]) switch
         {

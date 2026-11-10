@@ -95,10 +95,9 @@ public partial class JSDate
         if (format.IsString)
             return new JSString(FormatWithNetCulture(locale, format.ToString(), "D"));
 
-        // Spec (§21.4.4.39): construct an Intl.DateTimeFormat with ToDateTimeOptions(options,
-        // "date", "date") and format through it, so the result — and any exception — matches
-        // Intl.DateTimeFormat exactly.
-        return FormatThroughIntl(locale, format, required: "date", defaults: "date");
+        // ECMA-402 (sup-date.prototype.tolocaledatestring): CreateDateTimeFormat with required "date" and defaults "date",
+        // and format through it, so the result — and any exception — matches Intl.DateTimeFormat exactly.
+        return FormatThroughIntl(locale, format, global::Broiler.ECMAScript.Intl.DateTimeRequired.Date, global::Broiler.ECMAScript.Intl.DateTimeDefaults.Date);
     }
 
     [JSExport("toLocaleString", Length = 0)]
@@ -113,10 +112,10 @@ public partial class JSDate
         if (format.IsString)
             return new JSString(FormatWithNetCulture(locale, format.ToString(), "F"));
 
-        // Spec (§21.4.4.39): construct an Intl.DateTimeFormat with ToDateTimeOptions(options,
-        // "any", "all") — so with no component/style it shows the full date+time — and format
-        // through it. This makes the output and exceptions match Intl.DateTimeFormat exactly.
-        return FormatThroughIntl(locale, format, required: "any", defaults: "all");
+        // ECMA-402 (sup-date.prototype.tolocalestring): CreateDateTimeFormat with required "any" and defaults "all" — so
+        // with no component/style it shows the full date+time — and format through it. This makes the output and
+        // exceptions match Intl.DateTimeFormat exactly.
+        return FormatThroughIntl(locale, format, global::Broiler.ECMAScript.Intl.DateTimeRequired.Any, global::Broiler.ECMAScript.Intl.DateTimeDefaults.All);
     }
 
     [JSExport("toLocaleTimeString", Length = 0)]
@@ -131,22 +130,24 @@ public partial class JSDate
         if (format.IsString)
             return new JSString(FormatWithNetCulture(locale, format.ToString(), "T"));
 
-        // Spec (§21.4.4.42): construct an Intl.DateTimeFormat with ToDateTimeOptions(options,
-        // "time", "time") and format through it, so the result and any exception match
-        // Intl.DateTimeFormat exactly.
-        return FormatThroughIntl(locale, format, required: "time", defaults: "time");
+        // ECMA-402 (sup-date.prototype.tolocaletimestring): CreateDateTimeFormat with required "time" and defaults "time",
+        // and format through it, so the result and any exception match Intl.DateTimeFormat exactly.
+        return FormatThroughIntl(locale, format, global::Broiler.ECMAScript.Intl.DateTimeRequired.Time, global::Broiler.ECMAScript.Intl.DateTimeDefaults.Time);
     }
 
-    // Routes Date.prototype.toLocale{,Date,Time}String through Intl.DateTimeFormat, applying the
-    // method's ToDateTimeOptions(options, required, defaults). Both the formatted output and any
-    // thrown exception (null locale → TypeError, malformed tag / invalid option → RangeError) are
-    // therefore identical to constructing the Intl.DateTimeFormat directly.
-    private JSValue FormatThroughIntl(JSValue locale, JSValue format, string required, string defaults)
-    {
-        var opts = Intl.JSIntlDateTimeFormat.ToDateTimeOptions(format, required, defaults);
-        var dtf = new Intl.JSIntlDateTimeFormat(new Arguments(JSUndefined.Value, locale, opts));
-        return dtf.Format(new Arguments(JSUndefined.Value, CreateNumber(timeValue)));
-    }
+    // Revised 2026-11-09, at SJL-9.5 (review of task 8.5, row T2): the three method comments above read "Spec (§21.4.4.39):
+    // construct an Intl.DateTimeFormat with ToDateTimeOptions(options, "date", "date") and format through it", with "any",
+    // "all" for toLocaleString and "time", "time" (§21.4.4.42) for toLocaleTimeString; each now names CreateDateTimeFormat's
+    // required and defaults, which ECMA-402's sup-date.prototype.tolocale* sections pass.
+    // Routes Date.prototype.toLocale{,Date,Time}String through Intl.DateTimeFormat's CreateDateTimeFormat with the method's
+    // required and defaults (the shared Intl library's DateTimeFormat). Both the formatted output and any thrown exception
+    // (null locale → TypeError, malformed tag / invalid option → RangeError) are therefore identical to constructing the
+    // Intl.DateTimeFormat directly, and each option is read once (row T2, a correction).
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T2): the comment read "Routes Date.prototype.toLocale{,Date,Time}String
+    // through Intl.DateTimeFormat, applying the method's ToDateTimeOptions(options, required, defaults)." ToDateTimeOptions
+    // read the components and styles once before the constructor read every option, so a getter ran twice.
+    private JSValue FormatThroughIntl(JSValue locale, JSValue format, global::Broiler.ECMAScript.Intl.DateTimeRequired required, global::Broiler.ECMAScript.Intl.DateTimeDefaults defaults)
+        => new JSString(Intl.JSIntlDateTimeFormat.ToLocaleString(timeValue, locale, format, required, defaults));
 
     // The Broiler .NET extension path: a non-spec convenience where the second argument is a .NET
     // custom/standard date format string. A nullish locale uses the current culture; otherwise the

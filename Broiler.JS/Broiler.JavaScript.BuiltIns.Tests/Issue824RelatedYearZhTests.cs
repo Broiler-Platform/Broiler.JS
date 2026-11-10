@@ -40,8 +40,10 @@ public class Issue824RelatedYearZhTests
     public void NonChineseLocaleKeepsParenthesizedForm()
     {
         // en keeps the root "r(U)" form rather than the zh "rU年" form.
+        // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T35, a correction): the cyclic year name is en's own
+        // in CLDR 48.2.0, "ji-hai", where the Chinese name was written in English; the test expected "2019(己亥)".
         var formatted = Eval(
             "new Intl.DateTimeFormat('en-u-ca-chinese', { year: 'numeric' }).format(new Date(2019, 5, 1))");
-        Assert.Equal("2019(己亥)", formatted);
+        Assert.Equal("2019(ji-hai)", formatted);
     }
 }

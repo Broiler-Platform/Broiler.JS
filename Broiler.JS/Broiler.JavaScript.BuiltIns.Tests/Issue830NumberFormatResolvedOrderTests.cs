@@ -25,8 +25,13 @@ public class Issue830NumberFormatResolvedOrderTests
             const keys = Object.keys(
               new Intl.NumberFormat(undefined, { notation: "compact", style: "currency", currency: "XTS" })
                 .resolvedOptions());
+            // Revised 2026-11-08, at SJL-9.5 (task 8.4; rows M5 and N6b, corrections): compact notation with no digit
+            // option resolves minimumSignificantDigits 1 and maximumSignificantDigits 2 under morePrecision, which
+            // resolvedOptions reports after the fraction digits; the list read "minimumFractionDigits",
+            // "maximumFractionDigits", "useGrouping" with no significant digits between.
             const expected = ["locale","numberingSystem","style","currency","currencyDisplay",
               "currencySign","minimumIntegerDigits","minimumFractionDigits","maximumFractionDigits",
+              "minimumSignificantDigits","maximumSignificantDigits",
               "useGrouping","notation","compactDisplay","signDisplay","roundingIncrement",
               "roundingMode","roundingPriority","trailingZeroDisplay"];
             JSON.stringify(keys) === JSON.stringify(expected) ? "ok" : JSON.stringify(keys);

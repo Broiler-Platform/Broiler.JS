@@ -209,6 +209,10 @@ public partial class JSDecimal : JSPrimitive
         return new JSString(nv.ToString("F0"));
     }
 
+    // This toLocale* method reads the host's culture directly, not the default-locale provider
+    // (Intl.JSIntlLocaleProviders.DefaultLocale) every Intl service reads. Under JSD-0082's decision D7, one
+    // default (row L35), it is a reader of DefaultLocale; it is listed for task 8.4, the number sub-area,
+    // which moves it onto that provider or records why it stays (listed 2026-11-04, at SJL-9.5).
     [JSExport("toLocaleString")]
     public JSValue ToLocaleString(in Arguments a) => new JSString(value.ToString(CultureInfo.CurrentCulture));
 

@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Numerics;
+using Broiler.ECMAScript.Intl;
 using Broiler.ECMAScript.Numbers;
 using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.Date;
@@ -18,6 +19,8 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Runtime.Unicode;
 using Broiler.Unicode.Algorithms;
 using Broiler.Unicode.Segmentation;
+// IntlEnumerationData (Intl.supportedValuesOf's currencies and units, sub-area (a)) is the last reader of this namespace
+// here since SJL-9.5's task 8.5, which ends DateTimeFormat's use of CldrLocaleData (noted 2026-11-09).
 using UnicodeCldr.LocaleData;
 
 namespace Broiler.JavaScript.BuiltIns.Intl;
@@ -46,9 +49,6 @@ public static class JSIntl
     private static readonly KeyString CurrencyKey = KeyStrings.GetOrCreate("currency");
     private static readonly KeyString CurrencyDisplayKey = KeyStrings.GetOrCreate("currencyDisplay");
     private static readonly KeyString CurrencySignKey = KeyStrings.GetOrCreate("currencySign");
-    private static readonly string[] CurrencyDisplayValues = ["code", "symbol", "narrowSymbol", "name"];
-    private static readonly string[] CurrencySignValues = ["standard", "accounting"];
-    private static readonly string[] NumberFormatStyleValues = ["decimal", "percent", "currency", "unit"];
     private static readonly KeyString UnitKey = KeyStrings.GetOrCreate("unit");
     private static readonly KeyString TypeKey = KeyStrings.GetOrCreate("type");
     private static readonly KeyString LocaleMatcherKey = KeyStrings.GetOrCreate("localeMatcher");
@@ -59,56 +59,16 @@ public static class JSIntl
     private static readonly KeyString SignDisplayKey = KeyStrings.GetOrCreate("signDisplay");
     private static readonly KeyString CompactDisplayKey = KeyStrings.GetOrCreate("compactDisplay");
     private static readonly KeyString UnitDisplayKey = KeyStrings.GetOrCreate("unitDisplay");
-    private static readonly string[] NotationValues = ["standard", "scientific", "engineering", "compact"];
-    private static readonly string[] SignDisplayValues = ["auto", "never", "always", "exceptZero", "negative"];
-    private static readonly string[] CompactDisplayValues = ["short", "long"];
-    private static readonly string[] UnitDisplayValues = ["short", "narrow", "long"];
     private static readonly KeyString RoundingIncrementKey = KeyStrings.GetOrCreate("roundingIncrement");
     private static readonly KeyString RoundingModeKey = KeyStrings.GetOrCreate("roundingMode");
     private static readonly KeyString RoundingPriorityKey = KeyStrings.GetOrCreate("roundingPriority");
     private static readonly KeyString TrailingZeroDisplayKey = KeyStrings.GetOrCreate("trailingZeroDisplay");
-    // SetNumberFormatDigitOptions: roundingIncrement must be one of these values.
-    private static readonly int[] SanctionedRoundingIncrements =
-        [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
     private static readonly KeyString TimeZoneKey = KeyStrings.GetOrCreate("timeZone");
     private static readonly KeyString CollationKey = KeyStrings.GetOrCreate("collation");
     private static readonly KeyString LanguageKey = KeyStrings.GetOrCreate("language");
     private static readonly KeyString ScriptKey = KeyStrings.GetOrCreate("script");
     private static readonly KeyString RegionKey = KeyStrings.GetOrCreate("region");
     private static readonly KeyString NumberingSystemKey = KeyStrings.GetOrCreate("numberingSystem");
-    // ECMAScript IsStructurallyValidLanguageTag matches UTS-35 `unicode_locale_id`,
-    // which REQUIRES a leading `unicode_language_id` (a language subtag). A wholly
-    // private-use tag (e.g. "x-private") has no language subtag and is therefore NOT
-    // structurally valid — unlike BCP-47 langtag, the standalone `privateuse`
-    // alternative is not part of the grammar, so it is intentionally absent here.
-    // The UTS-35 `unicode_language_subtag` is `alpha{2,3} | alpha{5,8}` — unlike BCP-47 langtag it
-    // has NO `extlang` production, so a 3-alpha subtag after the language (e.g. the "els" in
-    // "en-els") is not structurally valid and must be rejected.
-    private static readonly System.Text.RegularExpressions.Regex StructurallyValidLanguageTagPattern = new(
-        @"^(?:[A-Za-z]{2,3}|[A-Za-z]{5,8})(?:-[A-Za-z]{4})?(?:-(?:[A-Za-z]{2}|\d{3}))?(?:-(?:[0-9A-Za-z]{5,8}|\d[0-9A-Za-z]{3}))*(?:-(?:[0-9A-WY-Za-wy-z](?:-[0-9A-Za-z]{2,8})+))*(?:-x(?:-[0-9A-Za-z]{1,8})+)?$",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-    private static readonly HashSet<string> InvalidGrandfatheredLanguageTags = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "no-bok",
-        "no-nyn",
-        "zh-min",
-        "zh-min-nan",
-    };
-
-    // Regular grandfathered tags that remain structurally valid language tags but
-    // whose canonical form is a single preferred subtag (UTS #35 §3.3, the CLDR
-    // language-alias "type" mappings). CanonicalizeUnicodeLocaleId replaces the
-    // whole tag with the preferred value. Irregular grandfathered tags (i-klingon,
-    // en-GB-oed, sgn-*, …) are not structurally valid and are rejected by the
-    // grammar before reaching this table.
-    private static readonly Dictionary<string, string> RegularGrandfatheredMappings = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["art-lojban"] = "jbo",
-        ["cel-gaulish"] = "xtg",
-        ["zh-guoyu"] = "zh",
-        ["zh-hakka"] = "hak",
-        ["zh-xiang"] = "hsn",
-    };
 
     public static JSValue GetIntlObject()
     {
@@ -261,13 +221,12 @@ public static class JSIntl
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("select"),
             new JSFunction(static (in Arguments a) =>
             {
-                if (a.This is not JSIntlPluralRules pluralRules)
-                    throw JSEngine.NewTypeError("Intl.PluralRules.prototype.select called on incompatible receiver");
+                var rules = JSIntlPluralRules.Of(a.This, "select").Rules;
 
-                // ToNumber the argument (may invoke valueOf), then resolve the
-                // CLDR plural category for the number.
-                var n = a.Get1().DoubleValue;
-                return JSValue.CreateString(pluralRules.SelectCategory(n));
+                // ToIntlMathematicalValue of the argument (a BigInt's included, row P2), then ResolvePlural over
+                // FormatNumericToString's string (row P1), the shared library's.
+                var n = ToIntlMathematicalValue(a.Get1());
+                return JSValue.CreateString(rules.ResolvePlural(n, null).PluralCategory);
             }, "select", "function select() { [native code] }", createPrototype: false, length: 1),
             JSPropertyAttributes.ConfigurableValue);
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("resolvedOptions"),
@@ -276,21 +235,21 @@ public static class JSIntl
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("selectRange"),
             new JSFunction(static (in Arguments a) =>
             {
-                if (a.This is not JSIntlPluralRules)
-                    throw JSEngine.NewTypeError("Intl.PluralRules.prototype.selectRange called on incompatible receiver");
+                var rules = JSIntlPluralRules.Of(a.This, "selectRange").Rules;
 
                 var start = a.Get1();
                 var end = a.GetAt(1);
                 if (start.IsUndefined || end.IsUndefined)
                     throw JSEngine.NewTypeError("Intl.PluralRules.prototype.selectRange requires defined start and end values");
 
-                // ECMA-402 PluralRuleSelectRange / ResolvePluralRange: after ToNumber-coercing
-                // both endpoints, a NaN start or end is a RangeError (a range cannot be ordered).
-                var startValue = start.DoubleValue;
-                var endValue = end.DoubleValue;
-                if (double.IsNaN(startValue) || double.IsNaN(endValue))
+                // ECMA-402 ResolvePluralRange, the shared library's: both ends ToIntlMathematicalValue's, a NaN start or end
+                // the RangeError of its step 1; ends that format alike take the start's category (row P5a, a correction),
+                // and other ranges CLDR's plural ranges (row P5b, an adoption), where every range answered "other".
+                var x = ToIntlMathematicalValue(start);
+                var y = ToIntlMathematicalValue(end);
+                if (rules.ResolvePluralRange(x, y, out var category, null) != IntlStatus.Completed)
                     throw JSEngine.NewRangeError("Intl.PluralRules.prototype.selectRange called with a NaN start or end value");
-                return JSValue.CreateString("other");
+                return JSValue.CreateString(category);
             }, "selectRange", "function selectRange() { [native code] }", createPrototype: false, length: 2),
             JSPropertyAttributes.ConfigurableValue);
         SetIntlToStringTag(constructor, "PluralRules");
@@ -303,104 +262,33 @@ public static class JSIntl
             // SupportedLocales: canonicalize the requested locales, then coerce the
             // options argument and validate the localeMatcher option (RangeError on
             // an invalid value), and finally narrow the canonicalized list to the
-            // locales the runtime can actually serve (LookupSupportedLocales).
+            // available locales: the shared library's FilterLocales (SJL-9.5, sub-area (a);
+            // row L36), whose lookup and best-fit matchers are both the lookup matcher (L38).
             var requested = CanonicalizeLocaleList(a.Get1());
             var options = CoerceOptionsToObject(a.GetAt(1));
             _ = GetOption(options, LocaleMatcherKey, ["lookup", "best fit"], false, "best fit");
-            return LookupSupportedLocales(requested);
+            var subset = JSValue.CreateArray();
+            foreach (var locale in LocaleNegotiation.FilterLocales(JSIntlLocaleProviders.AvailableLocales, RequestedLocales(requested)))
+                subset.AddArrayItem(JSValue.CreateString(locale));
+            return subset;
         }, "supportedLocalesOf", "function supportedLocalesOf() { [native code] }", length: 1, createPrototype: false);
 
-    // The set of BCP 47 language tags the host runtime knows about, sourced from
-    // the .NET globalization data (ICU/CLDR). Used as AvailableLocales for the
-    // BestAvailableLocale fallback walk in LookupSupportedLocales.
-    private static HashSet<string> availableLocales;
-
-    private static HashSet<string> AvailableLocales
+    // The Strings of a list CanonicalizeLocaleList answered, in its order.
+    private static List<string> RequestedLocales(JSValue canonicalLocales)
     {
-        get
-        {
-            if (availableLocales == null)
-            {
-                var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var culture in CultureInfo.GetCultures(CultureTypes.AllCultures))
-                {
-                    if (!string.IsNullOrEmpty(culture.Name))
-                        set.Add(culture.Name);
-                }
-
-                availableLocales = set;
-            }
-
-            return availableLocales;
-        }
-    }
-
-    // LookupSupportedLocales (ECMA-402): keep each requested (already
-    // canonicalized) locale whose BestAvailableLocale match is defined, dropping
-    // the rest (e.g. "zxx", "und"). The original requested tag — extensions and
-    // all — is preserved in the result.
-    private static JSValue LookupSupportedLocales(JSValue requested)
-    {
-        var subset = JSValue.CreateArray();
-        if (requested is not JSObject list)
-            return subset;
+        var requested = new List<string>();
+        if (canonicalLocales is not JSObject list)
+            return requested;
 
         var length = list[KeyStrings.length].UIntValue;
         for (uint i = 0; i < length; i++)
         {
             var locale = list[i];
-            if (locale.IsUndefined)
-                continue;
-
-            if (IsLocaleAvailable(locale.StringValue))
-                subset.AddArrayItem(JSValue.CreateString(locale.StringValue));
+            if (!locale.IsUndefined)
+                requested.Add(locale.StringValue);
         }
 
-        return subset;
-    }
-
-    // BestAvailableLocale: strip extension sequences, then progressively trim the
-    // trailing subtag (skipping single-character subtags) until an available
-    // locale is found or the candidate is exhausted.
-    private static bool IsLocaleAvailable(string locale)
-    {
-        var available = AvailableLocales;
-        var candidate = RemoveExtensionSequences(locale);
-        while (candidate.Length > 0)
-        {
-            if (available.Contains(candidate))
-                return true;
-
-            var pos = candidate.LastIndexOf('-');
-            if (pos < 0)
-                return false;
-
-            if (pos >= 2 && candidate[pos - 2] == '-')
-                pos -= 2;
-
-            candidate = candidate.Substring(0, pos);
-        }
-
-        return false;
-    }
-
-    // Drop every subtag from the first singleton (length-1) subtag onward, i.e.
-    // the Unicode ("-u-"), transform ("-t-") and private ("-x-") extension
-    // sequences, leaving the language/script/region/variant core for matching.
-    private static string RemoveExtensionSequences(string locale)
-    {
-        var parts = locale.Split('-');
-        var end = parts.Length;
-        for (var i = 1; i < parts.Length; i++)
-        {
-            if (parts[i].Length == 1)
-            {
-                end = i;
-                break;
-            }
-        }
-
-        return end == parts.Length ? locale : string.Join("-", parts, 0, end);
+        return requested;
     }
 
     private static JSObject CoerceOptionsToObject(JSValue options)
@@ -435,8 +323,7 @@ public static class JSIntl
         var constructor = new JSFunction(static (in Arguments a) =>
             {
                 var options = ValidateConstructorArguments("DurationFormat", in a, out var canonical, coerceOptions: false);
-                var locale = ResolveLocaleFromCanonical(canonical);
-                return new JSIntlDurationFormat(locale, options);
+                return new JSIntlDurationFormat(canonical, options);
             },
             "DurationFormat",
             "function DurationFormat() { [native code] }",
@@ -460,7 +347,7 @@ public static class JSIntl
         var constructor = new JSFunction(static (in Arguments a) =>
         {
             var options = ValidateConstructorArguments("ListFormat", in a, out var canonical, coerceOptions: false);
-            var locale = ResolveLocaleFromCanonical(canonical);
+            var locale = ResolveLocale(canonical, NoRelevantKey).Locale;
             var type = GetOption(options, TypeKey, ["conjunction", "disjunction", "unit"], false, "conjunction");
             var style = GetOption(options, StyleKey, ["long", "short", "narrow"], false, "long");
             return new JSIntlListFormat(locale, type, style);
@@ -547,7 +434,7 @@ public static class JSIntl
         var constructor = new JSFunction((in Arguments a) =>
         {
             var options = ValidateConstructorArguments("Segmenter", in a, out var canonical, coerceOptions: false);
-            var locale = ResolveLocaleFromCanonical(canonical);
+            var locale = ResolveLocaleFromCanonical(canonical, NoRelevantKeys);
             var granularity = GetOption(options, GranularityKey, ["grapheme", "word", "sentence"], false, "grapheme");
             return new JSIntlSegmenter(locale, granularity);
         }, "Segmenter", "function Segmenter() { [native code] }", length: 0);
@@ -568,6 +455,8 @@ public static class JSIntl
             "DisplayNames",
             "function DisplayNames() { [native code] }",
             length: 2);
+        // Intl.DisplayNames.supportedLocalesOf, which every other service has (row L37, a correction).
+        constructor.FastAddValue(SupportedLocalesOfKey, CreateSupportedLocalesOfFunction(), JSPropertyAttributes.ConfigurableValue);
         constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("of"),
             new JSFunction(JSIntlDisplayNames.OfPrototype, "of", "function of() { [native code] }", createPrototype: false, length: 1),
             JSPropertyAttributes.ConfigurableValue);
@@ -594,9 +483,16 @@ public static class JSIntl
                 if (a.This is not JSIntlDateTimeFormat @this)
                     throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.format called on incompatible receiver");
 
-                var format = new JSFunction((in Arguments inner) => @this.Format(in inner), "format", "function format() { [native code] }", createPrototype: false, length: 1);
-                format.SetNameProperty(string.Empty);
-                return format;
+                // [[BoundFormat]]: made once, an anonymous function of length 1 (row T4, a correction: a new function was
+                // made at each read, so dtf.format !== dtf.format).
+                if (@this.BoundFormat is null)
+                {
+                    var format = new JSFunction((in Arguments inner) => @this.Format(in inner), "format", "function format() { [native code] }", createPrototype: false, length: 1);
+                    format.SetNameProperty(string.Empty);
+                    @this.BoundFormat = format;
+                }
+
+                return @this.BoundFormat;
             }, "get format", "function get format() { [native code] }", createPrototype: false, length: 0),
             null,
             JSPropertyAttributes.ConfigurableProperty);
@@ -651,12 +547,18 @@ public static class JSIntl
             constructor.prototype.FastAddProperty(FormatKey,
                 new JSFunction(static (in Arguments a) =>
                 {
-                    if (a.This is not JSIntlNumberFormat @this)
-                        throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.format called on incompatible receiver");
+                    var @this = JSIntlNumberFormat.Of(a.This, "format");
 
-                    var format = new JSFunction((in Arguments inner) => @this.Format(in inner), "format", "function format() { [native code] }", createPrototype: false, length: 1);
-                    format.SetNameProperty(string.Empty);
-                    return format;
+                    // [[BoundFormat]]: made once, an anonymous function of length 1 (row N11, a correction: a new
+                    // function was made at each read, so nf.format !== nf.format).
+                    if (@this.BoundFormat is null)
+                    {
+                        var format = new JSFunction((in Arguments inner) => @this.Format(in inner), "format", "function format() { [native code] }", createPrototype: false, length: 1);
+                        format.SetNameProperty(string.Empty);
+                        @this.BoundFormat = format;
+                    }
+
+                    return @this.BoundFormat;
                 },
                     "get format",
                     "function get format() { [native code] }",
@@ -732,7 +634,18 @@ public static class JSIntl
         return options;
     }
 
-    internal static string ValidateLocaleConstructorArguments(in Arguments a)
+    // The Intl.Locale constructor (ECMA-402 sec-intl.locale) over the shared library's LocaleRecord (SJL-9.5, sub-area (a);
+    // rows L13 and L14): the tag and every option are read here, in the specification's order, each option checked as it is
+    // read so that a refused one stops the reads where ECMA-402 does; LocaleRecord.TryCreate then canonicalises the tag,
+    // applies UpdateLanguageId and makes the record. Every check is over ASCII alone, so a KELVIN SIGN or a dotted capital I
+    // in an option is a RangeError, never folded into a letter first (row L14, a correction).
+    // Two answers move here that row L13, classified "Same", does not name; each follows the text, and each is a correction
+    // of Broiler.JS for task 8.7's changelog, under a dated note on row L13 (recorded 2026-11-04, at SJL-9.5):
+    // - a tag argument that is an Intl.Locale gives its [[Locale]] (sec-intl.locale step 8), where ToString read it, so an
+    //   overridden Intl.Locale.prototype.toString is no longer called;
+    // - the options are coerced (CoerceOptionsToObject, step 10) before the tag is checked (IsWellFormedLanguageTag, step
+    //   11), so new Intl.Locale(<a malformed tag>, null) is a TypeError, where the tag's RangeError came first.
+    internal static LocaleRecord ValidateLocaleConstructorArguments(in Arguments a)
     {
         if (JSEngine.NewTarget == null && (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
             throw JSEngine.NewTypeError("Intl.Locale requires 'new'");
@@ -741,85 +654,89 @@ public static class JSIntl
         if (!tag.IsString && !tag.IsObject)
             throw JSEngine.NewTypeError("Locale tag must be a string or object");
 
-        var tagString = tag.StringValue;
-        // ValidateLanguageTag also canonicalizes (e.g. grandfathered "art-lojban"
-        // -> "jbo"); the canonical form is what the Locale stores and reports.
-        var canonicalTag = ValidateLanguageTag(tagString);
-        var optionsObject = ValidateOptionsArgument(a.GetAt(1));
-        ValidateLocaleOptions(canonicalTag, optionsObject);
-        // ApplyOptionsToTag + the Unicode-extension options (calendar/collation/hourCycle/caseFirst/
-        // numeric/numberingSystem) fold the options into the tag, canonicalizing keyword values.
-        return optionsObject == null ? canonicalTag : ApplyLocaleOptions(canonicalTag, optionsObject);
+        // An Intl.Locale argument gives its [[Locale]], never its toString.
+        var tagString = tag is JSIntlLocale existing ? existing.Tag : tag.StringValue;
+        var options = ValidateOptionsArgument(a.GetAt(1));
+        if (LocaleId.TryParse(tagString, out _) != IntlStatus.Completed)
+            throw JSEngine.NewRangeError("Invalid language tag");
+
+        // UpdateLanguageId's reads, each checked as it is read.
+        var language = options == null ? null : OptionString(options, LanguageKey);
+        if (language != null && LocaleRecord.CheckLanguage(language) != IntlStatus.Completed)
+            throw JSEngine.NewRangeError("Invalid language option");
+
+        var script = options == null ? null : OptionString(options, ScriptKey);
+        if (script != null && LocaleRecord.CheckScript(script) != IntlStatus.Completed)
+            throw JSEngine.NewRangeError("Invalid script option");
+
+        var region = options == null ? null : OptionString(options, RegionKey);
+        if (region != null && LocaleRecord.CheckRegion(region) != IntlStatus.Completed)
+            throw JSEngine.NewRangeError("Invalid region option");
+
+        var variants = options == null ? null : OptionString(options, VariantsKey);
+        if (variants != null && LocaleRecord.CheckVariants(variants) != IntlStatus.Completed)
+            throw JSEngine.NewRangeError("Invalid variants option");
+
+        // The keyword options, in order: calendar, collation, firstDayOfWeek, hourCycle, caseFirst, numeric, numberingSystem.
+        var calendar = ReadLocaleTypeOption(options, CalendarOptionKey, "calendar");
+        var collation = ReadLocaleTypeOption(options, CollationKey, "collation");
+        var firstDayOfWeek = options == null ? null : OptionString(options, FirstDayOfWeekKey);
+        if (firstDayOfWeek != null && LocaleRecord.CheckFirstDayOfWeek(firstDayOfWeek) != IntlStatus.Completed)
+            throw JSEngine.NewRangeError("Invalid firstDayOfWeek option");
+
+        var hourCycle = GetOption(options, HourCycleOptionKey, ["h11", "h12", "h23", "h24"], false, null);
+        var caseFirst = GetOption(options, CaseFirstOptionKey, ["upper", "lower", "false"], false, null);
+        var numericOption = options == null ? JSUndefined.Value : options[NumericOptionKey];
+        bool? numeric = numericOption.IsUndefined ? null : numericOption.BooleanValue;
+        var numberingSystem = ReadLocaleTypeOption(options, NumberingSystemKey, "numberingSystem");
+
+        var status = LocaleRecord.TryCreate(tagString, new LocaleOptions
+        {
+            Language = language,
+            Script = script,
+            Region = region,
+            Variants = variants,
+            Calendar = calendar,
+            Collation = collation,
+            FirstDayOfWeek = firstDayOfWeek,
+            HourCycle = hourCycle,
+            CaseFirst = caseFirst,
+            Numeric = numeric,
+            NumberingSystem = numberingSystem,
+        }, JSIntlData.LocaleData, out var record);
+
+        return status == IntlStatus.Completed && record != null
+            ? record
+            : throw JSEngine.NewRangeError("Invalid language tag");
     }
 
-    // Bcp47 keyword value aliases (UTS #35 LocaleId canonicalization). Only the deprecated values
-    // browsers canonicalize are listed; any other value is used verbatim.
-    private static readonly Dictionary<string, string> CalendarValueAliases = new(StringComparer.Ordinal)
+    // A calendar, collation or numberingSystem option of the Locale constructor: its String, held to UTS #35's `type`.
+    private static string ReadLocaleTypeOption(JSObject options, KeyString key, string name)
     {
-        ["islamicc"] = "islamic-civil",
-        ["ethiopic-amete-alem"] = "ethioaa",
-        ["gregorian"] = "gregory",
-    };
+        var value = options == null ? null : OptionString(options, key);
+        if (value != null && LocaleRecord.CheckType(value) != IntlStatus.Completed)
+            throw JSEngine.NewRangeError($"Invalid {name} option");
+        return value;
+    }
 
-    // Bcp47 collation ("co") keyword value aliases (UTS #35). The deprecated long names mostly
-    // exceed the 8-char subtag limit so they can only arrive as an option value, but the table
-    // is applied uniformly to both the option and the -u-co- tag value.
-    private static readonly Dictionary<string, string> CollationValueAliases = new(StringComparer.Ordinal)
-    {
-        ["dictionary"] = "dict",
-        ["gb2312han"] = "gb2312",
-        ["phonebook"] = "phonebk",
-        ["traditional"] = "trad",
-    };
-
-    // Collation-strength ("ks") keyword value aliases (UTS #35 bcp47/collation.xml). The
-    // long names are deprecated aliases for the level<n>/identic short forms.
-    private static readonly Dictionary<string, string> CollationStrengthValueAliases = new(StringComparer.Ordinal)
-    {
-        ["primary"] = "level1",
-        ["secondary"] = "level2",
-        ["tertiary"] = "level3",
-        ["quaternary"] = "level4",
-        ["identical"] = "identic",
-    };
-
-    // Measurement-system ("ms") keyword value aliases (UTS #35 bcp47/measure.xml).
-    // "imperial" is the deprecated alias for "uksystem"; "metric" and "ussystem" stay.
-    private static readonly Dictionary<string, string> MeasurementSystemValueAliases = new(StringComparer.Ordinal)
-    {
-        ["imperial"] = "uksystem",
-    };
-
-    // The Unicode boolean keys (UTS #35 bcp47/collation.xml): only these keys declare a
-    // "true" type with a "yes" alias, so only for them does "yes" canonicalize to "true"
-    // (and a canonical "true" is then dropped — the bare key implies true). Other "k*" keys
-    // such as ka/kf/kr/ks/kv take "yes" as an ordinary type value that must be preserved.
-    private static readonly HashSet<string> BooleanUnicodeKeywordKeys = new(StringComparer.Ordinal)
-    {
-        "kb", "kc", "kh", "kk", "kn",
-    };
-
-    // Collation types sanctioned by CLDR for a "co" keyword. "standard" and "search" are
-    // reserved (never reflected as the resolved collation), so they are excluded; any other
-    // value is unsupported and falls back to "default".
-    private static readonly HashSet<string> KnownCollations = new(StringComparer.Ordinal)
-    {
-        "big5han", "compat", "dict", "direct", "ducet", "emoji", "eor", "gb2312",
-        "phonebk", "phonetic", "pinyin", "reformed", "searchjl", "stroke",
-        "trad", "unihan", "zhuyin",
-    };
+    private static readonly KeyString VariantsKey = KeyStrings.GetOrCreate("variants");
+    private static readonly KeyString CalendarOptionKey = KeyStrings.GetOrCreate("calendar");
+    private static readonly KeyString FirstDayOfWeekKey = KeyStrings.GetOrCreate("firstDayOfWeek");
+    private static readonly KeyString HourCycleOptionKey = KeyStrings.GetOrCreate("hourCycle");
+    private static readonly KeyString CaseFirstOptionKey = KeyStrings.GetOrCreate("caseFirst");
+    private static readonly KeyString NumericOptionKey = KeyStrings.GetOrCreate("numeric");
 
     // AvailableCollations (Intl.supportedValuesOf("collation")) in ascending code-unit
     // order. Per spec this is the set of collations for which the engine actually provides
     // Collator functionality — i.e. those some locale RESOLVES (resolvedOptions().collation
-    // === co), NOT the broader KnownCollations set merely ACCEPTED as an option value (an
+    // === co), NOT the broader set of collation types the BCP 47 data defines and merely ACCEPTED as an option value (an
     // unrecognised-for-the-locale option silently falls back to "default"). Our Collator
     // resolves only the root collations emoji/eor (available everywhere) plus the locale
     // tailorings exposed by NetCollationSuffix (de phonebk; zh pinyin/stroke/phonetic/
     // zhuyin/trad; ja/ko/zh unihan). Listing a collation here that no locale resolves would
     // fail test262 intl402/Intl/supportedValuesOf/collations-accepted-by-Collator.js
     // (#912 Problem 11), so this list is kept in sync with NetCollationSuffix.
-    private static readonly string[] SupportedCollationsSorted = BuildSortedCollations();
+    internal static readonly string[] SupportedCollationsSorted = BuildSortedCollations();
 
     private static string[] BuildSortedCollations()
     {
@@ -831,433 +748,30 @@ public static class JSIntl
         return array;
     }
 
-    private static readonly System.Text.RegularExpressions.Regex UnicodeKeywordTypePattern =
-        new(@"^[0-9a-z]{3,8}(?:-[0-9a-z]{3,8})*$", RegexOptions.CultureInvariant);
-
-    // True when a (case-insensitive) string is a well-formed Unicode BCP-47 extension
-    // type — the grammar the calendar / numberingSystem options must satisfy.
+    // True when a String is a well-formed Unicode BCP 47 extension type, UTS #35's `type` (the grammar the calendar and
+    // numberingSystem options must satisfy), over ASCII alone (the shared library's LocaleId.IsUnicodeType; row L14).
     internal static bool IsWellFormedUnicodeKeywordType(string value)
-        => !string.IsNullOrEmpty(value) && UnicodeKeywordTypePattern.IsMatch(value.ToLowerInvariant());
-
-    // CanonicalizeUnicodeLocaleId restricted to the extension-free base name (language,
-    // script, region, variants): applies the regular-grandfathered replacement and the
-    // language/region/variant subtag aliases. Used by ApplyOptionsToTag to re-canonicalize a
-    // base name reassembled from Locale option overrides.
-    private static string CanonicalizeBaseName(string baseName)
-    {
-        if (RegularGrandfatheredMappings.TryGetValue(baseName, out var preferred))
-            return preferred;
-
-        var secondDash = baseName.IndexOf('-');
-        if (secondDash > 0)
-        {
-            var thirdDash = baseName.IndexOf('-', secondDash + 1);
-            if (thirdDash > 0)
-            {
-                var prefix = baseName[..thirdDash];
-                if (RegularGrandfatheredMappings.TryGetValue(prefix, out var prefixPreferred))
-                    return ApplySubtagAliases(CanonicalizeLanguageTagCase(prefixPreferred + baseName[thirdDash..]));
-            }
-        }
-
-        return CanonicalizeMainTagVariants(ApplySubtagAliases(baseName));
-    }
-
-    // InitializeLocale steps 12-30: apply the language/script/region options and the Unicode-extension
-    // keyword options to the canonical tag, then re-emit it with the "-u-" keywords canonicalized
-    // (values de-aliased, a boolean "true" dropped) and sorted by key. Existing variants, attributes
-    // and other singleton extensions are preserved.
-    private static string ApplyLocaleOptions(string tag, JSObject options)
-    {
-        var parts = tag.Split('-');
-        var language = parts[0];
-        var i = 1;
-        string script = null, region = null;
-        if (i < parts.Length && parts[i].Length == 4 && IsAllAlpha(parts[i])) { script = parts[i]; i++; }
-        if (i < parts.Length
-            && ((parts[i].Length == 2 && IsAllAlpha(parts[i])) || (parts[i].Length == 3 && IsAllDigitTag(parts[i]))))
-        { region = parts[i]; i++; }
-
-        var variants = new List<string>();
-        while (i < parts.Length && parts[i].Length != 1) { variants.Add(parts[i]); i++; }
-
-        // Walk the singleton extensions, splitting out the "-u-" attributes/keywords from the rest.
-        var attributes = new List<string>();
-        var keywords = new List<(string Key, List<string> Types)>();
-        var otherExtensions = new List<(char Singleton, string Body)>();
-        while (i < parts.Length)
-        {
-            var singleton = char.ToLowerInvariant(parts[i][0]);
-            i++;
-            var block = new List<string>();
-            while (i < parts.Length && parts[i].Length != 1) { block.Add(parts[i].ToLowerInvariant()); i++; }
-            if (singleton == 'u')
-            {
-                foreach (var sub in block)
-                {
-                    if (sub.Length == 2) keywords.Add((sub, new List<string>()));
-                    else if (keywords.Count > 0) keywords[^1].Types.Add(sub);
-                    else attributes.Add(sub);
-                }
-            }
-            else
-            {
-                otherExtensions.Add((singleton, string.Join("-", block)));
-            }
-        }
-
-        // Base-name options.
-        if (OptionString(options, LanguageKey) is { } langOpt)
-        {
-            if (!System.Text.RegularExpressions.Regex.IsMatch(langOpt, "^(?:[A-Za-z]{2,3}|[A-Za-z]{5,8})$", RegexOptions.CultureInvariant))
-                throw JSEngine.NewRangeError("Invalid language option");
-            language = langOpt.ToLowerInvariant();
-        }
-        if (OptionString(options, ScriptKey) is { } scriptOpt)
-        {
-            if (!System.Text.RegularExpressions.Regex.IsMatch(scriptOpt, "^[A-Za-z]{4}$", RegexOptions.CultureInvariant))
-                throw JSEngine.NewRangeError("Invalid script option");
-            script = char.ToUpperInvariant(scriptOpt[0]) + scriptOpt[1..].ToLowerInvariant();
-        }
-        if (OptionString(options, RegionKey) is { } regionOpt)
-        {
-            if (!System.Text.RegularExpressions.Regex.IsMatch(regionOpt, "^(?:[A-Za-z]{2}|[0-9]{3})$", RegexOptions.CultureInvariant))
-                throw JSEngine.NewRangeError("Invalid region option");
-            region = regionOpt.ToUpperInvariant();
-        }
-
-        // The variants option (read after region, before the keyword options) replaces the
-        // tag's variant subtags. It must be a "-"-separated sequence of unicode_variant_subtag
-        // (alphanum{5,8} | digit alphanum{3}) with no duplicate subtags (case-insensitive),
-        // else a RangeError; the canonical form lowercases and ordinally sorts the subtags.
-        if (OptionString(options, KeyStrings.GetOrCreate("variants")) is { } variantsOpt)
-        {
-            var subtags = variantsOpt.ToLowerInvariant().Split('-');
-            var seen = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var sub in subtags)
-            {
-                if (!System.Text.RegularExpressions.Regex.IsMatch(sub, "^(?:[0-9a-z]{5,8}|[0-9][0-9a-z]{3})$", RegexOptions.CultureInvariant)
-                    || !seen.Add(sub))
-                    throw JSEngine.NewRangeError("Invalid variants option");
-            }
-            variants = [.. subtags];
-            variants.Sort(StringComparer.Ordinal);
-        }
-
-        // Unicode-extension keyword options.
-        SetKeyword(keywords, "ca", ReadTypeOption(options, "calendar", "ca"));
-        SetKeyword(keywords, "co", ReadTypeOption(options, "collation", "co"));
-        SetKeyword(keywords, "fw", ReadFirstDayOfWeekOption(options));
-        SetKeyword(keywords, "hc", GetOption(options, KeyStrings.GetOrCreate("hourCycle"), ["h11", "h12", "h23", "h24"], false, null));
-        SetKeyword(keywords, "kf", GetOption(options, KeyStrings.GetOrCreate("caseFirst"), ["upper", "lower", "false"], false, null));
-        var numericOption = options[KeyStrings.GetOrCreate("numeric")];
-        SetKeyword(keywords, "kn", numericOption.IsUndefined ? null : (numericOption.BooleanValue ? "true" : "false"));
-        SetKeyword(keywords, "nu", ReadTypeOption(options, "numberingSystem", "nu"));
-
-        // Re-emit. ApplyOptionsToTag finishes by re-canonicalizing the assembled tag, so an
-        // option combination that forms a grandfathered tag (e.g. language "cel" + variant
-        // "gaulish" => "cel-gaulish") is replaced by its preferred value ("xtg"), and any
-        // deprecated language/region subtag introduced by an option is de-aliased.
-        var baseName = new StringBuilder(language);
-        if (script != null) baseName.Append('-').Append(script);
-        if (region != null) baseName.Append('-').Append(region);
-        foreach (var v in variants) baseName.Append('-').Append(v);
-
-        // The "-u-" keywords are sorted by key and their values canonicalized.
-        var sb = new StringBuilder(CanonicalizeBaseName(baseName.ToString()));
-
-        if (attributes.Count > 0 || keywords.Count > 0)
-        {
-            sb.Append("-u");
-            foreach (var attr in attributes) sb.Append('-').Append(attr);
-            keywords.Sort((x, y) => string.CompareOrdinal(x.Key, y.Key));
-            foreach (var (key, types) in keywords)
-            {
-                sb.Append('-').Append(key);
-                var canonical = CanonicalizeKeywordValue(key, string.Join("-", types));
-                // A boolean keyword whose value is the default "true" drops the value.
-                if (canonical is "" or "true")
-                    continue;
-                sb.Append('-').Append(canonical);
-            }
-        }
-
-        // Preserve other singleton extensions, sorted by singleton with private-use ("x") last.
-        otherExtensions.Sort((a, b) =>
-            (a.Singleton == 'x' ? '￿' : a.Singleton).CompareTo(b.Singleton == 'x' ? '￿' : b.Singleton));
-        foreach (var (singleton, body) in otherExtensions)
-        {
-            sb.Append('-').Append(singleton);
-            if (body.Length > 0) sb.Append('-').Append(body);
-        }
-
-        // The "-u-" block was emitted ahead of the other singletons above; re-sort every extension
-        // into canonical alphabetical order (private-use last) so e.g. an "-a-" extension precedes
-        // "-u-" (test262 Locale/constructor-tag).
-        return SortExtensions(sb.ToString());
-    }
-
-    // CLDR subdivision aliases (supplemental/subdivisionAlias.xml) used for the "sd" Unicode
-    // keyword (and the related "rg" region-override keyword, which carries the same syntactic
-    // subdivision value). Norway renumbered its subdivisions in 2020, hence no23 → no50, etc.
-    // Only the entries a test262 case actually exercises are listed; an unknown value passes
-    // through unchanged.
-    private static readonly Dictionary<string, string> SubdivisionValueAliases = new(StringComparer.Ordinal)
-    {
-        ["no23"] = "no50",
-        ["cn11"] = "cnbj",
-        ["cz10a"] = "cz110",
-        ["fra"] = "frges",
-        ["frb"] = "frbre",
-        ["frc"] = "frcvl",
-        ["frd"] = "frbfc",
-        ["fre"] = "frbre",
-        ["frg"] = "frges",
-        // A multi-region replacement list ("lud" -> "lucl ludi lurd luvd luwi") canonicalizes
-        // to the first entry.
-        ["lud"] = "lucl",
-    };
-
-    // CLDR timezone aliases (supplemental/metaZones.xml / windowsZones — used here as the
-    // "tz" Unicode-keyword value canonicalization). Each pre-deprecation tz id maps to its
-    // current canonical tz id (CN/Chongqing folded into CN/Shanghai, etc.); only the entries
-    // covered by test262 are listed.
-    private static readonly Dictionary<string, string> TimezoneValueAliases = new(StringComparer.Ordinal)
-    {
-        ["cnckg"] = "cnsha",
-        ["aqams"] = "nzakl",
-        ["cnhrb"] = "cnsha",
-        ["eire"] = "iedub",
-        ["est"] = "papty",
-        ["gmt0"] = "gmt",
-        ["uct"] = "utc",
-        ["zulu"] = "utc",
-    };
-
-    private static string CanonicalizeKeywordValue(string key, string value)
-    {
-        if (value.Length == 0)
-            return value;
-        if (key == "ca" && CalendarValueAliases.TryGetValue(value, out var ca))
-            return ca;
-        if (key == "co" && CollationValueAliases.TryGetValue(value, out var co))
-            return co;
-        if (key == "ks" && CollationStrengthValueAliases.TryGetValue(value, out var ks))
-            return ks;
-        if (key == "ms" && MeasurementSystemValueAliases.TryGetValue(value, out var ms))
-            return ms;
-        if ((key == "sd" || key == "rg") && SubdivisionValueAliases.TryGetValue(value, out var sd))
-            return sd;
-        if (key == "tz" && TimezoneValueAliases.TryGetValue(value, out var tz))
-            return tz;
-        // "yes" / "no" are the deprecated aliases for boolean Unicode keyword values
-        // ("true" / "false"); only "yes" is reachable from a -u- tag (a 2-char subtag is
-        // parsed as another keyword key, not a type), but normalise the option form too.
-        if (BooleanUnicodeKeywordKeys.Contains(key))
-        {
-            if (value == "yes") return "true";
-            if (value == "no") return "false";
-        }
-        return value;
-    }
+        => !string.IsNullOrEmpty(value) && LocaleId.IsUnicodeType(value);
 
     // Canonicalizes a requested collation value (option or -u-co- tag) and returns it only
-    // when it is a recognised collation; an unsupported (or reserved "standard"/"search")
-    // value returns null so the caller falls back to the "default" collation.
+    // when it is a collation the BCP 47 data defines, by its preferred value; an unknown (or reserved
+    // "standard"/"search") value returns null so the caller falls back to the "default" collation.
+    // The aliases and the list are the shared library's BCP 47 data (SJL-9.5, sub-area (a)); the
+    // Collator's own resolution stays its host path until SJL-17.
     internal static string CanonicalizeCollation(string value)
     {
-        if (value == null)
+        if (value == null || !LocaleId.IsUnicodeType(value))
             return null;
-        var lower = value.ToLowerInvariant();
-        if (!UnicodeKeywordTypePattern.IsMatch(lower))
+        var lower = LocaleId.AsciiLowercase(value);
+        if (!JSIntlData.LocaleData.TryExtensionType('u', "co", lower, out var canonical))
             return null;
-        var canonical = CanonicalizeKeywordValue("co", lower);
-        return KnownCollations.Contains(canonical) ? canonical : null;
-    }
-
-    // Canonicalizes the Unicode ("-u-") extension of an already case-folded tag (CanonicalizeUnicode-
-    // LocaleId, UTS #35): the keyword type-value aliases are applied (e.g. "en-u-ca-islamicc" →
-    // "en-u-ca-islamic-civil"), the attributes and the keyword pairs are sorted, duplicate attributes
-    // and duplicate keyword keys are removed (the first occurrence of a key wins), and a keyword value
-    // equal to "true" is dropped to the value-less canonical form.
-    private static string CanonicalizeUnicodeKeywordValues(string tag)
-    {
-        var subtags = tag.Split('-');
-        var u = -1;
-        for (var i = 0; i < subtags.Length; i++)
-        {
-            if (subtags[i].Length != 1)
-                continue;
-            // Stop at the private-use singleton ("x"): a "u" inside private-use is a
-            // private subtag, not a Unicode extension.
-            if (subtags[i][0] == 'u') { u = i; break; }
-            if (subtags[i][0] == 'x') break;
-        }
-        if (u < 0)
-            return tag;
-
-        var result = new List<string>(subtags.Length);
-        for (var i = 0; i <= u; i++)
-            result.Add(subtags[i]);
-
-        var j = u + 1;
-        // Attributes (3–8 chars) appear before the first 2-char key; canonical form sorts them and
-        // removes duplicates.
-        var attributes = new List<string>();
-        while (j < subtags.Length && subtags[j].Length >= 3 && subtags[j].Length <= 8)
-        {
-            attributes.Add(subtags[j]);
-            j++;
-        }
-        attributes.Sort(StringComparer.Ordinal);
-        string lastAttribute = null;
-        foreach (var attribute in attributes)
-        {
-            if (attribute == lastAttribute)
-                continue;
-            result.Add(attribute);
-            lastAttribute = attribute;
-        }
-
-        // Keyword pairs (a 2-char key followed by its 3–8-char type subtags), until the extension
-        // ends (a 1-char singleton starts the next one). Canonical form sorts the keywords by key and
-        // keeps only the first occurrence of a duplicated key.
-        var keywords = new List<(string Key, string Value)>();
-        var seenKeys = new HashSet<string>(StringComparer.Ordinal);
-        while (j < subtags.Length && subtags[j].Length == 2)
-        {
-            var key = subtags[j];
-            j++;
-            var types = new List<string>();
-            while (j < subtags.Length && subtags[j].Length >= 3 && subtags[j].Length <= 8)
-            {
-                types.Add(subtags[j]);
-                j++;
-            }
-
-            if (!seenKeys.Add(key))
-                continue; // duplicate key: the first occurrence wins
-
-            var canonical = CanonicalizeKeywordValue(key, string.Join("-", types));
-            // UTS #35 §3.6.4: a "true" Unicode keyword value is the default and is omitted from the
-            // canonical form ("und-u-kb-yes" → "und-u-kb", "de-u-kf-true" → "de-u-kf").
-            keywords.Add((key, canonical == "true" ? string.Empty : canonical));
-        }
-        keywords.Sort((x, y) => string.CompareOrdinal(x.Key, y.Key));
-        foreach (var (key, value) in keywords)
-        {
-            result.Add(key);
-            if (value.Length > 0)
-                result.AddRange(value.Split('-'));
-        }
-
-        // Any following singleton extension / private-use sequence is copied verbatim.
-        for (; j < subtags.Length; j++)
-            result.Add(subtags[j]);
-
-        return string.Join("-", result);
-    }
-
-    // UTS-35 §3.6.1 canonical form: the extension singletons of a tag appear in alphabetical order,
-    // with the private-use ("x") singleton last (e.g. "en-a-bar-u-baz-x-u-foo", and a "-u-…-t-…" tag
-    // re-emits "-t-" before "-u-"). Each extension's own body is canonicalized earlier, so reordering
-    // whole blocks here is sufficient.
-    private static string SortExtensions(string tag)
-    {
-        var parts = tag.Split('-');
-        if (parts.Length < 2 || parts[0].Length == 1)
-            return tag;
-
-        var i = 1;
-        while (i < parts.Length && parts[i].Length != 1) i++;
-        if (i >= parts.Length)
-            return tag; // no extension singletons
-
-        var baseTag = string.Join("-", parts, 0, i);
-        var extensions = new List<(char Singleton, string Body)>();
-        while (i < parts.Length)
-        {
-            var singleton = char.ToLowerInvariant(parts[i][0]);
-            var block = new List<string> { parts[i] };
-            i++;
-            if (singleton == 'x')
-                // The private-use singleton is terminal: every remaining subtag (even 1-char ones)
-                // belongs to its body.
-                while (i < parts.Length) { block.Add(parts[i]); i++; }
-            else
-                while (i < parts.Length && parts[i].Length != 1) { block.Add(parts[i]); i++; }
-            extensions.Add((singleton, string.Join("-", block)));
-        }
-
-        extensions.Sort((a, b) =>
-            (a.Singleton == 'x' ? '￿' : a.Singleton).CompareTo(b.Singleton == 'x' ? '￿' : b.Singleton));
-
-        var sb = new StringBuilder(baseTag);
-        foreach (var ext in extensions) sb.Append('-').Append(ext.Body);
-        return sb.ToString();
-    }
-
-    private static void SetKeyword(List<(string Key, List<string> Types)> keywords, string key, string value)
-    {
-        if (value == null)
-            return;
-        var types = new List<string>(value.Split('-'));
-        for (var k = 0; k < keywords.Count; k++)
-            if (keywords[k].Key == key) { keywords[k] = (key, types); return; }
-        keywords.Add((key, types));
-    }
-
-    // A calendar/collation/numberingSystem option: coerced to a lowercase string and validated against
-    // the Unicode keyword type grammar (a malformed value is a RangeError).
-    private static string ReadTypeOption(JSObject options, string optionName, string key)
-    {
-        var value = OptionString(options, KeyStrings.GetOrCreate(optionName));
-        if (value == null)
-            return null;
-        value = value.ToLowerInvariant();
-        if (!UnicodeKeywordTypePattern.IsMatch(value))
-            throw JSEngine.NewRangeError($"Invalid {optionName} option");
-        return value;
+        return canonical is "standard" or "search" ? null : canonical;
     }
 
     private static string OptionString(JSObject options, KeyString key)
     {
         var v = options[key];
         return v == null || v.IsUndefined ? null : v.ToString();
-    }
-
-    // The firstDayOfWeek option (-u-fw-) per Intl.Locale: coerced to a string, mapped through
-    // WeekdayToString (the ISO day numbers 1..7 — plus the alias 0 — become mon..sun, anything
-    // else passes through), then validated against the Unicode keyword type sequence.
-    private static string ReadFirstDayOfWeekOption(JSObject options)
-    {
-        var value = OptionString(options, KeyStrings.GetOrCreate("firstDayOfWeek"));
-        if (value == null)
-            return null;
-        value = WeekdayToString(value).ToLowerInvariant();
-        if (!UnicodeKeywordTypePattern.IsMatch(value))
-            throw JSEngine.NewRangeError("Invalid firstDayOfWeek option");
-        return value;
-    }
-
-    private static string WeekdayToString(string fw) => fw switch
-    {
-        "1" => "mon",
-        "2" => "tue",
-        "3" => "wed",
-        "4" => "thu",
-        "5" => "fri",
-        "6" => "sat",
-        "7" => "sun",
-        "0" => "sun",
-        _ => fw,
-    };
-
-    private static bool IsAllDigitTag(string s)
-    {
-        foreach (var c in s)
-            if (c < '0' || c > '9') return false;
-        return s.Length > 0;
     }
 
     internal static JSObject ValidateOptionsArgument(JSValue options, bool coerce = true)
@@ -1354,1126 +868,357 @@ public static class JSIntl
         return result;
     }
 
+    // IsWellFormedLanguageTag and CanonicalizeUnicodeLocaleId (ECMA-402 sec-canonicalizelocalelist, steps 7.c.v and
+    // 7.c.vi): the shared library's LocaleId over the data home's alias, likely-subtags and BCP 47 tables (SJL-9.5,
+    // sub-area (a)), which reads ASCII alone (rows L2 and L45), applies every CLDR alias (rows L5 to L8, data) and
+    // canonicalises a -t- extension's tlang as UTS #35 Annex C does (row L10). A tag that is not well-formed is a RangeError.
     internal static string ValidateLanguageTag(string tag)
+        => LocaleId.TryCanonicalize(tag, JSIntlData.LocaleData, out var canonical) == IntlStatus.Completed
+            ? canonical
+            : throw JSEngine.NewRangeError("Invalid language tag");
+
+    // The names of the library's enumerations in their order, which resolvedOptions reports and the options map onto
+    // (SJL-9.5, task 8.4, sub-areas (b) and (c); Broiler.VM's JSD-0082). GetOption reads them as the options' allowed
+    // values too, since it checks membership only.
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4, a review fix): the NumberFormat constructor read its own copies,
+    // CurrencyDisplayValues ["code", "symbol", "narrowSymbol", "name"], CurrencySignValues, NumberFormatStyleValues,
+    // NotationValues, SignDisplayValues, CompactDisplayValues and UnitDisplayValues, each the same set; they are deleted.
+    internal static readonly string[] NumberStyleNames = ["decimal", "percent", "currency", "unit"];
+    internal static readonly string[] CurrencyDisplayNames = ["symbol", "narrowSymbol", "code", "name"];
+    internal static readonly string[] CurrencySignNames = ["standard", "accounting"];
+    internal static readonly string[] UnitDisplayNames = ["short", "narrow", "long"];
+    internal static readonly string[] NotationNames = ["standard", "scientific", "engineering", "compact"];
+    internal static readonly string[] CompactDisplayNames = ["short", "long"];
+    internal static readonly string[] SignDisplayNames = ["auto", "never", "always", "exceptZero", "negative"];
+    internal static readonly string[] GroupingNames = ["auto", "always", "min2", null];
+    internal static readonly string[] RoundingModeNames = ["ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand", "halfTrunc", "halfEven"];
+    internal static readonly string[] RoundingPriorityNames = ["auto", "morePrecision", "lessPrecision"];
+    internal static readonly string[] TrailingZeroDisplayNames = ["auto", "stripIfInteger"];
+    internal static readonly string[] FormatStyleNames = ["long", "short", "narrow"];
+
+    // Intl.NumberFormat's constructor steps after CanonicalizeLocaleList, CoerceOptionsToObject and localeMatcher
+    // (ECMA-402 sec-intl.numberformat): every option is read here, in the specification's order, each checked as it is
+    // read, and the record is the shared library's NumberFormatter (SJL-9.5, task 8.4, sub-area (c); Broiler.VM's JSD-0082,
+    // decision D24). Each option is read once, at construction (row N10, a correction): format, formatToParts, the ranges and
+    // resolvedOptions read the record. ResolveLocale's steps 5 to 12 are the library's, over the nu values the data gives the
+    // matched locale (decision D13, row L22), and so is the default numbering system.
+    // It replaces ValidateNumberFormatOptions, SnapshotDigitOptions, ReadRoundingOptions, ResolveUseGrouping, the
+    // SanctionedSingleUnits set and IsWellFormedUnitIdentifier, and JSIntlNumberFormatResolved (deleted 2026-11-08).
+    internal static NumberFormatter CreateNumberFormatter(JSValue canonicalLocales, JSObject options)
     {
-        if (!StructurallyValidLanguageTagPattern.IsMatch(tag) ||
-            InvalidGrandfatheredLanguageTags.Contains(tag) ||
-            HasDuplicateVariantSubtag(tag) ||
-            HasDuplicateSingletonSubtag(tag) ||
-            HasInvalidUnicodeExtensionKey(tag) ||
-            HasInvalidTransformedExtension(tag))
-            throw JSEngine.NewRangeError("Invalid language tag");
+        var numberingSystem = ReadNumberingSystemOption(options);
+        var resolved = ResolveNumberingSystemLocale(canonicalLocales, numberingSystem);
+        var data = JSIntlData.LocaleData;
 
-        // CanonicalizeUnicodeLocaleId: a regular grandfathered tag is replaced
-        // wholesale by its preferred form (e.g. "art-lojban" -> "jbo"). Each entry's
-        // key is a two-subtag tag (language + extlang/variant), and the substitution
-        // applies even when more subtags follow ("art-lojban-fonipa" -> "jbo-fonipa")
-        // since the grandfathered prefix is what carries the deprecation.
-        if (RegularGrandfatheredMappings.TryGetValue(tag, out var preferred))
-            return preferred;
-
-        var secondDash = tag.IndexOf('-');
-        if (secondDash > 0)
+        // SetNumberFormatUnitOptions.
+        var style = GetOption(options, StyleKey, NumberStyleNames, false, "decimal");
+        var currency = OptionStringValue(options, CurrencyKey);
+        if (currency == null)
         {
-            var thirdDash = tag.IndexOf('-', secondDash + 1);
-            if (thirdDash > 0)
+            if (style == "currency")
+                throw JSEngine.NewTypeError("Intl.NumberFormat currency style requires a currency option");
+        }
+        else if (!NumberFormatter.IsWellFormedCurrencyCode(currency))
+            throw JSEngine.NewRangeError("Invalid currency option");
+
+        var currencyDisplay = GetOption(options, CurrencyDisplayKey, CurrencyDisplayNames, false, "symbol");
+        var currencySign = GetOption(options, CurrencySignKey, CurrencySignNames, false, "standard");
+        var unit = OptionStringValue(options, UnitKey);
+        if (unit == null)
+        {
+            if (style == "unit")
+                throw JSEngine.NewTypeError("Intl.NumberFormat unit style requires a unit option");
+        }
+        else if (!NumberFormatter.IsWellFormedUnitIdentifier(unit))
+            throw JSEngine.NewRangeError($"Invalid unit identifier: {unit}");
+
+        var unitDisplay = GetOption(options, UnitDisplayKey, UnitDisplayNames, false, "short");
+        var notation = (NumberNotation)System.Array.IndexOf(NotationNames, GetOption(options, NotationKey, NotationNames, false, "standard"));
+        var numberStyle = (NumberStyle)System.Array.IndexOf(NumberStyleNames, style);
+        var digitOptions = SetNumberFormatDigitOptions(options, DigitOptionRules.NumberFormatDefaults(numberStyle, currency, notation, data), notation);
+        var compactDisplay = GetOption(options, CompactDisplayKey, CompactDisplayNames, false, "short");
+        var useGrouping = GetUseGroupingOption(options, notation == NumberNotation.Compact ? NumberGrouping.Min2 : NumberGrouping.Auto);
+        var signDisplay = GetOption(options, SignDisplayKey, SignDisplayNames, false, "auto");
+
+        var dataLocale = JSIntlLocaleProviders.DataLocale(resolved.DataLocale);
+        return NumberFormatter.Create(DataLocalePluralData.For(dataLocale), resolved.Locale, dataLocale,
+            resolved.KeyValues["nu"] ?? "latn", new NumberFormatOptions
             {
-                var prefix = tag.Substring(0, thirdDash);
-                if (RegularGrandfatheredMappings.TryGetValue(prefix, out var prefixPreferred))
-                    return SortExtensions(CanonicalizeUnicodeKeywordValues(ApplySubtagAliases(
-                        CanonicalizeLanguageTagCase(prefixPreferred + tag.Substring(thirdDash)))));
-            }
-        }
-
-        return SortExtensions(CanonicalizeTransformedExtension(
-            CanonicalizeUnicodeKeywordValues(
-                CanonicalizeMainTagVariants(
-                    ApplySubtagAliases(
-                        CanonicalizeLanguageTagCase(tag))))));
+                Style = numberStyle,
+                Currency = currency,
+                CurrencyDisplay = (CurrencyDisplay)System.Array.IndexOf(CurrencyDisplayNames, currencyDisplay),
+                CurrencySign = (CurrencySign)System.Array.IndexOf(CurrencySignNames, currencySign),
+                Unit = unit,
+                UnitDisplay = (UnitDisplay)System.Array.IndexOf(UnitDisplayNames, unitDisplay),
+                DigitOptions = digitOptions,
+                Notation = notation,
+                CompactDisplay = (CompactDisplay)System.Array.IndexOf(CompactDisplayNames, compactDisplay),
+                UseGrouping = useGrouping,
+                SignDisplay = (SignDisplay)System.Array.IndexOf(SignDisplayNames, signDisplay),
+            });
     }
 
-    // CLDR variantAlias (supplemental/supplementalMetadata.xml) — single-variant
-    // replacements applied during LocaleId canonicalization (UTS #35 §3.6.4). Only the
-    // entries test262 actually exercises are listed; an unknown variant passes through
-    // unchanged.
-    private static readonly Dictionary<string, string> SingleVariantAliases = new(StringComparer.Ordinal)
+    // An option's String (ToString of a defined value), or null when it is undefined.
+    private static string OptionStringValue(JSObject options, KeyString key)
     {
-        ["heploc"] = "alalc97",  // CLDR variantAlias maps "heploc" → "alalc97". A lone
-                                 // "hepburn" (Hepburn romanization) is a valid variant and is
-                                 // NOT aliased; only the "hepburn-heploc" sequence collapses to
-                                 // "alalc97" (handled in CanonicalizeMainTagVariants).
-        ["polytoni"] = "polyton",
-        ["arevela"] = null,  // dropped (no replacement); the language subtag handles it
-        ["arevmda"] = null,
-        ["aaland"] = null,
-    };
-
-    // UTS #35 §3.6.4 LocaleId canonicalization: the variant subtags in the main language
-    // tag (after the optional script + region, before any extension singleton) are
-    // substituted via variantAlias, deduplicated, and sorted alphabetically (ordinal).
-    // Variants inside a transformed extension's tlang are canonicalized separately by
-    // CanonicalizeTransformedExtension.
-    private static string CanonicalizeMainTagVariants(string tag)
-    {
-        if (string.IsNullOrEmpty(tag))
-            return tag;
-
-        var parts = tag.Split('-');
-        // Locate the start of the variants run and the start of the first extension.
-        var i = 1; // skip the language subtag
-        if (i < parts.Length && parts[i].Length == 4 && IsAllAlpha(parts[i])) i++; // script
-        if (i < parts.Length && ((parts[i].Length == 2 && IsAllAlpha(parts[i])) || (parts[i].Length == 3 && IsAllDigitTag(parts[i])))) i++; // region
-
-        var variantStart = i;
-        while (i < parts.Length && IsVariantSubtag(parts[i]))
-            i++;
-
-        if (i - variantStart == 0)
-            return tag;
-
-        // Substitute via variantAlias (dropped entries return null), deduplicate while
-        // preserving the first occurrence's order, then sort alphabetically. A language+variant
-        // compound alias (e.g. "hy-arevmda" -> "hyw") replaces the language subtag and drops the
-        // variant.
-        var language = parts[0];
-        var variants = new List<string>(i - variantStart);
-        var seen = new HashSet<string>(StringComparer.Ordinal);
-        var rawVariants = new HashSet<string>(StringComparer.Ordinal);
-        for (var j = variantStart; j < i; j++) rawVariants.Add(parts[j]);
-        for (var j = variantStart; j < i; j++)
-        {
-            var v = parts[j];
-            // "hepburn-heploc": heploc -> alalc97 supersedes the hepburn prefix, so the pair
-            // collapses to the single "alalc97". Drop "hepburn" only when "heploc" is also
-            // present; a lone "hepburn" is preserved.
-            if (v == "hepburn" && rawVariants.Contains("heploc"))
-                continue;
-            if (LanguageVariantAliases.TryGetValue(parts[0] + "-" + v, out var languageReplacement))
-            {
-                language = languageReplacement;
-                continue; // the variant is folded into the language replacement
-            }
-            if (SingleVariantAliases.TryGetValue(v, out var replacement))
-            {
-                if (replacement == null) continue; // dropped
-                v = replacement;
-            }
-            if (seen.Add(v))
-                variants.Add(v);
-        }
-        variants.Sort(StringComparer.Ordinal);
-
-        // Rebuild: pre-variant prefix (with any replaced language) + canonical variants +
-        // everything after the variant run (extension singletons / private-use).
-        var rebuilt = new List<string>(variantStart + variants.Count + (parts.Length - i))
-        {
-            language
-        };
-        for (var j = 1; j < variantStart; j++) rebuilt.Add(parts[j]);
-        rebuilt.AddRange(variants);
-        for (var j = i; j < parts.Length; j++) rebuilt.Add(parts[j]);
-
-        return string.Join("-", rebuilt);
+        var value = options == null ? JSUndefined.Value : options[key];
+        return value == null || value.IsUndefined ? null : value.StringValue;
     }
 
-    // UTS #35 §3.6.2 transformed extension canonicalization: within a "-t-" extension, the
-    // tlang's variants are sorted alphabetically (ordinal) and the tfields are sorted by
-    // their two-character tkey. Everything outside the "-t-" payload is preserved verbatim,
-    // so this composes with the rest of the language-tag canonicalization pipeline.
-    private static string CanonicalizeTransformedExtension(string tag)
+    // ECMA-402's SetNumberFormatDigitOptions (sec-setnumberformatdigitoptions), split at its conversions as the shared
+    // library splits it (sub-area (b)): every read here, in the specification's order, each checked as it is read, the
+    // digit values read first and converted only where DigitOptionRules.Plan says they are used (row M4, a correction: a
+    // value is converted once, and never when the other pair wins); the library takes the decisions after them, and a
+    // status it answers is the error the step throws (min above max, an increment with significant digits or a priority,
+    // an increment with unequal fraction digits; rows M4, M5 and P7, corrections).
+    internal static DigitOptions SetNumberFormatDigitOptions(JSObject options, FractionDigitDefaults defaults, NumberNotation notation)
     {
-        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-t-", StringComparison.OrdinalIgnoreCase) < 0)
-            return tag;
-
-        var parts = tag.Split('-');
-        var changed = false;
-        for (var i = 0; i < parts.Length; i++)
-        {
-            if (parts[i].Length != 1 || (parts[i][0] != 't' && parts[i][0] != 'T'))
-                continue;
-
-            // Collect the payload up to the next singleton (start of another extension).
-            var start = i + 1;
-            var end = start;
-            while (end < parts.Length && parts[end].Length != 1)
-                end++;
-
-            if (end == start)
-                continue;
-
-            var payload = new List<string>(end - start);
-            for (var j = start; j < end; j++)
-                payload.Add(parts[j]);
-
-            var canonical = CanonicalizeTransformedPayload(payload);
-            if (canonical != null)
-            {
-                for (var j = 0; j < canonical.Count; j++)
-                    parts[start + j] = canonical[j];
-                changed = true;
-            }
-
-            i = end - 1;
-        }
-
-        return changed ? string.Join("-", parts) : tag;
-    }
-
-    // Sorts the tlang's variants (the run of variant subtags after a leading language [+
-    // optional script + optional region]) and the tfields (each a 2-char tkey followed by
-    // 3-8-char tvalue chunks) by their respective keys. Returns null when the payload's
-    // grammar doesn't match the expected shape, so the caller leaves it untouched.
-    private static List<string> CanonicalizeTransformedPayload(List<string> payload)
-    {
-        var p = 0;
-        var canonical = new List<string>(payload.Count);
-
-        if (p < payload.Count && IsLanguageSubtag(payload[p]))
-        {
-            // The tlang (language[-script][-region]) is canonicalized like a normal language
-            // tag — deprecated language/region subtags are replaced (e.g. "iw" -> "he") — while
-            // staying lowercase, since the whole transform extension is lowercase.
-            var head = new List<string> { payload[p] }; p++;
-            if (p < payload.Count && IsScriptSubtag(payload[p])) { head.Add(payload[p]); p++; }
-            if (p < payload.Count && IsRegionSubtag(payload[p])) { head.Add(payload[p]); p++; }
-            canonical.AddRange(ApplySubtagAliases(string.Join("-", head)).ToLowerInvariant().Split('-'));
-
-            var variants = new List<string>();
-            while (p < payload.Count && IsVariantSubtag(payload[p]))
-            {
-                variants.Add(payload[p]);
-                p++;
-            }
-            variants.Sort(StringComparer.Ordinal);
-            canonical.AddRange(variants);
-        }
-
-        // tfields: each starts with a tkey (alpha + digit), followed by one or more tvalue
-        // chunks (3-8 alphanum). Collect them as (key, values) and sort by key alphabetically.
-        var fields = new List<(string Key, List<string> Values)>();
-        while (p < payload.Count)
-        {
-            if (!IsTKey(payload[p]))
-                return null;
-            var key = payload[p];
-            p++;
-            var values = new List<string>();
-            while (p < payload.Count && IsTValue(payload[p]))
-            {
-                values.Add(payload[p]);
-                p++;
-            }
-            if (values.Count == 0)
-                return null;
-            // Deprecated tfield values are replaced by their preferred value (UTS #35
-            // bcp47/transform_*.xml, e.g. the "m0" key's "names" -> "prprname").
-            if (TransformedFieldValueAliases.TryGetValue(key, out var valueAliases))
-                for (var v = 0; v < values.Count; v++)
-                    if (valueAliases.TryGetValue(values[v], out var preferred))
-                        values[v] = preferred;
-            fields.Add((key, values));
-        }
-        fields.Sort((a, b) => StringComparer.Ordinal.Compare(a.Key, b.Key));
-        foreach (var (key, values) in fields)
-        {
-            canonical.Add(key);
-            canonical.AddRange(values);
-        }
-
-        return canonical;
-    }
-
-    // Bcp47 transform-extension tfield value aliases (UTS #35 bcp47/transform_*.xml type
-    // "deprecated"/"preferred" entries), keyed by tkey. Only the entries test262 exercises
-    // are listed; an unrecognized value passes through unchanged.
-    private static readonly Dictionary<string, Dictionary<string, string>> TransformedFieldValueAliases =
-        new(StringComparer.Ordinal)
-    {
-        ["m0"] = new(StringComparer.Ordinal) { ["names"] = "prprname" },
-    };
-
-    // Bcp47 language subtag aliases (CLDR supplemental languageAlias, reason="deprecated").
-    // The lowercase deprecated tag maps to its single preferred language subtag — these are
-    // strict in/out replacements (no script/region adjustments).
-    private static readonly Dictionary<string, string> SimpleLanguageAliases = new(StringComparer.Ordinal)
-    {
-        ["aar"] = "aa",
-        ["ces"] = "cs",
-        ["cmn"] = "zh",
-        ["drw"] = "fa-AF",
-        ["heb"] = "he",
-        ["in"] = "id",
-        ["iw"] = "he",
-        ["ji"] = "yi",
-        ["jw"] = "jv",
-        ["mo"] = "ro",
-        ["tw"] = "ak",
-    };
-
-    // CLDR languageAlias entries that map a (language + region) pair to a single replacement
-    // language with the region dropped — the canonical sign-language identifiers (UTS-35).
-    // Matched case-insensitively on a `sgn-XX` prefix; the region is removed entirely so e.g.
-    // "sgn-GR" canonicalizes to "gss" with no trailing region subtag.
-    private static readonly Dictionary<string, string> SignLanguageAliases = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["BR"] = "bzs", // Brazilian Sign Language
-        ["CO"] = "csn", // Colombian Sign Language
-        ["DE"] = "gsg", // German Sign Language
-        ["DK"] = "dsl", // Danish Sign Language
-        ["ES"] = "ssp", // Spanish Sign Language
-        ["FR"] = "fsl", // French Sign Language
-        ["GB"] = "bfi", // British Sign Language
-        ["GR"] = "gss", // Greek Sign Language
-        ["IE"] = "isg", // Irish Sign Language
-        ["IT"] = "ise", // Italian Sign Language
-        ["JP"] = "jsl", // Japanese Sign Language
-        ["MX"] = "mfs", // Mexican Sign Language
-        ["NI"] = "ncs", // Nicaraguan Sign Language
-        ["NL"] = "dse", // Dutch Sign Language
-        ["NO"] = "nsl", // Norwegian Sign Language
-        ["PT"] = "psr", // Portuguese Sign Language
-        ["SE"] = "swl", // Swedish Sign Language
-        ["US"] = "ase", // American Sign Language
-        ["ZA"] = "sfs", // South African Sign Language
-    };
-
-    // CLDR languageAlias entries keyed by language + variant: the whole pair is replaced by a single
-    // preferred language and the variant is dropped (e.g. "hy-arevmda" -> "hyw" Western Armenian).
-    // Only the entries test262 exercises are listed.
-    private static readonly Dictionary<string, string> LanguageVariantAliases = new(StringComparer.Ordinal)
-    {
-        ["hy-arevmda"] = "hyw",
-    };
-
-    // CLDR supplemental languageAlias entries that, after replacing the language subtag,
-    // also fill in a default script subtag — but only when no script is already present
-    // (e.g. "sh" -> "sr-Latn", but "sh-Cyrl" -> "sr-Cyrl"). A complex alias may instead carry a
-    // default *region* (e.g. "cnr" -> "sr-ME", but "cnr-BA" -> "sr-BA"); at most one of
-    // DefaultScript / DefaultRegion is non-null, and it is only inserted when the tag does not
-    // already carry a subtag of that kind.
-    private static readonly Dictionary<string, (string Language, string DefaultScript, string DefaultRegion)> ComplexLanguageAliases =
-        new(StringComparer.Ordinal)
-    {
-        ["sh"] = ("sr", "Latn", null),
-        ["cnr"] = ("sr", null, "ME"),
-    };
-
-    // CLDR territoryAlias entries whose replacement is a LIST of regions (the deprecated code
-    // spans several successor territories). The actual replacement is chosen by likely subtags
-    // (UTS #35 §3.2.1): take the most likely region for the tag's (language, script) — ignoring
-    // the source region — and use it when it is in the list, otherwise the first list entry.
-    private static readonly string[] SovietUnionSuccessors =
-        ["RU", "AM", "AZ", "BY", "EE", "GE", "KZ", "KG", "LV", "LT", "MD", "TJ", "TM", "UA", "UZ"];
-
-    private static readonly Dictionary<string, string[]> MultiRegionAliases = new(StringComparer.Ordinal)
-    {
-        // SU / 810 (Soviet Union) and CS (Serbia and Montenegro) and NT (Neutral Zone).
-        ["SU"] = SovietUnionSuccessors,
-        ["810"] = SovietUnionSuccessors,
-        ["CS"] = ["RS", "ME"],
-        ["NT"] = ["SA", "IQ"],
-    };
-
-    // Bcp47 region subtag aliases (CLDR supplemental territoryAlias) whose deprecated code
-    // maps to a single preferred region. Multi-region "overlong" aliases (SU, CS, NT, …) are
-    // resolved by MultiRegionAliases above, which is consulted first.
-    private static readonly Dictionary<string, string> SimpleRegionAliases = new(StringComparer.Ordinal)
-    {
-        ["BU"] = "MM",
-        ["DD"] = "DE",
-        ["DY"] = "BJ",
-        ["FX"] = "FR",
-        ["HV"] = "BF",
-        ["NH"] = "VU",
-        ["RH"] = "ZW",
-        ["TP"] = "TL",
-        ["UK"] = "GB",
-        ["VD"] = "VN",
-        ["YD"] = "YE",
-        ["YU"] = "RS",
-        ["ZR"] = "CD",
-    };
-
-    // UN M.49 numeric region subtags that canonicalize to a single ISO 3166-1 alpha-2 code
-    // (CLDR supplemental territoryAlias). Only the entries test262 exercises are listed; a numeric
-    // code without a unique single-territory mapping (e.g. "419" Latin America) is left numeric.
-    private static readonly Dictionary<string, string> NumericRegionAliases = new(StringComparer.Ordinal)
-    {
-        ["554"] = "NZ", // New Zealand
-    };
-
-    // CanonicalizeUnicodeLocaleId §3.6.4 LanguageAlias and TerritoryAlias substitutions over an
-    // already case-folded tag. Walks the prefix (language, optional script, optional region)
-    // and replaces deprecated subtags with their CLDR-preferred form; everything beyond the
-    // region (variants, extensions, private-use) is preserved verbatim.
-    private static string ApplySubtagAliases(string tag)
-    {
-        if (string.IsNullOrEmpty(tag))
-            return tag;
-
-        var subtags = tag.Split('-');
-        if (subtags.Length == 0)
-            return tag;
-
-        // Language subtag: a complex alias replaces the language AND inserts a default script
-        // (only when no script is already present); a simple alias just substitutes.
-        var language = subtags[0];
-        var hasScript = subtags.Length >= 2 && subtags[1].Length == 4 && IsAllAlpha(subtags[1]);
-
-        // CLDR sign-language aliases: a "sgn" language with a 2-alpha region (e.g. "sgn-GR")
-        // collapses to a single ISO 639-3 sign-language code (e.g. "gss") with the region
-        // dropped. Apply BEFORE the language-only alias step so the (language, region) pair
-        // matches before "sgn" alone is considered. The script slot (if present at index 1)
-        // is preserved by keying the region by its actual index.
-        if (subtags.Length >= 2
-            && language.Equals("sgn", StringComparison.OrdinalIgnoreCase))
-        {
-            var regionIdx = hasScript ? 2 : 1;
-            if (regionIdx < subtags.Length
-                && subtags[regionIdx].Length == 2
-                && IsAllAlpha(subtags[regionIdx])
-                && SignLanguageAliases.TryGetValue(subtags[regionIdx], out var signLang))
-            {
-                var rest = new string[subtags.Length - 1];
-                rest[0] = signLang;
-                // Copy everything after the region: keeps the script (if any) DROPPED — per
-                // CLDR the replacement language is reported without script/region — and any
-                // trailing variant/extension subtags are preserved.
-                for (var i = regionIdx + 1; i < subtags.Length; i++)
-                    rest[i - 1 - (regionIdx == 1 ? 0 : 1)] = subtags[i];
-                // Truncate trailing nulls when a script was skipped.
-                var trim = 0;
-                for (var i = rest.Length - 1; i > 0 && rest[i] == null; i--)
-                    trim++;
-                if (trim > 0)
-                    System.Array.Resize(ref rest, rest.Length - trim);
-                return string.Join("-", rest);
-            }
-        }
-
-        if (ComplexLanguageAliases.TryGetValue(language, out var complex))
-        {
-            subtags[0] = complex.Language;
-            if (complex.DefaultScript != null && !hasScript)
-            {
-                // Splice the default script in between the (new) language and the rest.
-                subtags = SpliceSubtag(subtags, 1, complex.DefaultScript);
-                hasScript = true;
-            }
-            else if (complex.DefaultRegion != null)
-            {
-                // Splice the default region (after the language, and the script if present) only
-                // when the tag has no region of its own.
-                var insertAt = hasScript ? 2 : 1;
-                var hasRegion = insertAt < subtags.Length
-                    && ((subtags[insertAt].Length == 2 && IsAllAlpha(subtags[insertAt]))
-                        || (subtags[insertAt].Length == 3 && IsAllDigitTag(subtags[insertAt])));
-                if (!hasRegion)
-                    subtags = SpliceSubtag(subtags, insertAt, complex.DefaultRegion);
-            }
-        }
-        else if (SimpleLanguageAliases.TryGetValue(language, out var simple))
-        {
-            subtags[0] = simple;
-        }
-
-        // Region subtag: lives at index 1 (no script) or 2 (after a script). Both 2-letter
-        // alphabetic and 3-digit numeric (UN M.49) regions can be aliases.
-        var regionIndex = hasScript ? 2 : 1;
-        if (regionIndex < subtags.Length)
-        {
-            var region = subtags[regionIndex];
-            var isAlphaRegion = region.Length == 2 && IsAllAlpha(region);
-            var isNumericRegion = region.Length == 3 && IsAllDigitTag(region);
-            if (isAlphaRegion || isNumericRegion)
-            {
-                // Multi-region aliases (SU/810/CS/NT) select among their successors by the
-                // likely region of the (language, script); single-region aliases substitute
-                // directly.
-                if (MultiRegionAliases.TryGetValue(region, out var choices))
-                    subtags[regionIndex] = SelectRegionByLikelySubtags(choices, subtags[0], hasScript ? subtags[1] : "");
-                else if (isAlphaRegion && SimpleRegionAliases.TryGetValue(region, out var aliased))
-                    subtags[regionIndex] = aliased;
-                else if (isNumericRegion && NumericRegionAliases.TryGetValue(region, out var numericAliased))
-                    subtags[regionIndex] = numericAliased;
-            }
-        }
-
-        return string.Join("-", subtags);
-    }
-
-    // UTS #35 §3.2.1 multi-region territoryAlias resolution: the most likely region for the
-    // (language, script) pair — computed WITHOUT the source region — wins when it is one of the
-    // candidate replacements, otherwise the first candidate is used.
-    private static string SelectRegionByLikelySubtags(string[] choices, string language, string script)
-    {
-        var likely = CldrLikelySubtags.Maximize(language, script ?? string.Empty, string.Empty);
-        if (likely != null)
-        {
-            var likelyRegion = likely.Value.region;
-            foreach (var candidate in choices)
-                if (string.Equals(candidate, likelyRegion, StringComparison.Ordinal))
-                    return candidate;
-        }
-        return choices[0];
-    }
-
-    // Returns a copy of <paramref name="subtags"/> with <paramref name="value"/> inserted at
-    // <paramref name="index"/> (shifting the remaining subtags right).
-    private static string[] SpliceSubtag(string[] subtags, int index, string value)
-    {
-        var widened = new string[subtags.Length + 1];
-        for (var i = 0; i < index; i++)
-            widened[i] = subtags[i];
-        widened[index] = value;
-        for (var i = index; i < subtags.Length; i++)
-            widened[i + 1] = subtags[i];
-        return widened;
-    }
-
-    // CanonicalizeUnicodeLocaleId case folding (UTS #35 §3.2.1): the language
-    // subtag is lowercased, a script subtag is title-cased, an alphabetic region
-    // subtag is uppercased, and every other subtag — extlang, variants, and the
-    // contents of singleton extension / privateuse sequences — is lowercased.
-    // (Alias substitution and extension keyword reordering are not applied.)
-    private static string CanonicalizeLanguageTagCase(string tag)
-    {
-        var subtags = tag.Split('-');
-        var inExtension = false;
-
-        for (var i = 0; i < subtags.Length; i++)
-        {
-            var subtag = subtags[i];
-
-            if (i == 0)
-            {
-                // Leading subtag is the language (or, for a wholly-privateuse
-                // tag, the "x" singleton); either way it is lowercased.
-                subtags[i] = subtag.ToLowerInvariant();
-                continue;
-            }
-
-            if (subtag.Length == 1)
-            {
-                // A singleton ('u', 't', 'x', …) opens an extension or privateuse
-                // sequence; it and everything after it is lowercased.
-                subtags[i] = subtag.ToLowerInvariant();
-                inExtension = true;
-                continue;
-            }
-
-            if (inExtension)
-            {
-                subtags[i] = subtag.ToLowerInvariant();
-                continue;
-            }
-
-            if (subtag.Length == 4 && IsAllAlpha(subtag))
-                // script -> Titlecase
-                subtags[i] = char.ToUpperInvariant(subtag[0]) + subtag.Substring(1).ToLowerInvariant();
-            else if (subtag.Length == 2 && IsAllAlpha(subtag))
-                // alphabetic region -> uppercase
-                subtags[i] = subtag.ToUpperInvariant();
-            else
-                // extlang, variant, numeric region -> lowercase
-                subtags[i] = subtag.ToLowerInvariant();
-        }
-
-        return string.Join("-", subtags);
-    }
-
-    private static bool IsAllAlpha(string value)
-    {
-        foreach (var c in value)
-        {
-            if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')))
-                return false;
-        }
-
-        return true;
-    }
-
-    private static bool HasDuplicateVariantSubtag(string tag)
-    {
-        var subtags = tag.Split('-', StringSplitOptions.RemoveEmptyEntries);
-        HashSet<string> variants = null;
-
-        for (var i = 1; i < subtags.Length; i++)
-        {
-            var subtag = subtags[i];
-            if (subtag.Length == 1)
-                break;
-
-            var isVariant =
-                (subtag.Length >= 5 && subtag.Length <= 8) ||
-                (subtag.Length == 4 && char.IsDigit(subtag[0]));
-
-            if (!isVariant)
-                continue;
-
-            variants ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            if (!variants.Add(subtag))
-                return true;
-        }
-
-        return false;
-    }
-
-    // A structurally valid language tag carries each extension singleton ('u', 't', 'a'…) at most
-    // once, compared case-insensitively (UTS-35 unicode_locale_id / RFC 5646: "de-DE-u-kn-true-U-kn-true"
-    // and "pt-u-ca-gregory-u-nu-latn" are both invalid). The privateuse singleton "x" is terminal —
-    // its single-character payload subtags are not extension singletons and may repeat — so scanning
-    // stops once "x" is seen.
-    private static bool HasDuplicateSingletonSubtag(string tag)
-    {
-        var subtags = tag.Split('-', StringSplitOptions.RemoveEmptyEntries);
-        HashSet<char> singletons = null;
-
-        for (var i = 0; i < subtags.Length; i++)
-        {
-            if (subtags[i].Length != 1)
-                continue;
-
-            var singleton = char.ToLowerInvariant(subtags[i][0]);
-            singletons ??= [];
-            if (!singletons.Add(singleton))
-                return true;
-
-            if (singleton == 'x')
-                break;
-        }
-
-        return false;
-    }
-
-    // Validates the inner grammar of every transform ("-t-") extension in a language tag
-    // (UTS #35 §3.6 transformed_extensions): an optional tlang (language subtag, optional
-    // script, optional region, zero+ variants) followed by zero+ tfields (each tkey = 2
-    // chars alpha+digit, with one or more tvalue chunks of 3-8 alphanum). The structural
-    // language-tag regex only enforces "2-8 alphanum subtags inside any singleton extension",
-    // so e.g. "en-t-root" or "en-t-d0" (tkey without tvalue) slip through it.
-    // Returns true if any "-t-" extension in <paramref name="tag"/> is malformed.
-    private static bool HasInvalidTransformedExtension(string tag)
-    {
-        var subtags = tag.Split('-', StringSplitOptions.RemoveEmptyEntries);
-        for (var i = 0; i < subtags.Length; i++)
-        {
-            // The "x" singleton terminates the tag's extension area: every subtag from here on
-            // is a privateuse subtag, so a "t" inside it (e.g. "cmn-hans-cn-x-t-u") is not a
-            // transformed extension and must not be validated as one.
-            if (subtags[i].Length == 1 && (subtags[i][0] == 'x' || subtags[i][0] == 'X'))
-                break;
-            if (!subtags[i].Equals("t", StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            // Collect the t-extension's payload: every subtag after "-t-" until the next
-            // singleton (which starts a different extension, e.g. "-u-" or "-x-") or end.
-            var start = i + 1;
-            var end = start;
-            while (end < subtags.Length && subtags[end].Length != 1)
-                end++;
-
-            var payload = subtags.AsSpan(start, end - start);
-            if (payload.Length == 0)
-                return true; // "...-t-" with no content (or "...-t-x-..." with no t-payload)
-
-            var p = 0;
-            // Optional tlang: starts with a unicode_language_subtag (alpha{2,3} or alpha{5,8}).
-            if (IsLanguageSubtag(payload[0]))
-            {
-                p = 1;
-                if (p < payload.Length && IsScriptSubtag(payload[p])) p++;
-                if (p < payload.Length && IsRegionSubtag(payload[p])) p++;
-                // UTS-35 §3.6: a tlang carries no duplicate unicode_variant_subtag (compared
-                // case-insensitively). "de-t-en-emodeng-emodeng" is structurally invalid for
-                // the same reason "en-emodeng-emodeng" is.
-                HashSet<string> tlangVariants = null;
-                while (p < payload.Length && IsVariantSubtag(payload[p]))
-                {
-                    tlangVariants ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    if (!tlangVariants.Add(payload[p]))
-                        return true;
-                    p++;
-                }
-            }
-
-            // Any leading non-tlang subtags, and everything after the tlang, must form tfields:
-            // each is a tkey (alpha+digit) followed by 1+ tvalue chunks (3-8 alphanum).
-            while (p < payload.Length)
-            {
-                if (!IsTKey(payload[p]))
-                    return true;
-                p++;
-
-                var valueCount = 0;
-                while (p < payload.Length && IsTValue(payload[p]))
-                {
-                    p++;
-                    valueCount++;
-                }
-                if (valueCount == 0)
-                    return true;
-            }
-
-            i = end - 1; // continue scanning after this t-extension
-        }
-
-        return false;
-    }
-
-    private static bool IsAllAlphaNumeric(string s)
-    {
-        foreach (var c in s)
-            if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) return false;
-        return true;
-    }
-
-    private static bool IsLanguageSubtag(string s)
-        => (s.Length is 2 or 3 || s.Length is >= 5 and <= 8) && IsAllAlpha(s);
-
-    private static bool IsScriptSubtag(string s) => s.Length == 4 && IsAllAlpha(s);
-
-    private static bool IsRegionSubtag(string s)
-    {
-        if (s.Length == 2) return IsAllAlpha(s);
-        if (s.Length != 3) return false;
-        foreach (var c in s)
-            if (c is < '0' or > '9') return false;
-        return true;
-    }
-
-    private static bool IsVariantSubtag(string s)
-    {
-        if (s.Length is >= 5 and <= 8) return IsAllAlphaNumeric(s);
-        // 4-char variant: digit followed by 3 alphanum.
-        if (s.Length != 4) return false;
-        if (s[0] is < '0' or > '9') return false;
-        return IsAllAlphaNumeric(s);
-    }
-
-    private static bool IsTKey(string s)
-    {
-        if (s.Length != 2) return false;
-        var c0 = s[0];
-        var c1 = s[1];
-        return ((c0 >= 'A' && c0 <= 'Z') || (c0 >= 'a' && c0 <= 'z')) && c1 is >= '0' and <= '9';
-    }
-
-    private static bool IsTValue(string s) => s.Length is >= 3 and <= 8 && IsAllAlphaNumeric(s);
-
-    private static bool HasInvalidUnicodeExtensionKey(string tag)
-    {
-        var subtags = tag.Split('-', StringSplitOptions.RemoveEmptyEntries);
-        for (var i = 0; i < subtags.Length; i++)
-        {
-            // A private-use ("x") singleton is terminal — any "u" inside its payload is a
-            // private subtag, not a Unicode extension, and its keys are not constrained.
-            if (subtags[i].Length == 1 && (subtags[i][0] == 'x' || subtags[i][0] == 'X'))
-                break;
-            if (!subtags[i].Equals("u", StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            for (i++; i < subtags.Length; i++)
-            {
-                var subtag = subtags[i];
-                if (subtag.Length == 1)
-                    break;
-
-                if (subtag.Length == 2 && char.IsDigit(subtag[1]))
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static void ValidateLocaleOptions(string tag, JSObject options)
-    {
-        if (options == null)
-            return;
-
-        // The collation option is read and validated once, in order, by ApplyLocaleOptions
-        // (ReadTypeOption "collation"); reading it here too would surface the getter out of
-        // order (InitializeLocale reads each option exactly once — constructor-getter-order).
-        if (tag.StartsWith("x-", StringComparison.OrdinalIgnoreCase) &&
-            (!options[LanguageKey].IsUndefined ||
-             !options[ScriptKey].IsUndefined ||
-             !options[RegionKey].IsUndefined ||
-             !options[NumberingSystemKey].IsUndefined))
-            throw JSEngine.NewRangeError("Invalid locale options for private use tag");
-    }
-
-    internal static JSIntlNumberFormatResolved ValidateNumberFormatOptions(JSObject options)
-    {
-        if (options == null)
-            return new JSIntlNumberFormatResolved("standard", "auto", null, null);
-
-        // GetOption validates "style" against the sanctioned set ("decimal", "percent",
-        // "currency", "unit") — a value such as "invalid" is a RangeError — and applies the
-        // "decimal" default. It is read first, matching SetNumberFormatUnitOptions order.
-        var style = GetOption(options, StyleKey, NumberFormatStyleValues, false, "decimal");
-
-        var currencyValue = options[CurrencyKey];
-        if (!currencyValue.IsUndefined)
-        {
-            var currency = currencyValue.StringValue;
-            if (!IsWellFormedCurrencyCode(currency))
-                throw JSEngine.NewRangeError("Invalid currency option");
-        }
-
-        if (style == "currency" && currencyValue.IsUndefined)
-            throw JSEngine.NewTypeError("Intl.NumberFormat currency style requires a currency option");
-
-        // SetNumberFormatUnitOptions reads currencyDisplay and currencySign right
-        // after currency, unconditionally (even when style is not "currency"), and
-        // validates them against their sanctioned value lists. The resolved values
-        // are only reflected when style is "currency"; here we read them purely so
-        // the option getters fire in spec order (test262 NumberFormat
-        // constructor-option-read-order) and an invalid value is a RangeError.
-        _ = GetOption(options, CurrencyDisplayKey, CurrencyDisplayValues, false, "symbol");
-        _ = GetOption(options, CurrencySignKey, CurrencySignValues, false, "standard");
-
-        var unitValue = options[UnitKey];
-        if (style == "unit" && unitValue.IsUndefined)
-            throw JSEngine.NewTypeError("Intl.NumberFormat unit style requires a unit option");
-
-        // SetNumberFormatUnitOptions: a provided unit must be a well-formed unit identifier
-        // (a sanctioned single unit, or "<numerator>-per-<denominator>" of two such units).
-        // Anything else — including valid CLDR units that ECMA-402 does not sanction, such as
-        // "acre-foot" or "ampere" — is a RangeError.
-        if (!unitValue.IsUndefined && !IsWellFormedUnitIdentifier(unitValue.StringValue))
-            throw JSEngine.NewRangeError($"Invalid unit identifier: {unitValue.StringValue}");
-
-        // unitDisplay is read (and validated) regardless of style, but the
-        // resolved slot only exists when style is "unit".
-        var unitDisplay = GetOption(options, UnitDisplayKey, UnitDisplayValues, false, "short");
-        if (style != "unit")
-            unitDisplay = null;
-
-        var notation = GetOption(options, NotationKey, NotationValues, false, "standard");
-
-        // SetNumberFormatDigitOptions: read the digit options from the bag exactly
-        // once, in spec order (minimumIntegerDigits, minimumFractionDigits,
-        // maximumFractionDigits, minimumSignificantDigits, maximumSignificantDigits),
-        // and snapshot them so later format/resolvedOptions calls reuse the values
-        // instead of re-invoking option getters.
-        var digitOptions = SnapshotDigitOptions(options);
-
-        // The rounding options follow the digit options inside SetNumberFormatDigitOptions,
-        // ahead of compactDisplay/useGrouping/signDisplay. roundingIncrement is a numeric
-        // option restricted to a sanctioned set; the string enums below are validated against
-        // their sanctioned value lists (a bad value, e.g. an empty string for
-        // trailingZeroDisplay, is a RangeError). All four always have a resolved value (their
-        // defaults) which resolvedOptions reflects.
-        var (roundingIncrement, roundingMode, roundingModeName, roundingPriority, trailingZeroDisplay) = ReadRoundingOptions(options);
-
-        // notation precedes compactDisplay (spec order; observed by the compactDisplay
-        // getter call-order tests). compactDisplay is always validated, but only
-        // reflected when notation is "compact".
-        var compactDisplay = GetOption(options, CompactDisplayKey, CompactDisplayValues, false, "short");
-        if (notation != "compact")
-            compactDisplay = null;
-
-        // GetUseGroupingOption: the default is "min2" for compact notation, "auto"
-        // otherwise; true → "always", a falsy value → boolean false, and an unrecognized
-        // string falls back to the default. Read after compactDisplay, before signDisplay.
-        var useGrouping = ResolveUseGrouping(options, notation);
-
-        var signDisplay = GetOption(options, SignDisplayKey, SignDisplayValues, false, "auto");
-
-        // SetNumberFormatDigitOptions: when roundingIncrement ≠ 1 the rounding strategy must be
-        // fraction-digits — not significant-digits, nor a morePrecision/lessPrecision priority (a
-        // TypeError) — and the resolved maximum and minimum fraction digits must be equal (a RangeError).
-        if (roundingIncrement != 1)
-        {
-            int? Frac(string name)
-            {
-                var v = digitOptions?[KeyStrings.GetOrCreate(name)];
-                return v == null || v.IsUndefined ? null : (int)v.DoubleValue;
-            }
-            var hasSignificant = Frac("minimumSignificantDigits") != null || Frac("maximumSignificantDigits") != null;
-            if (roundingPriority != "auto" || hasSignificant)
-                throw JSEngine.NewTypeError(
-                    "roundingIncrement may only be used with fractionDigits rounding (roundingPriority \"auto\" and no significant-digit options)");
-
-            // ri ≠ 1 forces the default maximum fraction digits down to the default minimum, so an
-            // unspecified pair resolves equal; an explicitly mismatched pair is a RangeError.
-            var mnfdDefault = (style ?? "decimal") == "currency" ? 2 : 0;
-            var mnfd = Frac("minimumFractionDigits");
-            var mxfd = Frac("maximumFractionDigits");
-            int rmin, rmax;
-            if (mnfd == null && mxfd == null) { rmin = rmax = mnfdDefault; }
-            else
-            {
-                rmin = mnfd ?? Math.Min(mnfdDefault, mxfd.GetValueOrDefault());
-                rmax = mxfd ?? Math.Max(mnfdDefault, mnfd.GetValueOrDefault());
-            }
-            if (rmax != rmin)
-                throw JSEngine.NewRangeError("maximumFractionDigits is not equal to minimumFractionDigits");
-        }
-
-        return new JSIntlNumberFormatResolved(notation, signDisplay, compactDisplay, unitDisplay)
-        {
-            DigitOptions = digitOptions,
-            RoundingIncrement = roundingIncrement,
-            RoundingMode = roundingMode,
-            RoundingModeName = roundingModeName,
-            RoundingPriority = roundingPriority,
-            TrailingZeroDisplay = trailingZeroDisplay,
-            UseGrouping = useGrouping,
-        };
-    }
-
-    // The ECMA-402 sanctioned single unit identifiers — the same set
-    // Intl.supportedValuesOf("unit") reports (AvailableCanonicalUnits).
-    private static readonly HashSet<string> SanctionedSingleUnits = new(IntlEnumerationData.Units, StringComparer.Ordinal);
-
-    // IsWellFormedUnitIdentifier (ECMA-402): a sanctioned single unit, or
-    // "<numerator>-per-<denominator>" where both are sanctioned single units.
-    private static bool IsWellFormedUnitIdentifier(string unit)
-    {
-        if (SanctionedSingleUnits.Contains(unit))
-            return true;
-
-        var perIndex = unit.IndexOf("-per-", StringComparison.Ordinal);
-        if (perIndex < 0)
-            return false;
-
-        var numerator = unit[..perIndex];
-        var denominator = unit[(perIndex + 5)..];
-        return SanctionedSingleUnits.Contains(numerator) && SanctionedSingleUnits.Contains(denominator);
-    }
-
-    // GetBooleanOrStringNumberFormatOption(options, "useGrouping", « "min2", "auto",
-    // "always" », defaultUseGrouping): true maps to "always", any falsy value to the
-    // boolean false (returned as the "false" sentinel), and an unrecognized string
-    // (e.g. "true"/"false") to the default. The default is "min2" for compact notation.
-    private static string ResolveUseGrouping(JSObject options, string notation)
-    {
-        var fallback = notation == "compact" ? "min2" : "auto";
-        if (options == null)
-            return fallback;
-        var v = options[KeyStrings.GetOrCreate("useGrouping")];
-        if (v == null || v.IsUndefined)
-            return fallback;
-        if (v.IsBoolean)
-            return v.BooleanValue ? "always" : "false";
-        // ToBoolean(value) === false (null, 0, "", NaN) resolves to boolean false.
-        if (!v.BooleanValue)
-            return "false";
-        var s = v.ToString();
-        if (s is "min2" or "auto" or "always")
-            return s;
-        // Legacy "true"/"false" strings resolve to the fallback; every other string value
-        // is unsupported and throws a RangeError (Intl.NumberFormat v3
-        // GetBooleanOrStringNumberFormatOption — e.g. "MIN2", "True", "42").
-        if (s is "true" or "false")
-            return fallback;
-        throw JSEngine.NewRangeError("useGrouping value is not supported");
-    }
-
-    // Reads the digit-related options from the bag once (in spec order) and stores
-    // them as plain data properties, so subsequent reads observe construction-time
-    // values without re-triggering option getters. Absent options are left out so
-    // callers apply their own (style-dependent) defaults.
-    // SetNumberFormatDigitOptions reads the rounding options immediately after the
-    // digit options, in order: roundingIncrement (a sanctioned numeric), roundingMode,
-    // roundingPriority, trailingZeroDisplay. Intl.PluralRules shares this step but does
-    // not otherwise consume the values, so it just needs the reads to happen (the order
-    // and per-value validation are observable — Intl.PluralRules options read order).
-    // NumberFormat reads them inline because it also applies the increment/significant
-    // cross-checks. Returns the four resolved values, the rounding mode both as the shared library's
-    // RoundingMode the formatter rounds with and as the option's name resolvedOptions reports.
-    internal static (int RoundingIncrement, RoundingMode RoundingMode, string RoundingModeName, string RoundingPriority, string TrailingZeroDisplay)
-        ReadRoundingOptions(JSObject options)
-    {
+        var mnid = GetNumberOption(options, MinimumIntegerDigitsKey, 1, 21) ?? 1;
+        var mnfd = OptionValue(options, MinimumFractionDigitsKey);
+        var mxfd = OptionValue(options, MaximumFractionDigitsKey);
+        var mnsd = OptionValue(options, MinimumSignificantDigitsKey);
+        var mxsd = OptionValue(options, MaximumSignificantDigitsKey);
         var roundingIncrement = GetNumberOption(options, RoundingIncrementKey, 1, 5000) ?? 1;
-        if (System.Array.IndexOf(SanctionedRoundingIncrements, roundingIncrement) < 0)
+        if (!DigitOptionRules.IsAdmittedRoundingIncrement(roundingIncrement))
             throw JSEngine.NewRangeError("roundingIncrement value is out of range.");
 
-        // GetOption(options, "roundingMode", string, « the nine names », "halfExpand"): the property
-        // read and its ToString are the engine's; the shared library's TryParseRoundingMode decides
-        // whether the text is one of the nine names, and any other text is GetOption's RangeError.
-        var roundingModeValue = options == null ? JSUndefined.Value : options[RoundingModeKey];
-        var roundingModeName = roundingModeValue.IsUndefined ? "halfExpand" : roundingModeValue.StringValue;
+        // GetOption(options, "roundingMode", string, « the nine names », "halfExpand"): the property read and its ToString
+        // are the engine's; the shared library's TryParseRoundingMode decides whether the text is one of the nine names.
+        var roundingModeName = OptionStringValue(options, RoundingModeKey) ?? "halfExpand";
         if (!ExactRounding.TryParseRoundingMode(roundingModeName, out var roundingMode))
             throw JSEngine.NewRangeError($"Invalid {RoundingModeKey} option");
 
-        var roundingPriority = GetOption(options, RoundingPriorityKey,
-            ["auto", "morePrecision", "lessPrecision"], false, "auto");
-        var trailingZeroDisplay = GetOption(options, TrailingZeroDisplayKey,
-            ["auto", "stripIfInteger"], false, "auto");
-        return (roundingIncrement, roundingMode, roundingModeName, roundingPriority, trailingZeroDisplay);
-    }
+        var roundingPriority = (RoundingPriority)System.Array.IndexOf(RoundingPriorityNames,
+            GetOption(options, RoundingPriorityKey, RoundingPriorityNames, false, "auto"));
+        var trailingZeroDisplay = (TrailingZeroDisplay)System.Array.IndexOf(TrailingZeroDisplayNames,
+            GetOption(options, TrailingZeroDisplayKey, TrailingZeroDisplayNames, false, "auto"));
 
-    internal static JSObject SnapshotDigitOptions(JSObject options)
-    {
-        if (options == null)
-            return null;
+        var hasSd = !mnsd.IsUndefined || !mxsd.IsUndefined;
+        var hasFd = !mnfd.IsUndefined || !mxfd.IsUndefined;
+        var plan = DigitOptionRules.Plan(hasSd, hasFd, roundingPriority, notation);
+        int? minSd = null, maxSd = null, minFd = null, maxFd = null;
 
-        // Each digit option has a sanctioned [min, max] range (SetNumberFormatDigitOptions
-        // / GetNumberOption); a NaN or out-of-range value (e.g. maximumSignificantDigits: 0)
-        // is a RangeError. The original value is still snapshotted so downstream
-        // format/resolvedOptions reads observe the construction-time value. The snapshot
-        // has a null prototype: only the digits we explicitly capture are visible, so
-        // a property planted on Object.prototype can't bleed into the formatter.
-        var snapshot = new JSObject();
-        snapshot.SetPrototypeOf(Null.JSNull.Value);
-        foreach (var (name, min, max) in new (string, int, int)[]
+        // The conversions the plan selects, the minimum before the maximum.
+        if (plan.NeedSignificantDigits && hasSd)
         {
-            ("minimumIntegerDigits", 1, 21),
-            ("minimumFractionDigits", 0, 100),
-            ("maximumFractionDigits", 0, 100),
-            ("minimumSignificantDigits", 1, 21),
-            ("maximumSignificantDigits", 1, 21),
-        })
-        {
-            var key = KeyStrings.GetOrCreate(name);
-            var value = options[key];
-            if (value != null && !value.IsUndefined)
-            {
-                var number = value.DoubleValue;
-                if (double.IsNaN(number) || number < min || number > max)
-                    throw JSEngine.NewRangeError($"Invalid {key} option");
-
-                snapshot.FastAddValue(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
-            }
+            minSd = DefaultNumberOption(mnsd, 1, 21, 1, MinimumSignificantDigitsKey);
+            maxSd = DefaultNumberOption(mxsd, minSd!.Value, 21, 21, MaximumSignificantDigitsKey);
         }
 
-        return snapshot;
-    }
-
-    internal static string ResolveLocale(JSValue locales)
-        => ResolveLocaleFromCanonical(CanonicalizeLocaleList(locales));
-
-    // ResolveLocale, then drop any Unicode ("-u-") extension keyword whose key is not
-    // relevant to the service (ECMA-402 ResolveLocale keeps only the relevantExtensionKeys
-    // in the resolved [[Locale]]). So `ja-JP-u-cu-usd` resolves to `ja-JP` for a service
-    // that only cares about, say, `nu`.
-    internal static string ResolveLocale(JSValue locales, string[] relevantExtensionKeys)
-        => FilterUnicodeExtensionKeywords(ResolveLocale(locales), relevantExtensionKeys);
-
-    // ResolveLocale over an already-canonicalized requested-locale list (a single
-    // CanonicalizeLocaleList call's result), so the caller's locales object is not read
-    // a second time. Picks the first requested locale, falling back to the host locale.
-    internal static string ResolveLocaleFromCanonical(JSValue canonicalLocales)
-    {
-        if (canonicalLocales is JSObject array)
+        if (plan.NeedFractionDigits && hasFd)
         {
-            // LookupMatcher (ECMA-402): take the first requested locale that has a
-            // BestAvailableLocale match; a structurally valid but unsupported tag (e.g.
-            // "xyz") is skipped so a later supported locale wins, falling back to the
-            // default locale when none match (test262 intl402 .../locales-valid).
-            var length = array[KeyStrings.length].UIntValue;
-            for (uint i = 0; i < length; i++)
-            {
-                var locale = array[i];
-                if (locale.IsUndefined)
-                    continue;
-
-                if (IsLocaleAvailable(locale.StringValue))
-                    return locale.StringValue;
-            }
+            minFd = DefaultNumberOption(mnfd, 0, 100, null, MinimumFractionDigitsKey);
+            maxFd = DefaultNumberOption(mxfd, 0, 100, null, MaximumFractionDigitsKey);
         }
 
-        return string.IsNullOrEmpty(CultureInfo.CurrentCulture.Name) ? "en-US" : CultureInfo.CurrentCulture.Name;
+        var values = new DigitOptionValues(mnid, hasSd, minSd, maxSd, hasFd, minFd, maxFd, roundingIncrement,
+            roundingMode, roundingPriority, trailingZeroDisplay);
+
+        return DigitOptionRules.SetNumberFormatDigitOptions(values, defaults, notation, out var digits) switch
+        {
+            IntlStatus.Completed => digits!,
+            IntlStatus.RoundingIncrementNeedsFractionDigits => throw JSEngine.NewTypeError(
+                "roundingIncrement may only be used with fractionDigits rounding (roundingPriority \"auto\" and no significant-digit options)"),
+            IntlStatus.RoundingIncrementNeedsEqualFractionDigits => throw JSEngine.NewRangeError("maximumFractionDigits is not equal to minimumFractionDigits"),
+            IntlStatus.FractionDigitsOutOfOrder => throw JSEngine.NewRangeError("minimumFractionDigits is greater than maximumFractionDigits"),
+            _ => throw JSEngine.NewRangeError("roundingIncrement value is out of range."),
+        };
     }
 
+    private static readonly KeyString MinimumIntegerDigitsKey = KeyStrings.GetOrCreate("minimumIntegerDigits");
+    private static readonly KeyString MinimumFractionDigitsKey = KeyStrings.GetOrCreate("minimumFractionDigits");
+    private static readonly KeyString MaximumFractionDigitsKey = KeyStrings.GetOrCreate("maximumFractionDigits");
+    private static readonly KeyString MinimumSignificantDigitsKey = KeyStrings.GetOrCreate("minimumSignificantDigits");
+    private static readonly KeyString MaximumSignificantDigitsKey = KeyStrings.GetOrCreate("maximumSignificantDigits");
+    private static readonly KeyString UseGroupingKey = KeyStrings.GetOrCreate("useGrouping");
+
+    // An option's value as Get reads it, undefined when the options are.
+    private static JSValue OptionValue(JSObject options, KeyString key)
+        => options == null ? JSUndefined.Value : options[key] ?? JSUndefined.Value;
+
+    // ECMA-402's DefaultNumberOption (sec-defaultnumberoption): ToNumber here, the range check and the floor the shared
+    // library's DigitOptionRules.DefaultNumberOption.
+    private static int? DefaultNumberOption(JSValue value, int minimum, int maximum, int? fallback, KeyString key)
+    {
+        if (value.IsUndefined)
+            return fallback;
+
+        if (DigitOptionRules.DefaultNumberOption(value.DoubleValue, minimum, maximum, out var result) != IntlStatus.Completed)
+            throw JSEngine.NewRangeError($"Invalid {key} option");
+
+        return result;
+    }
+
+    // ECMA-402's GetBooleanOrStringNumberFormatOption for useGrouping (sec-getbooleanorstringnumberformatoption, and
+    // Intl.NumberFormat's step after it): true is "always", a value ToBoolean reads as false is the boolean false, the
+    // strings "true" and "false" are the default, and any other string outside « "min2", "auto", "always" » is a RangeError.
+    private static NumberGrouping GetUseGroupingOption(JSObject options, NumberGrouping fallback)
+    {
+        var value = OptionValue(options, UseGroupingKey);
+        if (value.IsUndefined)
+            return fallback;
+        if (value.IsBoolean && value.BooleanValue)
+            return NumberGrouping.Always;
+        if (!value.BooleanValue)
+            return NumberGrouping.Off;
+
+        var text = value.StringValue;
+        if (text is "true" or "false")
+            return fallback;
+
+        var index = System.Array.IndexOf(GroupingNames, text);
+        if (index < 0 || text == null)
+            throw JSEngine.NewRangeError("useGrouping value is not supported");
+
+        return (NumberGrouping)index;
+    }
+
+    // ECMA-402's ToIntlMathematicalValue (sec-tointlmathematicalvalue): ToPrimitive with the hint number here; the value is
+    // the shared library's IntlDecimal (sub-area (b)): a BigInt's digits, a String's exact decimal value (row M2a) read under
+    // this engine's unbounded BigInt policy, and a Number's Number::toString digits (row M1a, a correction: the double's
+    // binary value, ExactRational's, rounded where ECMA-402 rounds its decimal digits). A String the ToPrimitive gives is read
+    // as a String (row M1b, a correction).
+    internal static IntlDecimal ToIntlMathematicalValue(JSValue value)
+    {
+        value ??= JSUndefined.Value;
+        var primitive = value is JSObject @object ? @object.ToNumberPrimitive() : value;
+        if (primitive is BigInt.JSBigInt bigint)
+            return IntlDecimal.FromBigInt(bigint.value, null);
+        if (primitive.IsString)
+            return IntlDecimal.FromString(primitive.StringValue, BigIntPolicy.Unbounded, null);
+        if (primitive.IsSymbol)
+            throw JSEngine.NewTypeError("Cannot convert a Symbol value to a number");
+        return IntlDecimal.FromNumber(primitive.DoubleValue);
+    }
+
+    // ResolveLocale (sec-resolvelocale) over a CanonicalizeLocaleList result, wholly the shared library's: its matching
+    // steps over the available-locale provider (row L38), then its steps 5 to 12 over the service's relevant keys, each with
+    // the values the locale data gives the matched locale (SJL-9.5, task 8.4; these replace, for the services of sub-areas
+    // (b) and (c), ResolveLocaleFromCanonical's keyword filter and ResolveNumberingSystem's hand negotiation).
+    internal static ResolvedLocale ResolveLocale(JSValue canonicalLocales, Func<string, IReadOnlyList<RelevantKey>> relevantKeys)
+    {
+        var match = LocaleNegotiation.MatchLocale(
+            JSIntlLocaleProviders.AvailableLocales, RequestedLocales(canonicalLocales), JSIntlLocaleProviders.DefaultLocale);
+        return LocaleNegotiation.ResolveLocale(match, relevantKeys(match.Locale), JSIntlData.LocaleData);
+    }
+
+    // The relevant keys of the services that resolve none: ListFormat, DisplayNames and PluralRules.
+    internal static IReadOnlyList<RelevantKey> NoRelevantKey(string locale) => [];
+
+    // ResolveLocale for a service whose one relevant key is nu (NumberFormat, RelativeTimeFormat): the nu values of the
+    // matched locale's data, its default numbering system first (decision D13, row L22), with the numberingSystem option.
+    internal static ResolvedLocale ResolveNumberingSystemLocale(JSValue canonicalLocales, string numberingSystemOption)
+        => ResolveLocale(canonicalLocales, locale =>
+            [new RelevantKey("nu", NumberingSystemValues(locale)) { Option = numberingSystemOption }]);
+
+    // [[LocaleData]].[[<locale>]].[[nu]]: the locale's default numbering system from the data along its chain (latn where
+    // the data names none), then latn, then the data's others in code-unit order: the shared library's (decision D13).
+    internal static IReadOnlyList<string> NumberingSystemValues(string locale)
+        => NumberFormatter.NumberingSystemKeyValues(JSIntlData.LocaleData, JSIntlLocaleProviders.DataLocale(locale));
+
+    // ResolveLocale's matching steps (ECMA-402 sec-resolvelocale, steps 1 to 4) over a CanonicalizeLocaleList result, so the
+    // caller's locales object is not read a second time: the shared library's lookup matcher, which is also this engine's best
+    // fit (row L38), over the available-locale provider's list, falling back to the default-locale provider's DefaultLocale
+    // with no keyword (SJL-9.5, sub-area (a); decision D7). The resolved locale is the available locale matched, never the
+    // request itself (row L29, a correction), with the requested -u- keywords of the service's relevant extension keys, in
+    // canonical order, and no other (row L30, a correction). Each service then resolves its keys' values against its own data.
     internal static string ResolveLocaleFromCanonical(JSValue canonicalLocales, string[] relevantExtensionKeys)
-        => FilterUnicodeExtensionKeywords(ResolveLocaleFromCanonical(canonicalLocales), relevantExtensionKeys);
-
-    // The Unicode-extension keys each service uses to negotiate the resolved locale.
-    internal static readonly string[] NumberFormatRelevantKeys = ["nu"];
-    internal static readonly string[] DateTimeFormatRelevantKeys = ["ca", "hc", "nu"];
-    // The relevant keys minus "hc": used to drop the locale's -u-hc- extension when an
-    // hour12 / hourCycle option overrides it (ResolveLocale only reflects a keyword whose
-    // value actually came from the locale, not one supplied by an option).
-    internal static readonly string[] DateTimeFormatRelevantKeysWithoutHourCycle = ["ca", "nu"];
-
-    internal static string DropHourCycleExtension(string tag)
-        => FilterUnicodeExtensionKeywords(tag, DateTimeFormatRelevantKeysWithoutHourCycle);
-    internal static readonly string[] CollatorRelevantKeys = ["co", "kf", "kn"];
-
-    // Rebuilds a BCP-47 tag keeping only the "-u-" extension keywords whose key is in
-    // relevantKeys; attributes and irrelevant keys are dropped, and the whole "-u-"
-    // sequence is removed when nothing relevant survives. Other singleton extensions
-    // ("-t-", "-x-", …) are preserved.
-    private static string FilterUnicodeExtensionKeywords(string tag, string[] relevantKeys)
     {
-        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase) < 0)
-            return tag;
-
-        var parts = tag.Split('-');
-        var u = -1;
-        for (var i = 0; i < parts.Length; i++)
+        var match = LocaleNegotiation.MatchLocale(
+            JSIntlLocaleProviders.AvailableLocales, RequestedLocales(canonicalLocales), JSIntlLocaleProviders.DefaultLocale);
+        var keywords = new StringBuilder();
+        foreach (var keyword in match.ExtensionKeywords)
         {
-            if (parts[i].Length != 1)
-                continue;
-            // Stop scanning at the private-use singleton ("x"): everything beyond is
-            // private-use, so a "u" inside that payload is not a Unicode extension.
-            if (parts[i][0] == 'u' || parts[i][0] == 'U') { u = i; break; }
-            if (parts[i][0] == 'x' || parts[i][0] == 'X') break;
-        }
-
-        if (u < 0)
-            return tag;
-
-        // Walk the "-u-" extension (up to the next singleton subtag or the end),
-        // grouping subtags into keywords: a 2-char subtag is a key, longer subtags are
-        // its type values (or leading attributes before the first key).
-        var end = u + 1;
-        var keywords = new List<(string Key, List<string> Types)>();
-        while (end < parts.Length && parts[end].Length != 1)
-        {
-            if (parts[end].Length == 2)
-                keywords.Add((parts[end].ToLowerInvariant(), new List<string>()));
-            else if (keywords.Count > 0)
-                keywords[^1].Types.Add(parts[end]);
-            // (a subtag before the first key is an attribute — dropped)
-            end++;
-        }
-
-        var sb = new StringBuilder();
-        for (var i = 0; i < u; i++)
-        {
-            if (i > 0)
-                sb.Append('-');
-            sb.Append(parts[i]);
-        }
-
-        var keptAny = false;
-        foreach (var (key, types) in keywords)
-        {
-            if (System.Array.IndexOf(relevantKeys, key) < 0)
+            if (System.Array.IndexOf(relevantExtensionKeys, keyword.Key) < 0)
                 continue;
 
-            if (!keptAny)
-            {
-                sb.Append("-u");
-                keptAny = true;
-            }
-
-            sb.Append('-').Append(key);
-            // CanonicalizeUnicodeLocaleId: a boolean-keyword value of "true" is the default and is
-            // dropped (e.g. "kn-true" → "kn"), so resolvedOptions().locale carries just the key.
-            if (types.Count == 1 && string.Equals(types[0], "true", StringComparison.OrdinalIgnoreCase))
-                continue;
-            foreach (var type in types)
-                sb.Append('-').Append(type);
+            keywords.Append('-').Append(keyword.Key);
+            if (keyword.Value.Length != 0 && keyword.Value != "true")
+                keywords.Append('-').Append(keyword.Value);
         }
 
-        // Preserve any later singleton extensions ("-t-", "-x-", …) after the "-u-" run.
-        for (var i = end; i < parts.Length; i++)
-            sb.Append('-').Append(parts[i]);
-
-        return sb.ToString();
+        return keywords.Length == 0 ? match.Locale : match.Locale + "-u" + keywords;
     }
+
+    // ResolveLocale's steps 5 to 12, each key's value against the service's data, are still this file's, by hand, until each
+    // service's sub-area moves: JSD-0082's X6 gives negotiation to sub-area (a), and the plan's rows for tasks 8.4 to 8.6 do
+    // not name these members, so each is listed here with the task whose service is its last reader, for task 8.7's
+    // deletion search (recorded 2026-11-04, at SJL-9.5). Each is replaced by LocaleNegotiation.ResolveLocale over the
+    // service's RelevantKey list and LocaleId's parts:
+    // - task 8.4: ResolveNumberingSystem (NumberFormat, RelativeTimeFormat, DurationFormat; with JSIntlDefaultNumberingSystems,
+    //   decision D13); the Collator's co, kf and kn (in JSIntlCollator's constructor, with its StripUnicodeExtension), over
+    //   the Collator's data through JSIntlCollator.LocaleData (decision D33 (c); its data and comparison stay SJL-17's),
+    //   which no plan row names and which is assigned here to task 8.4;
+    // - task 8.5: ResolveCalendar, DateTimeFormat's hc (DropHourCycleExtension, FilterUnicodeExtensionKeywords), and
+    //   DefaultHourCycle and Prefers11HourCycle with their tag parsers LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+    //   IsAllDigitSubtag (row T10);
+    // - with the last of their readers: GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword.
+    // Noted 2026-11-08, at SJL-9.5 (task 8.4): NumberFormat, PluralRules, RelativeTimeFormat, ListFormat and DisplayNames
+    // resolve through the shared library's ResolveLocale (JSIntl.ResolveLocale, ResolveNumberingSystemLocale), each nu value
+    // the data's; ResolveNumberingSystem stays, its values now the data's (decision D13), for DateTimeFormat's (task 8.5) and
+    // DurationFormat's (task 8.6) readers alone. The Collator's co, kf and kn stay where they are: the brief for task 8.4
+    // gives the collator's move to SJL-17.5, so the item above assigned to task 8.4 waits on the Collator's own cut-over.
+    // Noted 2026-11-09, at SJL-9.5 (task 8.5): DateTimeFormat resolves ca, hc and nu through the shared library's ResolveLocale
+    // (JSIntl.ResolveLocale over DateTimeFormat.CalendarKeyValues, HourCycleKeyValues and NumberingSystemValues), and its
+    // hour cycles are the library's, from CLDR's time data (row T10). The task 8.5 items above are deleted with their last
+    // reader: ResolveCalendar, IsAvailableCalendar, IsRenderableCalendar, ReadCalendarOption, DateTimeFormatRelevantKeys,
+    // DateTimeFormatRelevantKeysWithoutHourCycle, DropHourCycleExtension, FilterUnicodeExtensionKeywords, the
+    // TwelveHourRegions table, DefaultHourCycle, Prefers11HourCycle, LanguageSubtag, RegionSubtag, IsAllAlphaSubtag and
+    // IsAllDigitSubtag; so are NumberingSystemDigit (the digits are the library's, from the data's numbering-system table)
+    // and DefaultNumberingSystem, whose last reader was DateTimeFormat's constructor from a CultureInfo (row T42).
+    // GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword keep the Collator as a reader.
+    // Noted 2026-11-09, at SJL-9.5 (task 8.6): DurationFormat resolves nu through the shared library's ResolveLocale
+    // (ResolveNumberingSystemLocale), so ResolveNumberingSystem (both overloads), NumberFormatRelevantKeys, NumberParts,
+    // JSIntlNumberFormat.ComputeFormatParts and JSIntlListFormat.FormatPartsForUnits are deleted with their last reader.
+    // ResolveLocaleFromCanonical stays for the Segmenter (SJL-7's, NoRelevantKeys) and the Collator (CollatorRelevantKeys);
+    // GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword stay for the Collator alone, whose
+    // move the brief for task 8.6 leaves to SJL-17.5.
+    // Revised 2026-11-09, at SJL-9.5 (review of tasks 8.5 and 8.6): two sentences above no longer hold as written.
+    // - The 2026-11-08 note's "ResolveNumberingSystem stays, its values now the data's (decision D13), for DateTimeFormat's
+    //   (task 8.5) and DurationFormat's (task 8.6) readers alone": both readers left at tasks 8.5 and 8.6, and the method
+    //   is deleted (the task 8.6 note above).
+    // - The task 8.5 note's "its hour cycles are the library's, from CLDR's time data (row T10)": the library reads only
+    //   the region-keyed entries of CLDR's time data (ILocaleData.HourCycles(region)), at the tag's region or else the
+    //   likely region of the language alone, and never the locale-keyed entries (ar-001, fr-CA, en-001 and the others). So
+    //   ar's default is h23 where the data's ar-001 gives h12 (engine vector intl/date-times/families/0028, which matched
+    //   at the base and now differs), fr-CA's is h12 where the data's fr-CA gives H (0173, 0175), and zh-Hant's is h23,
+    //   CN's, where TW's gives h (0490). It is a library gap for its own merge (decision D52, SJL-D-9).
+    // - U+202F before the day period (row T12, CLDR's data) costs test262's
+    //   intl402/DateTimeFormat/prototype/format/numbering-system.js, which passes at the base and asks for a plain space
+    //   before "AM" (JSD-0082, D21). Both points wait on the owner's ruling.
+    // Revised 2026-11-09, at SJL-9.5's stage 4, after the owner's decision of 2026-11-09, "Keep + fix library first", and the
+    // shared library's merge Broiler-Platform/Broiler.JS#1108: both points of the revision above are settled. The library reads
+    // CLDR's time data for the locale's language and region before its region's, and the whole locale's likely region, so
+    // ar-001 is h12 (0028 matches again), fr-CA h23 (0173, 0175) and zh-Hant h12, Taiwan's (0490): the task 8.5 note's "its hour
+    // cycles are the library's, from CLDR's time data (row T10)" holds as written. U+202F before the day period stays CLDR's under
+    // the owner's ruling "Follow CLDR, dated ruling"; numbering-system.js is lost under row T12, and bundle sjl-9-001's rule is
+    // revised to admit that one path as class L (docs/evidence/sjl-9-001/decision-rule-revised-2026-11-09.md).
+    // Revised 2026-11-09, at SJL-9.5's stage 4 (review): the revision above checks only the task 8.5 note's hour cycles. Its
+    // "JSIntl.ResolveLocale over DateTimeFormat.CalendarKeyValues" no longer holds as written: the ca key's values are now
+    // DateTimeFormat.CalendarKeyValuesOf the data locale (JSIntlLocaleProviders.DataLocale of the matched locale), whose
+    // first value is the first calendar of CLDR's calendarPreferenceData for the locale's own or likely region (row T16,
+    // data policy C5). Every locale whose region is AF, IR or TH, its own or likely, now defaults to persian or buddhist
+    // (fa, fa-IR, fa-AF, ps, uz-Arab, lrc, mzn, ckb-IR, th, th-TH, among this host's locales), and a gregory-calendar
+    // Temporal value is refused there. The hour cycles read the locale-keyed entries of CLDR's time data (en-001 and ar-001
+    // h12, fr-CA h23, and ku-SY h23 where SY gives h12: Intl.Locale's getHourCycles always, the date-time format where the
+    // host has ku-SY) and the whole tag's likely region (zh-Hant TW's h12, yue-Hans CN's h23) (rows T10 and L19). Which
+    // locales move in the date-time format depends on the host's locales (row L28).
+
+    // The relevant extension keys of the services that resolve none: ListFormat, Segmenter, DisplayNames and PluralRules.
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4): ListFormat, DisplayNames and PluralRules resolve through the shared
+    // library's ResolveLocale with NoRelevantKey; Segmenter, SJL-7's, still reads this list.
+    internal static readonly string[] NoRelevantKeys = [];
+
+    internal static readonly string[] CollatorRelevantKeys = ["co", "kf", "kn"];
 
     // The numbering systems with simple digit mappings (ECMA-402 Table: "Numbering
     // System Identifiers"), i.e. the `nu` values an implementation negotiates via
     // ResolveLocale / reports from resolvedOptions. Algorithmic-only aliases ("native",
     // "traditio", "finance") are intentionally absent — they are not valid `-u-nu-`
     // values. Stored sorted (code-unit order) for supportedValuesOf.
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4): no service negotiates over this list any more, which also backed
+    // IsSupportedNumberingSystem and its HashSet (both deleted); a nu value is supported where the data's numbering-system
+    // table holds it (NumberingSystemValues). It stays for Intl.supportedValuesOf, which JSD-0082's X6 gives to sub-area (a).
     internal static readonly string[] SupportedNumberingSystemsSorted =
     [
         "adlm", "ahom", "arab", "arabext", "bali", "beng", "bhks", "brah", "cakm",
@@ -2487,9 +1232,6 @@ public static class JSIntl
         "telu", "thai", "tibt", "tirh", "tnsa", "tols", "vaii", "wara", "wcho",
     ];
 
-    private static readonly HashSet<string> SupportedNumberingSystems =
-        new(SupportedNumberingSystemsSorted, StringComparer.Ordinal);
-
     // AvailableCanonicalCalendars: the canonical calendar identifiers reported by
     // Intl.supportedValuesOf("calendar"), in code-unit (ascending) order. This is the set
     // required by the Intl era/monthCode additions; "islamic" and "islamic-rgsa" are
@@ -2501,17 +1243,6 @@ public static class JSIntl
         "indian", "islamic-civil", "islamic-tbla", "islamic-umalqura",
         "iso8601", "japanese", "persian", "roc",
     ];
-
-    internal static bool IsSupportedNumberingSystem(string value)
-        => value != null && SupportedNumberingSystems.Contains(value);
-
-    // ResolveLocale's negotiation of the `nu` (numbering system) relevant key. Returns
-    // the resolved numbering system and the resolved locale tag. Per spec: a supported
-    // `-u-nu-` value is used and reflected in the locale; a `numberingSystem` option that
-    // is supported and DIFFERENT overrides it and removes the `-u-nu-` from the locale; an
-    // unsupported value (in either place) falls through to "latn" with `-u-nu-` removed.
-    internal static (string NumberingSystem, string Locale) ResolveNumberingSystem(string localeTag, JSObject options)
-        => ResolveNumberingSystem(localeTag, ReadNumberingSystemOption(options));
 
     // Reads (and string-coerces) the numberingSystem option from the bag once, returning
     // null when it is absent/undefined. Split out so Intl.NumberFormat can fire the getter
@@ -2532,92 +1263,6 @@ public static class JSIntl
         return value;
     }
 
-    // Reads (string-coerces and validates) the calendar option from the bag once,
-    // returning null when absent. InitializeDateTimeFormat reads it right after
-    // localeMatcher and ahead of numberingSystem; a value that is not a well-formed
-    // Unicode BCP-47 extension type is a RangeError.
-    internal static string ReadCalendarOption(JSObject options)
-    {
-        var value = options == null ? null : OptionString(options, KeyStrings.GetOrCreate("calendar"));
-        if (value == null)
-            return null;
-        value = value.ToLowerInvariant();
-        if (!UnicodeKeywordTypePattern.IsMatch(value))
-            throw JSEngine.NewRangeError("Invalid calendar option");
-        // Canonicalize deprecated calendar aliases (e.g. "islamicc" → "islamic-civil").
-        return CanonicalizeKeywordValue("ca", value);
-    }
-
-    // Negotiates the resolved `nu` (numbering system) against the locale's `-u-nu-`
-    // extension, given the already-read numberingSystem option value. Per spec: a supported
-    // `-u-nu-` value is used and reflected in the locale; a supported option that DIFFERS
-    // overrides it and removes the `-u-nu-` from the locale; an unsupported value (in either
-    // place) falls through to the locale's default with `-u-nu-` removed. The default is CLDR's
-    // (JSIntlDefaultNumberingSystems): "arab" for ar-EG, "arabext" for fa, "latn" for en or ar.
-    internal static (string NumberingSystem, string Locale) ResolveNumberingSystem(string localeTag, string optionValue)
-    {
-        var value = JSIntlDefaultNumberingSystems.Of(localeTag);
-        var reflectInLocale = false;
-
-        var ext = GetUnicodeExtensionType(localeTag, "nu");
-        if (IsSupportedNumberingSystem(ext))
-        {
-            value = ext;
-            reflectInLocale = true;
-        }
-
-        if (optionValue != null && IsSupportedNumberingSystem(optionValue) &&
-            !string.Equals(optionValue, value, StringComparison.Ordinal))
-        {
-            value = optionValue;
-            reflectInLocale = false;
-        }
-
-        var locale = reflectInLocale ? localeTag : RemoveUnicodeExtensionKeyword(localeTag, "nu");
-        return (value, locale);
-    }
-
-    // Negotiates the resolved `ca` (calendar) against the locale's `-u-ca-` extension, given the
-    // already-read+canonicalized calendar option value, mirroring ResolveNumberingSystem. Per
-    // ResolveLocale: a supported `-u-ca-` value is used and reflected in the locale; a supported
-    // option that DIFFERS overrides it and drops the `-u-ca-`; an unsupported value (in either
-    // place) falls through to the default "gregory" with `-u-ca-` removed. "Supported" here is the
-    // set of available canonical calendars (so "iso8601" counts but "invalid" does not).
-    internal static (string Calendar, string Locale) ResolveCalendar(string localeTag, string optionValue)
-    {
-        // The ResolveLocale `ca` negotiation runs over the full set of AVAILABLE canonical calendars,
-        // so any valid identifier (including "hebrew"/"japanese") is kept in the resolved locale; only
-        // an unavailable identifier (e.g. "invalid") falls back to "gregory" and drops the -u-ca-.
-        var value = "gregory";
-        var reflectInLocale = false;
-
-        var ext = GetUnicodeExtensionType(localeTag, "ca");
-        if (IsAvailableCalendar(ext))
-        {
-            value = ext;
-            reflectInLocale = true;
-        }
-
-        if (optionValue != null && IsAvailableCalendar(optionValue) && !string.Equals(optionValue, value, StringComparison.Ordinal))
-        {
-            value = optionValue;
-            reflectInLocale = false;
-        }
-
-        var locale = reflectInLocale ? localeTag : RemoveUnicodeExtensionKeyword(localeTag, "ca");
-        return (value, locale);
-    }
-
-    // A calendar identifier this implementation lists among the available (canonical) calendars.
-    internal static bool IsAvailableCalendar(string c)
-        => c != null && System.Array.IndexOf(AvailableCanonicalCalendars, c) >= 0;
-
-    // A calendar this formatter can actually project: the proleptic Gregorian calendars plus the
-    // special calendars the formatting engine renders. An available-but-unrenderable calendar coming
-    // from the locale's -u-ca- (e.g. "hebrew") is reported as "gregory", matching the gregorian output.
-    internal static bool IsRenderableCalendar(string c)
-        => c is "gregory" or "iso8601" || JSIntlDateTimeFormatEngine.IsSupportedCalendar(c);
-
     // ResolveLocale's per-key reflection rule: the "-u-<key>" keyword stays in the resolved locale
     // when no option overrides it, or when the option value equals the extension value; an option
     // that differs from the extension drops the keyword (test262 .../resolved-*-unicode-extensions-
@@ -2633,8 +1278,9 @@ public static class JSIntl
     }
 
     // Rebuilds a BCP-47 tag dropping a single Unicode ("-u-") extension keyword (and the
-    // whole "-u-" sequence when nothing else survives). Sibling of
-    // FilterUnicodeExtensionKeywords, which keeps a set instead of removing one.
+    // whole "-u-" sequence when nothing else survives).
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5): FilterUnicodeExtensionKeywords is deleted with DateTimeFormat's hand
+    // negotiation; the comment ended "Sibling of FilterUnicodeExtensionKeywords, which keeps a set instead of removing one."
     internal static string RemoveUnicodeExtensionKeyword(string tag, string removeKey)
     {
         if (string.IsNullOrEmpty(tag) || tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase) < 0)
@@ -2743,71 +1389,6 @@ public static class JSIntl
         return null;
     }
 
-    // The CLDR-derived default hour cycle for a locale: "h12" for 12-hour regions (and
-    // English without a region), "h23" otherwise. A coarse approximation of the CLDR
-    // <hours> preference data, sufficient for the common cases.
-    internal static string DefaultHourCycle(string tag)
-    {
-        var region = RegionSubtag(tag);
-        if (region != null)
-            return JSIntlLocale.TwelveHourRegions.Contains(region) ? "h12" : "h23";
-
-        return LanguageSubtag(tag) == "en" ? "h12" : "h23";
-    }
-
-    // CLDR <hours> preferred 12-hour cycle: "h" (h12) in almost every locale, but "K" (h11)
-    // in the small set whose day-period clock starts at 0 — Japan (ja / JP). Used when the
-    // hour12 option requests a 12-hour clock.
-    internal static bool Prefers11HourCycle(string tag)
-    {
-        var region = RegionSubtag(tag);
-        if (region != null)
-            return region == "JP";
-        return LanguageSubtag(tag) == "ja";
-    }
-
-    private static string LanguageSubtag(string tag)
-    {
-        if (string.IsNullOrEmpty(tag))
-            return null;
-
-        var dash = tag.IndexOf('-');
-        return (dash < 0 ? tag : tag.Substring(0, dash)).ToLowerInvariant();
-    }
-
-    private static string RegionSubtag(string tag)
-    {
-        if (string.IsNullOrEmpty(tag))
-            return null;
-
-        var parts = tag.Split('-');
-        var i = 1;
-        if (i < parts.Length && parts[i].Length == 4 && IsAllAlphaSubtag(parts[i]))
-            i++; // skip script
-
-        if (i < parts.Length
-            && ((parts[i].Length == 2 && IsAllAlphaSubtag(parts[i])) || (parts[i].Length == 3 && IsAllDigitSubtag(parts[i]))))
-            return parts[i].ToUpperInvariant();
-
-        return null;
-    }
-
-    private static bool IsAllAlphaSubtag(string s)
-    {
-        foreach (var c in s)
-            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')))
-                return false;
-        return s.Length > 0;
-    }
-
-    private static bool IsAllDigitSubtag(string s)
-    {
-        foreach (var c in s)
-            if (c < '0' || c > '9')
-                return false;
-        return s.Length > 0;
-    }
-
     internal static JSIntlDisplayNamesOptions ValidateDisplayNamesOptions(JSObject options)
     {
         if (options == null)
@@ -2869,47 +1450,26 @@ public static class JSIntl
             _ = options[key];
     }
 
-    internal static bool IsWellFormedCurrencyCode(string currency)
-    {
-        if (currency.Length != 3)
-            return false;
-
-        foreach (var ch in currency)
-        {
-            if ((ch < 'A' || ch > 'Z') && (ch < 'a' || ch > 'z'))
-                return false;
-        }
-
-        return true;
-    }
 }
 
+// Intl.RelativeTimeFormat (ECMA-402 sec-relativetimeformat-objects) over the shared library's RelativeTimeFormatter
+// (SJL-9.5, task 8.4, sub-area (c); Broiler.VM's JSD-0082, decision D24): the constructor reads localeMatcher,
+// numberingSystem, style and numeric in the specification's order, ResolveLocale's nu key is the library's, and the record
+// - SingularRelativeTimeUnit, PartitionRelativeTimePattern, its inner NumberFormat with the resolved numbering system (row
+// S5, a correction) and its inner PluralRules - is the library's, over the data home's relative-time data (decision D5).
+// Deleted (2026-11-08): SingularUnit, PartitionRelativeTimePattern and FillRelativeTimePattern, and the locale, numbering
+// system, style and numeric fields. Its public members stay (decision SJL-D-25, disposition (a)).
 public class JSIntlRelativeTimeFormat : JSObject
 {
-    // ECMA-402 sanctioned units (singular and plural spellings) mapped to the
-    // singular form used to key the CLDR relative-time patterns.
-    private static readonly Dictionary<string, string> SingularUnit = new(StringComparer.Ordinal)
-    {
-        ["second"] = "second", ["seconds"] = "second",
-        ["minute"] = "minute", ["minutes"] = "minute",
-        ["hour"] = "hour", ["hours"] = "hour",
-        ["day"] = "day", ["days"] = "day",
-        ["week"] = "week", ["weeks"] = "week",
-        ["month"] = "month", ["months"] = "month",
-        ["quarter"] = "quarter", ["quarters"] = "quarter",
-        ["year"] = "year", ["years"] = "year",
-    };
+    internal RelativeTimeFormatter Formatter { get; }
 
     public JSValue Format(in Arguments args)
     {
         // ToNumber(value) precedes ToString(unit) per spec.
         var value = (args[0] ?? JSUndefined.Value).DoubleValue;
         var unit = args.GetAt(1).StringValue;
-
-        var sb = new StringBuilder();
-        foreach (var (_, partValue, _) in PartitionRelativeTimePattern(value, unit))
-            sb.Append(partValue);
-        return CreateString(sb.ToString());
+        Completed(Formatter.Format(value, unit, out var text, null), unit);
+        return CreateString(text);
     }
 
     public static JSValue FormatPrototype(in Arguments a)
@@ -2924,108 +1484,70 @@ public class JSIntlRelativeTimeFormat : JSObject
 
         var value = (a[0] ?? JSUndefined.Value).DoubleValue;
         var unit = a.GetAt(1).StringValue;
+        Completed(@this.Formatter.FormatToParts(value, unit, out var parts, null), unit);
 
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
         var unitKey = KeyStrings.GetOrCreate("unit");
 
-        var parts = CreateArray();
-        foreach (var (type, partValue, partUnit) in @this.PartitionRelativeTimePattern(value, unit))
+        var array = CreateArray();
+        foreach (var (type, partValue, partUnit) in parts)
         {
             var part = new JSObject();
             part.FastAddValue(typeKey, CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
             part.FastAddValue(valueKey, CreateString(partValue), JSPropertyAttributes.EnumerableConfigurableValue);
             if (partUnit != null)
                 part.FastAddValue(unitKey, CreateString(partUnit), JSPropertyAttributes.EnumerableConfigurableValue);
-            parts.AddArrayItem(part);
+            array.AddArrayItem(part);
         }
-        return parts;
+        return array;
     }
 
-    // PartitionRelativeTimePattern: resolves the ordered (type, value, unit) parts
-    // for a value/unit. Numeric "auto" first tries an exact phrase (e.g. "tomorrow");
-    // otherwise the future/past pattern for the value's plural category is filled with
-    // the locale's number parts (each tagged with the unit).
-    private List<(string type, string value, string unit)> PartitionRelativeTimePattern(double value, string unitArgument)
+    // The library's refusals as the RangeErrors PartitionRelativeTimePattern throws.
+    private static void Completed(IntlStatus status, string unit)
     {
-        if (double.IsNaN(value) || double.IsInfinity(value))
-            throw JSEngine.NewRangeError("Value of Intl.RelativeTimeFormat must be a finite number");
-
-        if (!SingularUnit.TryGetValue(unitArgument, out var unit))
-            throw JSEngine.NewRangeError($"Invalid unit argument for Intl.RelativeTimeFormat: {unitArgument}");
-
-        if (numeric == "auto" && value == Math.Floor(value) && value >= int.MinValue && value <= int.MaxValue)
+        switch (status)
         {
-            var exact = CldrLocaleData.GetRelativeTimeExact(locale, unit, style, (int)value);
-            if (exact != null)
-                return [("literal", exact, null)];
+            case IntlStatus.Completed:
+                return;
+            case IntlStatus.RelativeTimeValueNotFinite:
+                throw JSEngine.NewRangeError("Value of Intl.RelativeTimeFormat must be a finite number");
+            default:
+                throw JSEngine.NewRangeError($"Invalid unit argument for Intl.RelativeTimeFormat: {unit}");
         }
-
-        // -0 and negative values are "past"; +0 and positive values are "future".
-        var isPast = value < 0 || (value == 0 && double.IsNegative(value));
-        var tense = isPast ? "past" : "future";
-
-        var magnitude = Math.Abs(value);
-        var pluralCategory = CldrLocaleData.SelectPlural(locale, "cardinal", magnitude);
-        var pattern = CldrLocaleData.GetRelativeTimePattern(locale, unit, style, tense, pluralCategory);
-
-        return FillRelativeTimePattern(pattern, unit, magnitude);
     }
-
-    // Splits the pattern around the "{0}" placeholder, emitting the surrounding
-    // text as "literal" parts and the formatted number's parts (each carrying the
-    // unit) in its place.
-    private List<(string type, string value, string unit)> FillRelativeTimePattern(string pattern, string unit, double magnitude)
-    {
-        var result = new List<(string, string, string)>();
-        var placeholder = pattern.IndexOf("{0}", StringComparison.Ordinal);
-        if (placeholder < 0)
-        {
-            if (pattern.Length > 0)
-                result.Add(("literal", pattern, null));
-            return result;
-        }
-
-        var prefix = pattern[..placeholder];
-        var suffix = pattern[(placeholder + 3)..];
-        if (prefix.Length > 0)
-            result.Add(("literal", prefix, null));
-
-        var numberArgs = new Arguments(JSUndefined.Value, CreateString(locale));
-        var numberFormat = new JSIntlNumberFormat(in numberArgs);
-        foreach (var (type, value) in numberFormat.ComputeFormatParts(CreateNumber(magnitude)))
-            result.Add((type, value, unit));
-
-        if (suffix.Length > 0)
-            result.Add(("literal", suffix, null));
-
-        return result;
-    }
-
-    private readonly string locale;
-    private readonly string numberingSystem;
-    private readonly string style;
-    private readonly string numeric;
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
         if (a.This is not JSIntlRelativeTimeFormat @this)
             throw JSEngine.NewTypeError("Intl.RelativeTimeFormat.prototype.resolvedOptions called on incompatible receiver");
 
+        // Table 33, in its order.
+        var formatter = @this.Formatter;
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(@this.style));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numeric"), CreateString(@this.numeric));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), CreateString(@this.numberingSystem));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(formatter.Locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(JSIntl.FormatStyleNames[(int)formatter.Style]));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numeric"), CreateString(formatter.Numeric == RelativeTimeNumeric.Auto ? "auto" : "always"));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), CreateString(formatter.NumberingSystem));
         return result;
     }
 
     public JSIntlRelativeTimeFormat(in Arguments a) : this()
     {
         var options = JSIntl.ValidateConstructorArguments("RelativeTimeFormat", in a, out var canonical);
-        (numberingSystem, locale) = JSIntl.ResolveNumberingSystem(JSIntl.ResolveLocaleFromCanonical(canonical), options);
-        style = JSIntl.GetOption(options, KeyStrings.GetOrCreate("style"), ["long", "short", "narrow"], false, "long");
-        numeric = JSIntl.GetOption(options, KeyStrings.GetOrCreate("numeric"), ["always", "auto"], false, "always");
+        var numberingSystem = JSIntl.ReadNumberingSystemOption(options);
+        var resolved = JSIntl.ResolveNumberingSystemLocale(canonical, numberingSystem);
+        var style = JSIntl.GetOption(options, KeyStrings.GetOrCreate("style"), JSIntl.FormatStyleNames, false, "long");
+        var numeric = JSIntl.GetOption(options, KeyStrings.GetOrCreate("numeric"), ["always", "auto"], false, "always");
+        // Revised 2026-11-08, at SJL-9.5 (task 8.4, a review fix): the formatter reads its locale data through
+        // DataLocalePluralData, as Intl.NumberFormat and Intl.PluralRules do, so its [[PluralRules]] select by the data
+        // locale's own rules (pt-PT's "i = 1 and v = 0", not pt's "i = 0..1"). The call read
+        // "RelativeTimeFormatter.Create(JSIntlData.LocaleData, resolved.Locale, JSIntlLocaleProviders.DataLocale(resolved.DataLocale), ...".
+        var dataLocale = JSIntlLocaleProviders.DataLocale(resolved.DataLocale);
+        Formatter = RelativeTimeFormatter.Create(DataLocalePluralData.For(dataLocale), resolved.Locale, dataLocale,
+            (FormatStyle)System.Array.IndexOf(JSIntl.FormatStyleNames, style),
+            numeric == "auto" ? RelativeTimeNumeric.Auto : RelativeTimeNumeric.Always,
+            resolved.KeyValues["nu"] ?? "latn");
     }
 
     private JSIntlRelativeTimeFormat() : base(CurrentPrototype()) { }
@@ -3280,99 +1802,121 @@ public sealed class JSIntlSegments : JSObject
     }
 }
 
+// Intl.DurationFormat (ECMA-402 sec-durationformat-objects, as tc39/proposal-temporal@e8cc03fc's intl.html amends it) over
+// the shared library's DurationFormatCore (SJL-9.5, task 8.6, sub-area (e); Broiler.VM's JSD-0082, decision D24): the
+// constructor reads localeMatcher, numberingSystem, style, each unit's style and display and fractionalDigits in the
+// specification's order, each checked as it is read; ResolveLocale's nu key is the library's, over the nu values the data
+// gives the matched locale (decision D13, row U16); GetDurationUnitOptions' defaults and checks (rows U1 to U3),
+// [[DigitalFormat]] (rows U13 and U14) and PartitionDurationFormatPattern over the library's number and list formatters, with
+// a fractional value summed exactly, are the library's, over the data home's number and list data (decision D5). The engine
+// keeps the reads, the argument through ToTemporalDuration (rows U7 and U9, corrections: the fields are read once, in
+// alphabetical order, and a String is parsed, never read back through Temporal.Duration.prototype's getters), the parts
+// arrays, resolvedOptions' object and each RangeError, made from the library's status; it passes no charge (row U19).
+// Deleted (2026-11-09): the Units, SingularUnits and style tables, the locale, numberingSystem, style, unitStyle, unitDisplay
+// and fractionalDigits fields, GetDurationUnitOptions' body, FormatToParts (PartitionDurationFormatPattern, with its ":"
+// separator for every locale), Format, DurationToFractional, DurationToFractionalString, FormatNumberParts (an inner
+// Intl.NumberFormat through JSIntlNumberFormat.ComputeFormatParts), the inner Intl.ListFormat through
+// JSIntlListFormat.FormatPartsForUnits, ToDurationFormatRecord and ValidateDurationArgument. Its public members stay
+// (decision SJL-D-25, disposition (a)): the constructor from a locale and an options object, which now reads the locale as a
+// requested one, and the prototype methods.
 public sealed class JSIntlDurationFormat : JSObject
 {
-    // Units in ECMA-402 processing order, with their singular NumberFormat unit name.
-    private static readonly string[] Units =
-        ["years", "months", "weeks", "days", "hours", "minutes", "seconds", "milliseconds", "microseconds", "nanoseconds"];
-    private static readonly string[] SingularUnits =
-        ["year", "month", "week", "day", "hour", "minute", "second", "millisecond", "microsecond", "nanosecond"];
+    // The style option's values, by DurationFormatStyle.
+    private static readonly string[] StyleNames = ["long", "short", "narrow", "digital"];
 
-    private static readonly string[] DateStyles = ["long", "short", "narrow"];
-    private static readonly string[] TimeStyles = ["long", "short", "narrow", "numeric", "2-digit"];
-    private static readonly string[] SubSecondStyles = ["long", "short", "narrow", "numeric"];
-    private static readonly string[] StyleValues = ["long", "short", "narrow", "digital"];
+    // A unit option's values, by DurationUnitStyle; "fractional" is no option's value.
+    private static readonly string[] UnitStyleNames = ["long", "short", "narrow", "numeric", "2-digit", "fractional"];
+
     private static readonly string[] DisplayValues = ["auto", "always"];
 
-    private readonly string locale;
-    private readonly string numberingSystem;       // null => NumberFormat default
-    private readonly string style;                 // long | short | narrow | digital
-    private readonly string[] unitStyle = new string[Units.Length];
-    private readonly string[] unitDisplay = new string[Units.Length];
-    private readonly int? fractionalDigits;
+    private static readonly KeyString StyleKey = KeyStrings.GetOrCreate("style");
+    private static readonly KeyString FractionalDigitsKey = KeyStrings.GetOrCreate("fractionalDigits");
 
-    private JSIntlDurationFormat() : base(CurrentPrototype()) { }
+    /// <summary>The shared library's duration format: the resolved options, and PartitionDurationFormatPattern over them.</summary>
+    internal DurationFormatCore Core { get; }
 
-    public JSIntlDurationFormat(string locale, JSObject options) : this()
+    // The constructor's reads after CanonicalizeLocaleList, GetOptionsObject and localeMatcher (ValidateConstructorArguments).
+    internal JSIntlDurationFormat(JSValue canonicalLocales, JSObject options) : base(CurrentPrototype())
     {
-        (numberingSystem, this.locale) = JSIntl.ResolveNumberingSystem(locale, options);
-        style = JSIntl.GetOption(options, KeyStrings.GetOrCreate("style"), StyleValues, false, "short");
+        var numberingSystem = JSIntl.ReadNumberingSystemOption(options);
+        var resolved = JSIntl.ResolveNumberingSystemLocale(canonicalLocales, numberingSystem);
+        var dataLocale = JSIntlLocaleProviders.DataLocale(resolved.DataLocale);
+        var data = DataLocalePluralData.For(dataLocale);
 
-        string prevStyle = null;
-        for (var i = 0; i < Units.Length; i++)
+        // [[DigitalFormat]]'s two-digit hours, read at the data locale (row U14).
+        var twoDigitHours = DurationFormatCore.DigitalFormat(data, dataLocale).TwoDigitHours;
+
+        var style = (DurationFormatStyle)System.Array.IndexOf(StyleNames, JSIntl.GetOption(options, StyleKey, StyleNames, false, "short"));
+        var units = new DurationUnitOptions[10];
+        DurationUnitStyle? previous = null;
+        for (var i = 0; i < units.Length; i++)
         {
-            var stylesList = i < 4 ? DateStyles : (i < 7 ? TimeStyles : SubSecondStyles);
-            var digitalBase = i < 4 ? "short" : "numeric";
-            (unitStyle[i], unitDisplay[i]) = GetDurationUnitOptions(options, i, stylesList, digitalBase, prevStyle);
-            prevStyle = unitStyle[i];
+            var unit = (DurationUnit)i;
+            units[i] = GetDurationUnitOptions(options, unit, style, previous, twoDigitHours);
+            if (unit is DurationUnit.Hours or DurationUnit.Minutes or DurationUnit.Seconds or DurationUnit.Milliseconds or DurationUnit.Microseconds)
+                previous = units[i].Style;
         }
 
-        fractionalDigits = JSIntl.GetNumberOption(options, KeyStrings.GetOrCreate("fractionalDigits"), 0, 9);
+        var fractionalDigits = JSIntl.GetNumberOption(options, FractionalDigitsKey, 0, 9);
+        Core = DurationFormatCore.Create(data, resolved.Locale, dataLocale, resolved.KeyValues["nu"] ?? "latn", style, units, fractionalDigits);
     }
 
-    // ECMA-402 GetDurationUnitOptions (resolved per-unit style/display). The
-    // internal "fractional" formatting of sub-second units is handled at format
-    // time (durationToFractional) rather than stored, so the resolved sub-second
-    // style stays "numeric" — which is exactly what the spec partition algorithm
-    // reads back to decide whether to fold sub-seconds into a fractional value.
-    private (string style, string display) GetDurationUnitOptions(
-        JSObject options, int index, string[] stylesList, string digitalBase, string prevStyle)
+    // The format of a locale and an options object, the locale read as the one requested locale (an empty or null one as
+    // none), with no localeMatcher read.
+    // Revised 2026-11-09, at SJL-9.5 (task 8.6): it read the locale as the resolved one, negotiating only its -u-nu- keyword
+    // by hand (ResolveNumberingSystem); the locale is now matched against the available locales by the shared negotiation.
+    // Noted 2026-11-09, at SJL-9.5 (review of task 8.6): the locale now goes through CanonicalizeLocaleList, so an ill-formed
+    // tag throws a JavaScript RangeError, where the former constructor took the string as resolved and threw none.
+    public JSIntlDurationFormat(string locale, JSObject options)
+        : this(string.IsNullOrEmpty(locale) ? JSValue.CreateArray() : JSIntl.CanonicalizeLocaleList(CreateString(locale)), options)
     {
-        var unit = Units[index];
-        var resolved = JSIntl.GetOption(options, KeyStrings.GetOrCreate(unit), stylesList, false, null);
-        var displayDefault = "always";
-        var isTimeUnit = unit is "hours" or "minutes" or "seconds";
-
-        if (resolved == null)
-        {
-            if (style == "digital")
-            {
-                if (!isTimeUnit)
-                    displayDefault = "auto";
-                resolved = digitalBase;
-            }
-            else
-            {
-                displayDefault = "auto";
-                resolved = prevStyle is "numeric" or "2-digit" ? "numeric" : style;
-            }
-        }
-
-        // ECMA-402 GetDurationUnitOptions: once a unit is shown with "numeric"/"2-digit"
-        // style, every following unit must also be "numeric"/"2-digit" — a "long"/"short"/
-        // "narrow" style after one is a RangeError. A numeric minutes/seconds chained after
-        // such a unit is shown as a zero-padded 2-digit value joined by the time separator
-        // (e.g. 1:00:30).
-        if (prevStyle is "numeric" or "2-digit")
-        {
-            if (resolved is not ("numeric" or "2-digit"))
-                throw JSEngine.NewRangeError(
-                    $"Invalid {unit} style \"{resolved}\" following a \"{prevStyle}\" unit");
-            if (unit is "minutes" or "seconds")
-                resolved = "2-digit";
-        }
-
-        var display = JSIntl.GetOption(options, KeyStrings.GetOrCreate(unit + "Display"), DisplayValues, false, displayDefault);
-        return (resolved, display);
     }
+
+    // ECMA-402's GetDurationUnitOptions (sec-getdurationunitoptions): the unit's two options read here, in order, each checked
+    // as it is read; the defaults and ValidateDurationUnitStyle are the shared library's, whose refusals are RangeErrors.
+    // Noted 2026-11-09, at SJL-9.5 (review of task 8.6, row U4, a correction): the unit's display option is read before
+    // ValidateDurationUnitStyle refuses a word style after a numeric or 2-digit unit, as the specification's steps order
+    // them; the former engine threw that RangeError before it read the display option, so a getter on, say,
+    // minutesDisplay with { hours: "numeric", minutes: "long" } did not run.
+    private static DurationUnitOptions GetDurationUnitOptions(JSObject options, DurationUnit unit, DurationFormatStyle baseStyle, DurationUnitStyle? previous, bool twoDigitHours)
+    {
+        var name = DurationFormatCore.UnitName(unit);
+        var admitted = new List<string>();
+        foreach (var admittedStyle in DurationFormatCore.UnitStyles(unit))
+            admitted.Add(UnitStyleNames[(int)admittedStyle]);
+
+        var style = JSIntl.GetOption(options, KeyStrings.GetOrCreate(name), admitted.ToArray(), false, null);
+        var display = JSIntl.GetOption(options, KeyStrings.GetOrCreate(name + "Display"), DisplayValues, false, null);
+
+        var status = DurationFormatCore.GetDurationUnitOptions(
+            unit,
+            style is null ? null : (DurationUnitStyle)System.Array.IndexOf(UnitStyleNames, style),
+            display is null ? null : display == "always" ? DurationUnitDisplay.Always : DurationUnitDisplay.Auto,
+            baseStyle,
+            previous,
+            twoDigitHours,
+            out var resolved);
+
+        return status switch
+        {
+            IntlStatus.Completed => resolved,
+            IntlStatus.FractionalDurationUnitAlwaysDisplayed => throw JSEngine.NewRangeError($"Intl.DurationFormat: {name} cannot always be displayed as a fraction"),
+            IntlStatus.DurationUnitAfterFractional => throw JSEngine.NewRangeError($"Intl.DurationFormat: {name} must be fractional after a fractional unit"),
+            _ => throw JSEngine.NewRangeError($"Intl.DurationFormat: {name} must be numeric or 2-digit after a numeric or 2-digit unit"),
+        };
+    }
+
+    // The duration format and formatToParts read: ToTemporalDuration (the proposal's amendment of ECMA-402 s15.10.1), which
+    // takes a Temporal.Duration's slots, parses a String, and reads a property bag's fields once, in alphabetical order.
+    private static global::Broiler.ECMAScript.Temporal.DurationFields Input(JSValue duration)
+        => ((JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(duration)).Fields;
 
     public static JSValue FormatPrototype(in Arguments a)
     {
         if (a.This is not JSIntlDurationFormat self)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.format called on incompatible receiver");
 
-        var durationObject = ToDurationFormatRecord(a.Get1());
-        return CreateString(self.Format(durationObject));
+        return CreateString(self.Core.Format(Input(a.Get1())));
     }
 
     // Temporal.Duration.prototype.toLocaleString(locales, options): formats the duration with a
@@ -3383,9 +1927,8 @@ public sealed class JSIntlDurationFormat : JSObject
         var args = new Arguments(JSUndefined.Value, locales, options ?? JSUndefined.Value);
         var optionsObject = JSIntl.ValidateConstructorArguments(
             "DurationFormat", in args, out var canonical, requireNew: false, coerceOptions: false);
-        var locale = JSIntl.ResolveLocaleFromCanonical(canonical);
-        var df = new JSIntlDurationFormat(locale, optionsObject);
-        return CreateString(df.Format(ToDurationFormatRecord(duration)));
+        var df = new JSIntlDurationFormat(canonical, optionsObject);
+        return CreateString(df.Core.Format(Input(duration)));
     }
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
@@ -3393,13 +1936,13 @@ public sealed class JSIntlDurationFormat : JSObject
         if (a.This is not JSIntlDurationFormat self)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.formatToParts called on incompatible receiver");
 
-        var durationObject = ToDurationFormatRecord(a.Get1());
+        var duration = Input(a.Get1());
         var parts = CreateArray();
 
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
         var unitKey = KeyStrings.GetOrCreate("unit");
-        foreach (var (type, value, unit) in self.FormatToParts(durationObject))
+        foreach (var (type, value, unit) in self.Core.FormatToParts(duration))
         {
             var part = new JSObject();
             part.FastAddValue(typeKey, CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
@@ -3413,241 +1956,30 @@ public sealed class JSIntlDurationFormat : JSObject
         return parts;
     }
 
+    // resolvedOptions, Table 21 in its order, as the shared core resolved it: a fractional unit written as numeric (row U2).
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
         if (a.This is not JSIntlDurationFormat self)
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.resolvedOptions called on incompatible receiver");
 
+        var format = self.Core;
         var result = new JSObject();
         void Put(string key, JSValue value) =>
             result.FastAddValue(KeyStrings.GetOrCreate(key), value, JSPropertyAttributes.EnumerableConfigurableValue);
 
-        Put("locale", CreateString(self.locale ?? "en"));
-        Put("numberingSystem", CreateString(self.numberingSystem ?? "latn"));
-        Put("style", CreateString(self.style));
-        for (var i = 0; i < Units.Length; i++)
+        Put("locale", CreateString(format.Locale));
+        Put("numberingSystem", CreateString(format.NumberingSystem));
+        Put("style", CreateString(StyleNames[(int)format.Style]));
+        for (var i = 0; i < format.Units.Count; i++)
         {
-            Put(Units[i], CreateString(self.unitStyle[i]));
-            Put(Units[i] + "Display", CreateString(self.unitDisplay[i]));
+            var (style, display) = format.Units[i];
+            var name = DurationFormatCore.UnitName((DurationUnit)i);
+            Put(name, CreateString(style == DurationUnitStyle.Fractional ? "numeric" : UnitStyleNames[(int)style]));
+            Put(name + "Display", CreateString(display == DurationUnitDisplay.Always ? "always" : "auto"));
         }
-        if (self.fractionalDigits is { } digits)
+        if (format.FractionalDigits is { } digits)
             Put("fractionalDigits", CreateNumber(digits));
         return result;
-    }
-
-    // Implements PartitionDurationFormatPattern, returning the flattened parts.
-    // Each tuple's `unit` is the singular duration unit for parts produced from a
-    // unit's NumberFormat, or null for time separators and ListFormat literals.
-    private List<(string type, string value, string unit)> FormatToParts(JSObject durationObject)
-    {
-        var values = new double[Units.Length];
-        for (var i = 0; i < Units.Length; i++)
-        {
-            var v = durationObject[KeyStrings.GetOrCreate(Units[i])];
-            values[i] = v.IsUndefined ? 0 : v.DoubleValue;
-        }
-
-        var anyNegative = false;
-        foreach (var v in values)
-            anyNegative |= v < 0;
-
-        // Each element of `segments` is the list of parts for one ListFormat element.
-        var segments = new List<List<(string type, string value, string unit)>>();
-        var needSeparator = false;
-        var displayNegativeSign = true;
-
-        for (var i = 0; i < Units.Length; i++)
-        {
-            var unit = Units[i];
-            var unitStyleValue = unitStyle[i];
-            var display = unitDisplay[i];
-            var value = values[i];
-            var combineFractional = false;
-            string fractionalExact = null;
-
-            // Numeric seconds/milliseconds/microseconds fold the finer sub-second
-            // units into a single fractional value when the next unit is numeric.
-            if ((unit is "seconds" or "milliseconds" or "microseconds") && unitStyle[i + 1] == "numeric")
-            {
-                var exponent = unit == "seconds" ? 9 : unit == "milliseconds" ? 6 : 3;
-                value = DurationToFractional(values, exponent);
-                // The double is only kept for the display / sign checks below; the value is
-                // formatted from its EXACT decimal string so e.g. 10000000 s + 1 ns renders as
-                // "10000000.000000001" rather than the nearest double.
-                fractionalExact = DurationToFractionalString(values, exponent);
-                combineFractional = true;
-            }
-
-            var displayRequired = false;
-            if (unit == "minutes" && needSeparator)
-            {
-                displayRequired = unitDisplay[6] == "always"
-                    || values[6] != 0 || values[7] != 0 || values[8] != 0 || values[9] != 0;
-            }
-
-            if (value != 0 || display != "auto" || displayRequired)
-            {
-                var signNever = false;
-                if (displayNegativeSign)
-                {
-                    displayNegativeSign = false;
-                    // The negative sign is carried by the first displayed unit only when the duration
-                    // is actually negative; a lone negative-zero field (DurationSign 0) must format as
-                    // "+0", so normalize its negative zero away to avoid a spurious "-0".
-                    if (value == 0)
-                        value = anyNegative ? -0.0 : 0.0;
-                }
-                else
-                {
-                    signNever = true;
-                }
-
-                var numberParts = FormatNumberParts(SingularUnits[i], value, fractionalExact, unitStyleValue, combineFractional, signNever);
-                var unitName = SingularUnits[i];
-
-                if (!needSeparator)
-                {
-                    var segment = new List<(string, string, string)>();
-                    foreach (var (type, val) in numberParts)
-                        segment.Add((type, val, unitName));
-                    if (unitStyleValue is "2-digit" or "numeric")
-                        needSeparator = true;
-                    segments.Add(segment);
-                }
-                else
-                {
-                    var segment = segments[^1];
-                    segment.Add(("literal", ":", null));
-                    foreach (var (type, val) in numberParts)
-                        segment.Add((type, val, unitName));
-                }
-            }
-
-            if (combineFractional)
-                break;
-        }
-
-        // Join the per-unit element strings with Intl.ListFormat (type "unit").
-        var listStyle = style == "digital" ? "short" : style;
-        var lf = new JSIntlListFormat(locale, "unit", listStyle);
-        var elementStrings = new List<string>(segments.Count);
-        foreach (var segment in segments)
-        {
-            var sb = new StringBuilder();
-            foreach (var (_, value, _) in segment)
-                sb.Append(value);
-            elementStrings.Add(sb.ToString());
-        }
-
-        var result = new List<(string type, string value, string unit)>();
-        var elementIndex = 0;
-        foreach (var (type, value) in lf.FormatPartsForUnits(elementStrings))
-        {
-            if (type == "element")
-                result.AddRange(segments[elementIndex++]);
-            else
-                result.Add((type, value, null));
-        }
-        return result;
-    }
-
-    private string Format(JSObject durationObject)
-    {
-        var sb = new StringBuilder();
-        foreach (var (_, value, _) in FormatToParts(durationObject))
-            sb.Append(value);
-        return sb.ToString();
-    }
-
-    // Computes the value of a unit plus its finer sub-second units as a decimal,
-    // mirroring the reference durationToFractional. Magnitudes used by the format
-    // tests are small, so double precision is sufficient.
-    private static double DurationToFractional(double[] values, int exponent)
-    {
-        // values indices: seconds=6, milliseconds=7, microseconds=8, nanoseconds=9
-        double seconds = values[6], milliseconds = values[7], microseconds = values[8], nanoseconds = values[9];
-
-        if (exponent == 9 && milliseconds == 0 && microseconds == 0 && nanoseconds == 0)
-            return seconds;
-        if (exponent == 6 && microseconds == 0 && nanoseconds == 0)
-            return milliseconds;
-        if (exponent == 3 && nanoseconds == 0)
-            return microseconds;
-
-        double ns = nanoseconds;
-        if (exponent >= 9)
-            ns += seconds * 1_000_000_000d;
-        if (exponent >= 6)
-            ns += milliseconds * 1_000_000d;
-        if (exponent >= 3)
-            ns += microseconds * 1_000d;
-
-        return ns / Math.Pow(10, exponent);
-    }
-
-    // The exact decimal string of the folded sub-second value (DurationToFractional computed with
-    // real arithmetic): the seconds/milliseconds/microseconds/nanoseconds fields are integers, so
-    // their exact magnitudes combine over 10^exponent without the precision loss a double incurs.
-    private static string DurationToFractionalString(double[] values, int exponent)
-    {
-        var total = new BigInteger(values[9]); // nanoseconds
-        if (exponent >= 9)
-            total += new BigInteger(values[6]) * 1_000_000_000;
-        if (exponent >= 6)
-            total += new BigInteger(values[7]) * 1_000_000;
-        if (exponent >= 3)
-            total += new BigInteger(values[8]) * 1_000;
-
-        var negative = total.Sign < 0;
-        var magnitude = BigInteger.Abs(total);
-        var scale = BigInteger.Pow(10, exponent);
-        var intPart = magnitude / scale;
-        var fracPart = magnitude % scale;
-
-        var s = intPart.ToString(CultureInfo.InvariantCulture);
-        if (!fracPart.IsZero)
-            s += "." + fracPart.ToString(CultureInfo.InvariantCulture).PadLeft(exponent, '0');
-        return negative ? "-" + s : s;
-    }
-
-    private List<(string type, string value)> FormatNumberParts(string singularUnit, double value, string exactValue, string unitStyleValue, bool fractional, bool signNever)
-    {
-        var options = new JSObject();
-        void Set(string key, JSValue v) => options.FastAddValue(KeyStrings.GetOrCreate(key), v, JSPropertyAttributes.EnumerableConfigurableValue);
-
-        if (numberingSystem != null)
-            Set("numberingSystem", CreateString(numberingSystem));
-
-        if (unitStyleValue == "2-digit")
-            Set("minimumIntegerDigits", CreateNumber(2));
-
-        if (unitStyleValue is not ("numeric" or "2-digit"))
-        {
-            Set("style", CreateString("unit"));
-            Set("unit", CreateString(singularUnit));
-            Set("unitDisplay", CreateString(unitStyleValue));
-        }
-        else
-        {
-            Set("useGrouping", BooleanFalse);
-        }
-
-        if (fractional)
-        {
-            Set("maximumFractionDigits", CreateNumber(fractionalDigits ?? 9));
-            Set("minimumFractionDigits", CreateNumber(fractionalDigits ?? 0));
-            Set("roundingMode", CreateString("trunc"));
-        }
-
-        if (signNever)
-            Set("signDisplay", CreateString("never"));
-
-        var args = new Arguments(JSUndefined.Value, CreateString(locale), options);
-        var nf = new JSIntlNumberFormat(in args);
-        // A folded fractional value is formatted from its exact decimal string (parsed as an Intl
-        // mathematical value) so no sub-second precision is lost to the double round-trip.
-        var operand = exactValue != null ? CreateString(exactValue) : CreateNumber(value);
-        return nf.ComputeFormatParts(operand);
     }
 
     private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.DurationFormat");
@@ -3656,117 +1988,41 @@ public sealed class JSIntlDurationFormat : JSObject
     // of whatever `globalThis.Intl.DurationFormat` holds now: guest code may replace the namespace or its members.
     private static JSObject CurrentPrototype()
         => Intrinsics.IntlPrototype(IntrinsicKey);
-
-    // ToDurationRecord(input): a String is parsed as an ISO 8601 / Temporal duration (an invalid string
-    // is a RangeError), an object's unit fields are read and validated directly, and any other type is a
-    // TypeError. Returns the object whose unit getters the formatter then reads (a parsed string yields a
-    // Temporal.Duration, which exposes the same year/month/…/nanosecond properties).
-    private static JSObject ToDurationFormatRecord(JSValue duration)
-    {
-        if (duration is JSTemporalDuration temporalDuration)
-        {
-            // A Temporal.Duration is read from its internal slots, never its
-            // Temporal.Duration.prototype getters (which user code may have replaced) —
-            // matching ToTemporalDuration, which clones a Temporal.Duration from its slots.
-            // Snapshot the slots into a plain record so the formatter's field reads observe
-            // data, not installed accessors.
-            var slots = new[]
-            {
-                temporalDuration.years, temporalDuration.months, temporalDuration.weeks, temporalDuration.days,
-                temporalDuration.hours, temporalDuration.minutes, temporalDuration.seconds,
-                temporalDuration.milliseconds, temporalDuration.microseconds, temporalDuration.nanoseconds,
-            };
-            var record = new JSObject();
-            for (var i = 0; i < Units.Length; i++)
-                record.FastAddValue(KeyStrings.GetOrCreate(Units[i]), CreateNumber(slots[i]), JSPropertyAttributes.EnumerableConfigurableValue);
-            return record;
-        }
-
-        if (duration.IsString)
-            return (JSObject)JSTemporalDuration.From(new Arguments(JSUndefined.Value, duration));
-
-        if (duration is not JSObject durationObject)
-            throw JSEngine.NewTypeError("Duration argument must be an object or string");
-
-        ValidateDurationArgument(durationObject);
-        return durationObject;
-    }
-
-    private static void ValidateDurationArgument(JSObject durationObject)
-    {
-        var any = false;
-        var hasPositive = false;
-        var hasNegative = false;
-        // Field values in Units order (years, months, weeks, days, hours, minutes,
-        // seconds, milliseconds, microseconds, nanoseconds); absent fields stay 0.
-        var values = new double[Units.Length];
-        for (var i = 0; i < Units.Length; i++)
-        {
-            var unit = Units[i];
-            var value = durationObject[KeyStrings.GetOrCreate(unit)];
-            // A field left undefined is absent; reading by key also runs any getter.
-            if (value == null || value.IsUndefined)
-                continue;
-
-            any = true;
-            // ToIntegerIfIntegral runs ToNumber, which throws a TypeError for a BigInt.
-            if (value.IsBigInt)
-                throw JSEngine.NewTypeError($"Cannot convert a BigInt duration value for {unit}");
-            var numericValue = value.DoubleValue;
-            // ToIntegerIfIntegral: a non-finite or non-integral field is a RangeError.
-            if (double.IsNaN(numericValue) || double.IsInfinity(numericValue) || Math.Truncate(numericValue) != numericValue)
-                throw JSEngine.NewRangeError($"Invalid duration value for {unit}");
-
-            values[i] = numericValue;
-            hasPositive |= numericValue > 0;
-            hasNegative |= numericValue < 0;
-        }
-
-        // ToDurationRecord step: if no duration field was provided, throw a TypeError.
-        if (!any)
-            throw JSEngine.NewTypeError("Duration must specify at least one field");
-
-        if (hasPositive && hasNegative)
-            throw JSEngine.NewRangeError("Invalid duration: inconsistent sign");
-
-        // IsValidDuration (Temporal §7.5.x), invoked by ToDurationRecord: the years,
-        // months and weeks fields must each be below 2^32 in magnitude, and the combined
-        // time portion (days through nanoseconds) must total under 2^53 seconds. The total
-        // is computed with exact integer arithmetic — every field is integral here, so the
-        // real value of each double is exact — to avoid the rounding that floating-point
-        // multiplication by 10^-3/10^-6/10^-9 would introduce near the 2^53 boundary.
-        const double twoPow32 = 4294967296d; // 2^32
-        for (var i = 0; i < 3; i++)
-        {
-            if (Math.Abs(values[i]) >= twoPow32)
-                throw JSEngine.NewRangeError($"Duration value for {Units[i]} is out of range");
-        }
-
-        // Nanoseconds per: day, hour, minute, second, millisecond, microsecond, nanosecond.
-        ReadOnlySpan<long> nanosPerUnit =
-            [86_400_000_000_000L, 3_600_000_000_000L, 60_000_000_000L, 1_000_000_000L, 1_000_000L, 1_000L, 1L];
-        var totalNanoseconds = BigInteger.Zero;
-        for (var i = 0; i < nanosPerUnit.Length; i++)
-            totalNanoseconds += new BigInteger(values[i + 3]) * nanosPerUnit[i];
-
-        // 2^53 seconds expressed in nanoseconds (9007199254740992 × 10^9).
-        var maxNanoseconds = new BigInteger(9007199254740992L) * 1_000_000_000L;
-        if (BigInteger.Abs(totalNanoseconds) >= maxNanoseconds)
-            throw JSEngine.NewRangeError("Duration time total is out of range");
-    }
 }
 
+// Intl.ListFormat (ECMA-402 sec-listformat-objects) over the shared library's ListFormatter (SJL-9.5, task 8.4, sub-area
+// (c); Broiler.VM's JSD-0082, decision D24): CreatePartsFromList and its templates, CLDR's list patterns for the type and
+// style at the data locale, are the library's (decision D5). The engine keeps StringListFromIterable, the parts arrays and
+// the (element, literal) parts Intl.DurationFormat reads until task 8.6. Deleted (2026-11-08): BuildParts, ExpandPattern,
+// FormatList, ApplyPattern, GetPatterns and the type and style fields. Its public members stay (decision SJL-D-25,
+// disposition (a)); the constructor's type and style are the option values, and any other is an
+// ArgumentOutOfRangeException.
+// Revised 2026-11-08, at SJL-9.5 (task 8.4, a review fix): the constructor read "the default for any other", mapping an
+// unknown type or style to conjunction or long while resolvedOptions reported the default; the former engine stored the
+// strings and reported them verbatim. A direct .NET caller now learns of the unknown value (for task 8.7's
+// docs/public-api.md and CHANGELOG).
+// Revised 2026-11-09, at SJL-9.5 (task 8.6): Intl.DurationFormat joins its units through the shared library's
+// DurationFormatCore, so FormatPartsForUnits, the (element, literal) parts it read, is deleted; the engine keeps
+// StringListFromIterable and the parts arrays. The sentence above read "The engine keeps StringListFromIterable, the
+// parts arrays and the (element, literal) parts Intl.DurationFormat reads until task 8.6."
 public sealed class JSIntlListFormat : JSObject
 {
-    private readonly string locale;
-    private readonly string type;
-    private readonly string style;
+    private static readonly string[] ListTypeNames = ["conjunction", "disjunction", "unit"];
+
+    internal ListFormatter Formatter { get; }
 
     public JSIntlListFormat(string locale = "en-US", string type = "conjunction", string style = "long")
     {
-        this.locale = locale;
-        this.type = type;
-        this.style = style;
+        var typeIndex = System.Array.IndexOf(ListTypeNames, type);
+        if (typeIndex < 0)
+            throw new ArgumentOutOfRangeException(nameof(type), type, "The list type is conjunction, disjunction or unit.");
+
+        var styleIndex = System.Array.IndexOf(JSIntl.FormatStyleNames, style);
+        if (styleIndex < 0)
+            throw new ArgumentOutOfRangeException(nameof(style), style, "The list style is long, short or narrow.");
+
+        Formatter = ListFormatter.Create(JSIntlData.LocaleData, locale, JSIntlLocaleProviders.DataLocale(locale),
+            (ListFormatType)typeIndex, (FormatStyle)styleIndex);
     }
 
     public static JSValue FormatPrototype(in Arguments a)
@@ -3775,7 +2031,7 @@ public sealed class JSIntlListFormat : JSObject
             throw JSEngine.NewTypeError("Intl.ListFormat.prototype.format called on incompatible receiver");
 
         var items = StringListFromIterable(a.Get1());
-        return CreateString(@this.FormatList(items));
+        return CreateString(@this.Formatter.Format(items, null));
     }
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
@@ -3784,88 +2040,11 @@ public sealed class JSIntlListFormat : JSObject
             throw JSEngine.NewTypeError("Intl.ListFormat.prototype.formatToParts called on incompatible receiver");
 
         var items = StringListFromIterable(a.Get1());
-        var parts = @this.BuildParts(items);
+        var parts = @this.Formatter.FormatToParts(items, null);
         var result = CreateArray();
         var arr = (JSObject)result;
         for (uint i = 0; i < (uint)parts.Count; i++)
-            arr.SetPropertyOrThrow(CreateNumber(i), MakePart(parts[(int)i].type, parts[(int)i].value));
-        return result;
-    }
-
-    // Like formatToParts, but returns ("element"|"literal", value) tuples. Used by
-    // Intl.DurationFormat to interleave its own per-unit parts with the list's
-    // separators (the "element" entries are replaced by the caller).
-    internal List<(string type, string value)> FormatPartsForUnits(List<string> items) => BuildParts(items);
-
-    // Build the parts list directly from the CLDR start/middle/end/pair patterns.
-    // The earlier implementation formatted the full list to a single string and then
-    // recovered the separators with IndexOf against each element, which misattributed
-    // substrings when an element happened to also occur inside a separator (e.g. the
-    // "or" in `formatToParts("foo")` gets iterated to ['f','o','o'], and the second
-    // 'o' would match the 'o' in the "or " connector before reaching the actual third
-    // element). Walking the pattern templates directly produces the parts unambiguously.
-    private List<(string type, string value)> BuildParts(List<string> items)
-    {
-        var count = items.Count;
-        if (count == 0)
-            return [];
-        if (count == 1)
-            return [("element", items[0])];
-
-        var (start, middle, end, pair) = GetPatterns();
-        if (count == 2)
-            return ExpandPattern(pair, [("element", items[0])], [("element", items[1])]);
-
-        var inner = ExpandPattern(end,
-            [("element", items[count - 2])],
-            [("element", items[count - 1])]);
-        for (var i = count - 3; i >= 1; i--)
-            inner = ExpandPattern(middle, [("element", items[i])], inner);
-        return ExpandPattern(start, [("element", items[0])], inner);
-    }
-
-    // Walk a "{0} … {1}" pattern emitting placeholder substitutions as the supplied
-    // sub-parts and the surrounding literal text as "literal" parts; adjacent literal
-    // parts are merged so the result has no zero-content runs.
-    private static List<(string type, string value)> ExpandPattern(string pattern,
-        List<(string type, string value)> parts0,
-        List<(string type, string value)> parts1)
-    {
-        var result = new List<(string type, string value)>();
-        var literal = new StringBuilder();
-        void FlushLiteral()
-        {
-            if (literal.Length > 0)
-            {
-                result.Add(("literal", literal.ToString()));
-                literal.Clear();
-            }
-        }
-        void Append(List<(string type, string value)> subParts)
-        {
-            foreach (var p in subParts)
-            {
-                if (p.type == "literal")
-                {
-                    literal.Append(p.value);
-                }
-                else
-                {
-                    FlushLiteral();
-                    result.Add(p);
-                }
-            }
-        }
-        for (var i = 0; i < pattern.Length; i++)
-        {
-            if (pattern[i] == '{' && i + 2 < pattern.Length && pattern[i + 2] == '}')
-            {
-                if (pattern[i + 1] == '0') { Append(parts0); i += 2; continue; }
-                if (pattern[i + 1] == '1') { Append(parts1); i += 2; continue; }
-            }
-            literal.Append(pattern[i]);
-        }
-        FlushLiteral();
+            arr.SetPropertyOrThrow(CreateNumber(i), MakePart(parts[(int)i].Type, parts[(int)i].Value));
         return result;
     }
 
@@ -3911,74 +2090,43 @@ public sealed class JSIntlListFormat : JSObject
         return result;
     }
 
-    // CLDR list-assembly: combine the elements using the (start, middle, end,
-    // pair) patterns for this list's locale/type/style.
-    internal string FormatList(List<string> items)
-    {
-        var count = items.Count;
-        if (count == 0)
-            return string.Empty;
-        if (count == 1)
-            return items[0];
-
-        var (start, middle, end, pair) = GetPatterns();
-        if (count == 2)
-            return ApplyPattern(pair, items[0], items[1]);
-
-        var result = ApplyPattern(end, items[count - 2], items[count - 1]);
-        for (var i = count - 3; i >= 1; i--)
-            result = ApplyPattern(middle, items[i], result);
-        return ApplyPattern(start, items[0], result);
-    }
-
-    // Substitute {0}/{1} in a single left-to-right pass so substituted content
-    // containing literal "{0}"/"{1}" is never re-expanded.
-    private static string ApplyPattern(string pattern, string v0, string v1)
-    {
-        var sb = new StringBuilder(pattern.Length + v0.Length + v1.Length);
-        for (var i = 0; i < pattern.Length; i++)
-        {
-            if (pattern[i] == '{' && i + 2 < pattern.Length && pattern[i + 2] == '}')
-            {
-                if (pattern[i + 1] == '0') { sb.Append(v0); i += 2; continue; }
-                if (pattern[i + 1] == '1') { sb.Append(v1); i += 2; continue; }
-            }
-            sb.Append(pattern[i]);
-        }
-        return sb.ToString();
-    }
-
-    // The (start, middle, end, pair) list-assembly patterns come from the shared
-    // CLDR data library (UnicodeCldr.LocaleData), generated from cldr-json — so the
-    // per-locale list patterns are real CLDR data rather than a hand-coded en/es
-    // approximation.
-    private (string Start, string Middle, string End, string Pair) GetPatterns()
-        => CldrLocaleData.GetListPattern(locale, type, style);
-
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
         if (a.This is not JSIntlListFormat @this)
             throw JSEngine.NewTypeError("Intl.ListFormat.prototype.resolvedOptions called on incompatible receiver");
 
+        // Table 25, in its order.
+        var formatter = @this.Formatter;
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(@this.type));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(@this.style));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(formatter.Locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(ListTypeNames[(int)formatter.Type]));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(JSIntl.FormatStyleNames[(int)formatter.Style]));
         return result;
     }
 }
 
 internal sealed record JSIntlDisplayNamesOptions(string Style, string Type, string Fallback, string LanguageDisplay);
 
+// Intl.DisplayNames (ECMA-402 sec-intl-displaynames-objects) over the shared library's DisplayNamesCore (SJL-9.5, task 8.4,
+// sub-area (c); Broiler.VM's JSD-0082, decision D24): CanonicalCodeForDisplayNames over ASCII (row S9, a correction) and the
+// names [[Fields]] holds, CLDR's at the data locale, are the library's (row S8, data, an X1 adoption; decision D5); a code
+// with no name answers itself or undefined by the fallback option. Deleted (2026-11-08): ValidateCode and the locale and
+// options fields. Its public members stay (decision SJL-D-25, disposition (a)).
 public sealed class JSIntlDisplayNames : JSObject
 {
-    private readonly string locale;
-    private readonly JSIntlDisplayNamesOptions options;
+    private static readonly string[] DisplayNamesTypeNames = ["language", "region", "script", "currency", "calendar", "dateTimeField"];
+
+    internal DisplayNamesCore Core { get; }
 
     public JSIntlDisplayNames(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
-        options = JSIntl.ValidateDisplayNamesOptions(JSIntl.ValidateConstructorArguments("DisplayNames", in a, out var canonical, coerceOptions: false));
-        locale = JSIntl.ResolveLocaleFromCanonical(canonical);
+        var options = JSIntl.ValidateDisplayNamesOptions(JSIntl.ValidateConstructorArguments("DisplayNames", in a, out var canonical, coerceOptions: false));
+        var resolved = JSIntl.ResolveLocale(canonical, JSIntl.NoRelevantKey);
+        Core = DisplayNamesCore.Create(JSIntlData.LocaleData, resolved.Locale, JSIntlLocaleProviders.DataLocale(resolved.DataLocale),
+            (FormatStyle)System.Array.IndexOf(JSIntl.FormatStyleNames, options.Style),
+            (DisplayNamesType)System.Array.IndexOf(DisplayNamesTypeNames, options.Type),
+            options.Fallback == "none" ? DisplayNamesFallback.None : DisplayNamesFallback.Code,
+            options.LanguageDisplay == "standard" ? LanguageDisplay.Standard : LanguageDisplay.Dialect);
     }
 
     public static JSValue OfPrototype(in Arguments a)
@@ -3986,15 +2134,11 @@ public sealed class JSIntlDisplayNames : JSObject
         if (a.This is not JSIntlDisplayNames @this)
             throw JSEngine.NewTypeError("Intl.DisplayNames.prototype.of called on incompatible receiver");
 
-        var canonical = @this.ValidateCode(a.Get1());
+        var code = a.Get1().StringValue;
+        if (@this.Core.Of(code, out var name, null) != IntlStatus.Completed)
+            throw JSEngine.NewRangeError($"Invalid code for Intl.DisplayNames type {DisplayNamesTypeNames[(int)@this.Core.Type]}");
 
-        // For "currency", only codes the implementation has data for (AvailableCurrencies, the same set
-        // Intl.supportedValuesOf("currency") returns) resolve to a name; an unknown but well-formed code
-        // follows the fallback option — "code" yields the code, "none" yields undefined.
-        if (@this.options.Type == "currency" && !IntlEnumerationData.CurrencySet.Contains(canonical))
-            return @this.options.Fallback == "none" ? JSUndefined.Value : CreateString(canonical);
-
-        return CreateString(canonical);
+        return name is null ? JSUndefined.Value : CreateString(name);
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
@@ -4002,137 +2146,48 @@ public sealed class JSIntlDisplayNames : JSObject
         if (a.This is not JSIntlDisplayNames @this)
             throw JSEngine.NewTypeError("Intl.DisplayNames.prototype.resolvedOptions called on incompatible receiver");
 
+        // Table 18, in its order.
+        var core = @this.Core;
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(@this.options.Style));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(@this.options.Type));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("fallback"), CreateString(@this.options.Fallback));
-        if (@this.options.Type == "language")
-            result.CreateDataProperty(KeyStrings.GetOrCreate("languageDisplay"), CreateString(@this.options.LanguageDisplay));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(core.Locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(JSIntl.FormatStyleNames[(int)core.Style]));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(DisplayNamesTypeNames[(int)core.Type]));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("fallback"), CreateString(core.Fallback == DisplayNamesFallback.Code ? "code" : "none"));
+        if (core.LanguageDisplay is { } display)
+            result.CreateDataProperty(KeyStrings.GetOrCreate("languageDisplay"), CreateString(display == LanguageDisplay.Dialect ? "dialect" : "standard"));
         return result;
-    }
-
-    private string ValidateCode(JSValue codeValue)
-    {
-        var code = codeValue.StringValue;
-        switch (options.Type)
-        {
-            case "language":
-                // Intl.DisplayNames type "language" requires the code to be matched by the
-                // unicode_language_id nonterminal, which — unlike a full unicode_locale_id —
-                // has no extension/singleton subtags. Reject any single-character subtag
-                // (e.g. the "u" in "en-u-hebrew") before structural validation.
-                foreach (var subtag in code.Split('-'))
-                    if (subtag.Length == 1)
-                        throw JSEngine.NewRangeError($"Invalid language code: {code}");
-                return JSIntl.ValidateLanguageTag(code);
-            case "region":
-                if (System.Text.RegularExpressions.Regex.IsMatch(code, "^(?:[A-Za-z]{2}|\\d{3})$", RegexOptions.CultureInvariant))
-                    return code;
-                break;
-            case "script":
-                if (System.Text.RegularExpressions.Regex.IsMatch(code, "^[A-Za-z]{4}$", RegexOptions.CultureInvariant))
-                    return code;
-                break;
-            case "currency":
-                if (JSIntl.IsWellFormedCurrencyCode(code))
-                    return code.ToUpperInvariant();
-                break;
-            case "calendar":
-                if (System.Text.RegularExpressions.Regex.IsMatch(code, "^[A-Za-z0-9]{3,8}(?:-[A-Za-z0-9]{3,8})*$", RegexOptions.CultureInvariant))
-                    return code;
-                break;
-            case "dateTimeField":
-                switch (code)
-                {
-                    case "era":
-                    case "year":
-                    case "quarter":
-                    case "month":
-                    case "weekOfYear":
-                    case "weekday":
-                    case "day":
-                    case "dayPeriod":
-                    case "hour":
-                    case "minute":
-                    case "second":
-                    case "timeZoneName":
-                        return code;
-                }
-
-                break;
-        }
-
-        throw JSEngine.NewRangeError($"Invalid code for Intl.DisplayNames type {options.Type}");
     }
 }
 
+// Intl.Locale (ECMA-402 sec-intl-locale-objects) over the shared library (milestone SJL-9.5, task 8.3, sub-area (a);
+// Broiler.VM's JSD-0082): the record is LocaleRecord's, made by the constructor's steps (JSIntl.ValidateLocaleConstructorArguments);
+// the parts are LocaleId's; Add and Remove Likely Subtags are LocaleId's over the data home's likely-subtags table (rows L11 and
+// L12); the information methods are LocaleInfo's over the data home's time, week and script data (rows L15 to L27), with this
+// engine's Intl.Collator's collations (decision D33 (c)) and the shared time zone database. Its public members stay, results
+// corrected where the rows say (decision SJL-D-25, disposition (a)).
 public sealed class JSIntlLocale : JSObject
 {
-    private readonly string tag;
+    private readonly LocaleRecord record;
 
-    // Regions that conventionally use a 12-hour clock; everything else defaults
-    // to the 24-hour cycle. Approximation sufficient for sensible defaults.
-    internal static readonly HashSet<string> TwelveHourRegions = new(StringComparer.Ordinal)
+    // A Locale of a tag given to the public constructor: its canonical record, or the tag as given with no keyword when it is
+    // not a well-formed tag (a caller outside the engine may pass one).
+    public JSIntlLocale(string tag = "und") : this(RecordOf(tag ?? "und"))
     {
-        "US", "CA", "AU", "NZ", "IN", "PH", "PK", "BD", "EG", "MX", "CO", "SA",
-    };
+    }
 
-    // Scripts written right-to-left (ISO 15924 codes), used by getTextInfo to report the
-    // locale's character direction. Not exhaustive, but covers the scripts CLDR marks RTL.
-    private static readonly HashSet<string> RightToLeftScripts = new(StringComparer.Ordinal)
-    {
-        "Adlm", "Arab", "Aran", "Hebr", "Mand", "Mani", "Mend", "Merc", "Mero", "Narb",
-        "Nbat", "Nkoo", "Orkh", "Palm", "Phli", "Phlp", "Phnx", "Prti", "Rohg", "Samr",
-        "Sarb", "Sogd", "Sogo", "Syrc", "Thaa", "Yezi",
-    };
-
-    // Languages whose default script is right-to-left, consulted when the tag carries no
-    // explicit script subtag (e.g. "ar", "he", "fa").
-    private static readonly HashSet<string> RightToLeftLanguages = new(StringComparer.Ordinal)
-    {
-        "ar", "arc", "ckb", "dv", "fa", "glk", "he", "ku", "mzn", "nqo", "prs",
-        "ps", "sd", "syr", "ug", "ur", "yi",
-    };
-
-    // Regions where the week conventionally starts on Sunday (firstDay 7); everywhere else
-    // defaults to Monday (firstDay 1). An approximation sufficient for sensible defaults.
-    private static readonly HashSet<string> SundayFirstRegions = new(StringComparer.Ordinal)
-    {
-        "US", "CA", "AU", "BR", "CN", "JP", "KR", "IL", "IN", "MX", "PH", "ZA", "HK", "TW",
-    };
-
-    public JSIntlLocale(string tag = "und") : base(CurrentPrototype()) => this.tag = tag;
+    internal JSIntlLocale(LocaleRecord record) : base(CurrentPrototype()) => this.record = record;
 
     // The [[Locale]] internal slot: the canonical language tag. Used by
     // CanonicalizeLocaleList to read a Locale argument without calling toString.
-    internal string Tag => tag;
+    internal string Tag => record.Locale;
 
-    // Builds the result of CreateArrayFromListAndPreferred: the preferred value
-    // (when present) first, then the remaining list entries that differ from it.
-    private static JSValue CreateArrayFromListAndPreferred(string preferred, params string[] list)
-    {
-        var array = CreateArray();
-        if (preferred != null)
-            array.AddArrayItem(CreateString(preferred));
-        foreach (var item in list)
-            if (preferred == null || !string.Equals(item, preferred, StringComparison.Ordinal))
-                array.AddArrayItem(CreateString(item));
-        return array;
-    }
+    // The record's [[Locale]] parsed, for its parts; null only for a tag the public constructor was given that is not well-formed.
+    private LocaleId Id => LocaleId.TryParse(record.Locale, out var id) == IntlStatus.Completed ? id : null;
 
-    // A Unicode-extension keyword type is only a usable "preferred" value when it
-    // names an explicit type (an empty/absent type is ignored).
-    private static string Preferred(string keywordType)
-        => string.IsNullOrEmpty(keywordType) ? null : keywordType;
-
-    private string DefaultHourCycle()
-    {
-        var region = GetRegion();
-        if (region != null)
-            return TwelveHourRegions.Contains(region) ? "h12" : "h23";
-        return GetLanguage() == "en" ? "h12" : "h23";
-    }
+    private static LocaleRecord RecordOf(string tag)
+        => LocaleRecord.TryCreate(tag, LocaleOptions.None, JSIntlData.LocaleData, out var record) == IntlStatus.Completed && record != null
+            ? record
+            : new LocaleRecord(tag, null, null, null, null, null, false, null);
 
     private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.Locale");
 
@@ -4149,377 +2204,178 @@ public sealed class JSIntlLocale : JSObject
         return locale;
     }
 
+    private static JSValue StringArray(IReadOnlyList<string> values)
+    {
+        var array = CreateArray();
+        foreach (var value in values)
+            array.AddArrayItem(CreateString(value));
+        return array;
+    }
+
+    // UTS #35's Add Likely Subtags (row L11; row L12, a correction: Zzzz and ZZ are removed before the lookup). When the
+    // algorithm signals an error the Locale is unchanged.
     public static JSValue MaximizePrototype(in Arguments a)
     {
         var locale = RequireLocale(in a, "maximize");
-        var (lang, script, region, rest) = locale.SplitCore();
-        var result = CldrLikelySubtags.Maximize(lang, script, region);
-        // The Add Likely Subtags algorithm "signaling an error" leaves the locale unchanged.
-        if (result == null)
-            return new JSIntlLocale(locale.Tag);
-        return new JSIntlLocale(JoinCore(result.Value.lang, result.Value.script, result.Value.region, rest));
+        return locale.Id is { } id
+            ? new JSIntlLocale(RecordOf(id.Maximize(JSIntlData.LocaleData, out _).ToString()))
+            : new JSIntlLocale(locale.record);
     }
 
+    // UTS #35's Remove Likely Subtags (row L11).
     public static JSValue MinimizePrototype(in Arguments a)
     {
         var locale = RequireLocale(in a, "minimize");
-        var (lang, script, region, rest) = locale.SplitCore();
-        var result = CldrLikelySubtags.Minimize(lang, script, region);
-        if (result == null)
-            return new JSIntlLocale(locale.Tag);
-        return new JSIntlLocale(JoinCore(result.Value.lang, result.Value.script, result.Value.region, rest));
+        return locale.Id is { } id
+            ? new JSIntlLocale(RecordOf(id.Minimize(JSIntlData.LocaleData, out _).ToString()))
+            : new JSIntlLocale(locale.record);
     }
 
-    // Splits the canonical tag into its language/script/region core and the remainder
-    // (variants, extensions and private-use subtags), which the likely-subtags algorithms
-    // leave untouched.
-    private (string lang, string script, string region, string rest) SplitCore()
-    {
-        var parts = tag.Split('-');
-        var i = 1;
-        string script = null, region = null;
-        if (i < parts.Length && parts[i].Length == 4 && IsAllAlpha(parts[i]))
-        {
-            script = parts[i];
-            i++;
-        }
-        if (i < parts.Length
-            && ((parts[i].Length == 2 && IsAllAlpha(parts[i])) || (parts[i].Length == 3 && IsAllDigit(parts[i]))))
-        {
-            region = parts[i];
-            i++;
-        }
-        var rest = i < parts.Length ? string.Join("-", parts[i..]) : null;
-        return (parts[0], script, region, rest);
-    }
-
-    private static string JoinCore(string lang, string script, string region, string rest)
-    {
-        var core = lang;
-        if (!string.IsNullOrEmpty(script))
-            core += "-" + script;
-        if (!string.IsNullOrEmpty(region))
-            core += "-" + region;
-        return string.IsNullOrEmpty(rest) ? core : core + "-" + rest;
-    }
-
+    // CalendarsOfLocale: the ca keyword, else gregory (rows L15 and L16).
+    // Noted 2026-11-09, at SJL-9.5's stage 4: the date-time format's default calendar now follows CLDR's calendar preference
+    // for the region (row T16), so new Intl.DateTimeFormat("th") resolves buddhist and "fa" persian while this answers
+    // ["gregory"] for both. The shared library's LocaleInfo.Calendars records the disagreement (row L16 keeps gregory).
     public static JSValue GetCalendarsPrototype(in Arguments a)
-    {
-        var locale = RequireLocale(in a, "getCalendars");
-        return CreateArrayFromListAndPreferred(Preferred(locale.GetUnicodeKeyword("ca")), "gregory");
-    }
+        => StringArray(LocaleInfo.Calendars(RequireLocale(in a, "getCalendars").record));
 
+    // CollationsOfLocale: the co keyword alone (row L15); else the collations this engine's Intl.Collator resolves for the
+    // locale its available locales match, or for DefaultLocale, sorted (rows L17 and L18; decision D33 (c)).
     public static JSValue GetCollationsPrototype(in Arguments a)
-    {
-        var locale = RequireLocale(in a, "getCollations");
-        var preferred = Preferred(locale.GetUnicodeKeyword("co"));
-        // The spec excludes "standard" and "search" from the collation list.
-        if (preferred is "standard" or "search")
-            preferred = null;
-        return CreateArrayFromListAndPreferred(preferred, "default");
-    }
+        => StringArray(LocaleInfo.Collations(RequireLocale(in a, "getCollations").record, JSIntlCollator.LocaleData, JSIntlLocaleProviders.DefaultLocale));
 
+    // HourCyclesOfLocale: the hc keyword alone (row L15); else CLDR's time data for the preferred region, the preferred
+    // cycle and then the allowed ones (rows L19 to L21).
     public static JSValue GetHourCyclesPrototype(in Arguments a)
-    {
-        var locale = RequireLocale(in a, "getHourCycles");
-        return CreateArrayFromListAndPreferred(Preferred(locale.GetUnicodeKeyword("hc")), locale.DefaultHourCycle());
-    }
+        => StringArray(LocaleInfo.HourCycles(RequireLocale(in a, "getHourCycles").record, JSIntlData.LocaleData));
 
+    // NumberingSystemsOfLocale: the nu keyword alone (row L15); else the default numbering system of the Intl.NumberFormat
+    // locale the available locales match, from the shared data's defaultNumberingSystem along its chain, else latn: the
+    // shared library's LocaleInfo (decision D13; row L22). Revised 2026-11-08, at SJL-9.5 (task 8.4): the comment read
+    // "else the default numbering system NumberFormat uses, which JSIntlDefaultNumberingSystems gives until SJL-9.5's task
+    // 8.4 moves it, and this method with it, onto the shared data", and the method returned
+    // "locale.record.NumberingSystem ?? JSIntlDefaultNumberingSystems.Of(locale.record.Locale)".
     public static JSValue GetNumberingSystemsPrototype(in Arguments a)
-    {
-        var locale = RequireLocale(in a, "getNumberingSystems");
-        return CreateArrayFromListAndPreferred(Preferred(locale.GetUnicodeKeyword("nu")),
-            JSIntlDefaultNumberingSystems.Of(locale.tag));
-    }
+        => StringArray(LocaleInfo.NumberingSystems(RequireLocale(in a, "getNumberingSystems").record,
+            JSIntlLocaleProviders.AvailableLocales, JSIntlData.LocaleData));
 
+    // TextDirectionOfLocale: the direction of the script or the likely script in CLDR's script metadata (row L24), and
+    // undefined when none is known (row L25, a correction).
     public static JSValue GetTextInfoPrototype(in Arguments a)
     {
         var locale = RequireLocale(in a, "getTextInfo");
-
-        // §1.4.x getTextInfo: an object with a single "direction" property ("ltr" / "rtl").
+        var direction = LocaleInfo.TextDirection(locale.record, JSIntlData.LocaleData);
         var info = new JSObject();
         info.FastAddValue(
             KeyStrings.GetOrCreate("direction"),
-            CreateString(locale.IsRightToLeft() ? "rtl" : "ltr"),
+            direction == null ? UndefinedValue : CreateString(direction),
             JSPropertyAttributes.EnumerableConfigurableValue);
         return info;
     }
 
+    // TimeZonesOfLocale: undefined without a region; else the region's zone.tab zones in code-unit order from the shared
+    // database (milestone SJL-8.6; row L23).
     public static JSValue GetTimeZonesPrototype(in Arguments a)
     {
         var locale = RequireLocale(in a, "getTimeZones");
-        var region = locale.GetRegion();
-
-        // Per spec, getTimeZones returns undefined for a locale without a region.
-        if (region == null)
-            return UndefinedValue;
-
-        // TimeZonesOfLocale: the zones zone.tab lists for the region, in code-unit order, from the shared
-        // database (milestone SJL-8.6); none for a region it does not list.
-        var array = CreateArray();
-        foreach (var zone in TemporalTimeZones.Database.RegionTimeZones(region))
-            array.AddArrayItem(CreateString(zone));
-        return array;
+        return LocaleInfo.TimeZones(locale.record, TemporalTimeZones.Database) is { } zones
+            ? StringArray(zones)
+            : UndefinedValue;
     }
 
+    // WeekInfoOfLocale: CLDR's first day and weekend for the preferred region, the fw keyword over the first day (rows L21
+    // and L26). The object's keys are firstDay and weekend, in that order.
     public static JSValue GetWeekInfoPrototype(in Arguments a)
     {
         var locale = RequireLocale(in a, "getWeekInfo");
-
-        // getWeekInfo returns { firstDay, weekend } in that key order — minimalDays was removed
-        // from WeekInfoOfLocale by a normative ECMA-402 change. Day numbers follow ISO-8601
-        // (Monday = 1 … Sunday = 7). CLDR's full per-region data is not bundled, so this uses
-        // reasonable defaults (Saturday+Sunday weekend) with a Sunday-first region table.
-        // An explicit -u-fw- keyword (mon..sun) overrides the region-derived default.
-        var region = locale.GetRegion();
-        var firstDay = WeekdayToNumber(locale.GetUnicodeKeyword("fw"))
-            ?? (region != null && SundayFirstRegions.Contains(region) ? 7 : 1);
+        var week = LocaleInfo.WeekInfo(locale.record, JSIntlData.LocaleData);
 
         var weekend = CreateArray();
-        weekend.AddArrayItem(CreateNumber(6)); // Saturday
-        weekend.AddArrayItem(CreateNumber(7)); // Sunday
+        foreach (var day in week.Weekend)
+            weekend.AddArrayItem(CreateNumber(day));
 
         var info = new JSObject();
         info.FastAddValue(KeyStrings.GetOrCreate("firstDay"),
-            CreateNumber(firstDay), JSPropertyAttributes.EnumerableConfigurableValue);
+            CreateNumber(week.FirstDay), JSPropertyAttributes.EnumerableConfigurableValue);
         info.FastAddValue(KeyStrings.GetOrCreate("weekend"),
             weekend, JSPropertyAttributes.EnumerableConfigurableValue);
         return info;
     }
 
-    // The ISO-8601 day number (Monday = 1 … Sunday = 7) for a -u-fw- keyword value, or null
-    // when the value is absent or not one of the weekday abbreviations.
-    private static int? WeekdayToNumber(string fw) => fw switch
-    {
-        "mon" => 1,
-        "tue" => 2,
-        "wed" => 3,
-        "thu" => 4,
-        "fri" => 5,
-        "sat" => 6,
-        "sun" => 7,
-        _ => null,
-    };
-
     public static JSValue ToStringPrototype(in Arguments a)
-        => CreateString(RequireLocale(in a, "toString").tag);
+        => CreateString(RequireLocale(in a, "toString").Tag);
 
     public static JSValue BaseNamePrototype(in Arguments a)
-        => CreateString(RequireLocale(in a, "baseName").GetBaseName());
+    {
+        var locale = RequireLocale(in a, "baseName");
+        return CreateString(locale.Id?.BaseName ?? locale.Tag);
+    }
 
     public static JSValue LanguagePrototype(in Arguments a)
-        => CreateString(RequireLocale(in a, "language").GetLanguage());
+    {
+        var locale = RequireLocale(in a, "language");
+        return CreateString(locale.Id?.Language ?? locale.Tag);
+    }
 
     public static JSValue ScriptPrototype(in Arguments a)
-        => OptionalString(RequireLocale(in a, "script").GetScript());
+        => OptionalString(RequireLocale(in a, "script").Id?.Script);
 
     public static JSValue RegionPrototype(in Arguments a)
-        => OptionalString(RequireLocale(in a, "region").GetRegion());
+        => OptionalString(RequireLocale(in a, "region").Id?.Region);
 
     public static JSValue VariantsPrototype(in Arguments a)
-        => OptionalString(RequireLocale(in a, "variants").GetVariants());
+        => OptionalString(RequireLocale(in a, "variants").Id?.Variants is { Count: > 0 } variants ? string.Join("-", variants) : null);
 
     public static JSValue CalendarPrototype(in Arguments a)
-        => OptionalString(RequireLocale(in a, "calendar").GetUnicodeKeyword("ca"));
+        => OptionalString(RequireLocale(in a, "calendar").record.Calendar);
 
     public static JSValue CaseFirstPrototype(in Arguments a)
-        => OptionalString(RequireLocale(in a, "caseFirst").GetUnicodeKeyword("kf"));
+        => OptionalString(RequireLocale(in a, "caseFirst").record.CaseFirst);
 
     public static JSValue CollationPrototype(in Arguments a)
-        => OptionalString(RequireLocale(in a, "collation").GetUnicodeKeyword("co"));
+        => OptionalString(RequireLocale(in a, "collation").record.Collation);
 
     public static JSValue HourCyclePrototype(in Arguments a)
-        => OptionalString(RequireLocale(in a, "hourCycle").GetUnicodeKeyword("hc"));
+        => OptionalString(RequireLocale(in a, "hourCycle").record.HourCycle);
 
     public static JSValue NumberingSystemPrototype(in Arguments a)
-        => OptionalString(RequireLocale(in a, "numberingSystem").GetUnicodeKeyword("nu"));
+        => OptionalString(RequireLocale(in a, "numberingSystem").record.NumberingSystem);
 
     public static JSValue FirstDayOfWeekPrototype(in Arguments a)
-        => OptionalString(RequireLocale(in a, "firstDayOfWeek").GetUnicodeKeyword("fw"));
+        => OptionalString(RequireLocale(in a, "firstDayOfWeek").record.FirstDayOfWeek);
 
     public static JSValue NumericPrototype(in Arguments a)
-    {
-        var value = RequireLocale(in a, "numeric").GetUnicodeKeyword("kn");
-        var numeric = value != null && (value.Length == 0 || value == "true");
-        return numeric ? BooleanTrue : BooleanFalse;
-    }
+        => RequireLocale(in a, "numeric").record.Numeric ? BooleanTrue : BooleanFalse;
 
     private static JSValue OptionalString(string value)
         => value == null ? UndefinedValue : CreateString(value);
-
-    // --- BCP-47 language tag parsing (over the stored, already-validated tag) ---
-
-    private static bool IsAllAlpha(string s)
-    {
-        foreach (var c in s)
-            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')))
-                return false;
-        return s.Length > 0;
-    }
-
-    private static bool IsAllDigit(string s)
-    {
-        foreach (var c in s)
-            if (c < '0' || c > '9')
-                return false;
-        return s.Length > 0;
-    }
-
-    private static string Titlecase(string s)
-        => s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s.Substring(1).ToLowerInvariant();
-
-    private string GetLanguage()
-    {
-        var dash = tag.IndexOf('-');
-        return (dash < 0 ? tag : tag.Substring(0, dash)).ToLowerInvariant();
-    }
-
-    private string GetScript()
-    {
-        var parts = tag.Split('-');
-        if (parts.Length > 1 && parts[1].Length == 4 && IsAllAlpha(parts[1]))
-            return Titlecase(parts[1]);
-        return null;
-    }
-
-    // Character direction for getTextInfo: an explicit script subtag wins, otherwise fall
-    // back to the language's default direction.
-    private bool IsRightToLeft()
-    {
-        var script = GetScript();
-        return script != null
-            ? RightToLeftScripts.Contains(script)
-            : RightToLeftLanguages.Contains(GetLanguage());
-    }
-
-    private string GetRegion()
-    {
-        var parts = tag.Split('-');
-        var i = 1;
-        if (i < parts.Length && parts[i].Length == 4 && IsAllAlpha(parts[i]))
-            i++;
-        if (i < parts.Length
-            && ((parts[i].Length == 2 && IsAllAlpha(parts[i])) || (parts[i].Length == 3 && IsAllDigit(parts[i]))))
-            return parts[i].ToUpperInvariant();
-        return null;
-    }
-
-    private string GetVariants()
-    {
-        var parts = tag.Split('-');
-        var i = 1;
-        if (i < parts.Length && parts[i].Length == 4 && IsAllAlpha(parts[i]))
-            i++;
-        if (i < parts.Length
-            && ((parts[i].Length == 2 && IsAllAlpha(parts[i])) || (parts[i].Length == 3 && IsAllDigit(parts[i]))))
-            i++;
-
-        var variants = new List<string>();
-        for (; i < parts.Length; i++)
-        {
-            var p = parts[i];
-            if (p.Length == 1)
-                break;
-            if ((p.Length >= 5 && p.Length <= 8) || (p.Length == 4 && p[0] >= '0' && p[0] <= '9'))
-                variants.Add(p.ToLowerInvariant());
-            else
-                break;
-        }
-
-        return variants.Count == 0 ? null : string.Join("-", variants);
-    }
-
-    private string GetBaseName()
-    {
-        var parts = new List<string> { GetLanguage() };
-        var script = GetScript();
-        if (script != null)
-            parts.Add(script);
-        var region = GetRegion();
-        if (region != null)
-            parts.Add(region);
-        var variants = GetVariants();
-        if (variants != null)
-            parts.Add(variants);
-        return string.Join("-", parts);
-    }
-
-    // Parses the Unicode (-u-) extension and returns the type value for a 2-letter
-    // keyword key, or null when absent. An empty string denotes a present keyword
-    // with no explicit type (e.g. "-u-kn").
-    private string GetUnicodeKeyword(string key)
-    {
-        var parts = tag.Split('-');
-        var i = 0;
-        while (i < parts.Length)
-        {
-            // Stop at the private-use ("x") singleton; "u" inside private-use is a private
-            // subtag, not a Unicode extension.
-            if (parts[i].Length == 1 && (parts[i][0] == 'x' || parts[i][0] == 'X'))
-                return null;
-            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
-                break;
-            i++;
-        }
-        if (i >= parts.Length)
-            return null;
-
-        i++; // skip the 'u' singleton
-        string currentKey = null;
-        var values = new List<string>();
-        for (; i < parts.Length; i++)
-        {
-            var p = parts[i];
-            if (p.Length == 1)
-                break; // a new singleton ends the Unicode extension
-
-            if (p.Length == 2)
-            {
-                if (string.Equals(currentKey, key, StringComparison.OrdinalIgnoreCase))
-                    return string.Join("-", values);
-
-                currentKey = p;
-                values.Clear();
-            }
-            else if (currentKey != null)
-            {
-                values.Add(p.ToLowerInvariant());
-            }
-        }
-
-        if (string.Equals(currentKey, key, StringComparison.OrdinalIgnoreCase))
-            return string.Join("-", values);
-
-        return null;
-    }
 }
 
+// Intl.PluralRules (ECMA-402 sec-pluralrules-objects) over the shared library's PluralRulesRecord (SJL-9.5, task 8.4,
+// sub-area (b); Broiler.VM's JSD-0082, decision D24). The constructor reads localeMatcher, type, notation, compactDisplay
+// and SetNumberFormatDigitOptions' options in the specification's order, each checked as it is read (rows P7 and M4,
+// corrections); ResolvePlural selects over FormatNumericToString's string (row P1, a correction), with the compact exponent
+// (decision D20), and ResolvePluralRange over CLDR's plural ranges (rows P5a and P5b); select and selectRange take
+// ToIntlMathematicalValue's value, a BigInt's included (row P2, a correction); resolvedOptions reports Table 32 in its order
+// (row P6, a correction). The categories and rules are the data home's, for every CLDR language (decision D5, row P3),
+// read along the data locale's parent chain (DataLocalePluralData), so pt-PT selects by pt-PT's rules.
+// The public members stay (decision SJL-D-25, disposition (a)); SelectCategory selects over its Number's value.
 public sealed class JSIntlPluralRules : JSObject
 {
-    private readonly string locale;
-    private readonly string type;
-    private readonly string notation;
-    private readonly JSObject digitOptions;
+    internal PluralRulesRecord Rules { get; }
 
     public JSIntlPluralRules(in Arguments a) : base(CurrentPrototype())
     {
         var options = JSIntl.ValidateConstructorArguments("PluralRules", in a, out var canonical);
-        locale = JSIntl.ResolveLocaleFromCanonical(canonical);
-        var typeKey = KeyStrings.GetOrCreate("type");
-        // GetOption reads the "type" getter exactly once and validates it against the sanctioned
-        // set, throwing a RangeError for any other value (e.g. "cardinal\0cookie") rather than
-        // silently accepting it (test262 sm/extensions/quote-string-for-nul-character).
-        type = JSIntl.GetOption(options, typeKey, ["cardinal", "ordinal"], false, "cardinal");
-        // notation precedes the digit options (SetNumberFormatDigitOptions) and is reported by
-        // resolvedOptions; the digit options are snapshotted once at construction.
-        notation = JSIntl.GetOption(options, KeyStrings.GetOrCreate("notation"),
-            ["standard", "scientific", "engineering", "compact"], false, "standard");
-        digitOptions = JSIntl.SnapshotDigitOptions(options);
-        // SetNumberFormatDigitOptions also reads roundingIncrement, roundingMode,
-        // roundingPriority and trailingZeroDisplay (after the digit options); reading them
-        // keeps the observable option order spec-compliant and validates each value.
-        if (options != null)
-            JSIntl.ReadRoundingOptions(options);
+        var resolved = JSIntl.ResolveLocale(canonical, JSIntl.NoRelevantKey);
+        var type = JSIntl.GetOption(options, KeyStrings.GetOrCreate("type"), ["cardinal", "ordinal"], false, "cardinal");
+        var notation = (NumberNotation)System.Array.IndexOf(JSIntl.NotationNames,
+            JSIntl.GetOption(options, KeyStrings.GetOrCreate("notation"), JSIntl.NotationNames, false, "standard"));
+        var compactDisplay = (CompactDisplay)System.Array.IndexOf(JSIntl.CompactDisplayNames,
+            JSIntl.GetOption(options, KeyStrings.GetOrCreate("compactDisplay"), JSIntl.CompactDisplayNames, false, "short"));
+        var digitOptions = JSIntl.SetNumberFormatDigitOptions(options, new FractionDigitDefaults(0, 3), notation);
+        var dataLocale = JSIntlLocaleProviders.DataLocale(resolved.DataLocale);
+        Rules = PluralRulesRecord.Create(DataLocalePluralData.For(dataLocale), resolved.Locale, dataLocale,
+            type == "ordinal" ? PluralRuleType.Ordinal : PluralRuleType.Cardinal, notation, compactDisplay, digitOptions);
     }
 
     private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.PluralRules");
@@ -4529,1467 +2385,197 @@ public sealed class JSIntlPluralRules : JSObject
     private static JSObject CurrentPrototype()
         => Intrinsics.IntlPrototype(IntrinsicKey);
 
-    // ResolvePlural: maps a number to its CLDR plural category using the per-locale
-    // rules generated from cldr-json (UnicodeCldr.LocaleData). Non-finite numbers,
-    // and locales with no rules, resolve to "other".
+    // ResolvePlural of a Number: the plural category of FormatNumericToString's string under the resolved digit options.
     public string SelectCategory(double n)
-        => CldrLocaleData.SelectPlural(locale, type, n, exponent: CompactExponent(n));
+        => Rules.ResolvePlural(IntlDecimal.FromNumber(n), null).PluralCategory;
 
-    // The c/e plural operand: the compact-notation exponent of the number (0 for every other
-    // notation). CLDR short/long compact buckets step in powers of one thousand (K=10³,
-    // M=10⁶, …); a magnitude below 1000 has exponent 0.
-    private int CompactExponent(double n)
-    {
-        if (notation != "compact")
-            return 0;
-        var abs = Math.Abs(n);
-        if (!(abs >= 1000) || !double.IsFinite(abs))
-            return 0;
-        var e = 3 * (int)Math.Floor(Math.Log10(abs) / 3);
-        return Math.Min(e, 14);
-    }
+    internal static JSIntlPluralRules Of(JSValue thisValue, string member)
+        => thisValue as JSIntlPluralRules
+            ?? throw JSEngine.NewTypeError($"Intl.PluralRules.prototype.{member} called on incompatible receiver");
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlPluralRules @this)
-            throw JSEngine.NewTypeError("Intl.PluralRules.prototype.resolvedOptions called on incompatible receiver");
-
-        var digits = @this.digitOptions;
-        JSValue Digit(string name, int fallback)
-        {
-            var v = digits?[KeyStrings.GetOrCreate(name)];
-            return v == null || v.IsUndefined ? CreateNumber(fallback) : v;
-        }
-        bool HasDigit(string name) => digits != null && !digits[KeyStrings.GetOrCreate(name)].IsUndefined;
-
-        // Spec resolvedOptions order: locale, type, notation, minimumIntegerDigits, then the
-        // fraction-digit or significant-digit pair (significant digits override when supplied),
-        // then pluralCategories.
+        var rules = Of(a.This, "resolvedOptions").Rules;
+        var digits = rules.DigitOptions;
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(@this.type));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), CreateString(@this.notation));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), Digit("minimumIntegerDigits", 1));
 
-        if (HasDigit("minimumSignificantDigits") || HasDigit("maximumSignificantDigits"))
+        void PutNumber(string name, int? value)
         {
-            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumSignificantDigits"), Digit("minimumSignificantDigits", 1));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("maximumSignificantDigits"), Digit("maximumSignificantDigits", 21));
-        }
-        else
-        {
-            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumFractionDigits"), Digit("minimumFractionDigits", 0));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), Digit("maximumFractionDigits", 3));
+            if (value is not null)
+                result.CreateDataProperty(KeyStrings.GetOrCreate(name), CreateNumber(value.Value));
         }
 
-        var pluralCategories = CreateArray();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("pluralCategories"), pluralCategories);
-        if (pluralCategories is JSObject array)
-        {
-            foreach (var category in CldrLocaleData.GetPluralCategories(@this.locale, @this.type))
-                array.AddArrayItem(CreateString(category));
-        }
+        // Table 32, in its order.
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(rules.Locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(rules.Type == PluralRuleType.Ordinal ? "ordinal" : "cardinal"));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), CreateString(JSIntl.NotationNames[(int)rules.Notation]));
+        if (rules.Notation == NumberNotation.Compact)
+            result.CreateDataProperty(KeyStrings.GetOrCreate("compactDisplay"), CreateString(JSIntl.CompactDisplayNames[(int)rules.CompactDisplay]));
+        PutNumber("minimumIntegerDigits", digits.MinimumIntegerDigits);
+        PutNumber("minimumFractionDigits", digits.MinimumFractionDigits);
+        PutNumber("maximumFractionDigits", digits.MaximumFractionDigits);
+        PutNumber("minimumSignificantDigits", digits.MinimumSignificantDigits);
+        PutNumber("maximumSignificantDigits", digits.MaximumSignificantDigits);
 
+        var categories = CreateArray();
+        foreach (var category in rules.PluralCategories)
+            categories.AddArrayItem(CreateString(category));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("pluralCategories"), categories);
+        JSIntlNumberFormat.PutDigitTail(result, digits);
         return result;
     }
 }
 
-internal sealed class JSIntlNumberFormatResolved
-{
-    public JSIntlNumberFormatResolved(string notation, string signDisplay, string compactDisplay, string unitDisplay)
-    {
-        Notation = notation;
-        SignDisplay = signDisplay;
-        CompactDisplay = compactDisplay;
-        UnitDisplay = unitDisplay;
-    }
-
-    // notation and signDisplay always have a resolved value; compactDisplay and
-    // unitDisplay are null unless the corresponding slot exists (notation is
-    // "compact" / style is "unit").
-    public string Notation { get; }
-    public string SignDisplay { get; }
-    public string CompactDisplay { get; }
-    public string UnitDisplay { get; }
-
-    // Snapshot of the fraction/integer/significant digit options, read from the
-    // options bag exactly once during construction (SetNumberFormatDigitOptions),
-    // so a getter on e.g. minimumFractionDigits fires once at construction rather
-    // than on every format/resolvedOptions call.
-    public JSObject DigitOptions { get; set; }
-
-    // SetNumberFormatDigitOptions rounding slots. These always have a resolved value
-    // (their defaults), so resolvedOptions reflects them unconditionally.
-    public int RoundingIncrement { get; set; } = 1;
-    public RoundingMode RoundingMode { get; set; } = RoundingMode.HalfExpand;
-    public string RoundingModeName { get; set; } = "halfExpand";
-    public string RoundingPriority { get; set; } = "auto";
-    public string TrailingZeroDisplay { get; set; } = "auto";
-
-    // GetUseGroupingOption: the resolved useGrouping value, always one of "auto",
-    // "always", "min2", or "false" (the sentinel for boolean false). resolvedOptions
-    // maps "false" back to the boolean and the formatter drives grouping from it.
-    public string UseGrouping { get; set; } = "auto";
-}
-
+// Intl.NumberFormat (ECMA-402 sec-numberformat-objects) over the shared library's NumberFormatter (SJL-9.5, task 8.4,
+// sub-area (c); Broiler.VM's JSD-0082, decision D24): the constructor reads every option once, in the specification's order
+// (JSIntl.CreateNumberFormatter), and the record does the rest - the digit options and FormatNumericToString (sub-area (b)),
+// compact, scientific and engineering notation in every style with ComputeExponent over the exact value, currency, unit
+// and percent patterns, currency spacing and names, sign display, the numbering system's digits and symbols, ranges with
+// their collapse, and the parts - over the data home's CLDR 48.2.0 tables (decisions D5, D13 and D21), with the host's
+// number symbols for a locale the shared data lacks (decision D6). The engine keeps ToIntlMathematicalValue's ToPrimitive,
+// a range's undefined ends, the bound format and its caching (row N11, a correction), and the parts arrays.
+// Deleted with the engine's own formatter (2026-11-08): ExactRational, ExactMagnitude, TryParseExactDecimal,
+// FormatFiniteMagnitude, FormatNumericToString, RoundFractionDigits, RoundSignificantDigits, RoundWithPriority, RoundFixed,
+// RawPrecisionDigits, ToRawPrecision, ComputeExponent, CompareToPowerOfTen, FormatScientificEngineering, FormatMantissa,
+// FormatCompact, FormatCompactMantissa, CompactMagnitude, GetCompactUnits, LocaleHasRegion and the CompactUnits* tables,
+// BuildDigitParts, AppendIntegerParts, SplitIntoGroups, AssemblePlainParts, AssembleCurrencyParts, AssemblePercentParts,
+// AssembleUnitParts, AppendUnitText, MapNumberingSystemDigits, MapDigit with ContiguousDigitZero and AlgorithmicDigits,
+// ComputeRangeParts, CoerceRangeOperand, CoerceRangeValue, ResolveFractionDigits, DefaultFractionDigits, ReadIntOption,
+// HasOption, Culture, GroupSeparator, DecimalSeparator, NanSymbol, StyleOption, CurrencySignOption, ResolveCurrency,
+// CanonicalCurrencyValue, ReadStringOption and UnsignedRounding. Its public members stay (decision SJL-D-25, disposition (a)).
 public class JSIntlNumberFormat : JSObject
 {
-    private readonly string locale;
-    private readonly string numberingSystem;
-    private JSObject options;
-    private JSIntlNumberFormatResolved resolved;
+    internal NumberFormatter Formatter { get; private set; }
+
+    // [[BoundFormat]]: made the first time the format getter reads it (row N11).
+    internal JSFunction BoundFormat { get; set; }
 
     public JSIntlNumberFormat(in Arguments a) : this()
     {
-        options = JSIntl.ValidateConstructorArguments("NumberFormat", in a, out var canonical, requireNew: false);
-        // ECMA-402 InitializeNumberFormat reads the numberingSystem option immediately
-        // after localeMatcher and ahead of the style/currency/digit options, so its
-        // getter must fire here — before ValidateNumberFormatOptions — rather than at
-        // the locale-negotiation step below (test262 NumberFormat
-        // constructor-numberingSystem-order, constructor-option-read-order).
-        var nuOption = JSIntl.ReadNumberingSystemOption(options);
-        resolved = JSIntl.ValidateNumberFormatOptions(options);
-        var resolvedLocale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.NumberFormatRelevantKeys);
-        (numberingSystem, locale) = JSIntl.ResolveNumberingSystem(resolvedLocale, nuOption);
+        var options = JSIntl.ValidateConstructorArguments("NumberFormat", in a, out var canonical, requireNew: false);
+        Formatter = JSIntl.CreateNumberFormatter(canonical, options);
     }
 
     private JSIntlNumberFormat() : base(CurrentPrototype()) { }
 
     public JSValue Format(in Arguments a)
-    {
-        var sb = new StringBuilder();
-        foreach (var (_, value) in ComputeFormatParts(a.Get1()))
-            sb.Append(value);
-        return CreateString(sb.ToString());
-    }
+        => CreateString(Formatter.Format(JSIntl.ToIntlMathematicalValue(a.Get1()), null));
+
+    internal static JSIntlNumberFormat Of(JSValue thisValue, string member)
+        => thisValue as JSIntlNumberFormat
+            ?? throw JSEngine.NewTypeError($"Intl.NumberFormat.prototype.{member} called on incompatible receiver");
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlNumberFormat @this)
-            throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.formatToParts called on incompatible receiver");
-
-        var typeKey = KeyStrings.GetOrCreate("type");
-        var valueKey = KeyStrings.GetOrCreate("value");
-        var parts = CreateArray();
-        foreach (var (type, value) in @this.ComputeFormatParts(a.Get1()))
-        {
-            var part = new JSObject();
-            part.FastAddValue(typeKey, CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
-            part.FastAddValue(valueKey, CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
-            parts.AddArrayItem(part);
-        }
-        return parts;
-    }
-
-    // Builds the ordered sign/number parts for format / formatToParts. Implements
-    // the spec sign-display selection (auto/always/never/exceptZero/negative) over
-    // the rounded magnitude, with special handling for NaN and ±Infinity. The sign
-    // is decided from the rounded value, so a value that rounds to zero counts as a
-    // signed zero for "auto"/"always" but is treated as unsigned for "exceptZero"
-    // and "negative".
-    internal List<(string type, string value)> ComputeFormatParts(JSValue value)
-    {
-        // A BigInt operand is converted via its exact magnitude (BigIntValue truncates to Int64 and
-        // overflows for large values); ToNumber gives the nearest double.
-        var x = value != null && value.IsBigInt
-            ? Broiler.ECMAScript.Numbers.BigIntMath.ToNumber(((BigInt.JSBigInt)value).value, null)
-            : (value ?? JSUndefined.Value).DoubleValue;
-
-        // ECMA-402 ToIntlMathematicalValue: a string or BigInt operand is formatted from its
-        // exact decimal value, not from the nearest double (so format("1.15") rounds the real
-        // 1.15, and a large BigInt keeps every digit). The double above is retained only as an
-        // approximation for sign, notation exponents and plural selection.
-        var (exactNum, exactDen) = ExactMagnitude(value, x);
-
-        var style = StyleOption();
-        var isCurrency = style == "currency";
-        var isUnit = style == "unit";
-        var isPercent = style == "percent";
-        var currency = isCurrency ? ResolveCurrency() : default;
-
-        // ECMA-402 §15.5.13 PartitionNumberPattern step 13.b: when style is "percent", the
-        // mathematical value is multiplied by 100 before being formatted. The percent literal
-        // is appended by AssemblePercentParts below in the locale's pattern position.
-        if (isPercent && !double.IsNaN(x) && !double.IsInfinity(x))
-        {
-            x *= 100;
-            exactNum *= 100;
-        }
-
-        var signDisplay = resolved?.SignDisplay ?? "auto";
-        var isNaN = double.IsNaN(x);
-        var isInfinity = double.IsInfinity(x);
-        var signBit = !isNaN && double.IsNegative(x);
-
-        List<(string, string)> magnitude;
-        bool roundedIsZero;
-        if (isNaN)
-        {
-            magnitude = [("nan", NanSymbol())];
-            roundedIsZero = false;
-        }
-        else if (isInfinity)
-        {
-            magnitude = [("infinity", CldrLocaleData.InfinitySymbol)];
-            roundedIsZero = false;
-        }
-        else if (isCurrency)
-        {
-            magnitude = FormatFiniteMagnitude(exactNum, exactDen, currency.FractionDigits, currency.FractionDigits, signBit, out roundedIsZero);
-        }
-        else
-        {
-            var notation = resolved?.Notation ?? "standard";
-            if (notation == "scientific" || notation == "engineering")
-                magnitude = FormatScientificEngineering(Math.Abs(x), notation == "engineering", signBit, out roundedIsZero);
-            else if (notation == "compact")
-                magnitude = FormatCompact(Math.Abs(x), signBit, out roundedIsZero);
-            else
-                magnitude = FormatFiniteMagnitude(exactNum, exactDen, 0, 3, signBit, out roundedIsZero);
-        }
-
-        var negativeNonZero = signBit && !roundedIsZero;
-        var positiveNonZero = !signBit && !isNaN && !roundedIsZero;
-
-        var sign = signDisplay switch
-        {
-            "never" => null,
-            "always" => signBit ? "-" : "+",
-            "exceptZero" => negativeNonZero ? "-" : positiveNonZero ? "+" : null,
-            "negative" => negativeNonZero ? "-" : null,
-            _ => signBit ? "-" : null, // "auto"
-        };
-
-        List<(string, string)> assembled;
-        if (isCurrency)
-            assembled = AssembleCurrencyParts(magnitude, sign, currency);
-        else
-        {
-            var plain = AssemblePlainParts(magnitude, sign);
-            if (isUnit)
-                assembled = AssembleUnitParts(plain, x);
-            else if (isPercent)
-                assembled = AssemblePercentParts(plain);
-            else
-                assembled = plain;
-        }
-
-        return MapNumberingSystemDigits(assembled);
-    }
-
-    // Exact non-negative magnitude (|value|) used for rounding, as num/den. BigInt and
-    // numeric-string operands keep their full precision; every other operand uses the exact
-    // value of the double ToNumber result. Non-finite operands return 0 (they take the
-    // NaN/Infinity path before this is consulted).
-    private static (BigInteger num, BigInteger den) ExactMagnitude(JSValue value, double approx)
-    {
-        if (value != null && value.IsBigInt)
-            return (BigInteger.Abs(((BigInt.JSBigInt)value).value), BigInteger.One);
-        if (value != null && value.IsString
-            && TryParseExactDecimal(value.StringValue, out var num, out var den))
-            return (num, den);
-        if (double.IsNaN(approx) || double.IsInfinity(approx))
-            return (BigInteger.Zero, BigInteger.One);
-        return ExactRational(Math.Abs(approx));
-    }
-
-    // Parses the magnitude of a JS numeric string into an exact rational num/den (den a
-    // power of ten): StringIntlMV (ECMA-402) of a StringNumericLiteral. Supports optional sign,
-    // decimal point, exponent, and the 0x/0o/0b non-decimal integer forms. Returns false (caller
-    // falls back to the double value) for anything it does not recognise, e.g. "Infinity" or a
-    // non-numeric string.
-    private static bool TryParseExactDecimal(string s, out BigInteger num, out BigInteger den)
-    {
-        num = BigInteger.Zero;
-        den = BigInteger.One;
-        // The StrWhiteSpace the literal may have around it is the specification's set, the shared
-        // library's (SJL-4.5): U+FEFF is in it, and U+0085, which .NET's Trim removed, is not.
-        s = NumberParsing.TrimStrWhiteSpace(s, TrimEnds.Both).ToString();
-        if (s.Length == 0)
-            return true; // empty / whitespace string is the mathematical value 0
-        if (s[0] is '+' or '-')
-            s = s[1..]; // magnitude only; the sign is taken from the double approximation
-        if (s.Length == 0)
-            return false;
-
-        // NonDecimalIntegerLiteral: its MV is StringToBigInt's (7.1.14) of the same text, the shared
-        // library's BigIntText.StringToBigInt (SJL-4.5): the prefix, then one or more of the radix's
-        // digits, without a sign or a separator.
-        if (s.Length > 2 && s[0] == '0' && s[1] is 'x' or 'X' or 'o' or 'O' or 'b' or 'B')
-            return BigIntText.StringToBigInt(s, BigIntPolicy.Unbounded, null, out num, out _) == Broiler.ECMAScript.ResultStatus.Completed;
-
-        var exp = 0;
-        var eIdx = s.IndexOfAny(['e', 'E']);
-        if (eIdx >= 0)
-        {
-            if (!int.TryParse(s[(eIdx + 1)..], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out exp))
-                return false;
-            s = s[..eIdx];
-        }
-
-        var dot = s.IndexOf('.');
-        var intPart = dot < 0 ? s : s[..dot];
-        var fracPart = dot < 0 ? string.Empty : s[(dot + 1)..];
-        if (intPart.Length == 0 && fracPart.Length == 0)
-            return false;
-        foreach (var c in intPart)
-            if (c is < '0' or > '9') return false;
-        foreach (var c in fracPart)
-            if (c is < '0' or > '9') return false;
-
-        var digits = intPart + fracPart;
-        var n = digits.Length == 0 ? BigInteger.Zero : BigInteger.Parse(digits, CultureInfo.InvariantCulture);
-        var e10 = exp - fracPart.Length;
-        if (e10 >= 0)
-            num = n * BigInteger.Pow(10, e10);
-        else
-        {
-            num = n;
-            den = BigInteger.Pow(10, -e10);
-        }
-        return true;
-    }
-
-    // Wraps the assembled number in the locale's percent pattern (e.g. "n%" / "n %" / "%n").
-    // The literal between the number and the percent sign — when the pattern has one (e.g.
-    // de-DE's "n %") — is emitted as a "literal" part so formatToParts surfaces it.
-    private List<(string, string)> AssemblePercentParts(List<(string, string)> plain)
-    {
-        var symbol = Culture().NumberFormat.PercentSymbol;
-        // .NET's PercentPositivePattern values:
-        //   0 = "n %", 1 = "n%", 2 = "%n", 3 = "% n"
-        var pattern = Culture().NumberFormat.PercentPositivePattern;
-        var parts = new List<(string, string)>(plain.Count + 2);
-        if (pattern == 2 || pattern == 3)
-        {
-            parts.Add(("percentSign", symbol));
-            if (pattern == 3)
-                parts.Add(("literal", " "));
-            parts.AddRange(plain);
-        }
-        else
-        {
-            parts.AddRange(plain);
-            if (pattern == 0)
-                parts.Add(("literal", " "));
-            parts.Add(("percentSign", symbol));
-        }
-        return parts;
-    }
-
-    // Translates the ASCII digits produced by the formatter into the resolved
-    // numbering system's digits (e.g. "arab" 0-9 → ٠-٩, "hanidec" → 〇一二…). Only the
-    // numeric digit-bearing parts are remapped; separators, symbols and literals keep
-    // the locale's characters.
-    private List<(string, string)> MapNumberingSystemDigits(List<(string, string)> parts)
-    {
-        if (numberingSystem == null || numberingSystem == "latn")
-            return parts;
-
-        for (var i = 0; i < parts.Count; i++)
-        {
-            var (type, value) = parts[i];
-            if (type is not ("integer" or "fraction" or "exponentInteger"))
-                continue;
-
-            var sb = new StringBuilder(value.Length);
-            foreach (var c in value)
-                sb.Append(c is >= '0' and <= '9' ? MapDigit(numberingSystem, c - '0') : c.ToString());
-            parts[i] = (type, sb.ToString());
-        }
-
-        return parts;
-    }
-
-    // CLDR numbering systems whose digits 0-9 are a contiguous code-point range, keyed by the code
-    // point of digit zero. Covers every numbering system with a simple digit mapping (the "latn" and
-    // non-contiguous "hanidec" systems are handled separately), so Intl.NumberFormat renders the
-    // correct script digits rather than falling back to ASCII (test262 NumberFormat/.../numbering-systems).
-    private static readonly Dictionary<string, int> ContiguousDigitZero = new()
-    {
-        ["adlm"] = 0x1E950, ["ahom"] = 0x11730, ["arab"] = 0x0660, ["arabext"] = 0x06F0,
-        ["bali"] = 0x1B50, ["beng"] = 0x09E6, ["bhks"] = 0x11C50, ["brah"] = 0x11066,
-        ["cakm"] = 0x11136, ["cham"] = 0xAA50, ["deva"] = 0x0966, ["diak"] = 0x11950,
-        ["fullwide"] = 0xFF10, ["gara"] = 0x10D40, ["gong"] = 0x11DA0, ["gonm"] = 0x11D50,
-        ["gujr"] = 0x0AE6, ["gukh"] = 0x16130, ["guru"] = 0x0A66, ["hmng"] = 0x16B50,
-        ["hmnp"] = 0x1E140, ["java"] = 0xA9D0, ["kali"] = 0xA900, ["kawi"] = 0x11F50,
-        ["khmr"] = 0x17E0, ["knda"] = 0x0CE6, ["krai"] = 0x16D70, ["lana"] = 0x1A80,
-        ["lanatham"] = 0x1A90, ["laoo"] = 0x0ED0, ["lepc"] = 0x1C40, ["limb"] = 0x1946,
-        ["mathbold"] = 0x1D7CE, ["mathdbl"] = 0x1D7D8, ["mathmono"] = 0x1D7F6,
-        ["mathsanb"] = 0x1D7EC, ["mathsans"] = 0x1D7E2, ["mlym"] = 0x0D66, ["modi"] = 0x11650,
-        ["mong"] = 0x1810, ["mroo"] = 0x16A60, ["mtei"] = 0xABF0, ["mymr"] = 0x1040,
-        ["mymrepka"] = 0x116DA, ["mymrpao"] = 0x116D0, ["mymrshan"] = 0x1090,
-        ["mymrtlng"] = 0xA9F0, ["nagm"] = 0x1E4F0, ["newa"] = 0x11450, ["nkoo"] = 0x07C0,
-        ["olck"] = 0x1C50, ["onao"] = 0x1E5F1, ["orya"] = 0x0B66, ["osma"] = 0x104A0,
-        ["outlined"] = 0x1CCF0, ["rohg"] = 0x10D30, ["saur"] = 0xA8D0, ["segment"] = 0x1FBF0,
-        ["shrd"] = 0x111D0, ["sind"] = 0x112F0, ["sinh"] = 0x0DE6, ["sora"] = 0x110F0,
-        ["sund"] = 0x1BB0, ["sunu"] = 0x11BF0, ["takr"] = 0x116C0, ["talu"] = 0x19D0,
-        ["tamldec"] = 0x0BE6, ["telu"] = 0x0C66, ["thai"] = 0x0E50, ["tibt"] = 0x0F20,
-        ["tirh"] = 0x114D0, ["tnsa"] = 0x16AC0, ["tols"] = 0x11DE0, ["vaii"] = 0xA620,
-        ["wara"] = 0x118E0, ["wcho"] = 0x1E2F0,
-    };
-
-    // Numbering systems whose digits are not a contiguous range.
-    private static readonly Dictionary<string, string[]> AlgorithmicDigits = new()
-    {
-        ["hanidec"] = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九"],
-    };
-
-    internal static string MapDigit(string numberingSystem, int d)
-    {
-        if (AlgorithmicDigits.TryGetValue(numberingSystem, out var glyphs))
-            return glyphs[d];
-        if (ContiguousDigitZero.TryGetValue(numberingSystem, out var zero))
-            return char.ConvertFromUtf32(zero + d);
-        return ((char)('0' + d)).ToString();
-    }
-
-    private static List<(string, string)> AssemblePlainParts(List<(string, string)> magnitude, string sign)
-    {
-        var parts = new List<(string, string)>();
-        if (sign == "-")
-            parts.Add(("minusSign", "-"));
-        else if (sign == "+")
-            parts.Add(("plusSign", "+"));
-        parts.AddRange(magnitude);
-        return parts;
-    }
-
-    // Wraps the formatted number in the locale's CLDR unit pattern (e.g. "{0} m"),
-    // choosing the plural-category variant from the number. The text around the
-    // "{0}" placeholder is split into "unit" parts (the unit name) and "literal"
-    // parts (surrounding whitespace). The unit identifier and display come from the
-    // options; the patterns are generated CLDR data (UnicodeCldr.LocaleData).
-    private List<(string, string)> AssembleUnitParts(List<(string, string)> numberParts, double x)
-    {
-        var unit = ReadStringOption("unit", string.Empty);
-        var display = resolved?.UnitDisplay ?? "short";
-        var category = CldrLocaleData.SelectPlural(locale, "cardinal", x);
-        var pattern = CldrLocaleData.GetUnitPattern(locale, unit, display, category);
-
-        var placeholder = pattern.IndexOf("{0}", StringComparison.Ordinal);
-        if (placeholder < 0)
-            return numberParts;
-
-        var parts = new List<(string, string)>();
-        AppendUnitText(parts, pattern[..placeholder]);
-        parts.AddRange(numberParts);
-        AppendUnitText(parts, pattern[(placeholder + 3)..]);
-        return parts;
-    }
-
-    // Splits a unit-pattern fragment into leading/trailing whitespace ("literal")
-    // and the unit name ("unit").
-    private static void AppendUnitText(List<(string, string)> parts, string text)
-    {
-        if (text.Length == 0)
-            return;
-
-        var start = 0;
-        while (start < text.Length && char.IsWhiteSpace(text[start]))
-            start++;
-        var end = text.Length;
-        while (end > start && char.IsWhiteSpace(text[end - 1]))
-            end--;
-
-        if (start > 0)
-            parts.Add(("literal", text[..start]));
-        if (end > start)
-            parts.Add(("unit", text[start..end]));
-        if (end < text.Length)
-            parts.Add(("literal", text[end..]));
-    }
-
-    // Lays out the currency symbol around the number core and applies the sign.
-    // For the "accounting" currencySign a negative is wrapped in parentheses in
-    // locales that use that convention (en/ja/ko/zh); locales like de-DE use a
-    // leading minus sign instead. A plus sign (signDisplay) is always prepended.
-    private List<(string, string)> AssembleCurrencyParts(List<(string, string)> magnitude, string sign, CldrCurrencyFormat currency)
-    {
-        var core = new List<(string, string)>();
-        if (currency.SymbolAfterNumber)
-        {
-            core.AddRange(magnitude);
-            if (currency.SpacingBetweenNumberAndSymbol.Length > 0)
-                core.Add(("literal", currency.SpacingBetweenNumberAndSymbol));
-            core.Add(("currency", currency.Symbol));
-        }
-        else
-        {
-            core.Add(("currency", currency.Symbol));
-            core.AddRange(magnitude);
-        }
-
-        var useAccountingParens = sign == "-" && CurrencySignOption() == "accounting" && currency.AccountingUsesParentheses;
-        var parts = new List<(string, string)>();
-        if (useAccountingParens)
-        {
-            parts.Add(("literal", "("));
-            parts.AddRange(core);
-            parts.Add(("literal", ")"));
-            return parts;
-        }
-
-        if (sign == "-")
-            parts.Add(("minusSign", "-"));
-        else if (sign == "+")
-            parts.Add(("plusSign", "+"));
-        parts.AddRange(core);
-        return parts;
-    }
-
-    // Formats a finite magnitude in scientific ("3.45E-4") or engineering ("345E-6")
-    // notation. The exponent is chosen so the mantissa lies in [1,10) for scientific
-    // or [1,1000) (with the exponent a multiple of 3) for engineering; the mantissa is
-    // then formatted with the usual digit rules and an "E"+digits exponent
-    // suffix is appended as exponentSeparator / exponentMinusSign / exponentInteger
-    // parts.
-    private List<(string, string)> FormatScientificEngineering(double absX, bool engineering, bool negative, out bool roundedIsZero)
-    {
-        var minFrac = ReadIntOption("minimumFractionDigits", 0);
-        var maxFrac = ReadIntOption("maximumFractionDigits", 3);
-        if (maxFrac < minFrac)
-            maxFrac = minFrac;
-
-        var exponent = ComputeExponent(absX, engineering);
-        var (intDigits, fracDigits) = FormatMantissa(absX, exponent, minFrac, maxFrac, negative, out roundedIsZero);
-
-        // ComputeExponent (ECMA-402): a mantissa that ROUNDS to its upper bound bumps the exponent
-        // (9.99 -> 10 in scientific, 999.9 -> 1000 in engineering, under "halfExpand"). Whether it does
-        // is the formatter's own rounding of the mantissa, under the resolved roundingMode, increment and
-        // digit options, whose choice is the shared library's: under "floor" 9.99 stays 9.9. (The
-        // platform's away-from-zero Math.Round decided this before milestone SJL-4.5.)
-        if (intDigits.TrimStart('0').Length > (engineering ? 3 : 1))
-        {
-            exponent += engineering ? 3 : 1;
-            (intDigits, fracDigits) = FormatMantissa(absX, exponent, minFrac, maxFrac, negative, out roundedIsZero);
-        }
-
-        var result = BuildDigitParts(intDigits, fracDigits, ReadIntOption("minimumIntegerDigits", 1));
-        result.Add(("exponentSeparator", "E"));
-        if (exponent < 0)
-            result.Add(("exponentMinusSign", "-"));
-        result.Add(("exponentInteger", Math.Abs(exponent).ToString(CultureInfo.InvariantCulture)));
-        return result;
-    }
-
-    // The mantissa x × 10^-exponent of the Number's exact value x, kept exact as compact notation
-    // keeps its reduced value, and rounded once by FormatNumericToString. (A double quotient
-    // absX / 10^exponent rounded it twice wherever 10^exponent is not a double, below 10^0 and
-    // above 10^22.)
-    private (string intDigits, string fracDigits) FormatMantissa(
-        double absX, int exponent, int minFrac, int maxFrac, bool negative, out bool roundedIsZero)
-    {
-        var (num, den) = ExactRational(absX);
-        if (exponent >= 0)
-            den *= BigInteger.Pow(10, exponent);
-        else
-            num *= BigInteger.Pow(10, -exponent);
-
-        return FormatNumericToString(num, den, minFrac, maxFrac, negative, out roundedIsZero);
-    }
-
-    // Compact decimal units (descending by exponent) for the CJK locales exercised
-    // by test262. Each entry is (power-of-ten boundary, suffix); the suffix is shared
-    // by short and long compactDisplay in these locales. Intermediate powers (e.g.
-    // 10^5..10^7 for ja) reuse the lower unit, so the divisor is the largest unit
-    // whose exponent does not exceed the value's magnitude.
-    // English (short) compact scale: 10^3 K, 10^6 M, 10^9 B, 10^12 T. Ordered largest-first
-    // so the FormatCompact loop picks the largest unit not exceeding the value's magnitude.
-    private static readonly (int Exp, string Suffix)[] CompactUnitsEn = [(12, "T"), (9, "B"), (6, "M"), (3, "K")];
-    // English long compact words (compactDisplay: "long"); the number and word are separated
-    // by a literal space (CLDR "0 thousand" / "0 million" / …).
-    private static readonly (int Exp, string Suffix)[] CompactUnitsEnLong =
-        [(12, "trillion"), (9, "billion"), (6, "million"), (3, "thousand")];
-    private static readonly (int Exp, string Suffix)[] CompactUnitsJa = [(12, "兆"), (8, "億"), (4, "万")];
-    private static readonly (int Exp, string Suffix)[] CompactUnitsKo = [(12, "조"), (8, "억"), (4, "만"), (3, "천")];
-    private static readonly (int Exp, string Suffix)[] CompactUnitsZhHant = [(12, "兆"), (8, "億"), (4, "萬")];
-    private static readonly (int Exp, string Suffix)[] CompactUnitsZhHans = [(12, "兆"), (8, "亿"), (4, "万")];
-    // German compact (CLDR de). The SHORT form has no thousands abbreviation — values below a
-    // million are shown in full (98765 → "98.765") — and starts compacting at 10^6 ("0 Mio." /
-    // "0 Mrd." / "0 Bio."), joining with a NO-BREAK SPACE. The LONG form does abbreviate
-    // thousands ("0 Tausend" / "0 Million(en)" / "0 Milliarde(n)" / "0 Billion(en)") with an
-    // ordinary space.
-    private static readonly (int Exp, string Suffix)[] CompactUnitsDe = [(12, "Bio."), (9, "Mrd."), (6, "Mio.")];
-    private static readonly (int Exp, string Suffix)[] CompactUnitsDeLong =
-        [(12, "Billionen"), (9, "Milliarden"), (6, "Millionen"), (3, "Tausend")];
-    // English (India) uses the Indian numbering scale: lakh (10^5) and crore (10^7)
-    // instead of million/billion (CLDR en-IN short "0K"/"0L"/"0Cr", long
-    // "0 thousand"/"0 lakh"/"0 crore"). Ordered largest-first like the others.
-    private static readonly (int Exp, string Suffix)[] CompactUnitsEnIn = [(7, "Cr"), (5, "L"), (3, "K")];
-    private static readonly (int Exp, string Suffix)[] CompactUnitsEnInLong =
-        [(7, "crore"), (5, "lakh"), (3, "thousand")];
-
-    // True when the locale's region subtag is the given two-letter region (the first
-    // 2-alpha subtag after the language, skipping any 4-letter script subtag).
-    private static bool LocaleHasRegion(string tag, string region)
-    {
-        if (string.IsNullOrEmpty(tag))
-            return false;
-        var parts = tag.Split('-');
-        for (var i = 1; i < parts.Length; i++)
-        {
-            var p = parts[i];
-            if (p.Length == 2 && char.IsLetter(p[0]) && char.IsLetter(p[1]))
-                return string.Equals(p, region, StringComparison.OrdinalIgnoreCase);
-        }
-        return false;
-    }
-
-    private static (int Exp, string Suffix)[] GetCompactUnits(string localeTag, bool longForm)
-    {
-        var tag = localeTag ?? string.Empty;
-        var dash = tag.IndexOf('-');
-        var language = (dash < 0 ? tag : tag[..dash]).ToLowerInvariant();
-        switch (language)
-        {
-            case "en":
-                if (LocaleHasRegion(tag, "IN"))
-                    return longForm ? CompactUnitsEnInLong : CompactUnitsEnIn;
-                return longForm ? CompactUnitsEnLong : CompactUnitsEn;
-            case "de":
-                return longForm ? CompactUnitsDeLong : CompactUnitsDe;
-            case "ja":
-                return CompactUnitsJa;
-            case "ko":
-                return CompactUnitsKo;
-            case "zh":
-                var lower = tag.ToLowerInvariant();
-                var isTraditional = lower.Contains("hant") || lower.Contains("-tw")
-                    || lower.Contains("-hk") || lower.Contains("-mo");
-                return isTraditional ? CompactUnitsZhHant : CompactUnitsZhHans;
-            default:
-                return null;
-        }
-    }
-
-    // Compact notation (notation: "compact"). The value is divided by the largest
-    // applicable compact unit and rounded with the default ECMA-402 "morePrecision"
-    // rule: the more precise of {maximumFractionDigits 0} and {maximumSignificantDigits
-    // 2}. That reduces to: when the reduced value's integer magnitude is ≤ 1 (i.e.
-    // < 100) keep 2 significant digits, otherwise round to an integer. The locale's
-    // compact suffix is appended as a "compact" part. Compact numbers are not grouped
-    // (CLDR useGrouping "min2": the ≤4-digit reduced values stay ungrouped). Only the
-    // CJK locales with embedded data are compacted; others fall back to standard
-    // formatting (unchanged behaviour).
-    private List<(string, string)> FormatCompact(double absX, bool negative, out bool roundedIsZero)
-    {
-        var isLong = resolved?.CompactDisplay == "long";
-        var units = GetCompactUnits(locale, isLong);
-        var (num, den) = ExactRational(absX);
-        if (units == null)
-            return FormatFiniteMagnitude(num, den, 0, 3, negative, out roundedIsZero);
-
-        string suffix = null;
-        var reduced = absX;
-        if (absX > 0 && !double.IsInfinity(absX))
-        {
-            var magnitude = CompactMagnitude(absX);
-            foreach (var (exp, sfx) in units)
-            {
-                if (magnitude >= exp)
-                {
-                    reduced = absX / Math.Pow(10, exp);
-                    // The value rounded is x × 10^-exp exactly (1150 is 1.15K, not the double 1.149…).
-                    den *= BigInteger.Pow(10, exp);
-                    suffix = sfx;
-                    break;
-                }
-            }
-        }
-
-        int maxFrac;
-        if (HasOption("maximumFractionDigits"))
-        {
-            maxFrac = ReadIntOption("maximumFractionDigits", 0);
-        }
-        else
-        {
-            // morePrecision default: keep 2 significant digits while the value is
-            // below 100, otherwise round to an integer.
-            var m = CompactMagnitude(reduced);
-            maxFrac = m <= 1 ? Math.Max(0, 1 - m) : 0;
-        }
-
-        var parts = FormatCompactMantissa(num, den, maxFrac, negative, out roundedIsZero);
-        if (suffix != null)
-        {
-            // CLDR compact patterns that include a literal space between the number and the
-            // suffix word: English long ("988 million"), and both German forms ("988 Mio." /
-            // "988 Millionen"). CJK suffixes and English short ("988M") have no space. The
-            // German *short* pattern joins with a NO-BREAK SPACE (U+00A0); the long forms use
-            // an ordinary space.
-            if (ReferenceEquals(units, CompactUnitsDe))
-                parts.Add(("literal", " "));
-            else if (ReferenceEquals(units, CompactUnitsEnLong)
-                || ReferenceEquals(units, CompactUnitsDeLong))
-                parts.Add(("literal", " "));
-            parts.Add(("compact", suffix));
-        }
-        return parts;
-    }
-
-    private static int CompactMagnitude(double v)
-    {
-        if (v <= 0 || double.IsNaN(v) || double.IsInfinity(v))
-            return 0;
-
-        var m = (int)Math.Floor(Math.Log10(v));
-        if (Math.Pow(10, m) > v)
-            m--;
-        else if (Math.Pow(10, m + 1) <= v)
-            m++;
-        return m;
-    }
-
-    // Formats the reduced compact value num/den (integer + optional fraction parts),
-    // trimming trailing fraction zeros. It is rounded to maxFrac fraction digits (at most 15)
-    // by ToRawFixed under the resolved roundingMode and increment, whose choice is the shared
-    // library's (the platform's away-from-zero Math.Round rounded it before milestone SJL-4.5, so
-    // "floor" formatted 1990 as "2K").
-    private List<(string, string)> FormatCompactMantissa(
-        BigInteger num, BigInteger den, int maxFrac, bool negative, out bool roundedIsZero)
-    {
-        var (intDigits, fracDigits, isZero) = RoundFixed(
-            num, den, 0, Math.Clamp(maxFrac, 0, 15), resolved?.RoundingIncrement ?? 1, UnsignedRounding(negative));
-        roundedIsZero = isZero;
-
-        intDigits = intDigits.TrimStart('0');
-        if (intDigits.Length == 0)
-            intDigits = "0";
-
-        // The compact integer is grouped with the resolved (CLDR "min2" by default) grouping —
-        // most compact values are abbreviated to ≤4 digits and stay ungrouped, but a locale that
-        // leaves a range uncompacted (German short: 98765 → "98.765") still groups it.
-        var result = new List<(string, string)>();
-        AppendIntegerParts(result, intDigits);
-        if (fracDigits.Length > 0)
-        {
-            result.Add(("decimal", DecimalSeparator()));
-            result.Add(("fraction", fracDigits));
-        }
-
-        return result;
-    }
-
-    // ComputeExponentForMagnitude over floor(log10(x)) of the Number's exact value x: scientific
-    // keeps the raw base-10 magnitude; engineering rounds it down to a multiple of 3. The magnitude
-    // is the exact value's, as the exact mantissa FormatMantissa formats needs, not the double
-    // powers of ten's: the Number 1e23 is below 10^23, so its magnitude is 22.
-    private static int ComputeExponent(double absX, bool engineering)
-    {
-        if (absX == 0 || double.IsNaN(absX) || double.IsInfinity(absX))
-            return 0;
-
-        var (num, den) = ExactRational(absX);
-        var magnitude = (int)Math.Floor(Math.Log10(absX));
-        while (CompareToPowerOfTen(num, den, magnitude) < 0) magnitude--;       // 10^magnitude ≤ x
-        while (CompareToPowerOfTen(num, den, magnitude + 1) >= 0) magnitude++;  // x < 10^(magnitude+1)
-
-        return engineering ? (int)(Math.Floor(magnitude / 3.0) * 3) : magnitude;
-    }
-
-    // GetUnsignedRoundingMode (ECMA-402): the shared library's, for the resolved roundingMode
-    // ("halfExpand" when absent) and the value's sign. The engine's own UnsignedRoundingMode
-    // enumeration and GetUnsignedRoundingMode were removed at milestone SJL-4.5.
-    private UnsignedRoundingMode UnsignedRounding(bool negative)
-        => ExactRounding.GetUnsignedRoundingMode(resolved?.RoundingMode ?? RoundingMode.HalfExpand, negative);
-
-    // Exact non-negative rational value of a finite double, as num/den with den a power
-    // of two. Used so rounding decisions are made on the real mathematical value of the
-    // Number (e.g. 1.15 is really 1.14999…), exactly as ECMA-402 requires, rather than on
-    // a re-rounded decimal string.
-    private static (BigInteger num, BigInteger den) ExactRational(double x)
-    {
-        long bits = BitConverter.DoubleToInt64Bits(x);
-        int exponent = (int)((bits >> 52) & 0x7FF);
-        long fraction = bits & 0xFFFFFFFFFFFFFL;
-        BigInteger mantissa = exponent == 0 ? fraction : fraction | 0x10000000000000L;
-        // A subnormal's scale is the least normal one's, 2^-1074 per unit (its biased exponent
-        // field is 0, but it counts as 1).
-        if (exponent == 0)
-            exponent = 1;
-        exponent -= 1075; // remove the bias (1023) and the 52-bit fraction shift
-        if (mantissa.IsZero)
-            return (BigInteger.Zero, BigInteger.One);
-        return exponent >= 0
-            ? (mantissa << exponent, BigInteger.One)
-            : (mantissa, BigInteger.One << -exponent);
-    }
-
-    // Sign of (num/den − 10^k): lets us pin down floor(log10(x)) exactly.
-    private static int CompareToPowerOfTen(BigInteger num, BigInteger den, int k)
-        => k >= 0
-            ? num.CompareTo(BigInteger.Pow(10, k) * den)
-            : (num * BigInteger.Pow(10, -k)).CompareTo(den);
-
-    // ToRawFixed (ECMA-402): rounds the non-negative exact value num/den to a multiple of
-    // roundingIncrement·10^-maxFrac using the unsigned rounding mode, then returns the
-    // integer/fraction digit strings with trailing fraction zeros trimmed down to minFrac.
-    // The candidates n1 and n2 are the multiples of the increment just below and above
-    // x · 10^maxFrac, and the shared library's ApplyUnsignedRoundingMode picks one exactly
-    // (the engine's own RoundRatio decided it before milestone SJL-4.5).
-    private static (string intDigits, string fracDigits, bool isZero) RoundFixed(
-        BigInteger num, BigInteger den, int minFrac, int maxFrac, int increment, UnsignedRoundingMode mode)
-    {
-        var value = num * BigInteger.Pow(10, maxFrac);
-        var n1 = BigInteger.Divide(value, den * increment) * increment;
-        var scaled = ExactRounding.ApplyUnsignedRoundingMode(value, den, n1, n1 + increment, mode);
-        var s = scaled.ToString(CultureInfo.InvariantCulture);
-
-        if (maxFrac == 0)
-            return (s, string.Empty, scaled.IsZero);
-
-        if (s.Length <= maxFrac)
-            s = s.PadLeft(maxFrac + 1, '0');
-        var intDigits = s[..^maxFrac];
-        var fracDigits = s[^maxFrac..];
-        while (fracDigits.Length > minFrac && fracDigits.EndsWith('0'))
-            fracDigits = fracDigits[..^1];
-        return (intDigits, fracDigits, scaled.IsZero);
-    }
-
-    // ToRawPrecision core (ECMA-402): rounds the non-negative exact value num/den (> 0) to
-    // maxSig significant digits using the unsigned rounding mode and returns the
-    // significant-digit string (trailing zeros trimmed to minSig) together with the exponent
-    // e of its most-significant digit.
-    private static (string digits, int e) RawPrecisionDigits(
-        BigInteger num, BigInteger den, int minSig, int maxSig, UnsignedRoundingMode mode)
-    {
-        var e = (int)Math.Floor(BigInteger.Log10(num) - BigInteger.Log10(den));
-        while (CompareToPowerOfTen(num, den, e) < 0) e--;       // ensure 10^e ≤ x
-        while (CompareToPowerOfTen(num, den, e + 1) >= 0) e++;  // ensure x < 10^(e+1)
-
-        var k = maxSig - 1 - e;
-        BigInteger a, b;
-        if (k >= 0) { a = num * BigInteger.Pow(10, k); b = den; }
-        else { a = num; b = den * BigInteger.Pow(10, -k); }
-
-        // n1 and n2 = n1 + 1 are the candidates in units of 10^(e − maxSig + 1); the shared library's
-        // ApplyUnsignedRoundingMode picks one exactly.
-        var n1 = BigInteger.Divide(a, b);
-        var digits = ExactRounding.ApplyUnsignedRoundingMode(a, b, n1, n1 + 1, mode).ToString(CultureInfo.InvariantCulture);
-        if (digits.Length > maxSig)
-        {
-            // Rounding carried into a new most-significant digit (e.g. 9.99 → 10).
-            e += digits.Length - maxSig;
-            digits = digits[..maxSig];
-        }
-
-        var sig = digits.Length;
-        while (sig > minSig && digits[sig - 1] == '0')
-            sig--;
-        return (digits[..sig], e);
-    }
-
-    private List<(string, string)> FormatFiniteMagnitude(
-        BigInteger num, BigInteger den, int defaultMinFrac, int defaultMaxFrac, bool negative, out bool roundedIsZero)
-    {
-        var (intDigits, fracDigits) = FormatNumericToString(num, den, defaultMinFrac, defaultMaxFrac, negative, out roundedIsZero);
-        return BuildDigitParts(intDigits, fracDigits, ReadIntOption("minimumIntegerDigits", 1));
-    }
-
-    // FormatNumericToString (ECMA-402): the integer and fraction digits the non-negative exact value
-    // num/den rounds to under the resolved digit options, rounding mode and increment.
-    private (string intDigits, string fracDigits) FormatNumericToString(
-        BigInteger num, BigInteger den, int defaultMinFrac, int defaultMaxFrac, bool negative, out bool roundedIsZero)
-    {
-        var priority = resolved?.RoundingPriority ?? "auto";
-        var hasSig = HasOption("minimumSignificantDigits") || HasOption("maximumSignificantDigits");
-        var mode = UnsignedRounding(negative);
-
-        // roundingPriority "morePrecision"/"lessPrecision" resolve both a significant-digit
-        // and a fraction-digit rounding and pick between them; "auto" with significant-digit
-        // options uses significant digits; otherwise the fraction-digit rules apply.
-        if (priority is "morePrecision" or "lessPrecision")
-            return RoundWithPriority(num, den, defaultMinFrac, defaultMaxFrac, priority, mode, out roundedIsZero);
-        if (hasSig)
-            return RoundSignificantDigits(num, den, mode, out roundedIsZero);
-        return RoundFractionDigits(num, den, defaultMinFrac, defaultMaxFrac, mode, out roundedIsZero);
-    }
-
-    // roundingType fractionDigits: rounds to between minimumFractionDigits and
-    // maximumFractionDigits (honouring roundingIncrement and the rounding mode).
-    private (string intDigits, string fracDigits) RoundFractionDigits(
-        BigInteger num, BigInteger den, int defaultMinFrac, int defaultMaxFrac, UnsignedRoundingMode mode, out bool roundedIsZero)
-    {
-        var (minFrac, maxFrac) = ResolveFractionDigits(defaultMinFrac, defaultMaxFrac);
-        var increment = resolved?.RoundingIncrement ?? 1;
-
-        var (intDigits, fracDigits, isZero) = RoundFixed(num, den, minFrac, maxFrac, increment, mode);
-        roundedIsZero = isZero;
-        return (intDigits, fracDigits);
-    }
-
-    // roundingType significantDigits: rounds to at most maximumSignificantDigits and pads
-    // with trailing zeros up to minimumSignificantDigits.
-    private (string intDigits, string fracDigits) RoundSignificantDigits(
-        BigInteger num, BigInteger den, UnsignedRoundingMode mode, out bool roundedIsZero)
-    {
-        var minSig = ReadIntOption("minimumSignificantDigits", 1);
-        var maxSig = ReadIntOption("maximumSignificantDigits", 21);
-        if (maxSig < minSig)
-            maxSig = minSig;
-
-        roundedIsZero = num.IsZero;
-        return ToRawPrecision(num, den, minSig, maxSig, mode);
-    }
-
-    // FormatNumericToString morePrecision/lessPrecision: compute the significant-digit and
-    // fraction-digit roundings, compare their rounding magnitudes (significant: e−maxSig+1,
-    // fraction: −maxFrac), and keep the more (or less) precise of the two.
-    private (string intDigits, string fracDigits) RoundWithPriority(
-        BigInteger num, BigInteger den, int defaultMinFrac, int defaultMaxFrac, string priority,
-        UnsignedRoundingMode mode, out bool roundedIsZero)
-    {
-        var minSig = ReadIntOption("minimumSignificantDigits", 1);
-        var maxSig = ReadIntOption("maximumSignificantDigits", 21);
-        if (maxSig < minSig)
-            maxSig = minSig;
-        var (_, maxFrac) = ResolveFractionDigits(defaultMinFrac, defaultMaxFrac);
-
-        int sMagnitude;
-        if (num.IsZero)
-            sMagnitude = 1 - maxSig; // e = 0 for zero
-        else
-        {
-            var (_, e) = RawPrecisionDigits(num, den, minSig, maxSig, mode);
-            sMagnitude = e - maxSig + 1;
-        }
-        var fMagnitude = -maxFrac;
-
-        var fixedIsMorePrecise = fMagnitude < sMagnitude;
-        var useFixed = (priority == "morePrecision" && fixedIsMorePrecise)
-                    || (priority == "lessPrecision" && !fixedIsMorePrecise);
-
-        return useFixed
-            ? RoundFractionDigits(num, den, defaultMinFrac, defaultMaxFrac, mode, out roundedIsZero)
-            : RoundSignificantDigits(num, den, mode, out roundedIsZero);
-    }
-
-    // Shared assembly of the integer/fraction "parts" from already-rounded digit strings:
-    // strips leading integer zeros, pads to minimumIntegerDigits, and emits the grouped
-    // integer parts plus an optional decimal separator and fraction part.
-    private List<(string, string)> BuildDigitParts(string intDigits, string fracDigits, int minInt)
-    {
-        intDigits = intDigits.TrimStart('0');
-        if (intDigits.Length == 0)
-            intDigits = "0";
-        while (intDigits.Length < minInt)
-            intDigits = "0" + intDigits;
-
-        var result = new List<(string, string)>();
-        AppendIntegerParts(result, intDigits);
-        if (fracDigits.Length > 0)
-        {
-            result.Add(("decimal", DecimalSeparator()));
-            result.Add(("fraction", fracDigits));
-        }
-        return result;
-    }
-
-    // ToRawPrecision (ECMA-402): renders x with between minSig and maxSig significant
-    // digits using the unsigned rounding mode, returning the integer- and fraction-digit
-    // strings. The most significant digit sits at 10^e; trailing zeros are trimmed to minSig.
-    private (string intDigits, string fracDigits) ToRawPrecision(
-        BigInteger num, BigInteger den, int minSig, int maxSig, UnsignedRoundingMode mode)
-    {
-        if (num.IsZero)
-            return ("0", new string('0', Math.Max(0, minSig - 1)));
-
-        var (digits, e) = RawPrecisionDigits(num, den, minSig, maxSig, mode);
-
-        if (e >= 0)
-        {
-            var intLen = e + 1;
-            if (digits.Length <= intLen)
-                return (digits.PadRight(intLen, '0'), string.Empty);
-            return (digits[..intLen], digits[intLen..]);
-        }
-
-        return ("0", new string('0', -e - 1) + digits);
-    }
-
-    private void AppendIntegerParts(List<(string, string)> result, string intDigits)
-    {
-        var mode = resolved?.UseGrouping ?? "auto";
-
-        // The locale's grouping sizes (rightmost group first; the last entry repeats),
-        // e.g. [3] for en-US — 1,000,000 — and [3,2] for en-IN — 10,00,000.
-        var groups = SplitIntoGroups(intDigits, Culture().NumberFormat.NumberGroupSizes);
-
-        // The grouping decision is driven by how many integer digits lie to the LEFT of the
-        // rightmost (primary) grouping separator — not by the most-significant group's size,
-        // which differs under a multi-level grouping pattern such as en-IN's 3;2 (100000 →
-        // "1,00,000": leftmost group "1", but 3 digits precede the primary separator):
-        //   "false"  → never group;
-        //   "min2"   → group only when ≥ 2 digits precede the primary separator (1000 → "1000",
-        //              10000 → "10,000", en-IN 100000 → "1,00,000");
-        //   "auto"   → group when ≥ minimumGroupingDigits precede it (pl/es/it use 2);
-        //   "always" → group whenever there is more than one group.
-        var digitsBeforePrimary = intDigits.Length - groups[^1].Length;
-        var shouldGroup = groups.Count > 1 && mode switch
-        {
-            "false" => false,
-            "min2" => digitsBeforePrimary >= 2,
-            "always" => true,
-            _ => digitsBeforePrimary >= CldrLocaleData.MinimumGroupingDigits(locale),
-        };
-
-        if (!shouldGroup)
-        {
-            result.Add(("integer", intDigits));
-            return;
-        }
-
-        var groupSeparator = GroupSeparator();
-        for (var i = 0; i < groups.Count; i++)
-        {
-            if (i > 0)
-                result.Add(("group", groupSeparator));
-            result.Add(("integer", groups[i]));
-        }
-    }
-
-    // Splits an integer-digit string into locale groups, left to right. NumberGroupSizes
-    // lists group sizes from the right; the final entry repeats, and a trailing 0 means
-    // "no further grouping" (the remaining most-significant digits stay in one group).
-    private static List<string> SplitIntoGroups(string intDigits, int[] sizes)
-    {
-        var groups = new List<string>();
-        var pos = intDigits.Length;
-        var i = 0;
-        while (pos > 0)
-        {
-            var size = sizes.Length == 0 ? 0 : sizes[Math.Min(i, sizes.Length - 1)];
-            if (size <= 0)
-            {
-                groups.Insert(0, intDigits[..pos]);
-                break;
-            }
-            var start = Math.Max(0, pos - size);
-            groups.Insert(0, intDigits.Substring(start, pos - start));
-            pos = start;
-            i++;
-        }
-        return groups;
-    }
-
-    private string NanSymbol() => CldrLocaleData.NaNSymbol(locale);
-
-    // Digit options come from the construction-time snapshot (read once from the
-    // options bag), not the live options object, so format-time reads do not
-    // re-invoke option getters.
-    // SetNumberFormatDigitOptions fraction-digit resolution: when only one of the
-    // fraction-digit bounds is given, the other default is pulled toward it — a lone maximum
-    // lowers the default minimum (min(defaultMin, max)), a lone minimum raises the default
-    // maximum (max(defaultMax, min)). Used by both the formatter and resolvedOptions so they
-    // agree; the defaults are style-dependent (currency → its minor-unit digit count).
-    internal (int Min, int Max) ResolveFractionDigits(int defaultMinFrac, int defaultMaxFrac)
-    {
-        var hasMinFrac = HasOption("minimumFractionDigits");
-        var hasMaxFrac = HasOption("maximumFractionDigits");
-        if (hasMinFrac && hasMaxFrac)
-        {
-            var min = ReadIntOption("minimumFractionDigits", defaultMinFrac);
-            var max = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
-            return (min, Math.Max(max, min));
-        }
-        if (hasMaxFrac)
-        {
-            var max = ReadIntOption("maximumFractionDigits", defaultMaxFrac);
-            return (Math.Min(defaultMinFrac, max), max);
-        }
-        if (hasMinFrac)
-        {
-            var min = ReadIntOption("minimumFractionDigits", defaultMinFrac);
-            return (min, Math.Max(defaultMaxFrac, min));
-        }
-        return (defaultMinFrac, defaultMaxFrac);
-    }
-
-    // The default fraction-digit bounds for the resolved style: currency uses the currency's
-    // CLDR minor-unit count (CurrencyDigits, default 2) for both bounds; every other style
-    // uses 0 … 3, matching the magnitude formatter.
-    private (int Min, int Max) DefaultFractionDigits()
-    {
-        // Compact notation switches the formatter into "compactRounding" mode (1-2
-        // significant digits) when no explicit fraction / significant options are present
-        // (ECMA-402 §15.5.4 SetNumberFormatDigitOptions step 17). The fraction-digit
-        // defaults collapse to 0/0 — both the currency's CLDR minor-unit digit count
-        // (e.g. KWD's 3) and the generic 0/3 cap are overridden.
-        if ((resolved?.Notation ?? "standard") == "compact")
-            return (0, 0);
-        // The currency's CLDR minor-unit digit count is only the default under "standard"
-        // notation. Scientific / engineering notation ignores it and uses the generic 0 … 3
-        // bounds (ECMA-402 SetNumberFormatDigitOptions passes mnfdDefault 0 / mxfdDefault 3
-        // unless style is currency *and* notation is standard).
-        if (StyleOption() == "currency" && (resolved?.Notation ?? "standard") == "standard")
-        {
-            var cDigits = ResolveCurrency().FractionDigits;
-            return (cDigits, cDigits);
-        }
-        return (0, 3);
-    }
-
-    private int ReadIntOption(string name, int fallback)
-    {
-        var snapshot = resolved?.DigitOptions;
-        if (snapshot == null)
-            return fallback;
-        var v = snapshot[KeyStrings.GetOrCreate(name)];
-        if (v == null || v.IsUndefined)
-            return fallback;
-        var d = v.DoubleValue;
-        return double.IsNaN(d) ? fallback : (int)d;
-    }
-
-    private bool HasOption(string name)
-    {
-        var snapshot = resolved?.DigitOptions;
-        if (snapshot == null)
-            return false;
-        var v = snapshot[KeyStrings.GetOrCreate(name)];
-        return v != null && !v.IsUndefined;
-    }
-
-    private CultureInfo Culture()
-    {
-        if (string.IsNullOrEmpty(locale))
-            return CultureInfo.InvariantCulture;
-        var tag = locale;
-        var uPos = tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase);
-        if (uPos >= 0)
-            tag = tag[..uPos];
-        try { return CultureInfo.GetCultureInfo(tag); }
-        catch (CultureNotFoundException) { return CultureInfo.InvariantCulture; }
-    }
-
-    private string GroupSeparator() => Culture().NumberFormat.NumberGroupSeparator;
-
-    private string DecimalSeparator() => Culture().NumberFormat.NumberDecimalSeparator;
-
-    private string StyleOption()
-    {
-        if (options == null)
-            return "decimal";
-        var v = options[KeyStrings.GetOrCreate("style")];
-        return v == null || v.IsUndefined ? "decimal" : v.StringValue;
-    }
-
-    private string CurrencySignOption()
-    {
-        if (options == null)
-            return "standard";
-        var v = options[KeyStrings.GetOrCreate("currencySign")];
-        return v == null || v.IsUndefined ? "standard" : v.StringValue;
-    }
-
-    // The locale-aware currency layout (symbol string, placement, negative
-    // convention and fraction digits) comes from the shared CLDR data library
-    // (UnicodeCldr.LocaleData) so the hand-curated tables live next to the other
-    // Unicode Consortium data and can later be generated from cldr-json.
-    private CldrCurrencyFormat ResolveCurrency()
-        => CldrLocaleData.ResolveCurrency(
-            locale,
-            ReadStringOption("currency", string.Empty).ToUpperInvariant(),
-            ReadStringOption("currencyDisplay", "symbol"));
-
-    // The currency option is canonicalized to upper case (CanonicalizeUCurrencyCode); the
-    // value has already been validated as a well-formed 3-letter code at construction time.
-    private static JSValue CanonicalCurrencyValue(JSValue currency)
-        => CreateString(currency.StringValue.ToUpperInvariant());
-
-    private string ReadStringOption(string name, string fallback)
-    {
-        if (options == null)
-            return fallback;
-        var v = options[KeyStrings.GetOrCreate(name)];
-        return v == null || v.IsUndefined ? fallback : v.StringValue;
+        var @this = Of(a.This, "formatToParts");
+        return PartsArray(@this.Formatter.FormatToParts(JSIntl.ToIntlMathematicalValue(a.Get1()), null), withSource: false);
     }
 
     public static JSValue FormatRangePrototype(in Arguments a)
     {
-        if (a.This is not JSIntlNumberFormat self)
-            throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.formatRange called on incompatible receiver");
-
-        var sb = new StringBuilder();
-        foreach (var (_, value, _) in self.ComputeRangeParts(a[0], a.GetAt(1)))
-            sb.Append(value);
-        return CreateString(sb.ToString());
+        var @this = Of(a.This, "formatRange");
+        var (x, y) = RangeValues(in a);
+        RangeCompleted(@this.Formatter.FormatRange(x, y, out var text, null));
+        return CreateString(text);
     }
 
     public static JSValue FormatRangeToPartsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlNumberFormat self)
-            throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.formatRangeToParts called on incompatible receiver");
+        var @this = Of(a.This, "formatRangeToParts");
+        var (x, y) = RangeValues(in a);
+        RangeCompleted(@this.Formatter.FormatRangeToParts(x, y, out var parts, null));
+        return PartsArray(parts, withSource: true);
+    }
 
+    // The two values of a range: both present, each converted, the start first.
+    private static (IntlDecimal X, IntlDecimal Y) RangeValues(in Arguments a)
+    {
+        var start = a.Get1();
+        var end = a.GetAt(1);
+        if (start == null || start.IsUndefined || end == null || end.IsUndefined)
+            throw JSEngine.NewTypeError("Invalid number range");
+
+        var x = JSIntl.ToIntlMathematicalValue(start);
+        var y = JSIntl.ToIntlMathematicalValue(end);
+        return (x, y);
+    }
+
+    // PartitionNumberRangePattern's refusal, step 1 (an end is not-a-number), as the RangeError it is.
+    private static void RangeCompleted(IntlStatus status)
+    {
+        if (status != IntlStatus.Completed)
+            throw JSEngine.NewRangeError("Invalid number range");
+    }
+
+    // An array of { type, value } objects, and source for a range's parts.
+    private static JSValue PartsArray(IReadOnlyList<NumberPart> parts, bool withSource)
+    {
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
         var sourceKey = KeyStrings.GetOrCreate("source");
-        var parts = CreateArray();
-        foreach (var (type, value, source) in self.ComputeRangeParts(a[0], a.GetAt(1)))
+        var array = CreateArray();
+        foreach (var part in parts)
         {
-            var part = new JSObject();
-            part.FastAddValue(typeKey, CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
-            part.FastAddValue(valueKey, CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
-            part.FastAddValue(sourceKey, CreateString(source), JSPropertyAttributes.EnumerableConfigurableValue);
-            parts.AddArrayItem(part);
-        }
-        return parts;
-    }
-
-    // PartitionNumberRangePattern (Intl.NumberFormat v3): format both endpoints, and
-    // when their formatted parts are identical render the single value prefixed by the
-    // approximately sign (every part shared); otherwise the start parts (source
-    // "startRange"), the locale range separator (shared) and the end parts (source
-    // "endRange").
-    internal List<(string type, string value, string source)> ComputeRangeParts(JSValue startValue, JSValue endValue)
-    {
-        var start = CoerceRangeOperand(startValue);
-        var end = CoerceRangeOperand(endValue);
-
-        var startParts = ComputeFormatParts(start);
-        var endParts = ComputeFormatParts(end);
-
-        static string Concat(List<(string, string)> parts)
-        {
-            var sb = new StringBuilder();
-            foreach (var (_, value) in parts)
-                sb.Append(value);
-            return sb.ToString();
+            var item = new JSObject();
+            item.FastAddValue(typeKey, CreateString(part.Type), JSPropertyAttributes.EnumerableConfigurableValue);
+            item.FastAddValue(valueKey, CreateString(part.Value), JSPropertyAttributes.EnumerableConfigurableValue);
+            if (withSource && part.Source is not null)
+                item.FastAddValue(sourceKey, CreateString(part.Source), JSPropertyAttributes.EnumerableConfigurableValue);
+            array.AddArrayItem(item);
         }
 
-        var result = new List<(string, string, string)>();
-        if (Concat(startParts) == Concat(endParts))
-        {
-            result.Add(("approximatelySign", "~", "shared"));
-            foreach (var (type, value) in startParts)
-                result.Add((type, value, "shared"));
-            return result;
-        }
-
-        // ICU-style range collapse (NumberRangeFormatter, COLLAPSE_AUTO): an affix that
-        // is identical at both endpoints is rendered once instead of on each side.
-        // - A shared *trailing* affix run (e.g. a currency/percent suffix) always
-        //   collapses, appearing once after the end value: `3 - 5 €` not `3 € - 5 €`.
-        // - A shared *leading* affix run collapses only when it begins with a sign, so
-        //   `signDisplay:"always"` gives `+$2.90–3.10` (the `+$` shared once) while a
-        //   lone currency prefix stays on both sides: `$3 – $5`.
-        // Number-core parts (integer/fraction/group/decimal) never collapse.
-        static bool IsAffix(string type)
-            => type is "currency" or "unit" or "literal" or "percentSign"
-                    or "plusSign" or "minusSign" or "compact";
-        static bool IsSign(string type) => type is "plusSign" or "minusSign";
-        static bool PartsEqual((string type, string value) a, (string type, string value) b)
-            => a.type == b.type && a.value == b.value;
-
-        var n1 = startParts.Count;
-        var n2 = endParts.Count;
-
-        var suffixCollapse = 0;
-        while (suffixCollapse < n1 && suffixCollapse < n2)
-        {
-            var p = startParts[n1 - 1 - suffixCollapse];
-            if (!PartsEqual(p, endParts[n2 - 1 - suffixCollapse]) || !IsAffix(p.type))
-                break;
-            suffixCollapse++;
-        }
-
-        var prefixShared = 0;
-        while (prefixShared < n1 - suffixCollapse && prefixShared < n2 - suffixCollapse)
-        {
-            var p = startParts[prefixShared];
-            if (!PartsEqual(p, endParts[prefixShared]) || !IsAffix(p.type))
-                break;
-            prefixShared++;
-        }
-        var prefixCollapse = prefixShared > 0 && IsSign(startParts[0].type) ? prefixShared : 0;
-
-        var startMiddle = startParts.GetRange(prefixCollapse, n1 - prefixCollapse - suffixCollapse);
-        var endMiddle = endParts.GetRange(prefixCollapse, n2 - prefixCollapse - suffixCollapse);
-
-        // The locale range separator (CLDR miscPatterns/range): en-dash for most locales,
-        // a spaced hyphen-minus for e.g. pt-PT. For a separator that the pattern leaves
-        // tight (no surrounding spaces), ICU's NumberRangeFormatter pads it with a space
-        // only when a non-digit (an affix) abuts it — so a collapsed or plain numeric
-        // boundary renders tight (`+$2.90–3.10`, `1–2`) while `$3 – $5` gets spaces. A
-        // pattern that already carries spaces (pt-PT) is always rendered spaced.
-        var (sepCore, sepSpaced) = CldrLocaleData.RangePattern(locale);
-        var startStr = Concat(startMiddle);
-        var endStr = Concat(endMiddle);
-        var leftDigit = startStr.Length > 0 && char.IsDigit(startStr[^1]);
-        var rightDigit = endStr.Length > 0 && char.IsDigit(endStr[0]);
-        var separator = sepSpaced || !leftDigit || !rightDigit ? " " + sepCore + " " : sepCore;
-
-        for (var i = 0; i < prefixCollapse; i++)
-            result.Add((startParts[i].type, startParts[i].value, "shared"));
-        foreach (var (type, value) in startMiddle)
-            result.Add((type, value, "startRange"));
-        result.Add(("literal", separator, "shared"));
-        foreach (var (type, value) in endMiddle)
-            result.Add((type, value, "endRange"));
-        for (var i = n1 - suffixCollapse; i < n1; i++)
-            result.Add((startParts[i].type, startParts[i].value, "shared"));
-        return result;
-    }
-
-    // ToIntlMathematicalValue with the range-specific guards: a missing operand or a
-    // Symbol is a TypeError, NaN a RangeError. Returns the coerced numeric value.
-    private static JSValue CoerceRangeOperand(JSValue value)
-    {
-        if (value == null || value.IsUndefined)
-            throw JSEngine.NewTypeError("Invalid number range");
-        if (value.IsSymbol)
-            throw JSEngine.NewTypeError("Cannot convert a Symbol value to a number");
-        if (value.IsBigInt)
-            return value;
-        if (double.IsNaN(value.DoubleValue))
-            throw JSEngine.NewRangeError("Invalid number range");
-        return value;
-    }
-
-    private static string CoerceRangeValue(JSValue value)
-    {
-        if (value == null || value.IsUndefined)
-            throw JSEngine.NewTypeError("Invalid number range");
-
-        // ToIntlMathematicalValue (ECMA-402): a Symbol operand cannot be coerced
-        // to a numeric value, so it is a TypeError rather than a formatted string.
-        if (value.IsSymbol)
-            throw JSEngine.NewTypeError("Cannot convert a Symbol value to a number");
-
-        if (value.IsNumber && double.IsNaN(value.DoubleValue))
-            throw JSEngine.NewRangeError("Invalid number range");
-
-        return value.ToString();
+        return array;
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
-        if (a.This is not JSIntlNumberFormat @this)
-            throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.resolvedOptions called on incompatible receiver");
-
+        var formatter = Of(a.This, "resolvedOptions").Formatter;
+        var digits = formatter.DigitOptions;
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), CreateString(@this.numberingSystem));
 
-        var styleKey = KeyStrings.GetOrCreate("style");
-        var style = @this.options is null || @this.options[styleKey].IsUndefined ? "decimal" : @this.options[styleKey].StringValue;
-        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(style));
-
-        if (@this.options != null)
+        void Put(string name, string value)
         {
-            var currencyKey = KeyStrings.GetOrCreate("currency");
-            var unitKey = KeyStrings.GetOrCreate("unit");
-            var useGroupingKey = KeyStrings.GetOrCreate("useGrouping");
-            var minimumIntegerDigitsKey = KeyStrings.GetOrCreate("minimumIntegerDigits");
-            var minimumFractionDigitsKey = KeyStrings.GetOrCreate("minimumFractionDigits");
-            var maximumFractionDigitsKey = KeyStrings.GetOrCreate("maximumFractionDigits");
-            var minimumSignificantDigitsKey = KeyStrings.GetOrCreate("minimumSignificantDigits");
-            var maximumSignificantDigitsKey = KeyStrings.GetOrCreate("maximumSignificantDigits");
-
-            // Spec order: currency, currencyDisplay, currencySign appear together (only when
-            // style is "currency"), each with its resolved value.
-            // A well-formed currency code is canonicalized to upper case (e.g. "usd" → "USD")
-            // before it is reflected by resolvedOptions.
-            if (style == "currency")
-            {
-                if (!@this.options[currencyKey].IsUndefined)
-                    result.CreateDataProperty(currencyKey, CanonicalCurrencyValue(@this.options[currencyKey]));
-                result.CreateDataProperty(KeyStrings.GetOrCreate("currencyDisplay"),
-                    CreateString(@this.ReadStringOption("currencyDisplay", "symbol")));
-                result.CreateDataProperty(KeyStrings.GetOrCreate("currencySign"),
-                    CreateString(@this.CurrencySignOption()));
-            }
-            // A currency option supplied without style:"currency" is validated at construction
-            // but is NOT reflected by resolvedOptions (ECMA-402 only emits currency/currencyDisplay/
-            // currencySign for the currency style).
-
-            // unit and unitDisplay sit together in the resolvedOptions table — after the currency
-            // group, before the digit options — and are subject to the mirror-image rule:
-            // SetNumberFormatUnitOptions sets [[Unit]] and [[UnitDisplay]] only when style is
-            // "unit", so a unit supplied under any other style is validated at construction and
-            // then dropped (test262 NumberFormat/constructor-unit.js asserts `"unit" in
-            // resolvedOptions()` is false for style:"percent", and constructor-unitDisplay.js
-            // asserts the same for unitDisplay).
-            if (style == "unit")
-            {
-                if (!@this.options[unitKey].IsUndefined)
-                    result.CreateDataProperty(unitKey, @this.options[unitKey]);
-                if (@this.resolved?.UnitDisplay != null)
-                    result.CreateDataProperty(KeyStrings.GetOrCreate("unitDisplay"),
-                        CreateString(@this.resolved.UnitDisplay));
-            }
-            // Digit options reflect the construction-time snapshot (read once),
-            // not the live options bag, so resolvedOptions does not re-trigger
-            // option getters.
-            var digits = @this.resolved?.DigitOptions;
-
-            if (digits != null && !digits[minimumIntegerDigitsKey].IsUndefined)
-                result.CreateDataProperty(minimumIntegerDigitsKey, digits[minimumIntegerDigitsKey]);
-            else
-                result.CreateDataProperty(minimumIntegerDigitsKey, CreateNumber(1));
-
-            // Fraction-digit reflection mirrors the formatter: the style-dependent defaults
-            // (currency → its minor-unit digit count) feed the SetNumberFormatDigitOptions
-            // resolution, so e.g. JPY reports 0/0 and USD 2/2 rather than the decimal 0/3.
-            var (defMinFrac, defMaxFrac) = @this.DefaultFractionDigits();
-            var (minFrac, maxFrac) = @this.ResolveFractionDigits(defMinFrac, defMaxFrac);
-            result.CreateDataProperty(minimumFractionDigitsKey, CreateNumber(minFrac));
-            result.CreateDataProperty(maximumFractionDigitsKey, CreateNumber(maxFrac));
-
-            // When either significant-digit option is supplied the other gets its
-            // SetNumberFormatDigitOptions default (minimum → 1, maximum → 21), so
-            // both are reported together.
-            var hasMinSig = digits != null && !digits[minimumSignificantDigitsKey].IsUndefined;
-            var hasMaxSig = digits != null && !digits[maximumSignificantDigitsKey].IsUndefined;
-            if (hasMinSig || hasMaxSig)
-            {
-                result.CreateDataProperty(minimumSignificantDigitsKey,
-                    hasMinSig ? digits[minimumSignificantDigitsKey] : CreateNumber(1));
-                result.CreateDataProperty(maximumSignificantDigitsKey,
-                    hasMaxSig ? digits[maximumSignificantDigitsKey] : CreateNumber(21));
-            }
-
-            // useGrouping always has a resolved value ("auto"/"always"/"min2", or boolean
-            // false); the spec places it after the digit options and before notation. The
-            // "false" sentinel maps back to the boolean.
-            var resolvedGrouping = @this.resolved?.UseGrouping ?? "auto";
-            result.CreateDataProperty(useGroupingKey,
-                resolvedGrouping == "false" ? BooleanFalse : CreateString(resolvedGrouping));
-        }
-        else
-        {
-            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), CreateNumber(1));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumFractionDigits"), CreateNumber(0));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), CreateNumber(3));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("useGrouping"), CreateString("auto"));
+            if (value is not null)
+                result.CreateDataProperty(KeyStrings.GetOrCreate(name), CreateString(value));
         }
 
-        // notation/signDisplay always have a resolved value; compactDisplay is
-        // reflected only when notation is "compact". Per the resolvedOptions table
-        // compactDisplay precedes signDisplay (test262 NumberFormat
-        // resolvedOptions/return-keys-order-default). These are read from the slots
-        // resolved at construction (not the live options object) so getter side
-        // effects observe construction-time order, not access.
-        var r = @this.resolved;
-        if (r != null)
+        void PutNumber(string name, int? value)
         {
-            result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), CreateString(r.Notation));
-            if (r.CompactDisplay != null)
-                result.CreateDataProperty(KeyStrings.GetOrCreate("compactDisplay"), CreateString(r.CompactDisplay));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("signDisplay"), CreateString(r.SignDisplay));
-
-            // SetNumberFormatDigitOptions rounding slots are always present (spec order:
-            // after notation/compactDisplay/signDisplay).
-            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingIncrement"), CreateNumber(r.RoundingIncrement));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingMode"), CreateString(r.RoundingModeName));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingPriority"), CreateString(r.RoundingPriority));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("trailingZeroDisplay"), CreateString(r.TrailingZeroDisplay));
+            if (value is not null)
+                result.CreateDataProperty(KeyStrings.GetOrCreate(name), CreateNumber(value.Value));
         }
 
+        // Table 15, in its order: each slot as the constructor resolved it, read back from the library's record.
+        Put("locale", formatter.Locale);
+        Put("numberingSystem", formatter.NumberingSystem);
+        Put("style", JSIntl.NumberStyleNames[(int)formatter.Style]);
+        Put("currency", formatter.Currency);
+        Put("currencyDisplay", formatter.CurrencyDisplay is { } currencyDisplay ? JSIntl.CurrencyDisplayNames[(int)currencyDisplay] : null);
+        Put("currencySign", formatter.CurrencySign is { } currencySign ? JSIntl.CurrencySignNames[(int)currencySign] : null);
+        Put("unit", formatter.Unit);
+        Put("unitDisplay", formatter.UnitDisplay is { } unitDisplay ? JSIntl.UnitDisplayNames[(int)unitDisplay] : null);
+        PutNumber("minimumIntegerDigits", digits.MinimumIntegerDigits);
+        PutNumber("minimumFractionDigits", digits.MinimumFractionDigits);
+        PutNumber("maximumFractionDigits", digits.MaximumFractionDigits);
+        PutNumber("minimumSignificantDigits", digits.MinimumSignificantDigits);
+        PutNumber("maximumSignificantDigits", digits.MaximumSignificantDigits);
+        result.CreateDataProperty(KeyStrings.GetOrCreate("useGrouping"),
+            JSIntl.GroupingNames[(int)formatter.UseGrouping] is { } grouping ? CreateString(grouping) : BooleanFalse);
+        Put("notation", JSIntl.NotationNames[(int)formatter.Notation]);
+        Put("compactDisplay", formatter.CompactDisplay is { } compactDisplay ? JSIntl.CompactDisplayNames[(int)compactDisplay] : null);
+        Put("signDisplay", JSIntl.SignDisplayNames[(int)formatter.SignDisplay]);
+        PutDigitTail(result, digits);
         return result;
+    }
+
+    // The last four slots resolvedOptions reports of a number format or plural rules, in Table 15's and Table 32's order:
+    // roundingIncrement, roundingMode, roundingPriority (the computed one) and trailingZeroDisplay.
+    internal static void PutDigitTail(JSObject result, DigitOptions digits)
+    {
+        result.CreateDataProperty(KeyStrings.GetOrCreate("roundingIncrement"), CreateNumber(digits.RoundingIncrement));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("roundingMode"), CreateString(JSIntl.RoundingModeNames[(int)digits.RoundingMode]));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("roundingPriority"), CreateString(JSIntl.RoundingPriorityNames[(int)digits.ComputedRoundingPriority]));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("trailingZeroDisplay"), CreateString(JSIntl.TrailingZeroDisplayNames[(int)digits.TrailingZeroDisplay]));
     }
 
     private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.NumberFormat");
@@ -6154,6 +2740,32 @@ public class JSIntlCollator : JSObject
             if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
                 return string.Join("-", parts, 0, i);
         return tag;
+    }
+
+    // This Collator's data as CollationsOfLocale reads it (JSD-0082, decision D33 (c); rows L17 and L18): the available
+    // locales are every service's (decision D7), and a locale's sort collations are those this Collator resolves for it,
+    // each value of Intl.supportedValuesOf("collation") that IsCollationAvailableForLocale admits. The Collator's data and
+    // comparison stay its host path until SJL-17.
+    internal static ICollatorLocaleData LocaleData { get; } = new CollatorLocaleData();
+
+    private sealed class CollatorLocaleData : ICollatorLocaleData
+    {
+        public IReadOnlyList<string> AvailableLocales => JSIntlLocaleProviders.AvailableLocales;
+
+        public IReadOnlyList<string> Collations => JSIntl.SupportedCollationsSorted;
+
+        public IReadOnlyList<string?> SortLocaleData(string locale)
+        {
+            var bareLocale = StripUnicodeExtension(locale);
+            var collations = new List<string?> { null };
+            foreach (var collation in JSIntl.SupportedCollationsSorted)
+            {
+                if (IsCollationAvailableForLocale(bareLocale, collation))
+                    collations.Add(collation);
+            }
+
+            return collations;
+        }
     }
 
     // Whether a (canonical, recognized) collation is available for a locale. The root
@@ -6327,311 +2939,271 @@ public class JSIntlCollator : JSObject
         => Intrinsics.IntlPrototype(IntrinsicKey);
 }
 
+// Intl.DateTimeFormat (ECMA-402 sec-datetimeformat-objects, as tc39/proposal-temporal@e8cc03fc's intl.html amends it) over the
+// shared library's DateTimeFormat (SJL-9.5, task 8.5, sub-area (d); Broiler.VM's JSD-0082, decision D24): the constructor
+// reads every option once, in the specification's order, each checked as it is read, ResolveLocale's ca, hc and nu keys are
+// the library's over the values the data gives the matched locale, and the hour cycle, the calendar's data, the pattern of the
+// styles or of the components, the numbering system's digits, the zone's names, the intervals and the formats of Temporal's
+// types are the library's, over the data home's date data (decision D5) and the shared time zones and calendars. The engine
+// keeps the reads, the default zone (the host's, decision SJL-D-19, row T11), ToDateTimeFormattable, the bound format (row
+// T4), the parts arrays and each RangeError and TypeError, made from the library's status; it passes no charge (row T40).
+// Deleted (2026-11-09): JSIntlDateTimeFormatEngine.cs whole (the en-only pattern resolution, field formatting, interval
+// algorithm and zone names), the option snapshot and every reader of it (OptionString, FractionalSecondDigits,
+// ResolveHour12, ResolveHourCycle, ResolveEnginePattern, ResolvedCalendar, ResolvedCalendarId, UnicodeKeyword,
+// ResolveFields, the TemporalFields flags, RequestedFields, ClassifyTemporal, CheckTemporalCalendar, EffectiveTemporalFields,
+// FormatTemporalToParts, FormatTemporalRangeToParts, ResolveTemporalPattern, StyleMonthWidth, ComputeRangeParts, MapNumbering,
+// the dayPeriod branches and their CLDR day-period reads through CldrLocaleData, SupportsDayPeriod, UsesHourFormatting,
+// DayPeriodStyle, WallHourMinute, DayPeriodRuleOverrides, DayPeriodWidth, DayPeriodNameForStyle, DayPeriodName,
+// ResolveDayPeriodKey, MatchDayPeriodRules, ReadTimeZoneOption, TimeClipRange), the value tables of the option reads now
+// written once (DateTimeStyleValues among them), and the members row T42 names: the constructor from a CultureInfo,
+// Format(DateTimeOffset, JSObject), FormatEnglishHour (both overloads; the int one's last readers were the dayPeriod
+// branches), FormatDayPeriod and the locale field. Its public members stay (decision SJL-D-25, disposition (a)): the
+// constructor, Format, the prototype methods, TemporalToLocaleString, ToDateTimeOptions and ApplyAllDefaults (which no caller
+// of this repository reads any more), and Get(CultureInfo), over the library.
+// Revised 2026-11-09, at SJL-9.5 (review of task 8.5): the deletion list above also covers JSIntlResolvedOptionsExtensions
+// whole with its SetIfDefined, Has and RequiresExactCalendar, and, in TemporalTimeZones, ResolveFormatterTimeZone, whose
+// last reader was ReadTimeZoneOption. The OptionString it names was the option snapshot's instance reader; the private
+// static OptionString below is a new reader of a defined option's String.
 public class JSIntlDateTimeFormat : JSObject
 {
     private static readonly ConcurrentDictionary<string, JSIntlDateTimeFormat> formats = new();
-    private static readonly KeyString HourKey = KeyStrings.GetOrCreate("hour");
-    private static readonly KeyString DayPeriodKey = KeyStrings.GetOrCreate("dayPeriod");
-    private static readonly KeyString MinuteKey = KeyStrings.GetOrCreate("minute");
-    private static readonly KeyString SecondKey = KeyStrings.GetOrCreate("second");
-    private static readonly KeyString FractionalSecondDigitsKey = KeyStrings.GetOrCreate("fractionalSecondDigits");
-    private static readonly KeyString YearKey = KeyStrings.GetOrCreate("year");
-    private static readonly KeyString MonthKey = KeyStrings.GetOrCreate("month");
-    private static readonly KeyString DayKey = KeyStrings.GetOrCreate("day");
     private static readonly KeyString DateStyleKey = KeyStrings.GetOrCreate("dateStyle");
     private static readonly KeyString TimeStyleKey = KeyStrings.GetOrCreate("timeStyle");
     private static readonly KeyString TimeZoneKey = KeyStrings.GetOrCreate("timeZone");
     private static readonly KeyString Hour12Key = KeyStrings.GetOrCreate("hour12");
     private static readonly KeyString HourCycleKey = KeyStrings.GetOrCreate("hourCycle");
     private static readonly KeyString CalendarKey = KeyStrings.GetOrCreate("calendar");
-    private static readonly KeyString NumberingSystemKey = KeyStrings.GetOrCreate("numberingSystem");
-    private static readonly KeyString WeekdayKey = KeyStrings.GetOrCreate("weekday");
-    private static readonly KeyString EraKey = KeyStrings.GetOrCreate("era");
-    private static readonly KeyString TimeZoneNameKey = KeyStrings.GetOrCreate("timeZoneName");
     private static readonly KeyString FormatMatcherKey = KeyStrings.GetOrCreate("formatMatcher");
+    private static readonly KeyString FractionalSecondDigitsKey = KeyStrings.GetOrCreate("fractionalSecondDigits");
 
-    // The sanctioned value sets for the date/time option getters (CreateDateTimeFormat).
-    private static readonly string[] NarrowShortLong = ["narrow", "short", "long"];
-    private static readonly string[] NumericTwoDigit = ["2-digit", "numeric"];
-    private static readonly string[] MonthValues = ["2-digit", "numeric", "narrow", "short", "long"];
+    // ECMA-402's Table 16 of date-time components, in table order, with the values each option admits; the constructor reads
+    // them in this order.
+    private static readonly (KeyString Key, string[] Values)[] ComponentOptions =
+    [
+        (KeyStrings.GetOrCreate("weekday"), ["narrow", "short", "long"]),
+        (KeyStrings.GetOrCreate("era"), ["narrow", "short", "long"]),
+        (KeyStrings.GetOrCreate("year"), ["2-digit", "numeric"]),
+        (KeyStrings.GetOrCreate("month"), ["2-digit", "numeric", "narrow", "short", "long"]),
+        (KeyStrings.GetOrCreate("day"), ["2-digit", "numeric"]),
+        (KeyStrings.GetOrCreate("dayPeriod"), ["narrow", "short", "long"]),
+        (KeyStrings.GetOrCreate("hour"), ["2-digit", "numeric"]),
+        (KeyStrings.GetOrCreate("minute"), ["2-digit", "numeric"]),
+        (KeyStrings.GetOrCreate("second"), ["2-digit", "numeric"]),
+        (FractionalSecondDigitsKey, null),
+        (KeyStrings.GetOrCreate("timeZoneName"), ["short", "long", "shortOffset", "longOffset", "shortGeneric", "longGeneric"]),
+    ];
+
     private static readonly string[] HourCycleValues = ["h11", "h12", "h23", "h24"];
-    private static readonly string[] TimeZoneNameValues =
-        ["short", "long", "shortOffset", "longOffset", "shortGeneric", "longGeneric"];
     private static readonly string[] FormatMatcherValues = ["basic", "best fit"];
-    private readonly CultureInfo locale;
-    private readonly string localeTag;
-    private readonly string numberingSystem;
-    private JSObject options;
+    private static readonly string[] StyleValues = ["full", "long", "medium", "short"];
 
-    // dateStyle / timeStyle are GetOption-coerced (to a string) and validated once at
-    // construction, then reported verbatim by resolvedOptions. Reading them from the
-    // raw user options object would surface the original (possibly non-string) value
-    // — e.g. `{ dateStyle: { toString() { return "full"; } } }` must resolve to the
-    // string "full", not the object.
-    internal static readonly string[] DateTimeStyleValues = ["full", "long", "medium", "short"];
-    private readonly string dateStyle;
-    private readonly string timeStyle;
+    // The date-time data every format reads (the library's DateTimeData over the engine's locale data, the shared time zones
+    // and the calendars), made once.
+    // Revised 2026-11-09, at SJL-9.5's stage 4 (the shared library's merge Broiler-Platform/Broiler.JS#1108): the comment
+    // ended "made once; and one per numbering system whose own decimal symbol the data states (decision D21)", and
+    // DatesBySystem, a ConcurrentDictionary of that per-system data, followed. The library's DateTimeFormat now writes a
+    // numbering system's own decimal symbol itself (row T37, decision D21), so every format reads this one data and
+    // DatesBySystem is deleted.
+    private static readonly Lazy<DateTimeData> SharedDates = new(
+        static () => new DateTimeData(JSIntlData.LocaleData, Temporal.TemporalTimeData.TimeZones, Temporal.TemporalAdapter.Calendars),
+        System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
-    // True when the constructor supplied the year/month/day = "numeric" defaults because the user
-    // specified no date/time component and no dateStyle/timeStyle (ToDateTimeOptions, defaults
-    // "date"). The defaults are stored on the snapshot so resolvedOptions reports them, but the
-    // formatter must still treat itself as "default" (RequestedFields) so a Temporal value formats
-    // its own default fields rather than being constrained to the injected year/month/day.
-    private readonly bool dateDefaultsApplied;
+    /// <summary>The shared library's format: what CreateDateTimeFormat resolved, its formatter and the formats of Temporal's types.</summary>
+    internal DateTimeFormat Core { get; }
 
-    private string OptionString(KeyString key)
+    /// <summary>[[BoundFormat]] (row T4, a correction: a new function was made at each read, so dtf.format !== dtf.format).</summary>
+    internal JSFunction BoundFormat { get; set; }
+
+    public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())
     {
-        var value = options?[key];
-        return value == null || value.IsUndefined ? null : value.StringValue;
+        var options = JSIntl.ValidateConstructorArguments("DateTimeFormat", in a, out var canonical, requireNew: false);
+        Core = Create(canonical, options, DateTimeRequired.Any, DateTimeDefaults.Date, null);
     }
 
-    private int FractionalSecondDigits()
+    private JSIntlDateTimeFormat(JSObject prototype, DateTimeFormat core) : base(prototype)
     {
-        var value = options?[FractionalSecondDigitsKey];
-        return value == null || value.IsUndefined ? 0 : (int)value.DoubleValue;
+        Core = core;
     }
 
-    private bool ResolveHour12()
+    private JSIntlDateTimeFormat(DateTimeFormat core) : base()
     {
-        var hc = ResolveHourCycle();
-        return hc == "h11" || hc == "h12";
+        Core = core;
     }
 
-    // Resolves the hourCycle reported by resolvedOptions (CreateDateTimeFormat). The
-    // hour12 option wins, mapping to h11/h12 (true) or h23/h24 (false) depending on
-    // whether the locale default is a "0-based" cycle; otherwise an explicit hourCycle
-    // option wins, then the locale's -u-hc- extension, then the locale default.
-    // Kept as the single source of truth so ResolveHour12 never disagrees.
-    private string ResolveHourCycle()
-    {
-        var hcDefault = JSIntl.DefaultHourCycle(localeTag);
+    private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.DateTimeFormat");
 
-        var hour12 = options?[Hour12Key];
-        if (hour12 != null && !hour12.IsUndefined)
+    // %Intl.DateTimeFormat.prototype% of the current realm (Intrinsics.IntlPrototype), never the prototype
+    // of whatever `globalThis.Intl.DateTimeFormat` holds now: guest code may replace the namespace or its members.
+    private static JSObject CurrentPrototype()
+        => Intrinsics.IntlPrototype(IntrinsicKey);
+
+    // A format for a .NET culture's name with no options, cached by the name: the format of `new Intl.DateTimeFormat(tag)`, a
+    // name that is no well-formed tag read as no locale (the default). Over the library since SJL-9.5, task 8.5, as JSD-0082's
+    // D24 keeps it.
+    public static JSIntlDateTimeFormat Get(CultureInfo culture)
+        => formats.GetOrAdd(culture.Name, static name =>
         {
-            // hour12 picks the locale's preferred clock of the requested kind from CLDR's
-            // <hours> data: hour12 true selects the 12-hour cycle, which is "h12" everywhere
-            // except the few locales (Japanese) whose preferred 12-hour cycle is "h11"; hour12
-            // false selects "h23" (the 24-hour cycle observed by other engines).
-            if (hour12.BooleanValue)
-                return JSIntl.Prefers11HourCycle(localeTag) ? "h11" : "h12";
-            return "h23";
+            var locales = JSValue.CreateArray();
+            if (name.Length != 0 && LocaleId.TryCanonicalize(name, JSIntlData.LocaleData, out var tag) == IntlStatus.Completed)
+                locales.AddArrayItem(CreateString(tag));
+            return new JSIntlDateTimeFormat(Create(locales, null, DateTimeRequired.Any, DateTimeDefaults.Date, null));
+        });
+
+    // ECMA-402's CreateDateTimeFormat (sec-createdatetimeformat, as e8cc03fc amends it), after CanonicalizeLocaleList,
+    // CoerceOptionsToObject and localeMatcher (ValidateConstructorArguments): every read in the specification's order, each
+    // checked as it is read, then the shared library's DateTimeFormat.Create over the record read, whose refusals are this
+    // engine's TypeErrors. zonedTimeZone is Temporal.ZonedDateTime.prototype.toLocaleString's own zone, which the options may
+    // not name.
+    private static DateTimeFormat Create(JSValue canonicalLocales, JSObject options, DateTimeRequired required, DateTimeDefaults defaults, string zonedTimeZone)
+    {
+        // calendar, then numberingSystem, each a well-formed Unicode type (row L14).
+        var calendar = OptionString(options, CalendarKey);
+        if (calendar != null && !LocaleId.IsUnicodeType(calendar))
+            throw JSEngine.NewRangeError("Invalid calendar option");
+
+        var numberingSystem = JSIntl.ReadNumberingSystemOption(options);
+
+        // hour12 (ToBoolean), then hourCycle; hour12 makes hourCycle ECMA-402's null.
+        var hour12Value = options == null ? JSUndefined.Value : options[Hour12Key];
+        bool? hour12 = hour12Value.IsUndefined ? null : hour12Value.BooleanValue;
+        var hourCycle = JSIntl.GetOption(options, HourCycleKey, HourCycleValues, false, null);
+
+        // ResolveLocale's ca, hc and nu keys, the shared library's, over the values the data gives the matched locale.
+        // Revised 2026-11-09, at SJL-9.5's stage 4: the ca key's values were "DateTimeFormat.CalendarKeyValues", the static
+        // list whose first value is gregory. They are now DateTimeFormat.CalendarKeyValuesOf the data locale, which puts first
+        // the first calendar CLDR's calendarPreferenceData prefers for the locale's likely region (fa persian, th buddhist),
+        // as the shared library's merge Broiler-Platform/Broiler.JS#1108 asks an engine to hand them (row T16, data policy C5).
+        var resolved = JSIntl.ResolveLocale(canonicalLocales, locale =>
+        [
+            new RelevantKey("ca", DateTimeFormat.CalendarKeyValuesOf(JSIntlData.LocaleData, JSIntlLocaleProviders.DataLocale(locale))) { Option = calendar },
+            new RelevantKey("hc", DateTimeFormat.HourCycleKeyValues) { Option = hour12 is null ? hourCycle : null, OptionIsNull = hour12 is not null },
+            new RelevantKey("nu", JSIntl.NumberingSystemValues(locale)) { Option = numberingSystem },
+        ]);
+
+        // timeZone: the host's zone where it is undefined (decision SJL-D-19, row T11); Temporal.ZonedDateTime's toLocaleString
+        // names its own zone, and refuses one the options name.
+        var timeZoneValue = options == null ? JSUndefined.Value : options[TimeZoneKey];
+        if (zonedTimeZone != null)
+        {
+            if (!timeZoneValue.IsUndefined)
+                throw JSEngine.NewTypeError("Temporal.ZonedDateTime.toLocaleString: the timeZone option is not allowed");
+            timeZoneValue = CreateString(zonedTimeZone);
         }
 
-        var option = OptionString(HourCycleKey);
-        if (option != null)
-            return option;
+        var timeZoneText = timeZoneValue.IsUndefined ? Temporal.TemporalTimeZones.SystemTimeZoneIdentifier() : timeZoneValue.StringValue;
+        if (ResolvedTimeZone.Resolve(timeZoneText, Temporal.TemporalTimeZones.Database, out var timeZone) != IntlStatus.Completed)
+            throw JSEngine.NewRangeError($"Invalid timeZone option: {timeZoneText}");
 
-        var ext = JSIntl.GetUnicodeExtensionType(localeTag, "hc");
-        if (!string.IsNullOrEmpty(ext) && (ext == "h11" || ext == "h12" || ext == "h23" || ext == "h24"))
-            return ext;
-
-        return hcDefault;
-    }
-
-    private JSIntlDateTimeFormatEngine.Pattern ResolveEnginePattern()
-        => JSIntlDateTimeFormatEngine.ResolvePattern(
-            localeTag: localeTag,
-            hasYear: OptionString(YearKey) != null,
-            yearStyle: OptionString(YearKey),
-            hasMonth: OptionString(MonthKey) != null,
-            monthStyle: OptionString(MonthKey),
-            hasDay: OptionString(DayKey) != null,
-            dayStyle: OptionString(DayKey),
-            hasHour: OptionString(HourKey) != null,
-            hasMinute: OptionString(MinuteKey) != null,
-            hasSecond: OptionString(SecondKey) != null,
-            fractionalSecondDigits: FractionalSecondDigits(),
-            hasDayPeriodField: false,
-            dateStyle: dateStyle,
-            timeStyle: timeStyle,
-            hour12: ResolveHour12(),
-            calendar: ResolvedCalendar(),
-            hasWeekday: OptionString(KeyStrings.GetOrCreate("weekday")) != null,
-            weekdayStyle: OptionString(KeyStrings.GetOrCreate("weekday")),
-            hasTimeZoneName: OptionString(KeyStrings.GetOrCreate("timeZoneName")) != null,
-            hourCycle: ResolveHourCycle(),
-            hasEra: OptionString(KeyStrings.GetOrCreate("era")) != null,
-            eraStyle: OptionString(KeyStrings.GetOrCreate("era")),
-            hourStyle: OptionString(HourKey),
-            minuteStyle: OptionString(MinuteKey),
-            secondStyle: OptionString(SecondKey));
-
-    // The resolved calendar: per ECMA-402 InitializeDateTimeFormat the `calendar` OPTION
-    // takes precedence over the locale tag's -u-ca- value, then -u-ca-, then the locale's
-    // default ("gregory"). An unsupported value (one this engine cannot project the year /
-    // era through) falls back to "gregory" so formatting still produces a usable result.
-    internal string ResolvedCalendar()
-    {
-        var ca = ResolvedCalendarId();
-        return JSIntlDateTimeFormatEngine.IsSupportedCalendar(ca) ? ca : "gregory";
-    }
-
-    // The resolved calendar IDENTIFIER (dateTimeFormat.[[Calendar]]): the `calendar` option, then the
-    // locale tag's -u-ca- value, then the locale default ("gregory"). Unlike ResolvedCalendar() it does
-    // NOT collapse an identifier the formatting engine cannot project (e.g. "iso8601", which it renders
-    // as proleptic Gregorian) down to "gregory": the unchanged identifier is what a Temporal value's
-    // calendar must be checked against (CheckTemporalCalendar) and what resolvedOptions reports.
-    internal string ResolvedCalendarId()
-    {
-        // An explicit `calendar` option that names an available calendar is the resolved [[Calendar]]
-        // and is reported verbatim (test262 resolvedOptions/calendar — every available calendar,
-        // including "hebrew"/"japanese", round-trips). Otherwise the resolved locale's negotiated
-        // -u-ca- value is reported, collapsed to "gregory" when this engine cannot render it (so a
-        // bare `en-u-ca-hebrew` reports "gregory", matching the gregorian formatting).
-        var option = OptionString(CalendarKey);
-        if (option != null && JSIntl.IsAvailableCalendar(option))
-            return option;
-        var ext = UnicodeKeyword(localeTag, "ca");
-        return JSIntl.IsRenderableCalendar(ext) ? ext : "gregory";
-    }
-
-    // Reads a Unicode (-u-) keyword value from a BCP-47 tag, e.g. "ca" from
-    // "en-u-ca-buddhist". Returns null when absent.
-    private static string UnicodeKeyword(string tag, string key)
-    {
-        if (string.IsNullOrEmpty(tag))
-            return null;
-        var parts = tag.Split('-');
-        var u = System.Array.IndexOf(parts, "u");
-        if (u < 0)
-            return null;
-        for (var i = u + 1; i < parts.Length; i++)
+        // The components, in Table 16's order; then formatMatcher, dateStyle and timeStyle.
+        var components = new string[ComponentOptions.Length];
+        int? fractionalSecondDigits = null;
+        for (var i = 0; i < ComponentOptions.Length; i++)
         {
-            if (parts[i].Length == 2 && string.Equals(parts[i], key, StringComparison.OrdinalIgnoreCase))
+            var (key, values) = ComponentOptions[i];
+            if (values is null)
+                fractionalSecondDigits = JSIntl.GetNumberOption(options, key, 1, 3);
+            else
+                components[i] = JSIntl.GetOption(options, key, values, false, null);
+        }
+
+        _ = JSIntl.GetOption(options, FormatMatcherKey, FormatMatcherValues, false, "best fit");
+        var dateStyle = JSIntl.GetOption(options, DateStyleKey, StyleValues, false, null);
+        var timeStyle = JSIntl.GetOption(options, TimeStyleKey, StyleValues, false, null);
+
+        var status = DateTimeFormat.Create(
+            DatesFor(),
+            new ResolvedLocale(resolved.Locale, JSIntlLocaleProviders.DataLocale(resolved.DataLocale), resolved.KeyValues),
+            new DateTimeFormatOptions
             {
-                // A Unicode keyword value may span several subtags, e.g. "ca" → "islamic-tbla"; collect
-                // all following type subtags (length 3–8) until the next key (length 2) or extension end.
-                var value = new List<string>();
-                for (var j = i + 1; j < parts.Length && parts[j].Length > 2; j++)
-                    value.Add(parts[j].ToLowerInvariant());
-                return value.Count > 0 ? string.Join("-", value) : null;
-            }
-        }
-        return null;
-    }
+                Hour12 = hour12,
+                TimeZone = timeZone,
+                Components = new DateTimeComponents
+                {
+                    Weekday = components[0],
+                    Era = components[1],
+                    Year = components[2],
+                    Month = components[3],
+                    Day = components[4],
+                    DayPeriod = components[5],
+                    Hour = components[6],
+                    Minute = components[7],
+                    Second = components[8],
+                    FractionalSecondDigits = fractionalSecondDigits,
+                    TimeZoneName = components[10],
+                },
+                DateStyle = dateStyle,
+                TimeStyle = timeStyle,
+                Required = required,
+                Defaults = defaults,
+                ForZonedDateTime = zonedTimeZone != null,
+            },
+            out var format);
 
-    private JSIntlDateTimeFormatEngine.Fields ResolveFields(double clipped)
-    {
-        var tz = OptionString(TimeZoneKey);
-        // The display name is always computed so it is available whenever the resolved pattern emits a
-        // zone token — the explicit timeZoneName option, or a long/full time style. The explicit option
-        // wins; otherwise the time style chooses the width: timeStyle "full" uses the long zone name
-        // ("Coordinated Universal Time") and "long" uses the short name ("UTC").
-        var style = OptionString(KeyStrings.GetOrCreate("timeZoneName"))
-            ?? (timeStyle == "full" ? "long" : "short");
-        var zoneName = JSIntlDateTimeFormatEngine.FormatTimeZoneName(localeTag, tz, style, clipped);
-        var wall = JSIntlDateTimeFormatEngine.ToZone(clipped, tz);
-        var dayPeriod = DayPeriodName((int)EcmaTime.HourFromTime(wall), (int)EcmaTime.MinFromTime(wall));
-        return new(wall, zoneName, dayPeriod);
-    }
-
-    // ── Temporal integration (FormatDateTimePattern / HandleDateTimeValue) ───────────────────────
-    // The field categories a Temporal type can supply to Intl.DateTimeFormat. A plain type that lacks
-    // a category drops the formatter's request for it; a formatter that requests *only* unsupported
-    // categories has no overlap and is a TypeError. A ZonedDateTime cannot be formatted directly.
-    [Flags]
-    private enum TemporalFields
-    {
-        None = 0, Era = 1, Year = 2, Month = 4, Day = 8, Weekday = 16,
-        Hour = 32, Minute = 64, Second = 128, FractionalSecond = 256, DayPeriod = 512, TimeZoneName = 1024,
-        Date = Era | Year | Month | Day | Weekday,
-        Time = Hour | Minute | Second | FractionalSecond | DayPeriod,
-    }
-
-    // True when the value is any Temporal date/time object this formatter handles specially.
-    private static bool IsTemporalDateTime(JSValue value)
-        => value is JSTemporalPlainDate or JSTemporalPlainDateTime or JSTemporalPlainTime
-            or JSTemporalPlainYearMonth or JSTemporalPlainMonthDay or JSTemporalInstant
-            or JSTemporalZonedDateTime;
-
-    private bool Has(KeyString key) => options != null && options[key] is { IsUndefined: false };
-
-    // The fields the formatter is *requesting*, plus whether it was created without any explicit
-    // date/time component or style (in which case a Temporal type fills in its own defaults).
-    private (TemporalFields requested, bool isDefault) RequestedFields()
-    {
-        var f = TemporalFields.None;
-        if (Has(YearKey)) f |= TemporalFields.Year;
-        if (Has(MonthKey)) f |= TemporalFields.Month;
-        if (Has(DayKey)) f |= TemporalFields.Day;
-        if (Has(KeyStrings.GetOrCreate("weekday"))) f |= TemporalFields.Weekday;
-        if (Has(KeyStrings.GetOrCreate("era"))) f |= TemporalFields.Era;
-        if (Has(HourKey)) f |= TemporalFields.Hour;
-        if (Has(MinuteKey)) f |= TemporalFields.Minute;
-        if (Has(SecondKey)) f |= TemporalFields.Second;
-        if (Has(FractionalSecondDigitsKey)) f |= TemporalFields.FractionalSecond;
-        if (Has(DayPeriodKey)) f |= TemporalFields.DayPeriod;
-        if (Has(KeyStrings.GetOrCreate("timeZoneName"))) f |= TemporalFields.TimeZoneName;
-
-        // era and timeZoneName are *supplementary*: they are not date/time components for the
-        // defaulting decision, so a formatter requesting only those is still "default" (a plain type
-        // formats its defaults, dropping the unsupported supplementary field, instead of failing the
-        // no-overlap check). They are re-added to a supporting type in EffectiveTemporalFields.
-        var hadComponents = (f & ~SupplementaryFields) != TemporalFields.None;
-
-        // Expand dateStyle / timeStyle into the component fields they render (en/CLDR layout, matching
-        // the engine's hardcoded styles). timeStyle long/full also implies a time-zone name.
-        if (dateStyle != null)
-            f |= TemporalFields.Year | TemporalFields.Month | TemporalFields.Day
-                | (dateStyle == "full" ? TemporalFields.Weekday : TemporalFields.None);
-        if (timeStyle != null)
+        return status switch
         {
-            f |= TemporalFields.Hour | TemporalFields.Minute;
-            if (timeStyle is "medium" or "long" or "full") f |= TemporalFields.Second;
-            if (timeStyle is "long" or "full") f |= TemporalFields.TimeZoneName;
-        }
-
-        // A formatter that only carries the injected year/month/day defaults (no user-specified
-        // component or style) is still "default": a Temporal value formats its own default fields
-        // rather than being constrained to year/month/day.
-        return (f, dateDefaultsApplied || (!hadComponents && dateStyle == null && timeStyle == null));
+            IntlStatus.Completed => format,
+            IntlStatus.StyleWithComponents => throw JSEngine.NewTypeError("Intl.DateTimeFormat: dateStyle and timeStyle cannot be combined with a date-time component option"),
+            IntlStatus.DateFormatWithTimeStyle => throw JSEngine.NewTypeError("Intl.DateTimeFormat: timeStyle may not be used with a date-only operation"),
+            IntlStatus.TimeFormatWithDateStyle => throw JSEngine.NewTypeError("Intl.DateTimeFormat: dateStyle may not be used with a time-only operation"),
+            _ => throw new InvalidOperationException("The shared date-time format answered " + status + ", which CreateDateTimeFormat does not expect."),
+        };
     }
 
-    // Temporal.X.prototype.toLocaleString: create a DateTimeFormat for the locale/options and format
-    // the Temporal value through the same HandleDateTimeValue path (so toLocaleString and
-    // DateTimeFormat.prototype.format agree). An optional default time zone is injected when absent
-    // (used by ZonedDateTime, which formats in its own zone); a conflicting one is a RangeError.
-    private static readonly string[] DateTimeComponentKeys =
-    [
-        "weekday", "era", "year", "month", "day", "dayPeriod",
-        "hour", "minute", "second", "fractionalSecondDigits", "timeZoneName",
-    ];
+    // An option's String (ToString of a defined value), or null when it is undefined.
+    private static string OptionString(JSObject options, KeyString key)
+    {
+        var value = options == null ? JSUndefined.Value : options[key];
+        return value.IsUndefined ? null : value.StringValue;
+    }
 
-    private static readonly string[] DateTimeFormatOptionKeys =
-    [
-        "localeMatcher", "calendar", "numberingSystem", "hour12", "hourCycle", "timeZone",
-        "weekday", "era", "year", "month", "day", "dayPeriod", "hour", "minute", "second",
-        "fractionalSecondDigits", "timeZoneName", "formatMatcher", "dateStyle", "timeStyle",
-    ];
+    // The date-time data a format reads, whatever its numbering system.
+    // Revised 2026-11-09, at SJL-9.5's stage 4: it was "DatesFor(string numberingSystem)", the data a format of a numbering
+    // system reads, which for a system other than latn whose own decimal symbol the data states returned a DateTimeData over
+    // NumberingSystemDecimalData (DatesBySystem's). The library reads that symbol itself now (row T37), so it returns the
+    // shared data, and the caller's resolved nu, which only it read, is no longer taken.
+    private static DateTimeData DatesFor() => SharedDates.Value;
 
+    // ---- Temporal's toLocaleString and Date's toLocale* ------------------------------------------------------------------
+
+    // Temporal.X.prototype.toLocaleString (the proposal's amendment of ECMA-402 s15.11): a format made for the call by
+    // CreateDateTimeFormat with the type's required and defaults - date for PlainDate, PlainYearMonth and PlainMonthDay, time
+    // for PlainTime, any and all for the others - which writes the value; a ZonedDateTime's in its own zone.
     public static JSValue TemporalToLocaleString(JSValue temporal, JSValue locales, JSValue options, string defaultTimeZone = null)
     {
-        if (defaultTimeZone != null)
+        var (required, defaults) = temporal switch
         {
-            if (options != null && !options.IsNullOrUndefined && options is not JSObject)
-                throw JSEngine.NewTypeError("Temporal toLocaleString options must be an object or undefined");
+            JSTemporalPlainDate or JSTemporalPlainYearMonth or JSTemporalPlainMonthDay => (DateTimeRequired.Date, DateTimeDefaults.Date),
+            JSTemporalPlainTime => (DateTimeRequired.Time, DateTimeDefaults.Time),
+            _ => (DateTimeRequired.Any, DateTimeDefaults.All),
+        };
 
-            var resolved = new JSObject();
-            if (options is JSObject src)
-                foreach (var name in DateTimeFormatOptionKeys)
-                {
-                    var key = KeyStrings.GetOrCreate(name);
-                    var v = src[key];
-                    if (!v.IsUndefined) resolved[key] = v;
-                }
+        var format = Make(locales, options, required, defaults, defaultTimeZone);
+        var (formatter, time) = format.HandleValue(temporal);
+        return CreateString(formatter.Format(time));
+    }
 
-            // ZonedDateTime formats in its own zone; supplying any timeZone option (even a matching
-            // one) is a TypeError.
-            if (!resolved[TimeZoneKey].IsUndefined)
-                throw JSEngine.NewTypeError(
-                    "Temporal.ZonedDateTime.toLocaleString: the timeZone option is not allowed");
-            resolved[TimeZoneKey] = CreateString(defaultTimeZone);
-            options = resolved;
-        }
+    // Date.prototype.toLocaleString, toLocaleDateString and toLocaleTimeString (ECMA-402 sup-date.prototype.tolocalestring
+    // and the two others): CreateDateTimeFormat with any/date/time and all/date/time, which reads each option once (row T2, a
+    // correction: ToDateTimeOptions read the components and styles once more, first), and the time value it writes.
+    internal static string ToLocaleString(double time, JSValue locales, JSValue options, DateTimeRequired required, DateTimeDefaults defaults)
+    {
+        var format = Make(locales, options, required, defaults, null);
+        var (formatter, x) = format.HandleValue(CreateNumber(time));
+        return formatter.Format(x);
+    }
 
-        var dtf = new JSIntlDateTimeFormat(new Arguments(JSUndefined.Value, locales, options ?? JSUndefined.Value));
-        return new JSString(JSIntlDateTimeFormatEngine.PartsToString(dtf.FormatTemporalToParts(temporal, zonedAllowed: true, enforceStyle: true)));
+    // A format made for one call, from the arguments' locales and options, as the constructor reads them.
+    // Noted 2026-11-09, at SJL-9.5 (review of task 8.5, rows T2 and T38, corrections): the options go through
+    // CoerceOptionsToObject here, as the specification's CreateDateTimeFormat asks, so options null is a TypeError for
+    // Date.prototype.toLocaleString, toLocaleDateString and toLocaleTimeString, where ToDateTimeOptions read null as an
+    // empty bag and the call formatted; for Temporal.ZonedDateTime.prototype.toLocaleString options null is a TypeError
+    // where the former engine read it as an empty bag, and a primitive such as 5 is boxed and formats where it was a
+    // TypeError. Neither row names these cases; IntlDateTimeFormatLibraryTests pins them.
+    private static JSIntlDateTimeFormat Make(JSValue locales, JSValue options, DateTimeRequired required, DateTimeDefaults defaults, string zonedTimeZone)
+    {
+        var arguments = new Arguments(JSUndefined.Value, locales, options ?? JSUndefined.Value);
+        var optionsObject = JSIntl.ValidateConstructorArguments("DateTimeFormat", in arguments, out var canonical, requireNew: false);
+        return new JSIntlDateTimeFormat(CurrentPrototype(), Create(canonical, optionsObject, required, defaults, zonedTimeZone));
     }
 
     // The date/time component options whose presence suppresses defaulting (era / timeZoneName are
@@ -6641,10 +3213,23 @@ public class JSIntlDateTimeFormat : JSObject
         "weekday", "year", "month", "day", "dayPeriod", "hour", "minute", "second", "fractionalSecondDigits",
     ];
 
+    private static readonly string[] DateTimeFormatOptionKeys =
+    [
+        "localeMatcher", "calendar", "numberingSystem", "hour12", "hourCycle", "timeZone",
+        "weekday", "era", "year", "month", "day", "dayPeriod", "hour", "minute", "second",
+        "fractionalSecondDigits", "timeZoneName", "formatMatcher", "dateStyle", "timeStyle",
+    ];
+
     // ToDateTimeOptions(options, "any", "all"): when no date/time component or style is requested, the
-    // default is the full date+time. Used by Date.prototype.toLocaleString (the legacy [[Call]] uses
-    // defaults "all", unlike the Intl.DateTimeFormat constructor which uses "date"). Returns the
-    // options unchanged when defaults are not needed or it is not an object.
+    // default is the full date+time, as Date.prototype.toLocaleString's defaults "all" ask (unlike the Intl.DateTimeFormat
+    // constructor, which uses "date"). Returns the options unchanged when defaults are not needed or it is not an object.
+    // Noted 2026-11-09, at SJL-9.5 (task 8.5): no caller of this repository reads it; it stays a public member (JSD-0082,
+    // D24's T42 paragraph; decision SJL-D-25).
+    // Revised 2026-11-09, at SJL-9.5 (review of task 8.5): the comment read "Used by Date.prototype.toLocaleString (the
+    // legacy [[Call]] uses defaults "all", unlike the Intl.DateTimeFormat constructor which uses "date")."; Date.prototype's
+    // toLocale* methods read their options through CreateDateTimeFormat's required and defaults (ToLocaleString). This
+    // member and ToDateTimeOptions stay as hand-written option-bag code with no caller and no call into the shared library,
+    // where D24's T42 paragraph says they "stay, over the library".
     public static JSValue ApplyAllDefaults(JSValue options)
     {
         if (options is not JSObject o)
@@ -6676,12 +3261,15 @@ public class JSIntlDateTimeFormat : JSObject
         ["dayPeriod", "hour", "minute", "second", "fractionalSecondDigits"];
 
     // ToDateTimeOptions (ECMA-402 §11.5.1.1), parameterised by the <paramref name="required"/> and
-    // <paramref name="defaults"/> fields ("date" / "time" / "all" / "any"). Date.prototype's legacy
-    // toLocaleString / toLocaleDateString / toLocaleTimeString construct an Intl.DateTimeFormat with
-    // ToDateTimeOptions(options, "any"|"date"|"time", "all"|"date"|"time") respectively, which is why
-    // their default output (and their option validation) must match Intl.DateTimeFormat exactly.
-    // Returns a fresh options object carrying the supplied options' properties plus the defaulted
-    // numeric components; throws a TypeError for the date+timeStyle / time+dateStyle conflicts.
+    // <paramref name="defaults"/> fields ("date" / "time" / "all" / "any"). Returns a fresh options object carrying the supplied
+    // options' properties plus the defaulted numeric components; throws a TypeError for the date+timeStyle / time+dateStyle
+    // conflicts.
+    // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T2): Date.prototype's toLocale* methods no longer read their options
+    // through it, but through CreateDateTimeFormat's required and defaults (ToLocaleString), which reads each option once; it
+    // stays a public member (decision SJL-D-25). The comment read: "Date.prototype's legacy toLocaleString /
+    // toLocaleDateString / toLocaleTimeString construct an Intl.DateTimeFormat with ToDateTimeOptions(options,
+    // "any"|"date"|"time", "all"|"date"|"time") respectively, which is why their default output (and their option validation)
+    // must match Intl.DateTimeFormat exactly."
     public static JSValue ToDateTimeOptions(JSValue options, string required, string defaults)
     {
         var source = options.IsUndefined ? null : options as JSObject;
@@ -6725,203 +3313,120 @@ public class JSIntlDateTimeFormat : JSObject
         return merged;
     }
 
-    // The per-type formatting metadata: supported fields, default fields, an identity for same-type
-    // range checks, the calendar, and the wall-clock (or zone-projected) Fields.
-    private readonly struct TemporalMeta
-    {
-        public readonly TemporalFields Mask, Defaults;
-        public readonly string Kind, CalendarId;
-        public readonly JSIntlDateTimeFormatEngine.Fields Fields;
-        public TemporalMeta(TemporalFields mask, TemporalFields defaults, string kind, string calendarId, JSIntlDateTimeFormatEngine.Fields fields)
-        { Mask = mask; Defaults = defaults; Kind = kind; CalendarId = calendarId; Fields = fields; }
-    }
+    // ---- the values a format writes --------------------------------------------------------------------------------------
 
-    private const TemporalFields DateDefaults = TemporalFields.Year | TemporalFields.Month | TemporalFields.Day;
-    private const TemporalFields TimeDefaults = TemporalFields.Hour | TemporalFields.Minute | TemporalFields.Second;
-    // Fields that don't participate in the overlap/default decision; added back if the type supports them.
-    private const TemporalFields SupplementaryFields = TemporalFields.Era | TemporalFields.TimeZoneName;
+    // The proposal's IsTemporalObject (amended ECMA-402 s15.6.12).
+    private static bool IsTemporalDateTime(JSValue value)
+        => value is JSTemporalPlainDate or JSTemporalPlainDateTime or JSTemporalPlainTime
+            or JSTemporalPlainYearMonth or JSTemporalPlainMonthDay or JSTemporalInstant
+            or JSTemporalZonedDateTime;
 
-    // HandleDateTimeValue: classify a Temporal value. ZonedDateTime is a TypeError for
-    // DateTimeFormat.format, but toLocaleString (zonedAllowed) formats it in its own zone, with the
-    // zone name included by default.
-    private TemporalMeta ClassifyTemporal(JSValue value, bool zonedAllowed) => value switch
+    // ToDateTimeFormattable (amended ECMA-402 s15.6.11): a Temporal object as itself, anything else as a Number, here as the
+    // shared library's value to format.
+    private static DateTimeValue Formattable(JSValue value) => value switch
     {
-        JSTemporalZonedDateTime zdt => zonedAllowed
-            ? new TemporalMeta(TemporalFields.Date | TemporalFields.Time | TemporalFields.TimeZoneName,
-                DateDefaults | TimeDefaults | TemporalFields.TimeZoneName, "zoneddatetime", zdt.calendarId,
-                ResolveFields((double)(zdt.epochNanoseconds / 1_000_000)))
-            : throw JSEngine.NewTypeError(
-                "Intl.DateTimeFormat: cannot format a Temporal.ZonedDateTime; use zonedDateTime.toLocaleString() instead"),
-        JSTemporalPlainDate d => new TemporalMeta(TemporalFields.Date, DateDefaults, "date", d.calendarId,
-            new JSIntlDateTimeFormatEngine.Fields(d.isoYear, d.isoMonth, d.isoDay, 0, 0, 0, 0)),
-        JSTemporalPlainDateTime dt => new TemporalMeta(TemporalFields.Date | TemporalFields.Time, DateDefaults | TimeDefaults, "datetime", dt.calendarId,
-            new JSIntlDateTimeFormatEngine.Fields(dt.isoYear, dt.isoMonth, dt.isoDay, dt.hour, dt.minute, dt.second, dt.millisecond, dayPeriod: DayPeriodName(dt.hour, dt.minute))),
-        JSTemporalPlainTime t => new TemporalMeta(TemporalFields.Time, TimeDefaults, "time", "iso8601",
-            new JSIntlDateTimeFormatEngine.Fields(1970, 1, 1, t.hour, t.minute, t.second, t.millisecond, dayPeriod: DayPeriodName(t.hour, t.minute))),
-        JSTemporalPlainYearMonth ym => new TemporalMeta(TemporalFields.Era | TemporalFields.Year | TemporalFields.Month, TemporalFields.Year | TemporalFields.Month, "yearmonth", ym.calendarId,
-            new JSIntlDateTimeFormatEngine.Fields(ym.isoYear, ym.isoMonth, ym.referenceISODay, 0, 0, 0, 0)),
-        JSTemporalPlainMonthDay md => new TemporalMeta(TemporalFields.Month | TemporalFields.Day, TemporalFields.Month | TemporalFields.Day, "monthday", md.calendarId,
-            new JSIntlDateTimeFormatEngine.Fields(md.referenceISOYear, md.isoMonth, md.isoDay, 0, 0, 0, 0)),
-        JSTemporalInstant inst => new TemporalMeta(TemporalFields.Date | TemporalFields.Time | TemporalFields.TimeZoneName, DateDefaults | TimeDefaults, "instant", "iso8601",
-            ResolveFields((double)(inst.epochNanoseconds / 1_000_000))),
-        _ => throw JSEngine.NewTypeError("Intl.DateTimeFormat: unsupported Temporal value"),
+        JSTemporalPlainDate date => DateTimeValue.PlainDate(date.IsoDate, date.calendarId),
+        JSTemporalPlainYearMonth yearMonth => DateTimeValue.PlainYearMonth(yearMonth.IsoDate, yearMonth.calendarId),
+        JSTemporalPlainMonthDay monthDay => DateTimeValue.PlainMonthDay(monthDay.IsoDate, monthDay.calendarId),
+        JSTemporalPlainTime time => DateTimeValue.PlainTime(time.IsoTime),
+        JSTemporalPlainDateTime dateTime => DateTimeValue.PlainDateTime(dateTime.IsoDateTime, dateTime.calendarId),
+        JSTemporalInstant instant => DateTimeValue.Instant(instant.epochNanoseconds),
+        JSTemporalZonedDateTime zoned => DateTimeValue.ZonedDateTime(zoned.epochNanoseconds, zoned.calendarId),
+        _ => DateTimeValue.Number(value.DoubleValue),
     };
 
-    // The Temporal value's calendar must be compatible with the formatter's resolved calendar.
-    // For PlainDate / PlainDateTime / Instant / ZonedDateTime the iso8601 calendar is compatible with
-    // any calendar (HandleDateTimeTemporalDate's iso8601 exception); for PlainYearMonth / PlainMonthDay
-    // (exact = true) the calendars must be identical — even an iso8601 instance is a mismatch.
-    private void CheckTemporalCalendar(string calendarId, bool exact)
+    // The proposal's HandleDateTimeValue (amended ECMA-402 s15.6.22), the shared format's: the formatter a value is written in
+    // and its time in milliseconds; a plain value's format is written at UTC, so no zone moves it.
+    private (DateTimeFormatter Formatter, double Time) HandleValue(JSValue value)
     {
-        var formatterCalendar = ResolvedCalendarId();
-        var compatible = exact
-            ? calendarId == formatterCalendar
-            : calendarId == "iso8601" || calendarId == formatterCalendar;
-        if (!compatible)
-            throw JSEngine.NewRangeError(
-                $"Intl.DateTimeFormat: calendar \"{calendarId}\" does not match the formatter calendar \"{formatterCalendar}\"");
+        var status = Core.HandleDateTimeValue(Formattable(value), out var formatter, out var time);
+        return status == IntlStatus.Completed ? (formatter, time) : throw ValueError(value, status);
     }
 
-    // PlainYearMonth / PlainMonthDay require an exact calendar match (no iso8601 exception).
-    private static bool RequiresExactCalendar(string kind) => kind is "yearmonth" or "monthday";
-
-    // The effective fields shared by both endpoints of a format/formatRange, or a TypeError when the
-    // formatter and the Temporal type have no field in common.
-    private TemporalFields EffectiveTemporalFields(in TemporalMeta meta, bool enforceStyle)
+    // The value of format and formatToParts: now where it is undefined, else ToDateTimeFormattable's.
+    private (DateTimeFormatter Formatter, double Time) FormatValue(in Arguments a)
     {
-        // toLocaleString builds the formatter with a type-specific "required", so an incompatible
-        // whole style is a TypeError at that point: a date-only type (PlainDate / PlainYearMonth /
-        // PlainMonthDay) rejects timeStyle, and the time-only PlainTime rejects dateStyle. Direct
-        // DateTimeFormat.format uses required "any" and instead just drops the unsupported fields.
-        if (enforceStyle)
+        if (a.Length == 0 || a[0] == null || a[0].IsUndefined)
+            return (Core.Formatter, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+
+        var value = a.Get1();
+        return HandleValue(IsTemporalDateTime(value) ? value : CreateNumber(value.DoubleValue));
+    }
+
+    // The start and end a range method formats (sec-intl.datetimeformat.prototype.formatRange, as the proposal amends it):
+    // neither undefined, checked before either is converted; each read by ToDateTimeFormattable, in argument order, then the
+    // shared format's HandleDateTimeRange.
+    private (DateTimeFormatter Formatter, double X, double Y) RangeValues(in Arguments a)
+    {
+        var start = a.Get1();
+        var end = a.GetAt(1);
+        if (start == null || start.IsUndefined || end == null || end.IsUndefined)
+            throw JSEngine.NewTypeError("Intl.DateTimeFormat range start and end dates must not be undefined");
+
+        var x = IsTemporalDateTime(start) ? start : CreateNumber(start.DoubleValue);
+        var y = IsTemporalDateTime(end) ? end : CreateNumber(end.DoubleValue);
+        var status = Core.HandleDateTimeRange(Formattable(x), Formattable(y), out var formatter, out var xTime, out var yTime);
+        if (status == IntlStatus.Completed)
+            return (formatter, xTime, yTime);
+
+        // The value the error names: the start where the start alone is refused, else the end.
+        var refused = status == IntlStatus.RangeOfDifferentTypes
+            || Core.HandleDateTimeValue(Formattable(x), out _, out _) != IntlStatus.Completed ? x : y;
+        throw ValueError(refused, status);
+    }
+
+    // The error of a value the shared format refuses: a RangeError for a time TimeClip refuses or a calendar the format does
+    // not write, a TypeError for a type the options give no field of, a ZonedDateTime, or a range of two types.
+    private Exception ValueError(JSValue value, IntlStatus status)
+    {
+        var calendar = value switch
         {
-            if (timeStyle != null && (meta.Mask & TemporalFields.Time) == 0)
-                throw JSEngine.NewTypeError("Intl.DateTimeFormat: timeStyle is not supported for this Temporal type");
-            if (dateStyle != null && (meta.Mask & TemporalFields.Date) == 0)
-                throw JSEngine.NewTypeError("Intl.DateTimeFormat: dateStyle is not supported for this Temporal type");
-        }
+            JSTemporalPlainDate date => date.calendarId,
+            JSTemporalPlainYearMonth yearMonth => yearMonth.calendarId,
+            JSTemporalPlainMonthDay monthDay => monthDay.calendarId,
+            JSTemporalPlainDateTime dateTime => dateTime.calendarId,
+            JSTemporalZonedDateTime zoned => zoned.calendarId,
+            _ => "iso8601",
+        };
 
-        var (requested, isDefault) = RequestedFields();
-        var effective = isDefault ? meta.Defaults : requested & meta.Mask;
-
-        // An explicit supplementary field (era / timeZoneName) is honoured by a type that supports it
-        // even when the formatter is otherwise default; it never counts toward the overlap check.
-        effective |= requested & SupplementaryFields & meta.Mask;
-
-        if (effective == TemporalFields.None)
-            throw JSEngine.NewTypeError("Intl.DateTimeFormat: the format options and the Temporal type have no fields in common");
-        return effective;
+        return status switch
+        {
+            IntlStatus.TimeValueOutOfRange => JSEngine.NewRangeError("Invalid time value"),
+            IntlStatus.TemporalCalendarMismatch => JSEngine.NewRangeError(
+                $"Intl.DateTimeFormat: calendar \"{calendar}\" does not match the formatter calendar \"{Core.Calendar}\""),
+            IntlStatus.TemporalTypeNotFormatted => JSEngine.NewTypeError("Intl.DateTimeFormat: the format options and the Temporal type have no fields in common"),
+            IntlStatus.ZonedDateTimeNotFormatted => JSEngine.NewTypeError(
+                "Intl.DateTimeFormat: cannot format a Temporal.ZonedDateTime; use zonedDateTime.toLocaleString() instead"),
+            IntlStatus.RangeOfDifferentTypes => JSEngine.NewTypeError("Intl.DateTimeFormat.formatRange: both arguments must be the same Temporal type"),
+            _ => new InvalidOperationException("The shared date-time format answered " + status + ", which no step of this adapter expects."),
+        };
     }
 
-    // FormatDateTimePattern: build the parts for a Temporal value, or throw TypeError/RangeError.
-    private List<JSIntlDateTimeFormatEngine.Part> FormatTemporalToParts(JSValue value, bool zonedAllowed = false, bool enforceStyle = false)
-    {
-        var meta = ClassifyTemporal(value, zonedAllowed);
-        // Resolve the effective fields first: an incompatible whole style (e.g. timeStyle on a
-        // date-only type) is a TypeError and must be reported ahead of a calendar mismatch
-        // RangeError, so `PlainMonthDay.from('01-01').toLocaleString('en', {timeStyle:'short'})`
-        // throws the TypeError rather than the iso8601-vs-locale-default calendar RangeError.
-        var pattern = ResolveTemporalPattern(EffectiveTemporalFields(in meta, enforceStyle));
-        CheckTemporalCalendar(meta.CalendarId, RequiresExactCalendar(meta.Kind));
-        var fields = meta.Fields;
-        // The numbering system's digits, as a Date's parts and FormatTemporalRangeToParts take them.
-        return MapNumbering(JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, FractionalSecondDigits(), null));
-    }
-
-    // FormatDateTimeRange with two Temporal endpoints: both must be the same Temporal type and share a
-    // calendar (else TypeError / RangeError), then the interval is formatted with one shared pattern.
-    private List<JSIntlDateTimeFormatEngine.Part> FormatTemporalRangeToParts(JSValue startValue, JSValue endValue)
-    {
-        var start = ClassifyTemporal(startValue, zonedAllowed: false);
-        var end = ClassifyTemporal(endValue, zonedAllowed: false);
-        if (start.Kind != end.Kind)
-            throw JSEngine.NewTypeError("Intl.DateTimeFormat.formatRange: both arguments must be the same Temporal type");
-        if (start.CalendarId != end.CalendarId)
-            throw JSEngine.NewRangeError("Intl.DateTimeFormat.formatRange: the two arguments must have the same calendar");
-        CheckTemporalCalendar(start.CalendarId, RequiresExactCalendar(start.Kind));
-        var pattern = ResolveTemporalPattern(EffectiveTemporalFields(in start, enforceStyle: false));
-        var startFields = start.Fields;
-        var endFields = end.Fields;
-        return MapNumbering(JSIntlDateTimeFormatEngine.FormatRangeToParts(pattern, in startFields, in endFields, FractionalSecondDigits()));
-    }
-
-    // Builds an engine pattern from the effective Temporal fields, projecting each component's width
-    // from the formatter's options (numeric by default). dateStyle/timeStyle are already expanded
-    // into fields, so the component-based builder is used (clean field separators).
-    private JSIntlDateTimeFormatEngine.Pattern ResolveTemporalPattern(TemporalFields f)
-        => JSIntlDateTimeFormatEngine.ResolvePattern(
-            localeTag: localeTag,
-            hasYear: f.HasFlag(TemporalFields.Year), yearStyle: f.HasFlag(TemporalFields.Year) ? (OptionString(YearKey) ?? (dateStyle == "short" ? "2-digit" : "numeric")) : null,
-            hasMonth: f.HasFlag(TemporalFields.Month), monthStyle: f.HasFlag(TemporalFields.Month) ? (OptionString(MonthKey) ?? StyleMonthWidth()) : null,
-            hasDay: f.HasFlag(TemporalFields.Day), dayStyle: f.HasFlag(TemporalFields.Day) ? (OptionString(DayKey) ?? "numeric") : null,
-            hasHour: f.HasFlag(TemporalFields.Hour), hasMinute: f.HasFlag(TemporalFields.Minute), hasSecond: f.HasFlag(TemporalFields.Second),
-            fractionalSecondDigits: f.HasFlag(TemporalFields.FractionalSecond) ? FractionalSecondDigits() : 0,
-            hasDayPeriodField: f.HasFlag(TemporalFields.DayPeriod),
-            dateStyle: null, timeStyle: null,
-            hour12: ResolveHour12(),
-            calendar: ResolvedCalendar(),
-            hasWeekday: f.HasFlag(TemporalFields.Weekday),
-            weekdayStyle: OptionString(KeyStrings.GetOrCreate("weekday")) ?? (dateStyle == "full" ? "long" : null),
-            hasTimeZoneName: f.HasFlag(TemporalFields.TimeZoneName),
-            hourCycle: ResolveHourCycle(),
-            hasEra: f.HasFlag(TemporalFields.Era),
-            eraStyle: OptionString(KeyStrings.GetOrCreate("era")));
-
-    // The month width implied by dateStyle when no explicit month option is present.
-    private string StyleMonthWidth() => dateStyle switch
-    {
-        "full" or "long" => "long",
-        "medium" => "short",
-        _ => "numeric", // short / null
-    };
-
-    private static JSValue PartsArray(System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part> parts)
+    // An array of { type, value } objects, with source where a part has one.
+    private static JSValue PartsArray(IReadOnlyList<DateTimePart> parts)
     {
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
         var sourceKey = KeyStrings.GetOrCreate("source");
         var array = CreateArray();
-        foreach (var p in parts)
+        foreach (var part in parts)
         {
             var obj = new JSObject();
-            obj[typeKey] = CreateString(p.Type);
-            obj[valueKey] = CreateString(p.Value);
-            if (p.Source != null)
-                obj[sourceKey] = CreateString(p.Source);
+            obj[typeKey] = CreateString(part.Type);
+            obj[valueKey] = CreateString(part.Value);
+            if (part.Source != null)
+                obj[sourceKey] = CreateString(part.Source);
             array.AddArrayItem(obj);
         }
         return array;
     }
 
-    public static JSIntlDateTimeFormat Get(CultureInfo culture)
-        => formats.GetOrAdd(culture.Name, static key => new JSIntlDateTimeFormat(CultureInfo.GetCultureInfo(key)));
+    // ---- the prototype -----------------------------------------------------------------------------------------------------
 
     public JSValue Format(in Arguments a)
     {
-        if (a.Length > 0 && a[0] != null && IsTemporalDateTime(a[0]))
-            return new JSString(JSIntlDateTimeFormatEngine.PartsToString(FormatTemporalToParts(a[0])));
-
-        var value = a.Length == 0 || a[0] == null || a[0].IsUndefined
-            ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-            : a.Get1().DoubleValue;
-        var clipped = EcmaTime.TimeClip(value);
-        if (double.IsNaN(clipped))
-            throw JSEngine.NewRangeError("Invalid time value");
-
-        if (SupportsDayPeriod())
-        {
-            var (h, m) = WallHourMinute(clipped);
-            var dayPeriod = DayPeriodNameForStyle(h, m, DayPeriodStyle());
-            if (UsesHourFormatting())
-                return new JSString($"{FormatEnglishHour(h)} {dayPeriod}");
-
-            return new JSString(dayPeriod);
-        }
-
-        var pattern = ResolveEnginePattern();
-        var fields = ResolveFields(clipped);
-        var parts = JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, FractionalSecondDigits(), "literal");
-        return new JSString(JSIntlDateTimeFormatEngine.PartsToString(MapNumbering(parts)));
+        var (formatter, time) = FormatValue(in a);
+        return new JSString(formatter.Format(time));
     }
 
     public static JSValue FormatPrototype(in Arguments a)
@@ -6929,16 +3434,22 @@ public class JSIntlDateTimeFormat : JSObject
             ? @this.Format(in a)
             : throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.format called on incompatible receiver");
 
+    public static JSValue FormatToPartsPrototype(in Arguments a)
+    {
+        if (a.This is not JSIntlDateTimeFormat @this)
+            throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.formatToParts called on incompatible receiver");
+
+        var (formatter, time) = @this.FormatValue(in a);
+        return PartsArray(formatter.FormatToParts(time));
+    }
+
     public static JSValue FormatRangePrototype(in Arguments a)
     {
         if (a.This is not JSIntlDateTimeFormat @this)
             throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.formatRange called on incompatible receiver");
 
-        var parts = @this.ComputeRangeParts(a);
-        var sb = new StringBuilder();
-        foreach (var part in parts)
-            sb.Append(part.Value);
-        return CreateString(sb.ToString());
+        var (formatter, x, y) = @this.RangeValues(in a);
+        return CreateString(formatter.FormatRange(x, y));
     }
 
     public static JSValue FormatRangeToPartsPrototype(in Arguments a)
@@ -6946,455 +3457,55 @@ public class JSIntlDateTimeFormat : JSObject
         if (a.This is not JSIntlDateTimeFormat @this)
             throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.formatRangeToParts called on incompatible receiver");
 
-        return PartsArray(@this.ComputeRangeParts(a));
+        var (formatter, x, y) = @this.RangeValues(in a);
+        return PartsArray(formatter.FormatRangeToParts(x, y));
     }
 
-    private System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part> ComputeRangeParts(in Arguments a)
-    {
-        // FormatDateTimeRange step 3: TypeError if either endpoint is undefined — checked
-        // before ToNumber, so a throwing valueOf on the other argument is not observed.
-        var startArg = a.Get1();
-        var endArg = a.GetAt(1);
-        if (startArg == null || startArg.IsUndefined || endArg == null || endArg.IsUndefined)
-            throw JSEngine.NewTypeError("Intl.DateTimeFormat range start and end dates must not be undefined");
-
-        // ToDateTimeFormattable on both endpoints, in argument order: a Temporal object is
-        // kept as-is, anything else is ToNumber-coerced now (observably running its
-        // valueOf/toString). This happens for BOTH arguments before the same-kind check —
-        // PartitionDateTimeRangePattern must not report a different-kind pair before the
-        // arguments have been coerced (and TimeClip(NaN) must not throw a RangeError ahead
-        // of that TypeError).
-        var startTemporal = IsTemporalDateTime(startArg);
-        var endTemporal = IsTemporalDateTime(endArg);
-        var startNumber = startTemporal ? 0d : startArg.DoubleValue;
-        var endNumber = endTemporal ? 0d : endArg.DoubleValue;
-
-        // PartitionDateTimeRangePattern step 5: when either endpoint is a Temporal object,
-        // both must be the same Temporal type (else TypeError).
-        if (startTemporal || endTemporal)
-        {
-            if (!startTemporal || !endTemporal)
-                throw JSEngine.NewTypeError("Intl.DateTimeFormat.formatRange: both arguments must be the same Temporal type");
-            return FormatTemporalRangeToParts(startArg, endArg);
-        }
-
-        var startValue = TimeClipRange(startNumber);
-        var endValue = TimeClipRange(endNumber);
-        var pattern = ResolveEnginePattern();
-        var startFields = ResolveFields(startValue);
-        var endFields = ResolveFields(endValue);
-        return MapNumbering(JSIntlDateTimeFormatEngine.FormatRangeToParts(pattern, in startFields, in endFields, FractionalSecondDigits()));
-    }
-
-    public static JSValue FormatToPartsPrototype(in Arguments a)
-    {
-        if (a.This is not JSIntlDateTimeFormat @this)
-            throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.formatToParts called on incompatible receiver");
-
-        if (a.Length > 0 && a[0] != null && IsTemporalDateTime(a[0]))
-            return PartsArray(@this.FormatTemporalToParts(a[0]));
-
-        var value = a.Length == 0 || a[0] == null || a[0].IsUndefined
-            ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-            : a.Get1().DoubleValue;
-        var clipped = EcmaTime.TimeClip(value);
-        if (double.IsNaN(clipped))
-            throw JSEngine.NewRangeError("Invalid time value");
-
-        if (@this.SupportsDayPeriod())
-        {
-            var (h, m) = @this.WallHourMinute(clipped);
-            var dayPeriodParts = CreateArray();
-            if (@this.UsesHourFormatting())
-            {
-                var hourPart = new JSObject();
-                hourPart[KeyStrings.GetOrCreate("type")] = CreateString("hour");
-                hourPart[KeyStrings.GetOrCreate("value")] = CreateString(FormatEnglishHour(h));
-                var literalPart = new JSObject();
-                literalPart[KeyStrings.GetOrCreate("type")] = CreateString("literal");
-                literalPart[KeyStrings.GetOrCreate("value")] = CreateString(" ");
-                dayPeriodParts.AddArrayItem(hourPart);
-                dayPeriodParts.AddArrayItem(literalPart);
-            }
-
-            var dayPeriodPart = new JSObject();
-            dayPeriodPart[KeyStrings.GetOrCreate("type")] = CreateString("dayPeriod");
-            dayPeriodPart[KeyStrings.GetOrCreate("value")] = CreateString(@this.DayPeriodNameForStyle(h, m, @this.DayPeriodStyle()));
-            dayPeriodParts.AddArrayItem(dayPeriodPart);
-            return dayPeriodParts;
-        }
-
-        var pattern = @this.ResolveEnginePattern();
-        var fields = @this.ResolveFields(clipped);
-        var engineParts = JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, @this.FractionalSecondDigits(), null);
-        return PartsArray(@this.MapNumbering(engineParts));
-    }
-
-    // Translates the ASCII digits the engine produces for the numeric date/time fields into the
-    // resolved numbering system's digits (e.g. "arab" → ٠-٩, "hanidec" → 〇一二…), and renders the
-    // fractional-seconds decimal point with that numbering system's decimal separator (arab uses
-    // U+066B). Names, separators and symbols keep the locale's characters.
-    private System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part> MapNumbering(
-        System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part> parts)
-    {
-        if (numberingSystem == null || numberingSystem == "latn")
-            return parts;
-
-        var decimalSeparator = numberingSystem is "arab" or "arabext" ? "٫" : ".";
-        var mapped = new System.Collections.Generic.List<JSIntlDateTimeFormatEngine.Part>(parts.Count);
-        for (var i = 0; i < parts.Count; i++)
-        {
-            var part = parts[i];
-            if (part.Type is "year" or "relatedYear" or "month" or "day"
-                or "hour" or "minute" or "second" or "fractionalSecond")
-            {
-                var sb = new StringBuilder(part.Value.Length);
-                foreach (var c in part.Value)
-                    sb.Append(c is >= '0' and <= '9' ? JSIntlNumberFormat.MapDigit(numberingSystem, c - '0') : c.ToString());
-                mapped.Add(new JSIntlDateTimeFormatEngine.Part(part.Type, sb.ToString(), part.Source));
-            }
-            else if (part.Type == "literal" && part.Value == "."
-                && i + 1 < parts.Count && parts[i + 1].Type == "fractionalSecond")
-            {
-                mapped.Add(new JSIntlDateTimeFormatEngine.Part(part.Type, decimalSeparator, part.Source));
-            }
-            else
-            {
-                mapped.Add(part);
-            }
-        }
-        return mapped;
-    }
-
+    // resolvedOptions, in Table 16's order, as the shared format resolved it: the hour cycle where the pattern has an hour, the
+    // components of the selected pattern for a format made from components (row T7), fractionalSecondDigits a Number, and the
+    // styles; each an own data property (CreateDataPropertyOrThrow), so a setter on Object.prototype is never called.
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
     {
         if (a.This is not JSIntlDateTimeFormat @this)
             throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.resolvedOptions called on incompatible receiver");
 
+        var format = @this.Core;
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.localeTag));
-        // resolvedOptions reports dtf.[[Calendar]] — the resolved calendar IDENTIFIER (e.g. "iso8601",
-        // not collapsed to "gregory") after the ResolveLocale `ca` negotiation, NOT the raw option.
-        result.CreateDataProperty(KeyStrings.GetOrCreate("calendar"), CreateString(@this.ResolvedCalendarId()));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), CreateString(@this.numberingSystem));
-        // The default time zone is SystemTimeZoneIdentifier: the host's zone as a PRIMARY identifier — a
-        // host whose local zone is "Etc/UTC" (e.g. a UTC container) reports "UTC" (test262
-        // DateTimeFormat/prototype/resolvedOptions/basic) — resolved through the shared database, or
-        // "UTC" for a host zone the database does not hold (milestone SJL-8.6).
-        result.CreateDataProperty(KeyStrings.GetOrCreate("timeZone"),
-            CreateString(TemporalTimeZones.SystemTimeZoneIdentifier()));
-
-        if (@this.options != null)
-        {
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "timeZone");
-            // hourCycle / hour12 are RESOLVED values (not plain passthrough): when the
-            // format includes an hour component, both are always present — hourCycle
-            // resolved from the hour12/hourCycle options (defaulting per locale) and
-            // hour12 derived to match. They appear right after timeZone per the spec.
-            if (@this.UsesHourFormatting())
-            {
-                result.CreateDataProperty(KeyStrings.GetOrCreate("hourCycle"), CreateString(@this.ResolveHourCycle()));
-                result.CreateDataProperty(KeyStrings.GetOrCreate("hour12"), @this.ResolveHour12() ? BooleanTrue : BooleanFalse);
-            }
-            // dateStyle / timeStyle report the coerced+validated string captured at
-            // construction (not the raw option value).
-            if (@this.dateStyle != null)
-                result.CreateDataProperty(DateStyleKey, CreateString(@this.dateStyle));
-            if (@this.timeStyle != null)
-                result.CreateDataProperty(TimeStyleKey, CreateString(@this.timeStyle));
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "weekday");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "era");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "year");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "month");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "day");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "dayPeriod");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "hour");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "minute");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "second");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "fractionalSecondDigits");
-            JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "timeZoneName");
-        }
-
-        return result;
-    }
-
-    internal JSValue Format(DateTimeOffset value, JSObject format) => new JSString(value.ToString(locale));
-
-    private bool SupportsDayPeriod()
-        => options != null && !options[DayPeriodKey].IsUndefined;
-
-    private bool UsesHourFormatting()
-        => (options != null && !options[HourKey].IsUndefined)
-            // Every timeStyle (full/long/medium/short) renders an hour component, so its
-            // resolvedOptions carries a resolved hourCycle / hour12 just like an explicit hour.
-            || timeStyle != null;
-
-    private string DayPeriodStyle()
-        => options?[DayPeriodKey]?.StringValue ?? string.Empty;
-
-    private static string FormatEnglishHour(DateTimeOffset value) => FormatEnglishHour(value.Hour);
-
-    private static string FormatEnglishHour(int hour)
-        => ((hour % 12) == 0 ? 12 : hour % 12).ToString(CultureInfo.InvariantCulture);
-
-    // The wall-clock hour/minute in the formatter's time zone (system local when unset), full range.
-    private (int hour, int minute) WallHourMinute(double clipped)
-    {
-        var wall = JSIntlDateTimeFormatEngine.ToZone(clipped, OptionString(TimeZoneKey));
-        return ((int)EcmaTime.HourFromTime(wall), (int)EcmaTime.MinFromTime(wall));
-    }
-
-    // CLDR day-period rule overrides for the ECMA-402 dayPeriod option. The bundled
-    // Broiler.Unicode tables (a) surface the fixed "midnight" period at 00:00, which
-    // the dayPeriod option never emits (browsers fold midnight into the surrounding
-    // flexible period, so 00:00 → "at night" for en), and (b) for "en" carry a
-    // mis-generated morning1/night1 split (morning1=0-720, night1=1260-1440) rather
-    // than the CLDR morning1=06:00-12:00 with night1 wrapping 21:00-06:00. The
-    // corrected rules keep the flexible periods contiguous; "noon" is retained (it
-    // IS surfaced by the option). Keyed by language subtag.
-    private static readonly Dictionary<string, string> DayPeriodRuleOverrides = new(StringComparer.Ordinal)
-    {
-        ["en"] = "noon@720;morning1=360-720;afternoon1=720-1080;evening1=1080-1260;night1=1260-360",
-    };
-
-    // The localized day-period name for the time, from CLDR data: the day-period
-    // rules pick the period (am/pm/noon/midnight/morning/…) and the ECMA-402
-    // dayPeriod option (long/short/narrow) selects the CLDR width.
-    private string FormatDayPeriod(DateTimeOffset value, string style)
-        => DayPeriodNameForStyle(value.Hour, value.Minute, style);
-
-    private static string DayPeriodWidth(string style) => style switch
-    {
-        "narrow" => "narrow",
-        "short" => "abbreviated",
-        _ => "wide",
-    };
-
-    private string DayPeriodNameForStyle(int hour, int minute, string style)
-        => CldrLocaleData.GetDayPeriodName(localeTag, ResolveDayPeriodKey(localeTag, hour, minute), DayPeriodWidth(style));
-
-    // The flexible day-period name for the dayPeriod option at a wall-clock time, or null when the
-    // option is absent. Pre-renders the 'B' token for Temporal formatting so it matches the legacy
-    // FormatDayPeriod path.
-    private string DayPeriodName(int hour, int minute)
-    {
-        var style = OptionString(DayPeriodKey);
-        return style == null ? null : DayPeriodNameForStyle(hour, minute, style);
-    }
-
-    private static string ResolveDayPeriodKey(string localeTag, int hour, int minute)
-    {
-        var dash = localeTag?.IndexOf('-') ?? -1;
-        var language = (dash < 0 ? localeTag ?? string.Empty : localeTag[..dash]).ToLowerInvariant();
-        if (DayPeriodRuleOverrides.TryGetValue(language, out var rules))
-            return MatchDayPeriodRules(rules, hour * 60 + minute) ?? (hour < 12 ? "am" : "pm");
-
-        return CldrLocaleData.GetDayPeriod(localeTag, hour, minute);
-    }
-
-    // Mirrors UnicodeCldr.LocaleData's day-period rule matcher: "@" ("at") rules
-    // win first, then half-open ranges (a from>before range wraps past midnight).
-    private static string MatchDayPeriodRules(string rules, int time)
-    {
-        foreach (var rule in rules.Split(';'))
-        {
-            var at = rule.IndexOf('@');
-            if (at >= 0)
-            {
-                if (int.Parse(rule[(at + 1)..], CultureInfo.InvariantCulture) == time)
-                    return rule[..at];
-                continue;
-            }
-
-            var eq = rule.IndexOf('=');
-            if (eq < 0)
-                continue;
-
-            var period = rule[..eq];
-            var dash = rule.IndexOf('-', eq + 1);
-            var from = int.Parse(rule[(eq + 1)..dash], CultureInfo.InvariantCulture);
-            var before = int.Parse(rule[(dash + 1)..], CultureInfo.InvariantCulture);
-            var matched = from <= before
-                ? time >= from && time < before
-                : time >= from || time < before;
-            if (matched)
-                return period;
-        }
-
-        return null;
-    }
-
-    public JSIntlDateTimeFormat(in Arguments a) : base(CurrentPrototype())
-    {
-        var userOptions = JSIntl.ValidateConstructorArguments(
-            "DateTimeFormat", in a, out var canonical, requireNew: false);
-
-        // CreateDateTimeFormat reads every option exactly once, in a fixed order, before
-        // any formatting takes place. Read them all here — firing each user getter once,
-        // in order — and capture the coerced/validated values in a private snapshot the
-        // formatter and resolvedOptions then read from. This keeps the observable getter
-        // order spec-compliant (test262 DateTimeFormat constructor-options-order*),
-        // surfaces a throwing getter at construction (constructor-options-throwing-getters),
-        // validates each option once (RangeError for an out-of-set value), and never
-        // re-invokes a getter at format time.
-        //
-        // The snapshot has a NULL prototype: only the options we explicitly Capture below
-        // are present, so a later property read on the snapshot can't accidentally pick up
-        // a value the user planted on Object.prototype (test262
-        // default-options-object-prototype.js).
-        var snapshot = new JSObject();
-        snapshot.SetPrototypeOf(Null.JSNull.Value);
-        void Capture(KeyString key, string value)
+        void Put(string name, string value)
         {
             if (value != null)
-                snapshot[key] = CreateString(value);
+                result.CreateDataProperty(KeyStrings.GetOrCreate(name), CreateString(value));
         }
 
-        // localeMatcher (step 4) was already read by ValidateConstructorArguments.
-        // calendar then numberingSystem.
-        var calendarOption = JSIntl.ReadCalendarOption(userOptions);
-        Capture(CalendarKey, calendarOption);
-        var nuOption = JSIntl.ReadNumberingSystemOption(userOptions);
-        if (nuOption != null && !JSIntl.IsWellFormedUnicodeKeywordType(nuOption))
-            throw JSEngine.NewRangeError("Invalid numberingSystem option");
-        Capture(NumberingSystemKey, nuOption);
+        Put("locale", format.Locale);
+        Put("calendar", format.Calendar);
+        Put("numberingSystem", format.NumberingSystem);
+        Put("timeZone", format.TimeZone);
 
-        // hour12 (Boolean) then hourCycle.
-        var hour12 = userOptions == null ? JSUndefined.Value : userOptions[Hour12Key];
-        if (!hour12.IsUndefined)
-            snapshot[Hour12Key] = hour12.BooleanValue ? BooleanTrue : BooleanFalse;
-        Capture(HourCycleKey, JSIntl.GetOption(userOptions, HourCycleKey, HourCycleValues, false, null));
-
-        // timeZone (Get + ToString + offset-identifier normalization).
-        Capture(TimeZoneKey, ReadTimeZoneOption(userOptions));
-
-        // Date/time components, in table order: weekday, era, year, month, day,
-        // dayPeriod, hour, minute, second, fractionalSecondDigits.
-        Capture(WeekdayKey, JSIntl.GetOption(userOptions, WeekdayKey, NarrowShortLong, false, null));
-        Capture(EraKey, JSIntl.GetOption(userOptions, EraKey, NarrowShortLong, false, null));
-        Capture(YearKey, JSIntl.GetOption(userOptions, YearKey, NumericTwoDigit, false, null));
-        Capture(MonthKey, JSIntl.GetOption(userOptions, MonthKey, MonthValues, false, null));
-        Capture(DayKey, JSIntl.GetOption(userOptions, DayKey, NumericTwoDigit, false, null));
-        Capture(DayPeriodKey, JSIntl.GetOption(userOptions, DayPeriodKey, NarrowShortLong, false, null));
-        Capture(HourKey, JSIntl.GetOption(userOptions, HourKey, NumericTwoDigit, false, null));
-        Capture(MinuteKey, JSIntl.GetOption(userOptions, MinuteKey, NumericTwoDigit, false, null));
-        Capture(SecondKey, JSIntl.GetOption(userOptions, SecondKey, NumericTwoDigit, false, null));
-        var fractionalSecondDigits = JSIntl.GetNumberOption(userOptions, FractionalSecondDigitsKey, 1, 3);
-        if (fractionalSecondDigits.HasValue)
-            snapshot[FractionalSecondDigitsKey] = CreateNumber(fractionalSecondDigits.Value);
-
-        // timeZoneName then formatMatcher.
-        Capture(TimeZoneNameKey, JSIntl.GetOption(userOptions, TimeZoneNameKey, TimeZoneNameValues, false, null));
-        _ = JSIntl.GetOption(userOptions, FormatMatcherKey, FormatMatcherValues, false, "best fit");
-
-        // dateStyle then timeStyle: GetOption-coerced once here so resolvedOptions reports
-        // the coerced string rather than the raw option value.
-        dateStyle = JSIntl.GetOption(userOptions, DateStyleKey, DateTimeStyleValues, false, null);
-        timeStyle = JSIntl.GetOption(userOptions, TimeStyleKey, DateTimeStyleValues, false, null);
-
-        // CreateDateTimeFormat: dateStyle / timeStyle may not be combined with an explicit
-        // date/time component option. (An explicitly-undefined style is absent by GetOption.)
-        if (dateStyle != null || timeStyle != null)
+        if (format.HourCycle is { } hourCycle)
         {
-            foreach (var name in DateTimeComponentKeys)
-                if (snapshot[KeyStrings.GetOrCreate(name)] is { IsUndefined: false })
-                    throw JSEngine.NewTypeError(
-                        $"Intl.DateTimeFormat: the {name} option cannot be combined with dateStyle or timeStyle");
+            Put("hourCycle", hourCycle);
+            result.CreateDataProperty(Hour12Key, format.Hour12 == true ? BooleanTrue : BooleanFalse);
         }
 
-        // ToDateTimeOptions(options, "any", "date"): when the user specified no date/time COMPONENT
-        // and no dateStyle/timeStyle, default year/month/day to "numeric" so resolvedOptions reports
-        // them (test262 resolvedOptions/basic) and so they are own properties — not inherited from a
-        // tainted Object.prototype (test262 default-options-object-prototype). era / timeZoneName are
-        // supplementary and do not suppress the defaults.
-        if (dateStyle == null && timeStyle == null)
+        foreach (var (name, value) in format.ResolvedComponents)
         {
-            var hasComponent = false;
-            foreach (var name in DateComponentKeys)
-                if (!snapshot[KeyStrings.GetOrCreate(name)].IsUndefined) { hasComponent = true; break; }
-            if (!hasComponent)
-                foreach (var name in TimeComponentKeys)
-                    if (!snapshot[KeyStrings.GetOrCreate(name)].IsUndefined) { hasComponent = true; break; }
-
-            if (!hasComponent)
-            {
-                snapshot[YearKey] = CreateString("numeric");
-                snapshot[MonthKey] = CreateString("numeric");
-                snapshot[DayKey] = CreateString("numeric");
-                dateDefaultsApplied = true;
-            }
+            if (name == "fractionalSecondDigits")
+                result.CreateDataProperty(FractionalSecondDigitsKey, CreateNumber(int.Parse(value, NumberStyles.None, CultureInfo.InvariantCulture)));
+            else
+                Put(name, value);
         }
 
-        options = snapshot;
-
-        var resolvedLocale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.DateTimeFormatRelevantKeys);
-        (numberingSystem, localeTag) = JSIntl.ResolveNumberingSystem(resolvedLocale, nuOption);
-        // hour12 forces a non-keyword hour cycle, so it always drops the locale's -u-hc-. An
-        // hourCycle option only drops it when it DIFFERS from the extension value; an equal value
-        // keeps -u-hc- in the resolved locale (test262 resolvedOptions/resolved-hour-cycle-...).
-        if (!hour12.IsUndefined)
-            localeTag = JSIntl.DropHourCycleExtension(localeTag);
-        else
-            localeTag = JSIntl.ReflectExtensionKeyword(
-                localeTag, "hc", OptionString(HourCycleKey), JSIntl.GetUnicodeExtensionType(localeTag, "hc"));
-        // Negotiate the `ca` (calendar) relevant key the same way: an unavailable `calendar`
-        // option/extension is dropped, and the resolved locale keeps -u-ca- only when the value
-        // came from (or matches) the extension. Only the resolved LOCALE is taken here; the
-        // reported calendar value is derived on demand by ResolvedCalendarId.
-        (_, localeTag) = JSIntl.ResolveCalendar(localeTag, OptionString(CalendarKey));
-        locale = CultureInfo.CurrentCulture;
-    }
-
-    // Reads and validates the timeZone option (CreateDateTimeFormat) through the shared database
-    // (milestone SJL-8.6): an offset string is normalized to ±HH:MM, and one with seconds is a
-    // RangeError; a named zone is matched by its ASCII case and case-normalized — "utc" → "UTC",
-    // "africa/abidjan" → "Africa/Abidjan" — but NOT canonicalized through backward links
-    // ("Asia/Calcutta" stays "Asia/Calcutta"); anything else, an ISO date-time string among them, is a
-    // RangeError. Returns null when the option is absent.
-    private static string ReadTimeZoneOption(JSObject userOptions)
-    {
-        var value = userOptions == null ? JSUndefined.Value : userOptions[TimeZoneKey];
-        if (value.IsUndefined)
-            return null;
-
-        return TemporalTimeZones.ResolveFormatterTimeZone(value.StringValue);
-    }
-
-    internal JSIntlDateTimeFormat(CultureInfo locale) : base()
-    {
-        this.locale = locale;
-        localeTag = locale.Name;
-        numberingSystem = JSIntlDefaultNumberingSystems.Of(localeTag);
-    }
-
-    private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.DateTimeFormat");
-
-    // %Intl.DateTimeFormat.prototype% of the current realm (Intrinsics.IntlPrototype), never the prototype
-    // of whatever `globalThis.Intl.DateTimeFormat` holds now: guest code may replace the namespace or its members.
-    private static JSObject CurrentPrototype()
-        => Intrinsics.IntlPrototype(IntrinsicKey);
-
-    private static double TimeClipRange(double number)
-    {
-        var clipped = EcmaTime.TimeClip(number);
-        if (double.IsNaN(clipped))
-            throw JSEngine.NewRangeError("Invalid time value");
-
-        return clipped;
+        Put("dateStyle", format.DateStyle);
+        Put("timeStyle", format.TimeStyle);
+        return result;
     }
 }
 
-internal static class JSIntlResolvedOptionsExtensions
-{
-    internal static void SetIfDefined(JSObject target, JSObject options, string name)
-    {
-        var key = KeyStrings.GetOrCreate(name);
-        var value = options?[key] ?? JSValue.UndefinedValue;
-        if (!value.IsUndefined)
-            // CreateDataPropertyOrThrow: define an own property directly. Ordinary
-            // assignment ([[Set]]) would walk the prototype chain and could invoke a
-            // setter installed on Object.prototype by client code (ECMA-402 requires
-            // resolvedOptions to be unaffected by such taint).
-            target.CreateDataProperty(key, value);
-    }
-}
+// Deleted 2026-11-09, at SJL-9.5's stage 4: NumberingSystemDecimalData, the internal ILocaleData adapter that answered
+// symbols.decimal with the data's symbols@<system>.decimal (at the data locale, then at und, then the latn one) for a
+// date-time format of a numbering system, task 8.5's stand-in for a library change. Its remarks read "This adapter is the
+// engine's until the library reads the system's own symbol itself, a library change made as its own merge (decision D52,
+// SJL-D-9)". That merge is Broiler-Platform/Broiler.JS#1108 (the owner's decision of 2026-11-09, "Keep + fix library
+// first"): the library's DateTimeFormat reads symbols@<numberingSystem>.decimal at the locale, then at und, then latn's, then
+// "." (row T37, decision D21), for a keyword's system and a locale's default system alike.

@@ -46,14 +46,17 @@ public class Issue650LocaleInfoTests
     public void GetTimeZonesIsUndefinedWithoutRegion()
         => Assert.Equal("undefined", Eval("'' + new Intl.Locale('en').getTimeZones()"));
 
-    // The -u- preferred value is placed first (CreateArrayFromListAndPreferred).
+    // A -u- keyword is the whole answer: CalendarsOfLocale and NumberingSystemsOfLocale answer the keyword's value
+    // alone when the Locale carries it (milestone SJL-9.5, sub-area (a); Broiler.VM's JSD-0082, row L15, a correction).
+    // (Revised 2026-11-04, at SJL-9.5; the cases read "The -u- preferred value is placed first
+    // (CreateArrayFromListAndPreferred)." and expected "buddhist gregory" and "arab latn".)
     [Fact]
-    public void PreferredCalendarComesFirst()
-        => Assert.Equal("buddhist gregory", Eval(
+    public void PreferredCalendarIsTheAnswer()
+        => Assert.Equal("buddhist", Eval(
             "new Intl.Locale('en-u-ca-buddhist').getCalendars().join(' ')"));
 
     [Fact]
-    public void PreferredNumberingSystemComesFirst()
-        => Assert.Equal("arab latn", Eval(
+    public void PreferredNumberingSystemIsTheAnswer()
+        => Assert.Equal("arab", Eval(
             "new Intl.Locale('en-u-nu-arab').getNumberingSystems().join(' ')"));
 }

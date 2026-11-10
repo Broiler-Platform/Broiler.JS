@@ -7460,10 +7460,13 @@ public class BuiltInsTests
             try {
               var dtf = new Intl.DateTimeFormat('en-US');
               var resolved = dtf.resolvedOptions();
-              // ToDateTimeOptions supplies the year/month/day = "numeric" defaults for a
-              // formatter created with no date/time component, so `day` IS an own property —
-              // but it must be the spec default "numeric", NOT the "2-digit" value a client
-              // planted on Object.prototype (test262 default-options-object-prototype).
+              // CreateDateTimeFormat's defaults "date" supply the year/month/day = "numeric"
+              // defaults for a formatter created with no date/time component, so `day` IS an own
+              // property — but it must be the spec default "numeric", NOT the "2-digit" value a
+              // client planted on Object.prototype (test262 default-options-object-prototype).
+              // Revised 2026-11-09, at SJL-9.5 (review of task 8.5): the first line read
+              // "ToDateTimeOptions supplies the year/month/day = "numeric" defaults"; the
+              // constructor reads its options through CreateDateTimeFormat's required and defaults.
               [
                 resolved.day,
                 Object.getOwnPropertyDescriptor(resolved, 'day').value
@@ -7603,8 +7606,11 @@ public class BuiltInsTests
             ].join('|');
             """);
 
-        // The calendar OPTION must reach ResolvedCalendar (previously only the -u-ca- tag
-        // value was consulted), so a Buddhist year formats as 2050 + 543 = 2593.
+        // The calendar OPTION must reach the shared library's resolved calendar (previously only
+        // the -u-ca- tag value was consulted), so a Buddhist year formats as 2050 + 543 = 2593.
+        // Revised 2026-11-09, at SJL-9.5 (review of task 8.5): the comment read "The calendar
+        // OPTION must reach ResolvedCalendar"; ResolvedCalendar was deleted with task 8.5, and the
+        // calendar is ResolveLocale's ca key resolved by the shared Intl library.
         Assert.Equal("buddhist|2593|buddhist|2593", result.ToString());
     }
 
@@ -13129,7 +13135,10 @@ public class BuiltInsTests
             })();
             """);
 
-        Assert.Equal("function|function|[object Intl.DisplayNames]|true|true|en-US|fr|short|language|none|standard", result.ToString());
+        // Revised 2026-11-08, at SJL-9.5 (task 8.4; row S8, data, an X1 adoption): DisplayNames.of answers CLDR's name at the
+        // data locale, the shared library's, where it answered the canonical code; the expectation read
+        // "function|function|[object Intl.DisplayNames]|true|true|en-US|fr|short|language|none|standard".
+        Assert.Equal("function|function|[object Intl.DisplayNames]|true|true|anglais (É.-U.)|fr|short|language|none|standard", result.ToString());
     }
 
     [Fact]
@@ -14308,11 +14317,14 @@ public class BuiltInsTests
             })();
             """);
 
-        // 00:00 resolves to the flexible "at night" period: the ECMA-402 dayPeriod
-        // option does not surface the fixed "midnight" period (it folds into the
-        // surrounding night period), matching test262 dayPeriod-long-en.js. "noon"
-        // (12:00) is still surfaced.
-        Assert.Equal("at night|noon|1|dayPeriod|noon|12 n|3|hour|12|literal| |dayPeriod|n", result.ToString());
+        // 00:00 resolves to a flexible period: the ECMA-402 dayPeriod option does not surface the
+        // fixed "midnight" period, matching test262 dayPeriod-long-en.js. "noon" (12:00) is still
+        // surfaced.
+        // Revised 2026-11-09, at SJL-9.5 (task 8.5, row T17, data policy): the flexible period at 00:00 is
+        // CLDR 48.2.0's en rule, morning1 from 00:00 before 12:00, so "in the morning", where a hand override
+        // of the rules gave "at night"; the comment read "00:00 resolves to the flexible "at night" period"
+        // and "(it folds into the surrounding night period)", and the expected string began "at night|".
+        Assert.Equal("in the morning|noon|1|dayPeriod|noon|12 n|3|hour|12|literal| |dayPeriod|n", result.ToString());
     }
 
     [Fact]

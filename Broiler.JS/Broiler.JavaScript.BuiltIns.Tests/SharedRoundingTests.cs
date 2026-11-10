@@ -53,14 +53,20 @@ public class SharedRoundingTests
         => Assert.Equal(expected, Format(options, value));
 
     // The compact notation rounds its reduced value x × 10^-exponent exactly, under roundingMode,
-    // where Math.Round rounded it away from zero. 1.15's exact value is below 1.15, so it rounds to 1.1,
-    // as the standard notation rounds it; 1150 is exact, and its reduced value 1.15 rounds to 1.2.
+    // where Math.Round rounded it away from zero. 1.15's mathematical value is 1.15, its Number::toString digits, so it
+    // rounds to 1.2, as 1150's reduced value 1.15 does.
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4; row M1a, as the case below): the comment read "1.15's exact value is below
+    // 1.15, so it rounds to 1.1, as the standard notation rounds it; 1150 is exact, and its reduced value 1.15 rounds to
+    // 1.2."
     [Theory]
     [InlineData("{notation: 'compact', roundingMode: 'floor'}", "1990", "1.9K")]
     [InlineData("{notation: 'compact', roundingMode: 'floor'}", "-1910", "-2K")]
     [InlineData("{notation: 'compact', roundingMode: 'trunc'}", "-1990", "-1.9K")]
     [InlineData("{notation: 'compact', roundingMode: 'halfEven'}", "1250", "1.2K")]
-    [InlineData("{notation: 'compact'}", "1.15", "1.1")]
+    // Revised 2026-11-08, at SJL-9.5 (task 8.4; row M1a, a correction): a Number's mathematical value is its
+    // Number::toString digits, the shared library's IntlDecimal, so 1.15 is 1.15 and rounds to 1.2 as 1150's reduced
+    // value does; the case read [InlineData("{notation: 'compact'}", "1.15", "1.1")], with the comment above.
+    [InlineData("{notation: 'compact'}", "1.15", "1.2")]
     [InlineData("{notation: 'compact'}", "1150", "1.2K")]
     public void The_compact_notation_follows_the_rounding_mode(string options, string value, string expected)
         => Assert.Equal(expected, Format(options, value));
