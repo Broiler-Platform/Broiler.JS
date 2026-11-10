@@ -1855,7 +1855,15 @@ evidence: the bases and the after runs are taken at the merge that lands SJL-9.5
   `supportedValuesOf` (the note on decision SJL-D-22 above). Bundle `sjl-8-001`'s collector names the deleted engine
   file and is left as it is, since it reads that bundle's own after commit. `Broiler.ECMAScript/docs/intl/design.md`
   still names the deleted adapter `NumberingSystemDecimalData`, and the library's next records merge owes it a dated
-  note.
+  note. Task 8.4 says the bound `format` and `compare` getters are cached; Broiler.VM's JSD-0082, decision D25, lists
+  only the bound `format` of NumberFormat and DateTimeFormat (rows N11 and T4), which are made once, and the Collator's
+  `compare` stays with the Collator until SJL-17.5. Task 8.5 names only `JSIntl.cs` and the engine file; the Date
+  formatters and the Temporal callers changed with them. `GetUnicodeExtensionType`, `RemoveUnicodeExtensionKeyword`
+  and `ReflectExtensionKeyword`, which the deletion list names, stay, since the Collator reads them until SJL-17.5.
+- **The default numbering system outside decision D5's list.** The reading the note of 2026-10-26 above left to
+  SJL-9.3 and SJL-9.5, decision D13's table naming defaults for locales the list lacks, is taken up by decision D6's
+  host-culture provider: for a locale the shared data lacks, the default is the host culture's native digits, so it
+  depends on the host's cultures. Bundle [`sjl-9-001`](../evidence/sjl-9-001/README.md) records it by a dated note.
 - **Before the merge.** The branch merges the default branch once the part C revision has landed and runs part C again
   to show the line admitted; the windows-latest engine vectors job shows how `aa` and `pap` answer (corpus revision
   36's open point); and each judged run of parts A and B keeps the class-L probe the rule revision of 2026-11-09 asks
