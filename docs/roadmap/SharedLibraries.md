@@ -1897,6 +1897,28 @@ evidence: the bases and the after runs are taken at the merge that lands SJL-9.5
   36's open point); and each judged run of parts A and B keeps the class-L probe the rule revision of 2026-11-09 asks
   for.
 
+**The evidence (SJL-9.6), its state on 2026-11-10.** *(Added 2026-11-10, at SJL-9.6, plan tasks 9.4 to 9.6.)* SJL-9.5
+merged as Broiler-Platform/Broiler.JS#1110 (`a5f2692e`, the after commit), with corpus revision 37 folded into it (the
+owner's choice of 2026-11-10, "Fold into #1110"); its first parent, `88417996`, is the base. Bundle
+[`sjl-9-001`](../evidence/sjl-9-001/README.md), "The evidence (SJL-9.6)", reads each part of its rule:
+- **Parts A and B**, test262 per path in UTC and in `America/New_York` with negative tests, from the workflow's runs
+  at both commits in each zone: NOT MET as the rule is written, since `DateTimeFormat/prototype/format/numbering-system.js`
+  passes at the base and fails after in both variants; MET as the revision of 2026-11-09 restates them, that path being
+  class L (row T12, the owner's ruling "Follow CLDR"), with its probe run in the after runs' own shell, rebuilt as the
+  workflow builds it and found identical by its binaries' digests. No other verdict of the suite moved in either zone.
+- **Part C**, Broiler.VM's Intl reference datasets: NOT MET as written, since `locales:128` (`fr-CA` `hourCycles`)
+  differs in a `spec` group; MET as the revision of 2026-11-10 restates it, that line being class L19, and every other
+  differing line being in class V, O or Z8, listed in the bundle's table, with the reference's run beside it.
+- **Part D**, the providers under invariant globalization: MET as written; no line is an `abort:` line and
+  `default-locale-is-supported.js` passes after in both variants.
+- **The home** at the after commit: the shared folder's tests pass, the data home's and the Intl library's included,
+  and the Native AOT probe runs the corpus with no failure; the pristine consumer of the engine set runs, its Intl
+  checks hold, and the shared Intl package carries no table's bytes, which this engine's `BuiltIns` package embeds.
+
+Each part met only as revised is weaker evidence than a part met as written, as each revision says. Not done here, and
+owed to the next stage: the corpus revision that retires both engines' Intl divergences, Broiler.VM's per-engine Z8
+expectation among them (plan task 9.6), and then Broiler.VM's pin move, with the notes its JSD-0082 owes at that re-pin.
+
 **The frontend's syntax half (SJL-13.1), filed 2026-10-26: all five sub-areas accepted, the library's shape and its
 request decided, the stage table and the classification filed, and the owner's decisions of 2026-10-26 recorded.**
 - **The records.** Broiler.VM's record is

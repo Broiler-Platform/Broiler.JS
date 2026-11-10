@@ -1,5 +1,5 @@
 bundle: sjl-9-001 (Broiler.JS), its parts A to D
-collected: 2026-11-10T13:00:56Z, by docs/evidence/sjl-9-001/collect.py at a5f2692e88a9aafeaa850bebe9c3399f6263353b
+collected: 2026-11-10T17:56:56Z, by docs/evidence/sjl-9-001/collect.py at 038a9f3e96617494fc936757b299f8b6a65bdc10
 after commit: a5f2692e88a9aafeaa850bebe9c3399f6263353b (Merge pull request #1110 from Broiler-Platform/claude/busy-lamport-m3yprr)
 after commit's parents: 8841799642ff61499faa01dc894b6fec768c8af6 bf361cfe71d70620927295073e798a864d88b96f
 base commit: 8841799642ff61499faa01dc894b6fec768c8af6, the after commit's first parent: True

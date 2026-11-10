@@ -473,6 +473,248 @@ SJL-9.5's engine-side adapter, `NumberingSystemDecimalData`." The adapter is del
 it records, but it names a type that no longer exists; the library's next records merge revises it by a dated note,
 since this branch changes nothing under `Broiler.ECMAScript/`.
 
+## The evidence (SJL-9.6), 2026-11-10
+
+*Added 2026-11-10, at SJL-9.6 (plan tasks 9.4 to 9.6), after SJL-9.5's one merge. Each part is read once, as the rule
+and its dated revisions say; totals decide nothing, and none is quoted.*
+
+| Part | As the rule is written | As its dated revision reads it |
+|---|---|---|
+| A, test262 per path in UTC | **NOT MET**: one path passing at the base fails after, in both variants | **MET** under the revision of 2026-11-09: that path is class L, with its probe |
+| B, test262 per path in `America/New_York` | **NOT MET**: the same path, in both variants | **MET** under the revision of 2026-11-09, as part A |
+| C, the reference datasets | **NOT MET**: `locales:128` differs in a `spec` group | **MET** under the revision of 2026-11-10: that line is class L19 |
+| D, the providers under invariant globalization | **MET** | (not revised) |
+
+Both revisions were written after SJL-9.5's local pre-check runs had been seen and before any judged run was taken, so
+each part that meets its rule only as revised is weaker evidence than a part met as written; each revision says so.
+
+### The commits and the runs
+
+- **The after commit** is `a5f2692e88a9aafeaa850bebe9c3399f6263353b`, the default-branch merge of
+  Broiler-Platform/Broiler.JS#1110, which lands SJL-9.5's cut-over and corpus revision 37 (the owner's choice of
+  2026-11-10, "Fold into #1110"). **The base commit** is its first parent, `8841799642ff61499faa01dc894b6fec768c8af6`.
+  [`identity.txt`](identity.txt) records the rule's three conditions on the base: it descends from the rule commit
+  `50978882` and from bundle `sjl-12-001`'s after commit `c29d653f`, and the after commit is its only first-parent
+  successor, the one that changes a product path. The rule, the comparison script, the workflow, its shard action and
+  the two scripts it runs and merges with are the same blobs at both commits; the workflow and `run_test262.py` are
+  the base commit's, as the rule's configuration says ("as the base commit carries it and unchanged at the after
+  commit"), and both changed after the rule commit. Part C's harness, driver, copies, `divergence-groups.tsv` and
+  `reference.txt` are the same at both commits.
+- **The hosted runs**, each by `.github/workflows/test262-evidence.yml`, dispatched on 2026-11-10 from `main` at the
+  after commit with the tested commit's forty digits, `suite_ref` `ccaac100`, `max_workers` 4,
+  `test_timeout_seconds` 30, `rerun_timeouts` and `include_negative` true, each completed with the conclusion success,
+  on runner image ubuntu24 20261101.360.1 with the .NET SDK 10.0.403. Each artifact `test262-evidence` is imported
+  unchanged by [`collect.py`](collect.py)'s `test262` step, with `imported.txt` naming the run, the artifact and the
+  SHA-256 of the zip as downloaded, which is the digest GitHub records for it:
+
+  | Part | Side | Run | Tested commit (`run.txt`) | Zone | Zip SHA-256 | Folder |
+  |---|---|---|---|---|---|---|
+  | A | base | [42800071052](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/42800071052) | `88417996` | TZ unset, UTC | `17b777d1…` | [`test262/base/`](test262/base/) |
+  | A | after | [42800076421](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/42800076421) | `a5f2692e` | TZ unset, UTC | `5e735008…` | [`test262/after/`](test262/after/) |
+  | B | base | [42800082920](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/42800082920) | `88417996` | `America/New_York` | `2c0a3226…` | [`test262/base-new-york/`](test262/base-new-york/) |
+  | B | after | [42800090851](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/42800090851) | `a5f2692e` | `America/New_York` | `783834b7…` | [`test262/after-new-york/`](test262/after-new-york/) |
+
+  Each run uploaded 18 artifacts; the bundle keeps `test262-evidence` alone, as bundle `sjl-10-001` did, and the
+  re-run's report and log are in it.
+- **The local runs** were taken after the SJL-13 evidence stage had finished and the machine was idle (no other .NET
+  build, test or run; the load before each run is in [`local/machine.txt`](local/machine.txt)), on Ubuntu 24.04.5
+  with four logical processors, the .NET SDK 10.0.401 and the host's ICU 74, each from a scratch tree that
+  `git archive` wrote from the commit, `docs/evidence/` left out ([`local/archives.txt`](local/archives.txt)), its
+  shell built once in Release with `--disable-build-servers` ([`local/base-build.log`](local/base-build.log),
+  [`local/after-build.log`](local/after-build.log)). Their shells differ from the hosted runs' by their SDK, which the
+  rule's parts C and D do not fix.
+
+### Part A - test262 per path, in UTC
+
+**NOT MET under part A as written. MET under part A as `decision-rule-revised-2026-11-09.md` restates it.**
+
+| Part A's condition | This run |
+|---|---|
+| Both runs complete | eight of eight shards reported in each, none incomplete or retried, every status file of phase `full`; no configuration failure; one suite revision, `ccaac100`; `includeNegative` true in `run.txt`, the merged results and the re-run ([`test262/comparison-utc/completeness.log`](test262/comparison-utc/completeness.log)) |
+| One shell, every shard in the zone | one distinct list of the shell's binaries in each run's shards and re-run; all eight shards with `TZ` unset, UTC +0000 at both instants |
+| The host-zone records alike | yes, line for line, tzdata 2026e in both; the two `host-zone.log` files are byte for byte the same ([`test262/comparison-utc/zone-records.log`](test262/comparison-utc/zone-records.log)), so the part is judged |
+| The script finds them comparable | yes. Its checks: the after run against itself changes nothing, and a copy with one passing row turned to failed is one regression, exit 1 ([`compare-checks.log`](test262/comparison-utc/compare-checks.log)). The fields it does not compare are the same: .NET SDK 10.0.403, four workers, eight shards, Linux, X64 |
+| Timeouts | one path timed out in both variants in both runs, `test/staging/sm/regress/regress-1507322-deep-weakmap.js`; each run's re-run, alone with one worker, timed out again, and the script replaced the rows with the re-runs on both sides |
+| No row passing at the base fails, times out or is skipped after | **one path does, in both variants**: `test/intl402/DateTimeFormat/prototype/format/numbering-system.js` |
+| Every changed verdict in C1, C3 or C5 and listed | no other verdict changed; the script reports the two rows as regressions ([`test262/comparison-utc/comparison.json`](test262/comparison-utc/comparison.json), with the rule's classification file, `{}`, beside it) |
+
+**As written**, a row passing at the base that fails after is a regression whatever its class, so part A is NOT MET.
+**As revised on 2026-11-09**, the comparison was run again over the same imported runs with the revision's file
+[`test262/revised-2026-11-09/classifications.json`](test262/revised-2026-11-09/classifications.json), which classifies
+the path in both variants as C5 with a reason beginning "L (T12, the owner's ruling of 2026-11-09"; the script reports
+both rows as regressions with that classification refused, as the revision says it must
+([`test262/revised-2026-11-09/comparison-utc/`](test262/revised-2026-11-09/comparison-utc/comparison.log)), and this
+README reads those two rows, and only them, as class L (the table under "Class L" below). No other row changed, so
+the C1, C3 and C5 table has no row: no test262 path at this revision shows one of the area's corrections, each being
+a case the suite does not hold or holds where the base already passed. The vectors and part C hold them.
+
+### Part B - test262 per path, in `America/New_York`
+
+**NOT MET under part B as written. MET under part B as `decision-rule-revised-2026-11-09.md` restates it.**
+
+Every condition reads as part A's, from part B's own files ([`test262/comparison-new-york/`](test262/comparison-new-york/)):
+both runs complete, eight shards each with `TZ` `America/New_York`, EST -0500 and EDT -0400 at the two instants and
+tzdata 2026e, the two `host-zone.log` files byte for byte the same, one shell in each run (the after run's shell is
+part A's after run's, by its hashes, and the base's part A's base's), the script finding them comparable, and the same
+timed-out path re-run and replaced on both sides. The only changed verdicts are the same path's two rows, passing at
+the base and failing after, a regression as written and class L as revised
+([`test262/revised-2026-11-09/comparison-new-york/`](test262/revised-2026-11-09/comparison-new-york/comparison.log)).
+Row T27, which the rule names as a C1 row of this part, moved no verdict, so it lists no row; row T11 moved none
+either. The two parts' runs are not compared with each other.
+
+### Class L: the one admitted loss, both parts
+
+| Part | Path | Variant | Row | Ruling | The assertion's message as the run records it | Probe |
+|---|---|---|---|---|---|---|
+| A | `test/intl402/DateTimeFormat/prototype/format/numbering-system.js` | original | T12 (C5; JSD-0082 D25) | "Follow CLDR", 2026-11-09 | `Test262Error: en-US-u-nu-hanidec: display all time units in 2-digit Expected SameValue(«false», «true») to be true` | [`class-l-probe.A.txt`](test262/revised-2026-11-09/class-l-probe.A.txt) |
+| A | the same | terser | T12 | the same | the same | the same |
+| B | the same | original | T12 | the same | the same | [`class-l-probe.B.txt`](test262/revised-2026-11-09/class-l-probe.B.txt) |
+| B | the same | terser | T12 | the same | the same | the same |
+
+The failure is on the hanidec assertion the revision names, and on no other (the file's `en-US`, `arab` and `deva`
+assertions come before it and passed). **Each probe answers as class L requires**, in its part's zone: the two-digit
+format of `new Date(2024, 0, 1, 2, 35, 6, 789)` is `"〇二:三五:〇六 AM"` with U+202F before `AM`, code points
+`U+3007 U+4E8C U+003A U+4E09 U+4E94 U+003A U+3007 U+516D U+202F U+0041 U+004D`, which is the file's expected String with
+U+202F for its U+0020; and the format with `{second: "numeric"}` alone is `"六"` (U+516D), which includes `"六"`, the
+file's line 57 that the failure masks.
+
+**The probe ran in the shell the after runs used.** The workflow keeps only the hashes of the shell's binaries
+(`shell-binaries.sha256`), not the binaries, so the shell was built again as the workflow builds it: a shallow clone of
+`https://github.com/Broiler-Platform/Broiler.JS` checked out at the after commit, as `actions/checkout` makes one; the
+shard action's `dotnet restore Broiler.JS.slnx` and `dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj
+-c Release --no-restore`; the .NET SDK 10.0.403 that both after runs record, its tarball's SHA-512 the release
+metadata's; and the runner's `GITHUB_ACTIONS` and `CI` variables, with `GITHUB_ENV` and the other files a runner gives,
+since Nerdbank.GitVersioning writes to them (its first attempt failed for want of them,
+[`probe-shell-build-first.log`](test262/revised-2026-11-09/probe-shell-build-first.log)). **Every one of its 37
+binaries has the digest the after runs' `shell-binaries.sha256` records** (the probe files say so, and
+[`probe-shell-binaries.sha256`](test262/revised-2026-11-09/probe-shell-binaries.sha256) is that record byte for byte),
+so the probe ran in that shell, under that SDK's runtime, `Microsoft.NETCore.App` 10.0.14, with `TZ` unset for part A
+and `America/New_York` for part B, no `LANG` and no invariant globalization. The probe is
+[`class-l-probe.js`](test262/revised-2026-11-09/class-l-probe.js), taken by `collect.py`'s `probe` step.
+
+### Part C - the reference datasets
+
+**NOT MET under part C as written. MET under part C as `decision-rule-revised-2026-11-10.md` restates it, with class
+L19.**
+
+The after run, [`datasets/after/`](datasets/after/), and the base, [`datasets/base/`](datasets/base/), were taken by
+`scripts/conformance/run_reference_datasets.py --bundle sjl-9-001` of this repository, unchanged since SJL-9.2, over the
+shell of each commit's scratch tree, with `TZ=UTC` and no `LANG`; every copy equals its pin. **Every program completes
+after with every line.** Every line that differs from its expected answer is in
+[`datasets/after/classification.tsv`](datasets/after/classification.tsv), with its program and line, its group of
+`divergence-groups.tsv` (read with the README's dated corrections as the rule commit holds them, line 49 as `spec`),
+the reading of the rule it meets, its expected answer, its answer after, at the base, in the reference and in the
+retained answer. [`datasets/classify.py`](datasets/classify.py) wrote it; it decides no verdict, and no line of it is
+`FAILURE`.
+
+| Program | Differing after | Classes |
+|---|---|---|
+| `dates`, `displaynames`, `lists`, `numbers`, `plurals`, `relativetimes`, `temporal-intl`, `calendar-formats`, `zone-names` | none | - |
+| `durations` | lines 260, 263 to 266, 530, 533 to 536 (group line 43, a numbering system's own symbols, decision D21) | V: six equal the retained answer; 263, 264, 533 and 534, which also carry the draft's sign of the first group, equal the expected answer with `arab`'s CLDR 48.2.0 symbols for the locale's `latn` ones (U+061C before the minus), the reading the group's note names for them, as the cut-over's records fixed |
+| `locales` | 26 lines | V: the `collations` lines of the Collator's group (line 50), 18 equal to the retained answer and 5 (`zh`, `zh-Hant`, `zh-TW`, `zh-Hans-SG`, `ko`) equal to the sorted list this engine's `Intl.Collator` resolves for the Locale ([`collations-probe.txt`](datasets/after/collations-probe.txt), at the after commit, in the same shell); the `ar-EG` and `fa-IR` `numberingSystems` lines (group line 53) equal to the retained answer; and **L19**, line 128 |
+| `segments` | line 110 (`iterator`) | O: equal to its answer at the base |
+| `timezones` | 152 lines | Z8: each a formatter's `timeZone` for an identifier that is not its own primary, answered as given where Broiler.VM's expected answer is the primary, the rest of the line equal |
+
+No line is in R or H. **Class L19**, listed by name:
+
+| Program and line | Key | Group | Row | Ruling | Expected | After | Base | Reference |
+|---|---|---|---|---|---|---|---|---|
+| `locales:128` | `11 fr-CA hourCycles` | `divergence-groups.tsv` line 52, `spec` | L19 (C5) | "Dated part C revision", 2026-11-10 | `[h12,h23]` | `[h23,h12]` | `[h12]` | `[h23]` |
+
+Its answer after is exactly the one class L19 names, CLDR 48.2.0's time data for `fr-CA`. As written, the line is a
+`spec` group's line that differs from Broiler.VM's divergence, which no class admits, so part C is NOT MET as written.
+
+**Against the base**, the harness's join ([`datasets/after/compare-with-base/`](datasets/after/compare-with-base/compare.txt))
+shows the cut-over's moves: `displaynames` did not complete at the base (a `TypeError`, `undefined is not a function`,
+where it calls `Intl.DisplayNames.supportedLocalesOf`, which SJL-9.5 adds), and every other program completed at both. The
+base is retained and read, not judged.
+
+**The reference**, [`datasets/reference/`](datasets/reference/reference.log): Node.js v26.12.0, its tarball retrieved
+twice on 2026-11-10 with the SHA-256 `reference.txt` records, ran every program of part C once, under `TZ=UTC`, by the
+command Broiler.VM's READMEs give for the ICU programs. Its `process.versions` are those `reference.txt` records (CLDR
+48.0, ICU 78.3). It has `Temporal` without a flag, so the three programs whose retained answers came from the Temporal
+polyfill on Node 22 ran on its own `Temporal`, not the polyfill; no line of theirs is in a `coverage` group, so no class R
+reading needs them.
+
+### Part D - the providers under invariant globalization
+
+**MET under part D as written.** [`invariant/after/`](invariant/after/): part C's harness with
+`--invariant-globalization` completes every program with every line, and no line of any answer is an `abort:` line.
+`scripts/compliance/run_test262.py` over `test/intl402/default-locale-is-supported.js` at test262 `ccaac100`, with
+`DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1` in the environment it hands the shell, `TZ=UTC` and no `LANG`, passes in both
+variants it runs, original and terser (terser 5.50.0, from the workflow's lock file). At the base,
+[`invariant/base/`](invariant/base/), the same file fails in both variants, "Default locale is not reported as
+available" (row L44, a correction of this engine), `displaynames` does not complete for the reason part C's base gives,
+and no line is an `abort:` line. Part D compares no line with its expected answer, so `locales:128` needs nothing here.
+
+### The home, at the after commit
+
+From the after commit's scratch tree, under `TZ=UTC` ([`home/after/`](home/after/)):
+- **The shared folder**, built in Release with no warning and no error, and its tests run: every test passes in
+  `Broiler.ECMAScript.Algorithms.Tests`, `Architecture.Tests` (rules SL1 to SL10), `Conformance.Tests`,
+  `Generation.Tests` and `Intl.Tests` ([`tests.log`](home/after/tests.log), by class in
+  [`clauses.txt`](home/after/clauses.txt)). One test of `Frontend.Tests` (SJL-13's), `LimitsTests.Every_source_of_the_deep_nesting_corpus_ends_as_its_row_expects`,
+  failed because it reads `docs/evidence/sjl-13-001/inputs/`, which the archive left out; with that folder written in
+  from the same commit's archive it passes alone. The restore needed `-p:NuGetAudit=false`: NU1903 on
+  `Microsoft.DotNet.ILCompiler` 10.0.12, a warning made an error, blocks the probe's restore ([`build.log`](home/after/build.log)).
+- **Clauses 1 to 3, the data home**, by the tests SJL-9.2 committed, each with its control: `IntlPinTests` (pinned,
+  hashed inputs), `IntlTableSourceTests` and `GeneratedTableTests` (byte-identical regeneration, rule SL7 with its
+  witness), `IntlPinTests` and `GeneratedTableTests` (the public CLDR version, 48.2.0, as `IntlDataVersions.CldrVersion` and the manifest's `cldr-version`) and `IntlCompletenessTests` (the
+  agreed locale set). All pass.
+- **Clauses 4 to 6, the Intl library**: the library's tests by sub-area, `LibraryRunTests` (its vectors at library
+  level), the differential check against Broiler.VM's code (`DifferentialCheckTests`, decision D22), the SL rules, and
+  **the Native AOT probe**, published for `linux-x64` with no warning and no managed assembly, which ran corpus revision
+  37 with no failure, its report byte for byte the JIT's ([`probe-run-linux-x64.log`](home/after/probe-run-linux-x64.log)).
+  Clause 5's reference datasets are part C above.
+- **The tables' sizes**, restated by citation: [`home/sizes-after.txt`](home/sizes-after.txt) gives each table's length
+  as the after commit's `tables.manifest` records it, and how it differs from [`home/sizes.txt`](home/sizes.txt), the
+  sizes of SJL-9.2b, which it does not replace. The tables are the same at the base and the after commit.
+
+### The pristine consumer and the packages
+
+- [`engine/after/pristine-consumer.log`](engine/after/pristine-consumer.log): the runtime graph of
+  `Broiler.JavaScript.All` packed from the after commit, restored by a clean consumer from that feed and nuget.org into
+  an isolated cache, and run: it printed `42`.
+- [`engine/after/pristine-consumer-intl.log`](engine/after/pristine-consumer-intl.log): the same consumer, offline, ran
+  [`intl-checks.js`](engine/after/intl-checks.js) (rows T12, L19, T16, the plural tables, L44 and `DisplayNames`'
+  `supportedLocalesOf`) and answered `ok 6`. Under invariant globalization the `fa` and `de` checks answer otherwise,
+  as decision D7 says: the host lists no culture there, so both resolve to the default `en-US`, which the log shows.
+- [`engine/after/package-checks.txt`](engine/after/package-checks.txt), by
+  [`package-checks.py`](engine/after/package-checks.py) over that feed: `Broiler.ECMAScript.Intl` declares
+  `Broiler.ECMAScript.Algorithms` and `Broiler.Unicode.Algorithms` and no other dependency, and no entry of it or of
+  `Broiler.ECMAScript.Algorithms` holds 32 bytes taken from the start, the middle or the end of any table under
+  `Broiler.ECMAScript/data/intl/generated/`; `Broiler.JavaScript.BuiltIns` holds every one of those windows, since it
+  embeds the tables, and declares `Broiler.ECMAScript.Intl` and `Broiler.Unicode.Cldr.LocaleData`, which stays for
+  `supportedValuesOf` ("The cut-over's records" above). These are the packages packed locally from the after commit,
+  not a published version.
+
+### Where the files are
+
+The list under "State" named `base/` and `after/` for parts A and B. They are under [`test262/`](test262/), as bundle
+`sjl-10-001`'s are and as the revision of 2026-11-09 names `test262/revised-2026-11-09/`; part C is in `datasets/`,
+part D in `invariant/`, the home in `home/after/`, the consumer and the packages in `engine/after/`, and the local
+builds and the machine in `local/`. Paths in retained logs are written as `<tree>`, `<scratch>`, `<repo>` and
+`<suite>`. [`manifest.json`](manifest.json) records the SHA-256 of every other file the bundle retains.
+
+### What this bundle does not do
+
+**The corpus revision that retires both engines' Intl divergences, and Broiler.VM's pin move, are a later stage**
+(plan task 9.6's last item). That stage needs:
+- a corpus revision whose Intl vectors drop each `divergence.broiler-js` field that SJL-9.5 answers, which this
+  engine's runs at the after commit report as no longer holding, and keep the fields revision 37 restated as
+  host-dependent (`aa` and `pap`, rows T16, T17, U15, N3c, N5d, S1b and S4b, under decision D7), as its row says;
+- in the same revision, the vectors' per-engine row Z8 expectations made one (decision D15), so that the Z8 differences
+  Broiler.VM's runs still show at its pin, revision 32, are retired with its correction at SJL-9.4;
+- both engines' runs on that revision, and this engine's at the after commit in both zones;
+- then Broiler.VM's pin moved from revision 32 to it, with the notes its JSD-0082 owes at that re-pin: the owner's
+  rulings of 2026-11-09 ("Keep + fix library first", "Add file, same tarball", "Fix both consumers", "Follow CLDR,
+  dated ruling") and of 2026-11-10 ("Dated part C revision", "Accept, follows CLDR"), row L19's `getHourCycles` moves,
+  decision D7's reading for hosts that list `aa` and `pap` (revisions 35 and 37), and the archived
+  `calendarPreferenceData.json`.
+
+None of it is accepted: no second holder exists to review it, and SJL-9 may not meet its gate before SJL-7 and SJL-8
+meet theirs, and so not before SJL-3 meets SJL-3's.
+
 ## State
 
 **2026-10-26, at SJL-9.1: the rule and its data only. Nothing here is a verdict, and nothing has been taken.**
@@ -518,6 +760,14 @@ Those runs are in `engine/`, which the list below did not foresee. They are no p
 - `home/`: the data home's sizes, `sizes.txt`, as decision D5 states them (added 2026-10-26, at SJL-9.2b).
 - `cutover/`: the cut-over's deletion search and its script, section "The cut-over's records (SJL-9.5)" (added
   2026-11-10, at SJL-9.5's records; the list ended at `home/`).
+
+*(Noted 2026-11-10, at SJL-9.6: the runs are taken, and the bundle holds them where section "The evidence (SJL-9.6)",
+"Where the files are", says: parts A and B under `test262/`, not `base/` and `after/` as the list above reads, with
+their comparisons and class L's file and probes under `test262/revised-2026-11-09/`; part C, its reference run and its
+table in `datasets/`; part D in `invariant/`; the home in `home/after/` and `home/sizes-after.txt`; the consumer and
+the packages in `engine/after/`; and the local builds in `local/`. No `controls/` folder was made: each comparison's
+control is in its own folder, `compare-checks.log` for parts A and B and the harness's negative control in each part C
+and D run's report.)*
 
 **It holds no figure of a run until that run is taken**, and then only in the run's own files and this README's
 reading of them. The data home's figures are those of its inputs and tables, which decision D5 asks this bundle to
