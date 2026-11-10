@@ -658,8 +658,8 @@ From the after commit's scratch tree, under `TZ=UTC` ([`home/after/`](home/after
   from the same commit's archive it passes alone. The restore needed `-p:NuGetAudit=false`: NU1903 on
   `Microsoft.DotNet.ILCompiler` 10.0.12, a warning made an error, blocks the probe's restore ([`build.log`](home/after/build.log)).
 - **Clauses 1 to 3, the data home**, by the tests SJL-9.2 committed, each with its control: `IntlPinTests` (pinned,
-  hashed inputs), `IntlTableSourceTests` and `GeneratedTableTests` (byte-identical regeneration, rule SL7 with its
-  witness), `IntlPinTests` and `GeneratedTableTests` (the public CLDR version, 48.2.0, as `IntlDataVersions.CldrVersion` and the manifest's `cldr-version`) and `IntlCompletenessTests` (the
+  hashed inputs, and the public CLDR version, 48.2.0, as `IntlDataVersions.CldrVersion`), `IntlTableSourceTests` and
+  `GeneratedTableTests` (byte-identical regeneration, rule SL7 with its witness, and the manifest's `cldr-version`) and `IntlCompletenessTests` (the
   agreed locale set). All pass.
 - **Clauses 4 to 6, the Intl library**: the library's tests by sub-area, `LibraryRunTests` (its vectors at library
   level), the differential check against Broiler.VM's code (`DifferentialCheckTests`, decision D22), the SL rules, and
@@ -701,7 +701,8 @@ builds and the machine in `local/`. Paths in retained logs are written as `<tree
 **The corpus revision that retires both engines' Intl divergences, and Broiler.VM's pin move, are a later stage**
 (plan task 9.6's last item). That stage needs:
 - a corpus revision whose Intl vectors drop each `divergence.broiler-js` field that SJL-9.5 answers, which this
-  engine's runs at the after commit report as no longer holding, and keep the fields revision 37 restated as
+  engine's corpus runs on SJL-9.5's branch reported as no longer holding (this bundle took no engine-level vector run
+  at the after commit; that stage takes one), and keep the fields revision 37 restated as
   host-dependent (`aa` and `pap`, rows T16, T17, U15, N3c, N5d, S1b and S4b, under decision D7), as its row says;
 - in the same revision, the vectors' per-engine row Z8 expectations made one (decision D15), so that the Z8 differences
   Broiler.VM's runs still show at its pin, revision 32, are retired with its correction at SJL-9.4;
