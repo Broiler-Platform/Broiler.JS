@@ -80,7 +80,7 @@ DIVERGENCES = SCRIPTS / "syntax-divergences.txt"
 CHECKER = SCRIPTS / "syntaxcheck.mjs"
 SINCE = 29              # the corpus revision that added the area
 REVIEWED = 30           # the corpus revision that added the delimiting vectors review asked for
-CORPUS_REVISION = 36    # the corpus revision this generator writes: REVISIONS.md's last row
+CORPUS_REVISION = 37    # the corpus revision this generator writes: REVISIONS.md's last row
 GENERATOR = "generate_syntax_vectors.py"
 REFERENCE_VERSION = "v26.12.0"
 

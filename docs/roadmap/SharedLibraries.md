@@ -1676,6 +1676,22 @@ This repository's part of it:
   and match on the ICU 74.2 host the corpus is classified on, which lists none of them (decision D7, its note above);
   the windows-latest host of the engine vectors job lists `aa` and `pap` (corpus revision 28), where from SJL-9.5 this
   engine is expected to answer `"A, B, C"` for `families/0008` and `0514`, and revision 36 does not classify them.)*
+  *(Noted 2026-11-10, at corpus revision 37, on the open point the note above leaves, "Not settled by it, and open for
+  the owner's call before SJL-9.5 merges": it is settled under the owner's decision of 2026-11-04, "Host only, fix
+  vectors" (decision D7, its note above), and needs no new decision. SJL-9.5's engine vectors job on windows-latest
+  (run 42768566218, at `769f1b8e`), whose `icu.dll` lists `aa` and `pap`, answers 13 normative vectors of those two
+  locales from CLDR 48.2.0's own data, where their expected value is the reference's answer, which resolves both
+  locales to `en-US` since its ICU carries neither: `families/0008` and `0514` among them, with `"A, B, C"`, and
+  with them the date pattern and names (row T16), the day period (T17), a duration's units and list (U15), the
+  currency pattern (N3c), a long unit (N5d) and a relative time (S4b). Corpus revision 37
+  ([`conformance/vectors/REVISIONS.md`](../../conformance/vectors/REVISIONS.md)) classifies, for this engine, those
+  13 vectors under those data rows (C5), each field naming decision D7 and the note of 2026-11-04 as this engine's
+  record, since no task answers it, as revision 35 does for a host that lacks a locale; on the ICU 74.2 host the
+  corpus is classified on, which lists neither locale, this engine answers their expected value. No expected value
+  and no Broiler.VM expectation changes. The open point's other locales, `ab`, `en-Shaw`, `en-Shaw-GB` and `jbo`,
+  are not answered from their own data on either host of that run's engine vectors jobs. The same revision restates,
+  in the same form, the fields of the 14 `aa` and `pap` vectors already classified whose closing clause, "answered by
+  SJL-9.5", that run's windows-latest job contradicts, since SJL-9.5 answers them there from the same data.)*
   *(Noted 2026-11-09, on the owner's decision of 2026-11-09, "Keep + fix library first", and the owner's rulings of that day
   "Add file, same tarball", "Fix both consumers" and "Follow CLDR, dated ruling", each asked and answered: SJL-9.5's cut-over of
   sub-areas (d) and (e) stays held at its stage 3, and before it merges the shared library and the data home take, in a merge
