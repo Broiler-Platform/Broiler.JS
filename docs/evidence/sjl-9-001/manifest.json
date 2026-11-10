@@ -3,7 +3,7 @@
  "baseCommit": "8841799642ff61499faa01dc894b6fec768c8af6",
  "bundle": "sjl-9-001",
  "files": {
-  "README.md": "a2afc852abc2d126bd10dd7348a3964eab33c5cf0fb08c85b51fc6e25a26e2de",
+  "README.md": "5de5a1760f247c55a6b05c95ab4546db485c566ae9d59e5a2ccbb6f93bde1779",
   "algorithms/differential-summary.txt": "f09d383601e3f1a49da1f7725763cc42af28d2076fa18cb369f9df1d81a22c29",
   "collect.py": "087248d53d172ba8054d36a09d4b1daa72994a4b243e4bc40bbbc3d1350db945",
   "cutover/deletion-search.py": "f02903c0e8dbe515bc0d7e06b1f96039bb14f8b3c923d5ad8c8fed6bf03ea6ad",
@@ -333,7 +333,7 @@
   "local/after-build.log": "a12b5f14a16ee22f9327851de193c39b90786909fef1c7731f3e8022dc28d1b5",
   "local/archives.txt": "3470cf0cc41b8290565ab13b6816246aa1e4ba02edd821d5e293e6ea225f4cf3",
   "local/base-build.log": "d0e50c2ed1e724093cf55530a1e6cc39769af98c09468992c0b170d3aebc02f8",
-  "local/machine.txt": "f213065f5fe9f9d4cdaa40217a1ed979fee77beb002d72d61faf32aa1a4ddae6",
+  "local/machine.txt": "bac9d1a2d1a2f074dc591f490539bbcb4fbd00c159af9d870e67d200a142f26c",
   "locales/datasets.tsv": "1d4e68d06a456c2d42fba5d2a8c011ec0a7ea395273daf607012d2e1c64d272e",
   "locales/intl402.tsv": "503533b7301fdbee7c7a14e9f2c46d69a7a1f0181f3fb13edda84771345f15f4",
   "locales/uncounted.tsv": "2450e0f0b8a0834684fb4548835c014c2185e2631d8e970ca34ef021891b2e1d",
@@ -467,6 +467,7 @@
   "test262/revised-2026-11-09/comparison-new-york/comparison.log": "e92564347807bb66bc1ec3f31e76901659318b7a34f09ea3093956f1584ff112",
   "test262/revised-2026-11-09/comparison-utc/comparison.json": "8efa6673c6b394f49b57c2312758cd6c1a4d5359224e5125f3a56e6a6cddbaed",
   "test262/revised-2026-11-09/comparison-utc/comparison.log": "517c4e8b8bab56bbc3816bc3dd20f0c2863f483f4613d1258f6c0de430a6cd5b",
+  "test262/revised-2026-11-09/probe-sdk.txt": "be89d231f615fd2bd2cb42f5e5f784eac7cad0d138f1820bdacd76710d9a0786",
   "test262/revised-2026-11-09/probe-shell-binaries.sha256": "e033cd3bde8ff8afab98eb8ae888a78dac44c4b7787a1fe4546bf1d2960b0937",
   "test262/revised-2026-11-09/probe-shell-build-first.log": "a734c1cba76bcdcf1e6c156cc74e2d7b90cbe43d84b185cd43875d29165515ce",
   "test262/revised-2026-11-09/probe-shell-build.log": "c5e4c1572d62f57ae65f9a4a043324786139379986027478276d3fed7612fc80"

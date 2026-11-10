@@ -516,13 +516,31 @@ each part that meets its rule only as revised is weaker evidence than a part met
 
   Each run uploaded 18 artifacts; the bundle keeps `test262-evidence` alone, as bundle `sjl-10-001` did, and the
   re-run's report and log are in it.
-- **The local runs** were taken after the SJL-13 evidence stage had finished and the machine was idle (no other .NET
-  build, test or run; the load before each run is in [`local/machine.txt`](local/machine.txt)), on Ubuntu 24.04.5
+- **The local runs** were taken after the SJL-13 evidence stage had finished, with the machine idle as far as the
+  records show: each run's load and count of .NET processes at its start are on its own log's `== start` line, or in
+  [`local/machine.txt`](local/machine.txt) for parts C and D, which also says where the records fall short (the base
+  build's count of other .NET processes, which was not explained, and the reference run, whose start and load were not
+  recorded) *(revised 2026-11-10, at review; read "and the machine was idle (no other .NET build, test or run; the load
+  before each run is in [`local/machine.txt`](local/machine.txt))")*. They ran on Ubuntu 24.04.5
   with four logical processors, the .NET SDK 10.0.401 and the host's ICU 74, each from a scratch tree that
   `git archive` wrote from the commit, `docs/evidence/` left out ([`local/archives.txt`](local/archives.txt)), its
   shell built once in Release with `--disable-build-servers` ([`local/base-build.log`](local/base-build.log),
   [`local/after-build.log`](local/after-build.log)). Their shells differ from the hosted runs' by their SDK, which the
   rule's parts C and D do not fix.
+- **The harness's own records of those shells** read `shell commit: unknown`, `shell tree clean (git status --porcelain
+  --untracked-files=all is empty): no` and `shell built by the harness: no, the one already built was used`, and each
+  `summary.json` reads `"shellCommit": "unknown"` ([`datasets/base/identity.txt`](datasets/base/identity.txt),
+  [`datasets/after/identity.txt`](datasets/after/identity.txt),
+  [`invariant/base/datasets/identity.txt`](invariant/base/datasets/identity.txt) and
+  [`invariant/after/datasets/identity.txt`](invariant/after/datasets/identity.txt)), unlike bundles `sjl-10-001`'s and
+  `sjl-8-001`'s. Each shell tree here is what `git archive` wrote, with no `.git`: the harness asks git for the tree's
+  commit, finds none, and so reads the commit as unknown and the tree as not clean; and each shell was built before the
+  harness ran, by the build logs above. What ties each tree to its commit and its shell is
+  [`local/archives.txt`](local/archives.txt) (each archive's SHA-256 and the commit it was written from), the build
+  logs, and the shell's `BroilerJS.dll` SHA-256 that each `identity.txt` and each part D log header record:
+  `ff8f483b66578c7ef864ca3a6c2cb8ce9b775ff429df021698eb1dcee5fbd1bf` for the base and
+  `68268038bd0d955d9046535fdc0cf1327a5c36fbe031422b3a71d1426213a74c` for the after commit. *(Added 2026-11-10, at
+  review.)*
 
 ### Part A - test262 per path, in UTC
 
@@ -564,12 +582,17 @@ either. The two parts' runs are not compared with each other.
 
 ### Class L: the one admitted loss, both parts
 
-| Part | Path | Variant | Row | Ruling | The assertion's message as the run records it | Probe |
+| Part | Path | Variant | Row | Ruling | The assertion's message as the run records it | The probe's two answers |
 |---|---|---|---|---|---|---|
-| A | `test/intl402/DateTimeFormat/prototype/format/numbering-system.js` | original | T12 (C5; JSD-0082 D25) | "Follow CLDR", 2026-11-09 | `Test262Error: en-US-u-nu-hanidec: display all time units in 2-digit Expected SameValue(«false», «true») to be true` | [`class-l-probe.A.txt`](test262/revised-2026-11-09/class-l-probe.A.txt) |
+| A | `test/intl402/DateTimeFormat/prototype/format/numbering-system.js` | original | T12 (C5; JSD-0082 D25) | "Follow CLDR", 2026-11-09 | `Uncaught Test262Error: en-US-u-nu-hanidec: display all time units in 2-digit Expected SameValue(«false», «true») to be true` | two-digit `"〇二:三五:〇六 AM"`, `U+3007 U+4E8C U+003A U+4E09 U+4E94 U+003A U+3007 U+516D U+202F U+0041 U+004D`; `{second: "numeric"}` `"六"`, `U+516D` ([`class-l-probe.A.txt`](test262/revised-2026-11-09/class-l-probe.A.txt)) |
 | A | the same | terser | T12 | the same | the same | the same |
-| B | the same | original | T12 | the same | the same | [`class-l-probe.B.txt`](test262/revised-2026-11-09/class-l-probe.B.txt) |
+| B | the same | original | T12 | the same | the same | two-digit `"〇二:三五:〇六 AM"`, `U+3007 U+4E8C U+003A U+4E09 U+4E94 U+003A U+3007 U+516D U+202F U+0041 U+004D`; `{second: "numeric"}` `"六"`, `U+516D` ([`class-l-probe.B.txt`](test262/revised-2026-11-09/class-l-probe.B.txt)) |
 | B | the same | terser | T12 | the same | the same | the same |
+
+*(Revised 2026-11-10, at review: the message column read "`Test262Error: en-US-u-nu-hanidec: display all time units
+in 2-digit Expected SameValue(«false», «true») to be true`", without the `Uncaught ` the run records before it (each
+after run's `test262-results.json.gz`, in UTC and in New York, for both variants), and the last column, "Probe", held
+only the link to each part's probe file, the answers being in the paragraph below.)*
 
 The failure is on the hanidec assertion the revision names, and on no other (the file's `en-US`, `arab` and `deva`
 assertions come before it and passed). **Each probe answers as class L requires**, in its part's zone: the two-digit
@@ -578,18 +601,29 @@ format of `new Date(2024, 0, 1, 2, 35, 6, 789)` is `"〇二:三五:〇六 AM"` w
 U+202F for its U+0020; and the format with `{second: "numeric"}` alone is `"六"` (U+516D), which includes `"六"`, the
 file's line 57 that the failure masks.
 
+Each probe file ends with a line `[object Object]` after the probe's own lines. `class-l-probe.js` prints its lines
+through one `console.log`, so that line is not the probe's: presumably the shell printing the program's completion
+value. It bears on neither answer. A probe taken again would end its program with `void 0`. *(Added 2026-11-10, at
+review.)*
+
 **The probe ran in the shell the after runs used.** The workflow keeps only the hashes of the shell's binaries
 (`shell-binaries.sha256`), not the binaries, so the shell was built again as the workflow builds it: a shallow clone of
 `https://github.com/Broiler-Platform/Broiler.JS` checked out at the after commit, as `actions/checkout` makes one; the
 shard action's `dotnet restore Broiler.JS.slnx` and `dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj
 -c Release --no-restore`; the .NET SDK 10.0.403 that both after runs record, its tarball's SHA-512 the release
-metadata's; and the runner's `GITHUB_ACTIONS` and `CI` variables, with `GITHUB_ENV` and the other files a runner gives,
+metadata's ([`probe-sdk.txt`](test262/revised-2026-11-09/probe-sdk.txt) gives both, added 2026-11-10, at review); and
+the runner's `GITHUB_ACTIONS` and `CI` variables, with `GITHUB_ENV` and the other files a runner gives,
 since Nerdbank.GitVersioning writes to them (its first attempt failed for want of them,
 [`probe-shell-build-first.log`](test262/revised-2026-11-09/probe-shell-build-first.log)). **Every one of its 37
 binaries has the digest the after runs' `shell-binaries.sha256` records** (the probe files say so, and
 [`probe-shell-binaries.sha256`](test262/revised-2026-11-09/probe-shell-binaries.sha256) is that record byte for byte),
-so the probe ran in that shell, under that SDK's runtime, `Microsoft.NETCore.App` 10.0.14, with `TZ` unset for part A
-and `America/New_York` for part B, no `LANG` and no invariant globalization. The probe is
+so the probe ran in that shell, under the runtime bundled with that SDK, `Microsoft.NETCore.App` 10.0.14, with `TZ`
+unset for part A and `America/New_York` for part B, no `LANG` and no invariant globalization. The hosted runs do not
+record their runtime: `run.txt` and the merged results record the SDK alone, and `shell-binaries.sha256` lists the
+binaries beside the shell, not the shared framework. That the after runs' shell ran on the same runtime is therefore not
+shown; the revision of 2026-11-09 defines the shell as the binaries whose hashes the run records, and that condition is
+met. *(Revised 2026-11-10, at review; read "so the probe ran in that shell, under that SDK's runtime,
+`Microsoft.NETCore.App` 10.0.14, with".)* The probe is
 [`class-l-probe.js`](test262/revised-2026-11-09/class-l-probe.js), taken by `collect.py`'s `probe` step.
 
 ### Part C - the reference datasets
@@ -646,6 +680,16 @@ variants it runs, original and terser (terser 5.50.0, from the workflow's lock f
 [`invariant/base/`](invariant/base/), the same file fails in both variants, "Default locale is not reported as
 available" (row L44, a correction of this engine), `displaynames` does not complete for the reason part C's base gives,
 and no line is an `abort:` line. Part D compares no line with its expected answer, so `locales:128` needs nothing here.
+
+*(Noted 2026-11-10, at review: the two part D logs,
+[`invariant/base/default-locale-is-supported.log`](invariant/base/default-locale-is-supported.log) and
+[`invariant/after/default-locale-is-supported.log`](invariant/after/default-locale-is-supported.log), record the tree,
+the shell's digest, the suite, terser and the command line, but not the environment the runner gave the shell. The
+paragraph above takes it from `collect.py`'s `invariant` step, which sets `TZ=UTC` and
+`DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1` over the collector's environment, from which it removes `LANG`, `LC_ALL` and
+`LANGUAGE`. The base's failure, which the hosted base runs under the host's globalization do not show, agrees with it.
+A later collection should write that environment into the log, as the class-L probes' headers do; the files here are
+left as they are.)*
 
 ### The home, at the after commit
 
@@ -710,8 +754,11 @@ builds and the machine in `local/`. Paths in retained logs are written as `<tree
 - then Broiler.VM's pin moved from revision 32 to it, with the notes its JSD-0082 owes at that re-pin: the owner's
   rulings of 2026-11-09 ("Keep + fix library first", "Add file, same tarball", "Fix both consumers", "Follow CLDR,
   dated ruling") and of 2026-11-10 ("Dated part C revision", "Accept, follows CLDR"), row L19's `getHourCycles` moves,
-  decision D7's reading for hosts that list `aa` and `pap` (revisions 35 and 37), and the archived
-  `calendarPreferenceData.json`.
+  decision D7's reading for hosts that list `aa` and `pap` (revisions 35 and 37), the archived
+  `calendarPreferenceData.json`, and row L16's cause for `getCalendars`, which JSD-0082 gives as the profile's data
+  holding no CLDR calendar preference data: from SJL-9.5 this engine's tables carry CLDR's calendar preferences and its
+  date-time format reads them, while the library keeps `getCalendars` at `["gregory"]` by choice
+  (`decision-rule-revised-2026-11-09.md`, item 4) *(the last item added 2026-11-10, at review)*.
 
 None of it is accepted: no second holder exists to review it, and SJL-9 may not meet its gate before SJL-7 and SJL-8
 meet theirs, and so not before SJL-3 meets SJL-3's.
@@ -749,6 +796,12 @@ No other commit is named yet.
 *2026-10-26, at SJL-9.2a:* the sentence above, "No other commit is named yet.", held until SJL-9.2a. The corpus
 revisions' commits and the commits the engine-level runs were taken at are named in section "The engine-level vectors".
 Those runs are in `engine/`, which the list below did not foresee. They are no part's runs.
+
+*2026-11-10, at SJL-9.6:* the runs are taken, and section "The evidence (SJL-9.6)" reads them; "Nothing here is a
+verdict, and nothing has been taken." above held until then. The rule commit, which the list above promised to name
+when the change that carries it had merged, is `509788820f7cfa60517e6aecc61437f6ecc2bde2` (Broiler-Platform/Broiler.JS#1077), the base commit
+`8841799642ff61499faa01dc894b6fec768c8af6`, and the after commit `a5f2692e88a9aafeaa850bebe9c3399f6263353b`
+(Broiler-Platform/Broiler.JS#1110). *(Added 2026-11-10, at review.)*
 
 **What the bundle will hold:**
 - `base/`: parts A and B's base runs, each imported unchanged with the digest of its zip;
