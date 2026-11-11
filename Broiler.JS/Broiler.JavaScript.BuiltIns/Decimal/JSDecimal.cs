@@ -37,7 +37,11 @@ public partial class JSDecimal : JSPrimitive
 
     // The Decimal function's text: the styles decimal.TryParse reads by default (NumberStyles.Number), which the
     // function read before 2026-11-11, now with the invariant culture's symbols alone (`.`, `,`, `-` and `+`), so that
-    // under the invariant culture the function answers as it did and under any other host it answers the same.
+    // under the invariant culture the function answers as it did and under any other host it answers the same. These
+    // styles admit more than the literal's grammar: the invariant culture's group separator `,` anywhere in the integer
+    // part (`Decimal('1,,5')` is 15), a trailing sign (`Decimal('5-')` is -5) and leading and trailing white space. They
+    // are kept unchanged, not judged right: narrowing them (to AllowDecimalPoint and AllowLeadingSign, with white space if
+    // wanted) would move the answers under the invariant culture, and whether to is the owner's question.
     private const NumberStyles FunctionStyles = NumberStyles.Number;
 
     private static readonly CultureInfo Invariant = CultureInfo.InvariantCulture;
@@ -114,6 +118,9 @@ public partial class JSDecimal : JSPrimitive
         if (value.IsNumber)
             return new JSDecimal((long)value.DoubleValue);
 
+        // Reached from script as `new (aDecimal)(text)`. A String that is not an integer in the invariant culture's
+        // NumberStyles.Integer throws .NET's FormatException, not a TypeError, as any such String did before 2026-11-11;
+        // under sv-SE a String with U+2212, that culture's minus sign in .NET, parsed before and now throws it too.
         var v = long.Parse(value.ToString(), NumberStyles.Integer, Invariant);
         return new JSDecimal(v);
     }

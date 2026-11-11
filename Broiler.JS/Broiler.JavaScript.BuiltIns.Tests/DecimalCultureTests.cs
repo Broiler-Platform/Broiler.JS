@@ -91,11 +91,27 @@ public class DecimalCultureTests
         Holds(culture, "-1.5", "Decimal('-1.5').toString()");
         Holds(culture, "1.5", "Decimal(' 1.5 ').toString()");
         Holds(culture, "-5", "Decimal(-5n).toString()");
-        // The invariant culture's group separator is `,`, which the function read under the invariant culture before.
+        // A Number wrapper is not cast: its text is NumberText's, which reads no culture, and the parse after it is the
+        // invariant culture's.
+        Holds(culture, "1.5", "Decimal(new Number(1.5)).toString()");
+        // Kept unchanged, not judged right: the function's styles (NumberStyles.Number) admit more than the literal's
+        // grammar, the invariant culture's group separator `,` and a trailing sign among them, as they did under the
+        // invariant culture before; whether to narrow them is the owner's question.
         Holds(culture, "15", "Decimal('1,5').toString()");
+        Holds(culture, "-5", "Decimal('5-').toString()");
         Holds(culture, "TypeError", "var e = 'none'; try { Decimal('1.5.5'); } catch (x) { e = x.name; } e");
         // U+2212, sv-SE's minus sign in .NET, is not the invariant culture's.
         Holds(culture, "TypeError", "var e = 'none'; try { Decimal('−5'); } catch (x) { e = x.name; } e");
+    }
+
+    // A Decimal value's own constructor, `new (aDecimal)(text)`, reads a String as an integer with the invariant culture.
+    [Theory]
+    [MemberData(nameof(Cultures))]
+    public void A_Decimal_s_constructor_reads_a_String_with_the_invariant_culture(string culture)
+    {
+        Holds(culture, "5", "new (1m)('5').toString()");
+        Holds(culture, "-5", "new (1m)('-5').toString()");
+        Holds(culture, "-5", "new (1.5m)('-5').toString()");
     }
 
     // The type keeps a negative zero's sign: toString writes it as the invariant culture does, "0", and toLocaleString
