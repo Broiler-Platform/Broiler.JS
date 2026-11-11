@@ -16,10 +16,32 @@ static class JSDecimalExtensions
     public static decimal AsDecimalOnly(this JSValue @this) => @this is JSDecimal v ? v.value : throw JSDecimal.CannotMix();
 }
 
+// The `m` literal's Decimal reads and writes its digits with the invariant culture, under every host culture: an `m`
+// literal's digits are source text, whose decimal point is `.` whatever the host's culture is, and a Decimal's text is
+// the same under every host (milestone SJL-9's clause 8, "Host globalization remains only behind the optional
+// providers"). Revised 2026-11-11, on the owner's ruling of that day, "Fix in this PR"; until then every parse and
+// every text conversion here named no culture and so read the host's current culture: `decimal.TryParse(text, out var
+// v)` in the Decimal function, `decimal.TryParse(v, out var n)` in the factory the `m` literal's code calls,
+// `value.ToString() + "n"`, `long.Parse(value.ToString())` in CreateInstance, `this.value.ToString() == value` in
+// EqualsLiteral, `this.value + value`, `this.value.ToString() + "n" + @string.ToString()` and
+// `this.value + @object.StringValue` in the concatenations, `value.ToString()` in toString, and `nv.ToString("g21")`,
+// `nv.ToString($"F{i}")` and `nv.ToString("F0")` in toFixed. Under a de-DE host `1234567.891m` was 1234567891, `.` being
+// that culture's group separator, and under sv-SE an `m` literal with a fraction was a TypeError.
 [JSBaseClass("Object")]
 [JSFunctionGenerator("Decimal")]
 public partial class JSDecimal : JSPrimitive
 {
+    // An `m` literal's text, as the scanner hands it to the factory once its separators and suffix are gone: decimal
+    // digits with at most one `.` (`1.5`, `.5`, `1.`, `08`), never a sign, an exponent, white space or a group separator.
+    private const NumberStyles LiteralStyles = NumberStyles.AllowDecimalPoint;
+
+    // The Decimal function's text: the styles decimal.TryParse reads by default (NumberStyles.Number), which the
+    // function read before 2026-11-11, now with the invariant culture's symbols alone (`.`, `,`, `-` and `+`), so that
+    // under the invariant culture the function answers as it did and under any other host it answers the same.
+    private const NumberStyles FunctionStyles = NumberStyles.Number;
+
+    private static readonly CultureInfo Invariant = CultureInfo.InvariantCulture;
+
     public static JSException CannotMix() => JSEngine.NewTypeError("Cannot mix BigInt and other types, use explicit conversions");
 
     internal readonly decimal value;
@@ -50,7 +72,7 @@ public partial class JSDecimal : JSPrimitive
         var text = f.ToString();
         text = text.TrimEnd('m').Replace("_", "");
 
-        if (!decimal.TryParse(text, out var v))
+        if (!decimal.TryParse(text, FunctionStyles, Invariant, out var v))
             throw JSEngine.NewTypeError($"{f} is not a valid big integer");
 
         return new JSDecimal(v);
@@ -61,7 +83,7 @@ public partial class JSDecimal : JSPrimitive
     {
         var v = stringValue.TrimEnd('m').Replace("_", "");
 
-        if (!decimal.TryParse(v, out var n))
+        if (!decimal.TryParse(v, LiteralStyles, Invariant, out var n))
             throw JSEngine.NewTypeError($"{stringValue} is not a valid big integer");
 
         value = n;
@@ -76,7 +98,7 @@ public partial class JSDecimal : JSPrimitive
         return this.value == n;
     }
 
-    public override string ToString() => value.ToString() + "n";
+    public override string ToString() => value.ToString(Invariant) + "n";
 
     public override JSValue InvokeFunction(in Arguments a) => throw JSEngine.NewTypeError($"{this} is not a function");
 
@@ -92,7 +114,7 @@ public partial class JSDecimal : JSPrimitive
         if (value.IsNumber)
             return new JSDecimal((long)value.DoubleValue);
 
-        var v = long.Parse(value.ToString());
+        var v = long.Parse(value.ToString(), NumberStyles.Integer, Invariant);
         return new JSDecimal(v);
     }
 
@@ -104,7 +126,7 @@ public partial class JSDecimal : JSPrimitive
         return this.value == bigint.value;
     }
 
-    public override bool EqualsLiteral(string value) => this.value.ToString() == value;
+    public override bool EqualsLiteral(string value) => this.value.ToString(Invariant) == value;
     public override bool EqualsLiteral(double value) => (double)this.value == value;
     public override JSValue TypeOf() => JSConstants.Decimal;
     protected override JSValue GetPrototype() => Intrinsics.Prototype(Names.Decimal);
@@ -161,7 +183,7 @@ public partial class JSDecimal : JSPrimitive
 
     public override JSValue AddValue(double value) => throw CannotMix();
 
-    public override JSValue AddValue(string value) => new JSString(this.value + value);
+    public override JSValue AddValue(string value) => new JSString(this.value.ToString(Invariant) + value);
 
     public override JSValue AddValue(JSValue value)
     {
@@ -177,16 +199,16 @@ public partial class JSDecimal : JSPrimitive
             throw CannotMix();
 
         if (value is JSString @string)
-            return new JSString(this.value.ToString() + "n" + @string.ToString());
+            return new JSString(this.value.ToString(Invariant) + "n" + @string.ToString());
 
         if (value is JSObject @object)
-            return new JSString(this.value + @object.StringValue);
+            return new JSString(this.value.ToString(Invariant) + @object.StringValue);
 
         return new JSDecimal(this.value + value.BigIntValue);
     }
 
     [JSExport("toString")]
-    public JSValue JSToString() => new JSString(value.ToString());
+    public JSValue JSToString() => new JSString(value.ToString(Invariant));
 
 
     [JSExport("toFixed")]
@@ -201,15 +223,15 @@ public partial class JSDecimal : JSPrimitive
 
             var i = (int)n1.value;
             if (nv > 999999999999999.0m && i <= 15)
-                return new JSString(nv.ToString("g21"));
+                return new JSString(nv.ToString("g21", Invariant));
 
-            return new JSString(nv.ToString($"F{i}"));
+            return new JSString(nv.ToString($"F{i}", Invariant));
         }
 
         if (nv > 999999999999999.0m)
-            return new JSString(nv.ToString("g21"));
+            return new JSString(nv.ToString("g21", Invariant));
 
-        return new JSString(nv.ToString("F0"));
+        return new JSString(nv.ToString("F0", Invariant));
     }
 
     // Decimal.prototype.toLocaleString(locales, options), as ECMA-402's Number.prototype.toLocaleString
