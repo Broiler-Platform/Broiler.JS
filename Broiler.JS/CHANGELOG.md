@@ -10,6 +10,48 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### `Intl.supportedValuesOf`'s currencies and units, and `Decimal.prototype.toLocaleString`, on the shared Intl library (2026-11-11, milestone SJL-9's clauses 7 and 8)
+
+On the owner's rulings of 2026-11-11 on milestone SJL-9's exit clauses 7 ("Fix (1); move (2) to SJL-17") and 8 ("Fix in
+code"):
+
+- **`Intl.supportedValuesOf("currency")` and `Intl.supportedValuesOf("unit")`** are the shared library's
+  `SupportedValues.Of` (Broiler.VM's JSD-0082, sub-area (a), rows L39 to L41): every currency code of the embedded CLDR
+  48.2.0 currency table, and ECMA-402's sanctioned single units, each sorted by code unit and each once. Until this change
+  both read the `Broiler.Unicode.Cldr.LocaleData` package's `IntlEnumerationData`. **No answer moves**: the table's list is
+  the package's, code for code, and the units are the same 45. `Broiler.JavaScript.BuiltIns` no longer references the
+  package, and `Directory.Packages.props` no longer names its version, so a `BuiltIns` package packed from this change
+  does not depend on it. This removes the last of "this engine's uses of `Broiler.Unicode.Cldr.LocaleData` for Intl
+  data" (the entry "Intl moves to the shared Intl library" below, "Where they were", last item, and its "What stays this
+  engine's").
+- **`Decimal.prototype.toLocaleString(locales, options)`** (the `m` literal's `Decimal`, a non-standard extension that
+  decision SJL-D-17 keeps here) reads its two arguments as ECMA-402's `Number.prototype.toLocaleString` does: a new
+  `Intl.NumberFormat` over `locales` and `options` formats the value's exact decimal digits through the shared number
+  formatting. With no `locales` the locale is the default-locale provider's (decision D7, row L35), as every Intl
+  service's is. Until this change it answered `value.ToString(CultureInfo.CurrentCulture)` and ignored both arguments,
+  reading the host's culture behind no provider. Its answers move:
+  - every locale's answer is that locale's CLDR 48.2.0 number format, with grouping: `(1234567.891m).toLocaleString("en")`
+    is `"1,234,567.891"`, and `"de"` gives `"1.234.567,891"`, where both answered `"1234567.891"`, the host culture's
+    .NET general format (the invariant culture's, with no `LANG`);
+  - the options apply (`style`, `currency`, `notation`, the digit options and the others), and they are refused as
+    `Intl.NumberFormat` refuses them: `{ style: "currency" }` with no currency is a `TypeError`, and a malformed tag a
+    `RangeError`, where both were ignored;
+  - the digits are formatted exactly, as a String's are by `Intl.NumberFormat`, and the default digit options round them
+    to three fraction digits, as for a Number, where every digit was written: `12345678901234567890.123456789m` gives
+    `"12,345,678,901,234,567,890.123"` in `en`;
+  - with no `locales`, under a host culture such as `de-DE`, the answer is that locale's CLDR format through the
+    default-locale provider (`"1.234.567,891"`), where it was the culture's .NET general format (`"1234567,891"`); under
+    invariant globalization it is `en-US`'s.
+
+  The cases are `Broiler.JavaScript.BuiltIns.Tests`' `DecimalToLocaleStringTests`; test262 at `ccaac100` holds no
+  `Decimal` path. Bundle [`sjl-9-001`](../docs/evidence/sjl-9-001/README.md), "Clauses 7 and 8 read again, 2026-11-11
+  (after the owner's rulings)", reads both clauses at this change.
+- **The Collator's hand resolution of its `co`, `kf` and `kn` keys** (`GetUnicodeExtensionType`,
+  `RemoveUnicodeExtensionKeyword`, `ReflectExtensionKeyword`, `ResolveLocaleFromCanonical`'s keyword filter over
+  `CollatorRelevantKeys`, and `JSIntlCollator`'s `StripUnicodeExtension`) moves from SJL-9's deletion list to SJL-17's,
+  at SJL-17.5 ([`docs/roadmap/SharedLibraries.md`](../docs/roadmap/SharedLibraries.md), the dated notes on both lists).
+  No code changes for it, and nothing moves.
+
 ### Intl moves to the shared Intl library (2026-11-10, milestone SJL-9.5)
 
 `Broiler.JavaScript.BuiltIns` takes `Broiler.ECMAScript.Intl` by project reference and embeds the data home's tables,
@@ -32,7 +74,8 @@ only what .NET exposes exactly, for a locale the shared data lacks (decision D6)
 comparison are SJL-17's (milestone SJL-17.5); and `Intl.supportedValuesOf`, whose currency and unit lists still come from
 the `Broiler.Unicode.Cldr.LocaleData` package's `IntlEnumerationData`, which this engine keeps for them alone: the
 shared library's `SupportedValues` is not wired for those two keys, so `BuiltIns` and `Directory.Packages.props` keep
-the package.
+the package. *(Noted 2026-11-11: from "and `Intl.supportedValuesOf`" this held until the entry of that day above, which
+wires both lists to the shared library and removes the package; the sentence is left as written.)*
 
 **Where they were**, each deleted (the commits of branch `sjl-9-5-cutover` name every member; the search for them is
 bundle `sjl-9-001`'s [`cutover/deletion-search.txt`](../docs/evidence/sjl-9-001/cutover/deletion-search.txt)):
@@ -49,7 +92,8 @@ bundle `sjl-9-001`'s [`cutover/deletion-search.txt`](../docs/evidence/sjl-9-001/
   numbering map with its hand `"٫"` separator, and the members no caller reached (row T42);
 - `NumberingSystemDecimalData`, the engine's interim adapter of a numbering system's decimal symbol, and its
   per-system data, once the library wrote that symbol itself (below);
-- this engine's uses of `Broiler.Unicode.Cldr.LocaleData` for Intl data, but `supportedValuesOf`'s.
+- this engine's uses of `Broiler.Unicode.Cldr.LocaleData` for Intl data, but `supportedValuesOf`'s. *(Noted 2026-11-11:
+  `supportedValuesOf`'s went too, with the package reference, in the entry of that day above.)*
 
 **The public types stay** with every public member (decision SJL-D-25; [`docs/public-api.md`](../docs/public-api.md),
 "Public API changes, 2026-11-10"): three constructors and one static member behave differently, as that section says.
