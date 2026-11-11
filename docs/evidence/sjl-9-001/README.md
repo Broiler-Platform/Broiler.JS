@@ -1018,7 +1018,15 @@ changes no rule and declares nothing of SJL-9 met: the gate waits as the exit re
   under every host as it did under the invariant culture; `toString`; `toFixed`'s general and fixed formats;
   the three concatenations (`AddValue` with a .NET string, with a String and with an object); the equality with a string
   literal (`EqualsLiteral`); the value's own text (`ToString`, which `String(x)`, `'' + x` and `[x].join()` read); and
-  `CreateInstance`'s `long.Parse`. A dated comment on the class quotes each replaced call.
+  `CreateInstance`'s `long.Parse`. A dated comment on the class quotes each replaced call. *(Noted 2026-11-11, at
+  review: `CreateInstance` is reached from script as `new (aDecimal)(text)`, which the tests now read under the four
+  cultures. A String that is not an integer in the invariant culture's `NumberStyles.Integer` throws there an `Error`
+  carrying .NET's `FormatException`, not a `TypeError`, as any such String did before the change; under `sv-SE` a String
+  with U+2212, that culture's minus sign in .NET, parsed before (`new (1m)('−5')` was -5) and now throws it too. The
+  `Decimal` function's `NumberStyles.Number` admits more than the literal's grammar: the invariant culture's group
+  separator `,` anywhere in the integer part (`Decimal('1,,5')` is 15), a trailing sign (`Decimal('5-')` is -5) and
+  white space. It is kept unchanged so that no answer under the invariant culture moves; the open items below put
+  narrowing it to the owner.)*
 - **Left alone, each with its reason.** The scanner (`FastScanner`) and the shared tokenizer (`Tokenizer.ReadNumericLiteral`,
   its `DecimalSuffix` extension) hand on the literal's source text, the tokenizer checking its digits with the shared
   `NumericLiterals.Evaluate`, which reads no culture, and keeping no value for it; the parser and the bridge
@@ -1029,31 +1037,50 @@ changes no rule and declares nothing of SJL-9 met: the gate waits as the exit re
   conversions of a .NET `decimal` (`ClrProxy`, `FallbackClrInterop`, `TypeConverter`, `JSDynamicMetaData`) and
   `JSValueToClrConverter.ToDecimal` are casts; `JSMath` computes on the decimal value; `SameValueZeroComparer` compares
   the values and hashes them; `JSDecimal`'s own `Equals`, `ConvertTo` and `ToKey` are casts; the Decimal function's
-  `f.ToString()` is a JSValue's text, a String's own or the shared library's BigInt text, a Number being converted by a
-  cast before it; and `ToIntlDecimal` already named the invariant culture.
+  `f.ToString()` is a JSValue's text, a String's own, the shared library's BigInt text or, for a Number wrapper such as
+  `new Number(1.5)`, which is not cast, `NumberText`'s, none of which reads a culture, and the parse after it now names
+  the invariant culture (a primitive Number is cast before it); and `ToIntlDecimal` already named the invariant culture.
+  *(Revised 2026-11-11, at review; from "a String's own" to "the invariant culture." it read "a String's own or the
+  shared library's BigInt text, a Number being converted by a cast before it; and `ToIntlDecimal` already named the
+  invariant culture." A Number wrapper reaches the parse as its text: under `de-DE` and `tr-TR`
+  `Decimal(new Number(1.5))` was 15 before the change, and under `sv-SE` a `TypeError`; it is now 1.5 under every host.)*
 - **Tests.** `Broiler.JavaScript.BuiltIns.Tests`' new `DecimalCultureTests` run each case under the invariant culture and
   under `de-DE`, `sv-SE` and `tr-TR`, applied as `DecimalToLocaleStringTests` applies a culture: `1234567.891m`'s
   `toString` is `1234567.891`, `(1.5m).toFixed(1)` is `1.5` and `toFixed`'s other formats are the invariant culture's,
   the concatenations and the equality with a string literal read the invariant digits, the `Decimal` function reads a
   String with the invariant culture, a negative zero is written as under the invariant culture, and
   `DecimalToLocaleStringTests`' cases hold with the literal itself. Run against the code at `ef3c4445`, every invariant
-  culture case passes and every other culture's fails, but the negative zero's, which no culture changes.
+  culture case passes and every other culture's fails, but the negative zero's, which no culture changes. *(Noted
+  2026-11-11, at review: the tests gain `A_Decimal_s_constructor_reads_a_String_with_the_invariant_culture`
+  (`new (1m)('5')`, `new (1m)('-5')` and `new (1.5m)('-5')`) and, in the `Decimal` function's test,
+  `Decimal(new Number(1.5))` and `Decimal('5-')`; `Decimal('1,5')` and `Decimal('5-')` are pinned as kept unchanged, not
+  as right. Against the code at `ef3c4445` the constructor's test fails under `sv-SE` alone, whose minus sign the text
+  of -5 was, and passes under the other three.)*
 
 **What it is read from**, in [`readings-2026-11-11/`](readings-2026-11-11/answers-75695cdd.txt):
 - `searches-75695cdd.txt`, and `searches-ef3c4445.txt` at the base: the `m` literal's paths through the tree;
   `JSDecimal.cs`'s parses and text conversions, each marked as naming the invariant culture or none; the exit reading's
   search for named host-culture calls; and the review's search for numeric parses and string comparisons that name no
-  culture (`searches-review.txt`'s, at both commits).
+  culture (`searches-review.txt`'s, at both commits). *(Noted 2026-11-11, at review: `searches-75695cdd.txt` gains, as
+  its section 6, a search for date and time parses that name no culture, and its closing note says what is still not
+  searched; `searches-ef3c4445.txt` is left as taken, `JSValueToClrConverter.cs` being the same at both commits.)*
 - `answers-75695cdd.txt`: the answers at `ef3c4445` and at `75695cdd`, beside `6758d47e`'s and `556eba43`'s from the
   stage before, each from a scratch tree `git archive` wrote from the commit, built and run as `answers.txt` says: the
   engine vectors of corpus revision 38 in UTC and `America/New_York`, test262's `supportedValuesOf` directory in both
   variants and both zones, part C's and part D's programs, `probe.js` in its four environments and `probe-culture.js`
-  in its four. As there, these are not the rule's parts.
+  in its four. As there, these are not the rule's parts. *(Noted 2026-11-11, at review: the file's last two sections
+  compare both probes at `75695cdd` with `6758d47e`'s committed answers directly. Every line that differs moved either
+  from `6758d47e` to `ef3c4445`, by the stage before's `toLocaleString` change, `ef3c4445`'s answers being `556eba43`'s
+  and `39a56e1b`'s, or from `ef3c4445` to `75695cdd`, by the fix, as listed below, or at both; no other line differs.)*
 - `probe-ef3c4445.txt` and `probe-75695cdd.txt`, `probe-culture-ef3c4445.txt` and `probe-culture-75695cdd.txt`: the
   two probes' answers at both commits.
 
-**What moved between `ef3c4445` and `75695cdd`.** Only the `m` literal's culture-broken answers under a host culture
-other than the invariant one, and the `toLocaleString` lines that follow from them; every one is the fix's. The engine
+**What moved between `ef3c4445` and `75695cdd`.** Only the culture-broken parse and text answers of the `m` literal's
+`Decimal` under a host culture other than the invariant one: the literals', a `Decimal`'s text, of a value built from a
+String too, and the `Decimal` function's parse of `−5` under `sv-SE`, with the `toLocaleString` lines that follow from
+them; every one is the fix's, and the ruling's "every culture-dependent Decimal parse/format" covers each. *(Revised
+2026-11-11, at review; to "covers each." it read "Only the `m` literal's culture-broken answers under a host culture
+other than the invariant one, and the `toLocaleString` lines that follow from them; every one is the fix's.")* The engine
 vectors' reports are the same bytes at both commits in each zone, and the same as at `6758d47e` and `556eba43`. Every
 test262 case passes at both. Every part C and part D program answers the same bytes as at the three other commits, and
 `default-locale-is-supported.js` passes in both variants. With no `LANG`, whose culture is the invariant one, and under
@@ -1075,24 +1102,49 @@ invariant globalization with and without `LANG=de_DE.UTF-8`, no probe line moves
   `Decimal` function's parse of a String, which the ruling's "every culture-dependent Decimal parse/format" covers.
 - At `75695cdd` every probe line under a host culture answers as with no `LANG` but the lines the default-locale
   provider decides: `defaultLocale` and the `toLocaleString` lines with no `locales`.
+- *Added 2026-11-11, at review:* outside the committed probes, the review's probes of the code at `ef3c4445` and at the
+  fix, under the four cultures in the test host, find more moves of the same kind, each under a host culture alone and
+  each to the invariant culture's answer: a String in the host's own number format, which the `Decimal` function read,
+  is a `TypeError`, `Decimal('1.234,5')` under `de-DE` and `tr-TR` and `Decimal('1 5')` under `sv-SE` having been
+  1234.5 and 15; `Decimal(new Number(1.5))` is 1.5, where it was 15 under `de-DE` and `tr-TR` and a `TypeError` under
+  `sv-SE`; and under `sv-SE` `new (1m)('−5')`, which was -5, throws an `Error` carrying .NET's `FormatException`, and a
+  negative Decimal built by `new (1m)('-5')` is written `-5`, where it was `−5`. Those probes' answers are not committed;
+  the tests hold `Decimal(new Number(1.5))`'s and `new (1m)('-5')`'s.
 
 | Clause | Its words | Read from, at `75695cdd` | Reading, and what it rests on |
 |---|---|---|---|
-| 8 | "Host globalization remains only behind the optional providers." | `searches-75695cdd.txt`; part D's programs and `default-locale-is-supported.js` under invariant globalization, locally; `probe.js` and `probe-culture.js` under the four environments each; `DecimalCultureTests` | **Not met as written** at `75695cdd`, now for the sites outside the `m` literal alone; **met for `Decimal.prototype.toLocaleString` and for the `m` literal.** `JSDecimal.cs` names the invariant culture at every parse and text conversion, and no other path the literal takes reads a culture (above). The exit reading's search finds the host's culture read where that reading read it, the providers (decisions D6 and D7), the Collator (SJL-17's) and SJL-D-17's .NET format string and legacy `Date.parse`, and finds no other named call. Under invariant globalization every program answers as at the base and `default-locale-is-supported.js` passes, and under `de_DE`, `sv_SE` and `tr_TR` the probes' `Decimal` lines answer as with no `LANG`. But the review's search still finds, outside the `m` literal's paths and unchanged by this change, sites that read the host's culture through calls that name none, as the clause 8 row above names them: `JSString`'s `BigIntValue` (`long.TryParse`, which the CLR bridge's conversion of a String to a .NET `long` reads, and which under a culture whose minus sign is U+2212, as .NET's `sv-SE`, also accepts that sign); and the culture-sensitive `StartsWith` and `EndsWith` tests of ASCII prefixes and suffixes, in `JSRegExp` (`"bjsg"`), the compiler (a template span's delimiters, a private name's `#`), the module loader (a specifier's `.`), the CLR bridge (`"To"`) and the shell, with the shell's `ToLower` of a package version. The ruling names the Decimal's parses and formats alone, none of these is on the `m` literal's paths, and no decision keeps them, so they are not fixed here and the clause is not met as written. `JSJsonParser`'s array-index test and `JSRegExp`'s `long.TryParse` over digits it has checked read the culture without its deciding their answer, as the row above says |
+| 8 | "Host globalization remains only behind the optional providers." | `searches-75695cdd.txt`; part D's programs and `default-locale-is-supported.js` under invariant globalization, locally; `probe.js` and `probe-culture.js` under the four environments each; `DecimalCultureTests` | **Not met as written** at `75695cdd`, now for the sites outside the `m` literal alone; **met for `Decimal.prototype.toLocaleString` and for the `m` literal.** `JSDecimal.cs` names the invariant culture at every parse and text conversion, and no other path the literal takes reads a culture (above). The exit reading's search finds the host's culture read where that reading read it, the providers (decisions D6 and D7), the Collator (SJL-17's) and SJL-D-17's .NET format string and legacy `Date.parse`, and finds no other named call. Under invariant globalization every program answers as at the base and `default-locale-is-supported.js` passes, and under `de_DE`, `sv_SE` and `tr_TR` the probes' `Decimal` lines answer as with no `LANG`. But the review's search still finds, outside the `m` literal's paths and unchanged by this change, sites that read the host's culture through calls that name none, as the clause 8 row above names them: `JSString`'s `BigIntValue` (`long.TryParse`, which the CLR bridge's conversion of a String to a .NET `long` reads, and which under a culture whose minus sign is U+2212, as .NET's `sv-SE`, also accepts that sign); and the culture-sensitive `StartsWith` and `EndsWith` tests of ASCII prefixes and suffixes, in `JSRegExp` (`"bjsg"`), the compiler (a template span's delimiters, a private name's `#`), the module loader (a specifier's `.`), the CLR bridge (`"To"`) and the shell, with the shell's `ToLower` of a package version. The ruling names the Decimal's parses and formats alone, none of these is on the `m` literal's paths, and no decision keeps them, so they are not fixed here and the clause is not met as written. `JSJsonParser`'s array-index test and `JSRegExp`'s `long.TryParse` over digits it has checked read the culture without its deciding their answer, as the row above says. *(Noted 2026-11-11, at review: the search for date and time parses that name no culture, section 6 of `searches-75695cdd.txt`, finds one more such reader outside the providers and SJL-D-17's paths, which the review's search did not look for: `JSValueToClrConverter`'s `ToDateTime`, `ToNullableDateTime`, `ToDateTimeOffset` and `ToNullableDateTimeOffset` (lines 53, 56, 59 and 62), whose `DateTime.Parse(value.ToString())` names no culture and so reads the host's date format when the CLR bridge turns a String into a .NET `DateTime` or `DateTimeOffset`. They are not `Date.parse`: `DateParser`'s parses take the invariant culture or the culture SJL-D-17's fallback passes. `SharedLibraries.md`'s record of SJL-6.1 lists "the CLR converters, whose `DateTime.Parse` reads a guest string into a host type and is not `Date.parse`" under "Not shared, and staying here"; that says the code is not shared, is no numbered decision and says nothing of a culture, so it does not keep their culture-dependent reading. The reading stands, not met as written, for these sites too.)* |
 
 **So:** clause 8 is met for `Decimal.prototype.toLocaleString` and for the `m` literal's `Decimal`, which reads and
 writes its digits with the invariant culture under every host, and is not met as written, for the sites outside the `m`
-literal that the search at review names, which read the host's culture for a sign or a linguistic comparison.
+literal that the search at review names, which read the host's culture for a sign or a linguistic comparison. *(Noted
+2026-11-11, at review: and for the CLR converters' `DateTime.Parse`, which reads the host's date format, as the row's
+note names it.)*
 
 **What would meet clause 8 now.** Those sites taking the invariant culture or an ordinal comparison, or a dated decision
 that keeps them and says why, as SJL-D-17 does for the .NET format string; then the clause read again at the commit that
-carries it. Neither is this reading's to take; choosing is the owner's.
+carries it. Neither is this reading's to take; choosing is the owner's. *(Noted 2026-11-11, at review: "Those sites"
+include `JSValueToClrConverter.cs`'s four `DateTime.Parse` calls, lines 53, 56, 59 and 62, which would take the invariant
+culture, or a culture the embedder names, or the same decision would say why they stay; and the search would first cover
+what `searches-75695cdd.txt`'s closing note says is still not searched, since meeting only the sites named so far would
+not show the clause met.)*
 
 **Open items** this reading leaves, none done here: clause 8's sites above; the open items of the reading above but
 clause 8's `m` literal, which stand as it lists them, `Intl.NumberFormat.prototype.format` given a `Decimal` among them
 (the change leaves it reading the value as a Number); and `JSON.stringify` of a `Decimal`, which at `ef3c4445` with no
 `LANG` throws a .NET `InvalidCastException` (`JSJSON.Stringify` casts the value to an object), in code this change does
 not touch and for which no `Decimal` path of test262 or of the vectors asks an answer.
+- *Added 2026-11-11, at review:* clause 8's sites above include `JSValueToClrConverter.cs`'s `DateTime.Parse` at lines
+  53, 56, 59 and 62, which the record of SJL-6.1 keeps unshared but no decision keeps culture-dependent; and the kinds of
+  call `searches-75695cdd.txt`'s closing note names as not searched.
+- *Added 2026-11-11, at review:* **the owner's question on the `Decimal` function's styles.** It parses a String with
+  `NumberStyles.Number` and the invariant culture, which admits more than the `m` literal's grammar: the group separator
+  `,` anywhere in the integer part, a trailing sign and white space. It answered so under the invariant culture before
+  the change, and the change keeps it, so that no answer under the invariant culture moves. If the owner narrows it, to
+  `AllowDecimalPoint` and `AllowLeadingSign` with white space if wanted, `Decimal('1,5')` and `Decimal('5-')` become
+  `TypeError`s under every host, and the tests' pinned answers move with it.
+- *Added 2026-11-11, at review:* `new (aDecimal)(text)` with a String that is not an integer throws an `Error` carrying
+  .NET's `FormatException`, not a `TypeError`, as before the change; under `sv-SE` a String with U+2212 now does too.
 
 ## State
 
@@ -1161,7 +1213,13 @@ conversion of the `m` literal's `Decimal`. The subsection "Clause 8 read again a
 reads clause 8 at `75695cdd`: met for `Decimal.prototype.toLocaleString` and for the `m` literal, and not met as written,
 for the sites outside the `m` literal that the search at review names, which read the host's culture for a sign or a
 linguistic comparison and which neither the ruling nor any decision covers. No answer moved but the `m` literal's under a
-host culture other than the invariant one, with the `toLocaleString` lines that follow from them. The paragraphs above
+host culture other than the invariant one, with the `toLocaleString` lines that follow from them. *(Noted 2026-11-11,
+at review: no answer moved but the culture-broken parse and text answers of the `m` literal's `Decimal` under a host
+culture other than the invariant one, the literals', a `Decimal`'s text and the `Decimal` function's parse of a String,
+with the `toLocaleString` lines that follow from them, which the ruling's "every culture-dependent Decimal parse/format"
+covers; and the sites the clause is not met for include the CLR converters' `DateTime.Parse`, which reads the host's
+date format. The sentence "No answer moved but the `m` literal's under a host culture other than the invariant one, with
+the `toLocaleString` lines that follow from them." is left as written above and held until this note.)* The paragraphs above
 are left as written. That is no verdict on SJL-9, whose gate waits as the exit reading's paragraph says; nothing is
 accepted.
 

@@ -29,7 +29,12 @@ not taken being "Fix in a follow-up PR" and "Record as SJL-D-17 path"):
     (`1.5m` threw "1.5m is not a valid big integer"), and `Decimal("\u22125")`, that culture's minus sign in .NET, is a
     `TypeError`, as under the invariant culture, where it was -5;
   - a `Decimal`'s text under such a host is the invariant culture's: `(Decimal("1234567891") / 1000m).toString()` gives
-    `"1234567.891"`, where it gave `"1234567,891"`.
+    `"1234567.891"`, where it gave `"1234567,891"`;
+  - a String in the host's own number format, which the `Decimal` function read under that host, is a `TypeError`, as
+    under the invariant culture: `Decimal("1.234,5")` under `de-DE` or `tr-TR`, which was 1234.5, and `Decimal("1 5")`
+    under `sv-SE`, which was 15; and under `sv-SE` a `Decimal`'s own constructor given U+2212, `new (1m)("\u22125")`,
+    throws an `Error` carrying .NET's `FormatException`, as under the invariant culture, where it was -5. *(Added
+    2026-11-11, at review; the bullet before it ended "where it gave `"1234567,891"`." with a full stop.)*
 
   The cases are `Broiler.JavaScript.BuiltIns.Tests`' `DecimalCultureTests`, each under the invariant culture and under
   `de-DE`, `sv-SE` and `tr-TR`; test262 at `ccaac100` holds no `Decimal` path. Bundle

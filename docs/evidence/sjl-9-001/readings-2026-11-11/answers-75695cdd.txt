@@ -184,3 +184,50 @@ TZ=UTC, LANG=tr_TR.UTF-8: ef3c4445's answers equal 39a56e1b's (the committed pro
 75695cdd, TZ=UTC, LANG=de_DE.UTF-8: lines whose answer differs from 75695cdd's with LANG unset: defaultLocale, exact.toLocaleString()
 75695cdd, TZ=UTC, LANG=sv_SE.UTF-8: lines whose answer differs from 75695cdd's with LANG unset: defaultLocale, exact.toLocaleString(), (-0m).toLocaleString()
 75695cdd, TZ=UTC, LANG=tr_TR.UTF-8: lines whose answer differs from 75695cdd's with LANG unset: defaultLocale, exact.toLocaleString()
+
+# Added 2026-11-11, at review of this stage: the comparison above is made against ef3c4445 and, for probe-culture.js, against
+# 39a56e1b; the two below compare 75695cdd with the stage before's base 6758d47e directly, from the committed probe files,
+# by compare6758.py, and attribute each line that differs to the commits between.
+
+## probe.js: per environment, the lines whose answer differs between 6758d47e (the committed probe-6758d47e.txt) and 75695cdd
+TZ=UTC, LANG LC_ALL LANGUAGE unset: 17 of 28 lines differ; ef3c4445's answers equal 556eba43's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): d.toLocaleString(), d.toLocaleString(undefined), d.toLocaleString('en'), d.toLocaleString('en-US'), d.toLocaleString('de'), d.toLocaleString('de-DE'), d.toLocaleString('fr'), d.toLocaleString('hi-u-nu-deva'), d.toLocaleString('en',{maximumFractionDigits:1}), d.toLocaleString('de',{style:'currency',currency:'EUR'}), d.toLocaleString('en',{notation:'compact'}), d.toLocaleString(undefined,{minimumFractionDigits:4}), n.toLocaleString('en',{maximumFractionDigits:0}), big.toLocaleString('en',{maximumFractionDigits:20}), big.toLocaleString('en',{maximumSignificantDigits:21}), d.toLocaleString('xx-invalid-'), d.toLocaleString('en',{style:'currency'})
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): none
+  moved at both: none
+  any other line: none
+TZ=UTC, LANG=de_DE.UTF-8: 18 of 28 lines differ; ef3c4445's answers equal 556eba43's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): d.toLocaleString('xx-invalid-'), d.toLocaleString('en',{style:'currency'})
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): d.toString, n.toLocaleString('en',{maximumFractionDigits:0})
+  moved at both: d.toLocaleString(), d.toLocaleString(undefined), d.toLocaleString('en'), d.toLocaleString('en-US'), d.toLocaleString('de'), d.toLocaleString('de-DE'), d.toLocaleString('fr'), d.toLocaleString('hi-u-nu-deva'), d.toLocaleString('en',{maximumFractionDigits:1}), d.toLocaleString('de',{style:'currency',currency:'EUR'}), d.toLocaleString('en',{notation:'compact'}), d.toLocaleString(undefined,{minimumFractionDigits:4}), big.toLocaleString('en',{maximumFractionDigits:20}), big.toLocaleString('en',{maximumSignificantDigits:21})
+  any other line: none
+TZ=UTC, LANG unset, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1: 17 of 28 lines differ; ef3c4445's answers equal 556eba43's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): d.toLocaleString(), d.toLocaleString(undefined), d.toLocaleString('en'), d.toLocaleString('en-US'), d.toLocaleString('de'), d.toLocaleString('de-DE'), d.toLocaleString('fr'), d.toLocaleString('hi-u-nu-deva'), d.toLocaleString('en',{maximumFractionDigits:1}), d.toLocaleString('de',{style:'currency',currency:'EUR'}), d.toLocaleString('en',{notation:'compact'}), d.toLocaleString(undefined,{minimumFractionDigits:4}), n.toLocaleString('en',{maximumFractionDigits:0}), big.toLocaleString('en',{maximumFractionDigits:20}), big.toLocaleString('en',{maximumSignificantDigits:21}), d.toLocaleString('xx-invalid-'), d.toLocaleString('en',{style:'currency'})
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): none
+  moved at both: none
+  any other line: none
+TZ=UTC, LANG=de_DE.UTF-8, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1: 17 of 28 lines differ; ef3c4445's answers equal 556eba43's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): d.toLocaleString(), d.toLocaleString(undefined), d.toLocaleString('en'), d.toLocaleString('en-US'), d.toLocaleString('de'), d.toLocaleString('de-DE'), d.toLocaleString('fr'), d.toLocaleString('hi-u-nu-deva'), d.toLocaleString('en',{maximumFractionDigits:1}), d.toLocaleString('de',{style:'currency',currency:'EUR'}), d.toLocaleString('en',{notation:'compact'}), d.toLocaleString(undefined,{minimumFractionDigits:4}), n.toLocaleString('en',{maximumFractionDigits:0}), big.toLocaleString('en',{maximumFractionDigits:20}), big.toLocaleString('en',{maximumSignificantDigits:21}), d.toLocaleString('xx-invalid-'), d.toLocaleString('en',{style:'currency'})
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): none
+  moved at both: none
+  any other line: none
+## probe-culture.js: per environment, the lines whose answer differs between 6758d47e (the committed probe-culture-6758d47e.txt) and 75695cdd
+TZ=UTC, LANG unset: 6 of 19 lines differ; ef3c4445's answers equal 39a56e1b's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): exact.toLocaleString(), exact.toLocaleString('en'), (Decimal('12345678901234567890123456789') / 1000000000m).toLocaleString('en'), (-0m).toLocaleString('en'), (0m * -1m).toLocaleString('en'), (-0m).toLocaleString()
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): none
+  moved at both: none
+  any other line: none
+TZ=UTC, LANG=de_DE.UTF-8: 10 of 19 lines differ; ef3c4445's answers equal 39a56e1b's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): exact.toLocaleString(), exact.toLocaleString('en'), (Decimal('12345678901234567890123456789') / 1000000000m).toLocaleString('en'), (-0m).toLocaleString('en'), (0m * -1m).toLocaleString('en'), (-0m).toLocaleString()
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): exact = Decimal('1234567891') / 1000m; exact.toString(), (1234567.891m).toString(), (1.5m).toFixed(1), (-0.5m).toString()
+  moved at both: none
+  any other line: none
+TZ=UTC, LANG=sv_SE.UTF-8: 11 of 19 lines differ; ef3c4445's answers equal 39a56e1b's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): exact.toLocaleString(), exact.toLocaleString('en'), (Decimal('12345678901234567890123456789') / 1000000000m).toLocaleString('en'), (-0m).toLocaleString('en'), (0m * -1m).toLocaleString('en'), (-0m).toLocaleString()
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): exact = Decimal('1234567891') / 1000m; exact.toString(), (1234567.891m).toString(), (1.5m).toFixed(1), (-0.5m).toString(), Decimal('\u22125').toString()
+  moved at both: none
+  any other line: none
+TZ=UTC, LANG=tr_TR.UTF-8: 10 of 19 lines differ; ef3c4445's answers equal 39a56e1b's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): exact.toLocaleString(), exact.toLocaleString('en'), (Decimal('12345678901234567890123456789') / 1000000000m).toLocaleString('en'), (-0m).toLocaleString('en'), (0m * -1m).toLocaleString('en'), (-0m).toLocaleString()
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): exact = Decimal('1234567891') / 1000m; exact.toString(), (1234567.891m).toString(), (1.5m).toFixed(1), (-0.5m).toString()
+  moved at both: none
+  any other line: none
