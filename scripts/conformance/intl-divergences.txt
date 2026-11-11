@@ -126,21 +126,24 @@
 # whose divergence no longer holds, under the rule above: 1,746 lines and the 106 reasons they leave with no vector.
 # Broiler.VM's 41 lines (reasons vm-z8 18, vm-l9 18 and vm-l18 5) are its corrections at SJL-9.4, which its JSD-0082
 # names (decisions D15 and D32); each vector matches in its run at its origin/main a8d8398b on revision 37. Broiler.JS's
-# 1,705 lines under 103 reasons are its corrections, data changes and implementation-defined changes at SJL-9.5, which
-# Broiler.JS/CHANGELOG.md lists by row; each vector matches in its runs at origin/main bc858d1a, whose engine is
-# a5f2692e's, on revision 37, under TZ=UTC and under TZ=America/New_York on Ubuntu 24.04.5 with ICU 74.2, and in the
-# windows-latest engine vectors job of the same commit (run 42877642606, artifact engine-vectors-windows-latest). They
-# include js-n6d-ci-windows (2) and js-t10-ci-windows (1), aa and pap vectors classified from windows-latest at
-# revision 28, which SJL-9.5 answers out on both hosts. Kept, 68 lines under 37 reasons: the 44 host-dependent ones,
-# whose answer moves with whether the host lists one of decision D5's extra locales (the *-host and *-shaw reasons of
-# revision 35, the *-cldr-host and *-cldr-ci-windows reasons of revision 37, and js-n3c-cldr-ci-ubuntu of revision 36),
-# which on a host that lists the locale classify a difference, whether or not the host above or windows-latest shows
-# one; and 24 that still hold on both hosts: js-n3c-cldr (2) and js-s1b-cldr (2), the owner's decision of 2026-11-08,
-# and 20 under js-n3c (3), js-n5d (2), js-p3 (3), js-s1b (3), js-t10 (1) and js-u15 (8), which SJL-9.5 merged without
-# answering and which its changelog lists among "Answers that still differ from the corpus's expectation": the clause
-# "answered by SJL-9.5" their reasons end with does not hold for them, and this revision leaves their text as it is for
-# a later revision to restate. No vector's out, per-engine field or script changes; a normative vector whose only
-# divergence field is retired is normative again.
+# 1,705 lines under 108 reasons, 103 of which keep no line, are its corrections, data changes and implementation-defined
+# changes at SJL-9.5, which Broiler.JS/CHANGELOG.md lists by row; each vector matches in its runs at origin/main
+# bc858d1a, whose engine is a5f2692e's, on revision 37, under TZ=UTC and under TZ=America/New_York on Ubuntu 24.04.5
+# with ICU 74.2, and in the windows-latest engine vectors job of the same commit (run 42877642606, artifact
+# engine-vectors-windows-latest). They include js-n6d-ci-windows (2) and js-t10-ci-windows (1), aa and pap vectors
+# classified from windows-latest at revision 28, which SJL-9.5 answers out on both hosts. Kept, 68 lines under 37
+# reasons: the 44 host-dependent ones, whose answer moves with whether the host lists one of decision D5's extra locales
+# (the *-host and *-shaw reasons of revision 35, the *-cldr-host and *-cldr-ci-windows reasons of revision 37, and
+# js-n3c-cldr-ci-ubuntu of revision 36), which on a host that lists the locale classify a difference, whether or not the
+# host above or windows-latest shows one; and 24 that still hold on both hosts: js-n3c-cldr (2) and js-s1b-cldr (2), the
+# owner's decision of 2026-11-08, and 20 under js-n3c (3), js-n5d (2), js-p3 (3), js-s1b (3), js-t10 (1) and js-u15 (8),
+# which SJL-9.5 merged without answering and which its changelog lists among "Answers that still differ from the
+# corpus's expectation": the clause "answered by SJL-9.5" their reasons end with does not hold for them, and this
+# revision leaves their text as it is for a later revision to restate, with the Broiler.JS answers some of them quote
+# that the runs above no longer show in their vectors (js-u15's "the package's CLDR 48.2.0 patterns", where af and lt
+# render 01:02:03, and js-n5d's, where ar's long hour renders the number alone). The lines retired are listed under
+# their reasons, with each engine, in docs/evidence/corpus-revision-38/retired-divergences-revision-38.tsv. No vector's
+# out, per-engine field or script changes; a normative vector whose only divergence field is retired is normative again.
 
 reason js-n1b-host: row N1b: Other locales' decimal symbols and grouping: `de-AT`, `de-CH`, `fr`, `sv`, `es`, `pl`, `en-IN`, `ar` ...; Broiler.JS answers the host ICU's separators and grouping: `de-CH` `"1'234.5"`, `fr` `"1 234,5"` (U+202F), `sv` `"-1 234,5"` (U+00A0 ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; where the host lists the locale, answered by SJL-9.5, this engine's cut-over to the shared Intl library; on a host whose ICU lists no culture for the vector's locale (the ICU 74.2 of Ubuntu 24.04.5, the host the area is classified on, lists none for `aa`, `ab`, `en-FR`, `en-Shaw`, `en-Shaw-GB`, `jbo` and `pap`), Broiler.JS resolves it as Broiler.VM's list does, to `en` or to the default `en-US`, and answers for that locale, which is Broiler.VM's expectation once this engine answers that locale as the row this field names has it (where SJL-9.5 corrects it, from that correction): its available locales are the host's cultures (decision D7, row L28, engine policy) and, since SJL-9.5, its resolved locale is the available one LookupMatcher finds (row L29); the owner's decision of 2026-11-04 ("Host only, fix vectors") keeps decision D7 as written, so on such a host no task answers the difference that resolution makes, and this engine's record is decision D7 of Broiler.VM's JSD-0082 with the dated note of 2026-11-04 under SJL-9 in docs/roadmap/SharedLibraries.md
 reason js-n3c: row N3c: Other locales' currency patterns and symbols: `fr`, `es`, `pt-PT`, `ko-KR`, `zh-TW`, `sv`, `ar`; Broiler.JS answers the package's and the host's: `fr` `"-1 234,50 U+20AC"`, `"1,00 $US"`; `ko-KR` `"US$1.00"`; `ar` `"-1U+066C234U+066B50U+20AC"`; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
