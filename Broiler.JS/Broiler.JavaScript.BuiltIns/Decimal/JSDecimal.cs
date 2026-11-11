@@ -5,6 +5,9 @@ using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.ECMAScript.Intl;
+using Broiler.ECMAScript.Numbers;
+using Broiler.JavaScript.BuiltIns.Intl;
 
 namespace Broiler.JavaScript.BuiltIns.Decimal;
 
@@ -209,12 +212,38 @@ public partial class JSDecimal : JSPrimitive
         return new JSString(nv.ToString("F0"));
     }
 
-    // This toLocale* method reads the host's culture directly, not the default-locale provider
-    // (Intl.JSIntlLocaleProviders.DefaultLocale) every Intl service reads. Under JSD-0082's decision D7, one
-    // default (row L35), it is a reader of DefaultLocale; it is listed for task 8.4, the number sub-area,
-    // which moves it onto that provider or records why it stays (listed 2026-11-04, at SJL-9.5).
-    [JSExport("toLocaleString")]
-    public JSValue ToLocaleString(in Arguments a) => new JSString(value.ToString(CultureInfo.CurrentCulture));
+    // Decimal.prototype.toLocaleString(locales, options), as ECMA-402's Number.prototype.toLocaleString
+    // (sec-number.prototype.tolocalestring) reads its two arguments: a new Intl.NumberFormat over `locales` and
+    // `options`, which formats this value's exact decimal digits (ECMA-402's Intl mathematical value, the shared
+    // library's IntlDecimal, sub-area (b)) through the shared NumberFormatter (sub-area (c)). With no `locales` the
+    // locale is the default-locale provider's (Intl.JSIntlLocaleProviders.DefaultLocale, JSD-0082's decision D7, row
+    // L35), as every Intl service's is, and the host's culture is read only behind that provider and the
+    // host-culture provider (decision D6). Revised 2026-11-11, on the owner's ruling of that day on SJL-9's clause 8,
+    // "Fix in code"; until then the method was
+    // `public JSValue ToLocaleString(in Arguments a) => new JSString(value.ToString(CultureInfo.CurrentCulture));`,
+    // with the comment "This toLocale* method reads the host's culture directly, not the default-locale provider
+    // (Intl.JSIntlLocaleProviders.DefaultLocale) every Intl service reads. Under JSD-0082's decision D7, one default
+    // (row L35), it is a reader of DefaultLocale; it is listed for task 8.4, the number sub-area, which moves it onto
+    // that provider or records why it stays (listed 2026-11-04, at SJL-9.5)."
+    // Its length stays 0, as Number.prototype.toLocaleString's is; the generator would infer 2 from the body.
+    [JSExport("toLocaleString", Length = 0)]
+    public JSValue ToLocaleString(in Arguments a)
+    {
+        var (locales, options) = a.Get2();
+        var numberFormat = new JSIntlNumberFormat(new Arguments(JSUndefined.Value, locales, options));
+        return new JSString(numberFormat.Formatter.Format(ToIntlDecimal(value), null));
+    }
+
+    // The value's exact decimal as the shared library's IntlDecimal: its invariant digits, read exactly (a .NET decimal
+    // has at most 29 significant digits and lies well inside the Number range, so IntlDecimal.FromString keeps every
+    // digit), with the sign of a negative zero kept.
+    internal static IntlDecimal ToIntlDecimal(decimal value)
+    {
+        var text = value.ToString(CultureInfo.InvariantCulture);
+        if (value == 0m && decimal.IsNegative(value))
+            text = "-" + text;
+        return IntlDecimal.FromString(text, BigIntPolicy.Unbounded);
+    }
 
     [JSExport("valueOf")]
     public override JSValue ValueOf() => this;
