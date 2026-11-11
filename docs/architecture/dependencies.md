@@ -126,6 +126,10 @@ publish-and-run gate decide whether the hypotheses become the target.
   code package, and embeds the tables it reads (`Runtime/Unicode/JSUnicodeTableData.g.cs`, generated
   from [`data/unicode/pins/`](../../data/unicode/pins/README.md) by the owner's generator, which
   `Runtime.Tests` alone references, as `Broiler.Unicode.Generation`)".)*
+  *(Noted 2026-11-11, on the owner's ruling of that day on milestone SJL-9's clause 7: `BuiltIns` no longer references `Broiler.Unicode.Cldr.LocaleData`,
+  whose last use, `Intl.supportedValuesOf`'s currency and unit lists, is the shared Intl library's. The bullet's first
+  sentence, "`BuiltIns` references `Broiler.Regex`, `Broiler.Unicode.Cldr.LocaleData` and
+  `Broiler.Unicode.Segmentation`", is left as written.)*
 - `Ast` references the shared `Broiler.ECMAScript.Algorithms`, as `Parser`, `Runtime`, `BuiltIns`,
   `Storage` and `Expressions` do: `StringSpan`'s obsolete trims forward to its white-space set. *(Added
   2026-10-16, at milestone SJL-7.5.)*

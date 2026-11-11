@@ -19,9 +19,11 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Runtime.Unicode;
 using Broiler.Unicode.Algorithms;
 using Broiler.Unicode.Segmentation;
-// IntlEnumerationData (Intl.supportedValuesOf's currencies and units, sub-area (a)) is the last reader of this namespace
-// here since SJL-9.5's task 8.5, which ends DateTimeFormat's use of CldrLocaleData (noted 2026-11-09).
-using UnicodeCldr.LocaleData;
+// Removed 2026-11-11, on the owner's ruling of that day on SJL-9's clause 7, "Fix (1); move (2) to SJL-17": the line
+// `using UnicodeCldr.LocaleData;` and its comment, which read "IntlEnumerationData (Intl.supportedValuesOf's currencies and
+// units, sub-area (a)) is the last reader of this namespace here since SJL-9.5's task 8.5, which ends DateTimeFormat's use
+// of CldrLocaleData (noted 2026-11-09)." Those two lists are the shared library's SupportedValues now, and this engine reads
+// Broiler.Unicode.Cldr.LocaleData for no Intl data.
 
 namespace Broiler.JavaScript.BuiltIns.Intl;
 
@@ -126,13 +128,14 @@ public static class JSIntl
                     return list;
                 }
 
-                if (key == "currency")
-                {
-                    var list = JSValue.CreateArray();
-                    foreach (var c in IntlEnumerationData.Currencies)
-                        list.AddArrayItem(JSValue.CreateString(c));
-                    return list;
-                }
+                // "currency" and "unit" are the shared library's (sub-area (a), rows L39 to L41; milestone SJL-9.5's
+                // deletion list, on the owner's ruling of 2026-11-11 on clause 7): SupportedValues.Of lists every
+                // currency code of this engine's CLDR 48.2.0 currency table and ECMA-402's sanctioned single units, each
+                // sorted by code unit and each once (sec-intl.supportedvaluesof, AvailableCanonicalCurrencies and
+                // AvailableCanonicalUnits). Until 2026-11-11 both read the Broiler.Unicode.Cldr.LocaleData package's
+                // IntlEnumerationData.
+                if (key is "currency" or "unit")
+                    return SupportedValuesArray(key);
 
                 if (key == "collation")
                 {
@@ -141,14 +144,6 @@ public static class JSIntl
                     var list = JSValue.CreateArray();
                     foreach (var co in SupportedCollationsSorted)
                         list.AddArrayItem(JSValue.CreateString(co));
-                    return list;
-                }
-
-                if (key == "unit")
-                {
-                    var list = JSValue.CreateArray();
-                    foreach (var u in IntlEnumerationData.Units)
-                        list.AddArrayItem(JSValue.CreateString(u));
                     return list;
                 }
 
@@ -196,6 +191,20 @@ public static class JSIntl
         (PluralRulesKey, KeyStrings.GetOrCreate("Intl.PluralRules")),
         (SegmenterKey, KeyStrings.GetOrCreate("Intl.Segmenter")),
     ];
+
+    // Intl.supportedValuesOf for a key the shared library lists (sec-intl.supportedvaluesof, steps 2 to 9): its
+    // SupportedValues.Of over this engine's locale data, time zone database and Collator data, as a new Array.
+    private static JSValue SupportedValuesArray(string key)
+    {
+        if (SupportedValues.Of(key, JSIntlData.LocaleData, TemporalTimeData.TimeZones, JSIntlCollator.LocaleData, out var values)
+            != IntlStatus.Completed)
+            throw JSEngine.NewRangeError($"Intl.supportedValuesOf: invalid key \"{key}\"");
+
+        var list = JSValue.CreateArray();
+        foreach (var value in values)
+            list.AddArrayItem(JSValue.CreateString(value));
+        return list;
+    }
 
     private static JSFunction CreateSimpleConstructor(string name, int length)
         => new((in Arguments a) =>
@@ -1203,6 +1212,12 @@ public static class JSIntl
     // h12, fr-CA h23, and ku-SY h23 where SY gives h12: Intl.Locale's getHourCycles always, the date-time format where the
     // host has ku-SY) and the whole tag's likely region (zh-Hant TW's h12, yue-Hans CN's h23) (rows T10 and L19). Which
     // locales move in the date-time format depends on the host's locales (row L28).
+    // Noted 2026-11-11, on the owner's ruling of that day on SJL-9's clause 7, "Fix (1); move (2) to SJL-17": the notes
+    // above say the Collator's co, kf and kn "stay where they are" and its helpers "stay for the Collator alone"; they are
+    // on SJL-17's deletion list now, not SJL-9's, and SJL-17.5 deletes them: GetUnicodeExtensionType,
+    // RemoveUnicodeExtensionKeyword, ReflectExtensionKeyword, ResolveLocaleFromCanonical's keyword filter over
+    // CollatorRelevantKeys, and JSIntlCollator's StripUnicodeExtension (docs/roadmap/SharedLibraries.md, the dated notes on
+    // both deletion lists). No code changes for it.
 
     // The relevant extension keys of the services that resolve none: ListFormat, Segmenter, DisplayNames and PluralRules.
     // Revised 2026-11-08, at SJL-9.5 (task 8.4): ListFormat, DisplayNames and PluralRules resolve through the shared

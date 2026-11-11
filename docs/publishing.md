@@ -130,6 +130,7 @@ and that a package with build output has an assembly, XML documentation and a sy
 ## Dependencies outside this repository
 
 `Broiler.JavaScript.BuiltIns` references `Broiler.Regex` and `Broiler.Unicode.Cldr.LocaleData`,
-which are published from their own repositories. `eng/verify-feed.ps1` catches an unpublished
+which are published from their own repositories. *(Noted 2026-11-11, on the owner's ruling of that day on milestone SJL-9's clause 7: `BuiltIns` no
+longer references `Broiler.Unicode.Cldr.LocaleData`; the sentence is left as written.)* `eng/verify-feed.ps1` catches an unpublished
 dependency before the push by restoring the whole set from a scratch project whose only sources
 are the packages about to be published plus nuget.org.

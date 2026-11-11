@@ -14,7 +14,8 @@
   <ItemGroup>
     <!-- Broiler component packages -->
     <PackageVersion Include="Broiler.Regex" Version="0.1.0-preview.5" />
-    <PackageVersion Include="Broiler.Unicode.Cldr.LocaleData" Version="0.1.0-preview.6" />
+    <!-- Removed 2026-11-11, with BuiltIns' reference, on the owner's ruling of that day on SJL-9's clause 7: the line
+         <PackageVersion Include="Broiler.Unicode.Cldr.LocaleData" Version="0.1.0-preview.6" />. No project reads it. -->
     <!-- The Unicode area's owner (milestone SJL-7.5, decision SJL-D-6 (c)): its code packages, and its
          generator for this repository's tests alone. No package that carries tables is referenced. -->
     <PackageVersion Include="Broiler.Unicode.Algorithms" Version="0.1.0-preview.6" />

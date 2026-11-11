@@ -1511,6 +1511,11 @@ This repository's part of it:
   `IntlEnumerationData` for its currency and unit lists, and the shared library's `SupportedValues` is not wired for
   them, so `BuiltIns` keeps the reference and `Directory.Packages.props` the version until those lists move. Bundle
   [`sjl-9-001`](../evidence/sjl-9-001/README.md), "The cut-over's records (SJL-9.5)", records why.)*
+  *(Noted 2026-11-11, on the owner's ruling of that day on SJL-9's clause 7, "Fix (1); move (2) to SJL-17": the note
+  above ends "so `BuiltIns` keeps the reference and `Directory.Packages.props` the version until those lists move."
+  They move in the change of 2026-11-11 that carries this note: `Intl.supportedValuesOf`'s currency and unit lists are
+  the shared library's `SupportedValues.Of` over this engine's locale data, and the reference and the version are
+  removed, no other project reading the package. The note above is left as written.)*
 - **The data home** (decisions D10 to D12), `Broiler.ECMAScript/data/intl/` from SJL-9.2:
   - the CLDR 48.2.0 pin, a superset of Broiler.VM's whose entries are byte-identical to Broiler.VM's, with this engine's
     extra main-data files from the same packages; Broiler.VM's rule I4 holds its pin to the home's entry by entry;
@@ -1763,6 +1768,21 @@ This repository's part of it:
     `Format(DateTimeOffset, JSObject)`, `FormatEnglishHour(DateTimeOffset)`, `FormatDayPeriod(DateTimeOffset, string)`
     and the `locale` field, as row T42 names them. The overload `FormatEnglishHour(int)` is not among them: the
     `dayPeriod` paths of `format` and `formatToParts` call it.
+
+  *(Noted 2026-11-11, on the owner's ruling of that day on SJL-9's clause 7, "Fix (1); move (2) to SJL-17", the
+  owner's own dated choice, asked and answered. The list's first item names "negotiation" among `JSIntl`'s entries, and
+  its third "this engine's uses of `Broiler.Unicode.Cldr.LocaleData` for Intl data". By the ruling's second part, the
+  Collator's hand resolution leaves this list for SJL-17's, at SJL-17.5: `GetUnicodeExtensionType`,
+  `RemoveUnicodeExtensionKeyword` and `ReflectExtensionKeyword`, `ResolveLocaleFromCanonical`'s keyword filter over
+  `CollatorRelevantKeys`, and `JSIntlCollator`'s `StripUnicodeExtension`, so "negotiation" here is read as negotiation
+  but the Collator's, which the deletion list under "Collation (SJL-17.1)" below takes (its dated note). That is a
+  revision of the list, and clause 7's reading rests on it for those entries, which is weaker evidence than the list as
+  written. By the ruling's first part, the change of 2026-11-11 that carries this note removes the third item's last
+  use, `Intl.supportedValuesOf`'s currency and unit lists, which are the shared library's `SupportedValues` now, with
+  `BuiltIns`' package reference and the package's version in `Directory.Packages.props`, which no other project reads.
+  The alternatives not taken were "Fix both in code now" and "Revise the list for both". JSD-0082's decision D24 and
+  the milestone's SJL-9.5 deletion list are Broiler.VM's, and they get their dated notes in Broiler.VM's half of the
+  reading. The list above is left as written.)*
 - **Decision SJL-D-25** (decision D24). The public Intl types, `JSIntlNumberFormat` and the others, stay as the
   engine's Intl objects with every public member, disposition (a), and nothing public is removed.
   `JSIntlDateTimeFormat`'s public static `Get(CultureInfo)` and `ApplyAllDefaults` stay, over the library, a culture's
@@ -1899,6 +1919,16 @@ evidence: the bases and the after runs are taken at the merge that lands SJL-9.5
   `compare` stays with the Collator until SJL-17.5. Task 8.5 names only `JSIntl.cs` and the engine file; the Date
   formatters and the Temporal callers changed with them. `GetUnicodeExtensionType`, `RemoveUnicodeExtensionKeyword`
   and `ReflectExtensionKeyword`, which the deletion list names, stay, since the Collator reads them until SJL-17.5.
+  *(Noted 2026-11-11, on the owner's ruling of that day on SJL-9's clause 7, "Fix (1); move (2) to SJL-17". This item
+  begins "Task 8.7 says to remove `Broiler.Unicode.Cldr.LocaleData`; it stays for `supportedValuesOf`" and ends
+  "`GetUnicodeExtensionType`, `RemoveUnicodeExtensionKeyword` and `ReflectExtensionKeyword`, which the deletion list
+  names, stay, since the Collator reads them until SJL-17.5." The first departure is closed by the change of
+  2026-11-11 that carries this note: `supportedValuesOf`'s currency and unit lists are the shared library's
+  `SupportedValues`, and `BuiltIns`' reference to the package and its version in `Directory.Packages.props` are gone.
+  The second is a departure no longer: by the ruling's second part those three members, with
+  `ResolveLocaleFromCanonical`'s keyword filter over `CollatorRelevantKeys` and `JSIntlCollator`'s
+  `StripUnicodeExtension`, are on SJL-17's deletion list, at SJL-17.5, and not on SJL-9's (the dated notes on both
+  lists), so "which the deletion list names" is read as SJL-17's list from that day. The item is left as written.)*
 - **The default numbering system outside decision D5's list.** The reading the note of 2026-10-26 above left to
   SJL-9.3 and SJL-9.5, decision D13's table naming defaults for locales the list lacks, is taken up by decision D6's
   host-culture provider: for a locale the shared data lacks, the default is the host culture's native digits, so it
@@ -2229,6 +2259,16 @@ This repository's part of it:
   tie-break (row O19), the `CompareOptions` mapping and the hard-coded Thai default; `NetCollationSuffix` moves into the
   host provider. `JSIntlCollator` keeps every public member (SJL-D-25 (a)), which SJL-17.5 records in
   [`docs/public-api.md`](../public-api.md).
+  *(Noted 2026-11-11, on the owner's ruling of that day on SJL-9's clause 7, "Fix (1); move (2) to SJL-17", the owner's
+  own dated choice, asked and answered. The list above begins "`ResolveCompareInfo` for the covered locales" and names
+  nothing of the Collator's locale resolution. From the ruling it also holds the Collator's hand resolution of its
+  `co`, `kf` and `kn` keys, which SJL-9's deletion list named and SJL-9.5 kept, the Collator reading it:
+  `GetUnicodeExtensionType`, `RemoveUnicodeExtensionKeyword` and `ReflectExtensionKeyword`,
+  `ResolveLocaleFromCanonical`'s keyword filter over `CollatorRelevantKeys`, and `JSIntlCollator`'s
+  `StripUnicodeExtension`. SJL-17.5 deletes them, the Collator resolving those keys through the shared ResolveLocale,
+  and SJL-17's deletion clause reads them; SJL-9's list no longer does (the dated note on it under "Locale data and the
+  Intl algorithms (SJL-9.1)" above). The alternatives not taken were "Fix both in code now" and "Revise the list for
+  both". Decision E11 is Broiler.VM's JSD-0084, which this note does not revise. The list above is left as written.)*
 - **Data size** (decision E13): this engine's collation tables are generated by the data home for decision E3's list,
   and their size is stated in this repository's bundle `sjl-17-001` when SJL-17.3 generates them.
 - **The rule**, [`docs/evidence/sjl-17-001/decision-rule.md`](../evidence/sjl-17-001/decision-rule.md), is committed

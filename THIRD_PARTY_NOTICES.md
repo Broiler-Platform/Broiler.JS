@@ -450,7 +450,8 @@ checks). It is CLDR data, under the Unicode License v3 below."*
   runtime's calendars and the CLDR package's `CldrChineseCalendar` (an implementation of *Calendrical
   Calculations*' astronomy) and its Umm al-Qura years from that package's `CldrUmmAlQura` (ICU4C's table). It
   no longer embeds `tzdata.bin` or calls either type. `Broiler.Unicode.Cldr.LocaleData` stays a dependency,
-  with its own notices, for `Intl.supportedValuesOf`'s currency and unit lists alone (below).
+  with its own notices, for `Intl.supportedValuesOf`'s currency and unit lists alone (below). *(Noted 2026-11-11: it is
+  no dependency from the change of that day, below.)*
 
 *Added 2026-10-17, at milestone SJL-8.6, when the time-zone and calendar area moved to the data home's
 tables and `Broiler.ECMAScript.Algorithms`. Revised 2026-11-10, at milestone SJL-9.5's records: the last sentence
@@ -463,7 +464,10 @@ read "`Broiler.Unicode.Cldr.LocaleData` stays a dependency for its locale data, 
 - Until milestone SJL-9.5 the engine's Intl read the CLDR package `Broiler.Unicode.Cldr.LocaleData`, the host's ICU
   through .NET's cultures, and hand-written tables. It no longer reads the package's locale data;
   `Intl.supportedValuesOf` still reads its `IntlEnumerationData` for the currencies and units it lists, so the
-  package stays a dependency, with its own notices. The host-culture provider reads only what .NET exposes for a
+  package stays a dependency, with its own notices. *(Noted 2026-11-11, on the owner's ruling of that day on milestone SJL-9's clause 7: the engine no
+  longer reads the package at all, and it is no dependency: `Intl.supportedValuesOf`'s currencies are the embedded
+  tables' CLDR 48.2.0 currency codes and its units ECMA-402's sanctioned list, both through the shared Intl library. The
+  sentence from "`Intl.supportedValuesOf` still reads" is left as written.)* The host-culture provider reads only what .NET exposes for a
   locale the embedded tables lack (Broiler.VM's JSD-0082, decision D6), and `Intl.Collator`'s comparison stays
   .NET's until milestone SJL-17.5.
 
