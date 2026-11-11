@@ -151,18 +151,21 @@ class CommittedFileTests(unittest.TestCase):
             self.assertNotIn("observed:", vector["prov"], vector_id)
             self.assertIn("ref:tzref@1", vector["prov"].split(" "), vector_id)
             if vector["class"] == "impl-defined":
-                # Only the formatter's resolved name of a non-primary identifier (row Z8), whose expectations
-                # differ, and a region's zones (row Z12), whose expectations agree.
-                self.assertIn(vector["op"], ("Intl.DateTimeFormat, resolved timeZone", "Intl.Locale.prototype.getTimeZones"),
-                              vector_id)
-                if vector["op"] == "Intl.Locale.prototype.getTimeZones":
-                    self.assertEqual(vector["out"], vector["per-engine.broiler-js"], vector_id)
-                    self.assertEqual(vector["out"], vector["per-engine.broiler-vm"], vector_id)
-                else:
-                    self.assertEqual(vector["out"], vector["per-engine.broiler-js"], vector_id)
-                    self.assertNotEqual(vector["out"], vector["per-engine.broiler-vm"], vector_id)
-                    self.assertIn("row Z8", vector["note"], vector_id)
+                # Only a region's zones (row Z12), whose expectations agree. Until corpus revision 38 the formatter's
+                # resolved name of a non-primary identifier (row Z8) was impl-defined too, its expectations differing;
+                # decision D15 of Broiler.VM's JSD-0082 makes them one, out, the identifier as given.
+                self.assertEqual("Intl.Locale.prototype.getTimeZones", vector["op"], vector_id)
+                self.assertEqual(vector["out"], vector["per-engine.broiler-js"], vector_id)
+                self.assertEqual(vector["out"], vector["per-engine.broiler-vm"], vector_id)
             else:
+                self.assertFalse(any(k.startswith("per-engine.") for k in vector), vector_id)
+                if "row Z8: the identifier as given" in vector.get("note", ""):
+                    # Row Z8 since revision 38: out is the identifier as the script gives it, case-normalised, and
+                    # the vector cites the clause that settles it, the pinned Temporal revision's CreateDateTimeFormat.
+                    self.assertEqual("Intl.DateTimeFormat, resolved timeZone", vector["op"], vector_id)
+                    self.assertEqual("normative", vector["class"], vector_id)
+                    self.assertIn("decision D15", vector["note"], vector_id)
+                    self.assertIn(generator.Z8_CLAUSE, vector["prov"].split(" "), vector_id)
                 self.assertIn(vector["class"], ("normative", "divergence"), vector_id)
                 self.assertEqual(vector["class"] == "divergence", any(k.startswith("divergence.") for k in vector), vector_id)
                 if vector["op"] != "Intl.Locale.prototype.getTimeZones":

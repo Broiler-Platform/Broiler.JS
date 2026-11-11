@@ -221,8 +221,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"\u212Ao"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row L2: Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-language-tags ref:intlref@1
 script: Intl.getCanonicalLocales("\u212ao")
 note: row L2: a language tag is ASCII (unicode_locale_id's subtags are ASCII letters and digits); a letter that culture casing folds into ASCII is not one, so IsWellFormedLanguageTag refuses the tag
@@ -233,8 +232,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-\u212AE"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row L2: Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-language-tags ref:intlref@1
 script: Intl.getCanonicalLocales("en-\u212aE")
 note: row L2: a language tag is ASCII (unicode_locale_id's subtags are ASCII letters and digits); a letter that culture casing folds into ASCII is not one, so IsWellFormedLanguageTag refuses the tag
@@ -245,8 +243,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-u-ca-gregor\u212A"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row L2: Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-language-tags ref:intlref@1
 script: Intl.getCanonicalLocales("en-u-ca-gregor\u212a")
 note: row L2: a language tag is ASCII (unicode_locale_id's subtags are ASCII letters and digits); a letter that culture casing folds into ASCII is not one, so IsWellFormedLanguageTag refuses the tag
@@ -312,8 +309,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en\u000A"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: Intl.getCanonicalLocales("en\u000a")
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -324,8 +320,7 @@ area: intl
 op: Intl.Locale
 in: str:"en\u000A"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.Locale("en\u000a").toString()
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -336,8 +331,7 @@ area: intl
 op: Intl.NumberFormat
 in: str:"en\u000A"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.NumberFormat("en\u000a").resolvedOptions().locale
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -348,8 +342,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-US\u000A"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: Intl.getCanonicalLocales("en-US\u000a")
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -360,8 +353,7 @@ area: intl
 op: Intl.Locale
 in: str:"en-US\u000A"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.Locale("en-US\u000a").toString()
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -372,8 +364,7 @@ area: intl
 op: Intl.NumberFormat
 in: str:"en-US\u000A"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.NumberFormat("en-US\u000a").resolvedOptions().locale
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -384,8 +375,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"de-\u0661\u0662\u0663"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: Intl.getCanonicalLocales("de-\u0661\u0662\u0663")
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -396,8 +386,7 @@ area: intl
 op: Intl.Locale
 in: str:"de-\u0661\u0662\u0663"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.Locale("de-\u0661\u0662\u0663").toString()
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -408,8 +397,7 @@ area: intl
 op: Intl.NumberFormat
 in: str:"de-\u0661\u0662\u0663"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.NumberFormat("de-\u0661\u0662\u0663").resolvedOptions().locale
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -420,8 +408,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-\u0661\u0662\u0663"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: Intl.getCanonicalLocales("en-\u0661\u0662\u0663")
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -432,8 +419,7 @@ area: intl
 op: Intl.Locale
 in: str:"en-\u0661\u0662\u0663"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.Locale("en-\u0661\u0662\u0663").toString()
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -444,8 +430,7 @@ area: intl
 op: Intl.NumberFormat
 in: str:"en-\u0661\u0662\u0663"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.NumberFormat("en-\u0661\u0662\u0663").resolvedOptions().locale
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -456,8 +441,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"de-DE\u000A"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: Intl.getCanonicalLocales("de-DE\u000a")
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -468,8 +452,7 @@ area: intl
 op: Intl.Locale
 in: str:"de-DE\u000A"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.Locale("de-DE\u000a").toString()
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -480,8 +463,7 @@ area: intl
 op: Intl.NumberFormat
 in: str:"de-DE\u000A"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: rows L45 and L2: A tag with a final line feed or with non-ASCII decimal digits: `"en\n"`, `"en-US\n"` ...; Broiler.JS answers accepts every one: `"en\n"` is kept by `getCanonicalLocales` and `Intl.Locale` (NumberFormat resolves `"en-US"`), `"en-US\n"` becomes `"en-us\n"` on all three paths ...; a correction of Broiler.JS (JSD-0082, C1) | Non-ASCII letters that culture casing folds into ASCII: `"U+212Ao"` (KELVIN SIGN), `"en-U+212AE"` ...; Broiler.JS answers accepts the KELVIN SIGN: `["ko"]`, `["en-ke"]` (the region left lower case), `["en-u-ca-gregork"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-iswellformedlanguagetag spec:ecma402@3d4c558#sec-canonicalizelocalelist ref:intlref@1
 script: new Intl.NumberFormat("de-DE\u000a").resolvedOptions().locale
 note: rows L45 and L2: unicode_region_subtag is three ASCII digits or two letters, and nothing follows the tag, whose subtags are ASCII; the tag is refused on every path
@@ -492,8 +474,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"tl"
 out: value: str:"fil"
-class: divergence
-divergence.broiler-js: row L5: Language aliases (CLDR `languageAlias`): `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` ...; Broiler.JS answers hand tables listing "only the entries test262 exercises": `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` unchanged ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("tl")[0]
 note: row L5 (data, C5): CLDR's languageAlias, as UTS #35's canonicalization applies it
@@ -504,8 +485,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"aju"
 out: value: str:"jrb"
-class: divergence
-divergence.broiler-js: row L5: Language aliases (CLDR `languageAlias`): `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` ...; Broiler.JS answers hand tables listing "only the entries test262 exercises": `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` unchanged ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("aju")[0]
 note: row L5 (data, C5): CLDR's languageAlias, as UTS #35's canonicalization applies it
@@ -516,8 +496,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"aam"
 out: value: str:"aas"
-class: divergence
-divergence.broiler-js: row L5: Language aliases (CLDR `languageAlias`): `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` ...; Broiler.JS answers hand tables listing "only the entries test262 exercises": `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` unchanged ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("aam")[0]
 note: row L5 (data, C5): CLDR's languageAlias, as UTS #35's canonicalization applies it
@@ -528,8 +507,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"swc"
 out: value: str:"sw-CD"
-class: divergence
-divergence.broiler-js: row L5: Language aliases (CLDR `languageAlias`): `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` ...; Broiler.JS answers hand tables listing "only the entries test262 exercises": `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` unchanged ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("swc")[0]
 note: row L5 (data, C5): CLDR's languageAlias, as UTS #35's canonicalization applies it
@@ -540,8 +518,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"aa-saaho"
 out: value: str:"ssy"
-class: divergence
-divergence.broiler-js: row L5: Language aliases (CLDR `languageAlias`): `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` ...; Broiler.JS answers hand tables listing "only the entries test262 exercises": `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` unchanged ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("aa-saaho")[0]
 note: row L5 (data, C5): CLDR's languageAlias, as UTS #35's canonicalization applies it
@@ -552,8 +529,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"und-Latn-saaho"
 out: value: str:"und-Latn"
-class: divergence
-divergence.broiler-js: row L5: Language aliases (CLDR `languageAlias`): `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` ...; Broiler.JS answers hand tables listing "only the entries test262 exercises": `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` unchanged ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("und-Latn-saaho")[0]
 note: row L5 (data, C5): CLDR's languageAlias, as UTS #35's canonicalization applies it
@@ -564,8 +540,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"und-aaland"
 out: value: str:"und-AX"
-class: divergence
-divergence.broiler-js: row L5: Language aliases (CLDR `languageAlias`): `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` ...; Broiler.JS answers hand tables listing "only the entries test262 exercises": `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` unchanged ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("und-aaland")[0]
 note: row L5 (data, C5): CLDR's languageAlias, as UTS #35's canonicalization applies it
@@ -576,8 +551,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"sv-aaland"
 out: value: str:"sv-AX"
-class: divergence
-divergence.broiler-js: row L5: Language aliases (CLDR `languageAlias`): `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` ...; Broiler.JS answers hand tables listing "only the entries test262 exercises": `tl`, `aju`, `aam`, `swc`, `aa-saaho`, `und-Latn-saaho` unchanged ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("sv-aaland")[0]
 note: row L5 (data, C5): CLDR's languageAlias, as UTS #35's canonicalization applies it
@@ -797,8 +771,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"und-Qaai"
 out: value: str:"und-Zinh"
-class: divergence
-divergence.broiler-js: row L6: Script aliases: `und-Qaai`, `en-Qaai`, `und-Qaai-US`; Broiler.JS answers unchanged: no script alias table; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("und-Qaai")[0]
 note: row L6 (data, C5): CLDR's scriptAlias
@@ -809,8 +782,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-Qaai"
 out: value: str:"en-Zinh"
-class: divergence
-divergence.broiler-js: row L6: Script aliases: `und-Qaai`, `en-Qaai`, `und-Qaai-US`; Broiler.JS answers unchanged: no script alias table; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("en-Qaai")[0]
 note: row L6 (data, C5): CLDR's scriptAlias
@@ -821,8 +793,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"und-Qaai-US"
 out: value: str:"und-Zinh-US"
-class: divergence
-divergence.broiler-js: row L6: Script aliases: `und-Qaai`, `en-Qaai`, `und-Qaai-US`; Broiler.JS answers unchanged: no script alias table; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("und-Qaai-US")[0]
 note: row L6 (data, C5): CLDR's scriptAlias
@@ -833,8 +804,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-QU"
 out: value: str:"en-EU"
-class: divergence
-divergence.broiler-js: row L7: Region aliases (CLDR `territoryAlias`): `en-QU`, `en-840`, `en-276`, `de-276`, `en-062`, `en-AN`, `nl-AN` ...; Broiler.JS answers unchanged for every one not in its tables; the listed ones as Broiler.VM; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("en-QU")[0]
 note: row L7 (data, C5): CLDR's territoryAlias; a replacement list resolves by the likely region
@@ -845,8 +815,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-840"
 out: value: str:"en-US"
-class: divergence
-divergence.broiler-js: row L7: Region aliases (CLDR `territoryAlias`): `en-QU`, `en-840`, `en-276`, `de-276`, `en-062`, `en-AN`, `nl-AN` ...; Broiler.JS answers unchanged for every one not in its tables; the listed ones as Broiler.VM; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("en-840")[0]
 note: row L7 (data, C5): CLDR's territoryAlias; a replacement list resolves by the likely region
@@ -857,8 +826,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-276"
 out: value: str:"en-DE"
-class: divergence
-divergence.broiler-js: row L7: Region aliases (CLDR `territoryAlias`): `en-QU`, `en-840`, `en-276`, `de-276`, `en-062`, `en-AN`, `nl-AN` ...; Broiler.JS answers unchanged for every one not in its tables; the listed ones as Broiler.VM; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("en-276")[0]
 note: row L7 (data, C5): CLDR's territoryAlias; a replacement list resolves by the likely region
@@ -869,8 +837,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"de-276"
 out: value: str:"de-DE"
-class: divergence
-divergence.broiler-js: row L7: Region aliases (CLDR `territoryAlias`): `en-QU`, `en-840`, `en-276`, `de-276`, `en-062`, `en-AN`, `nl-AN` ...; Broiler.JS answers unchanged for every one not in its tables; the listed ones as Broiler.VM; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("de-276")[0]
 note: row L7 (data, C5): CLDR's territoryAlias; a replacement list resolves by the likely region
@@ -881,8 +848,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-062"
 out: value: str:"en-034"
-class: divergence
-divergence.broiler-js: row L7: Region aliases (CLDR `territoryAlias`): `en-QU`, `en-840`, `en-276`, `de-276`, `en-062`, `en-AN`, `nl-AN` ...; Broiler.JS answers unchanged for every one not in its tables; the listed ones as Broiler.VM; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("en-062")[0]
 note: row L7 (data, C5): CLDR's territoryAlias; a replacement list resolves by the likely region
@@ -893,8 +859,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-AN"
 out: value: str:"en-CW"
-class: divergence
-divergence.broiler-js: row L7: Region aliases (CLDR `territoryAlias`): `en-QU`, `en-840`, `en-276`, `de-276`, `en-062`, `en-AN`, `nl-AN` ...; Broiler.JS answers unchanged for every one not in its tables; the listed ones as Broiler.VM; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("en-AN")[0]
 note: row L7 (data, C5): CLDR's territoryAlias; a replacement list resolves by the likely region
@@ -905,8 +870,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"nl-AN"
 out: value: str:"nl-CW"
-class: divergence
-divergence.broiler-js: row L7: Region aliases (CLDR `territoryAlias`): `en-QU`, `en-840`, `en-276`, `de-276`, `en-062`, `en-AN`, `nl-AN` ...; Broiler.JS answers unchanged for every one not in its tables; the listed ones as Broiler.VM; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("nl-AN")[0]
 note: row L7 (data, C5): CLDR's territoryAlias; a replacement list resolves by the likely region
@@ -917,8 +881,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"und-172"
 out: value: str:"und-RU"
-class: divergence
-divergence.broiler-js: row L7: Region aliases (CLDR `territoryAlias`): `en-QU`, `en-840`, `en-276`, `de-276`, `en-062`, `en-AN`, `nl-AN` ...; Broiler.JS answers unchanged for every one not in its tables; the listed ones as Broiler.VM; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("und-172")[0]
 note: row L7 (data, C5): CLDR's territoryAlias; a replacement list resolves by the likely region
@@ -929,8 +892,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"und-Cyrl-172"
 out: value: str:"und-Cyrl-RU"
-class: divergence
-divergence.broiler-js: row L7: Region aliases (CLDR `territoryAlias`): `en-QU`, `en-840`, `en-276`, `de-276`, `en-062`, `en-AN`, `nl-AN` ...; Broiler.JS answers unchanged for every one not in its tables; the listed ones as Broiler.VM; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("und-Cyrl-172")[0]
 note: row L7 (data, C5): CLDR's territoryAlias; a replacement list resolves by the likely region
@@ -941,8 +903,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"und-200"
 out: value: str:"und-CZ"
-class: divergence
-divergence.broiler-js: row L7: Region aliases (CLDR `territoryAlias`): `en-QU`, `en-840`, `en-276`, `de-276`, `en-062`, `en-AN`, `nl-AN` ...; Broiler.JS answers unchanged for every one not in its tables; the listed ones as Broiler.VM; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("und-200")[0]
 note: row L7 (data, C5): CLDR's territoryAlias; a replacement list resolves by the likely region
@@ -953,8 +914,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"cs-200"
 out: value: str:"cs-CZ"
-class: divergence
-divergence.broiler-js: row L7: Region aliases (CLDR `territoryAlias`): `en-QU`, `en-840`, `en-276`, `de-276`, `en-062`, `en-AN`, `nl-AN` ...; Broiler.JS answers unchanged for every one not in its tables; the listed ones as Broiler.VM; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("cs-200")[0]
 note: row L7 (data, C5): CLDR's territoryAlias; a replacement list resolves by the likely region
@@ -1119,8 +1079,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-u-tz-usnavajo"
 out: value: str:"en-u-tz-usden"
-class: divergence
-divergence.broiler-js: row L8: BCP 47 type aliases in `-u-` and `-t-`: `tz` `usnavajo`, `aqams`; `-t-` `d0` `name` ...; Broiler.JS answers `usnavajo` and `name` unchanged; `nzakl` for `aqams`, a hand entry CLDR 48.2.0 no longer has; the rest as Broiler.VM; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid spec:ecma402@3d4c558#sec-unicode-extension-components ref:intlref@1
 script: Intl.getCanonicalLocales("en-u-tz-usnavajo")[0]
 note: row L8 (data, C5): CLDR's BCP 47 aliases of -u- and -t- values
@@ -1131,8 +1090,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-u-tz-aqams"
 out: value: str:"en-u-tz-aqmcm"
-class: divergence
-divergence.broiler-js: row L8: BCP 47 type aliases in `-u-` and `-t-`: `tz` `usnavajo`, `aqams`; `-t-` `d0` `name` ...; Broiler.JS answers `usnavajo` and `name` unchanged; `nzakl` for `aqams`, a hand entry CLDR 48.2.0 no longer has; the rest as Broiler.VM; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid spec:ecma402@3d4c558#sec-unicode-extension-components ref:intlref@1
 script: Intl.getCanonicalLocales("en-u-tz-aqams")[0]
 note: row L8 (data, C5): CLDR's BCP 47 aliases of -u- and -t- values
@@ -1143,8 +1101,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-t-d0-name"
 out: value: str:"en-t-d0-charname"
-class: divergence
-divergence.broiler-js: row L8: BCP 47 type aliases in `-u-` and `-t-`: `tz` `usnavajo`, `aqams`; `-t-` `d0` `name` ...; Broiler.JS answers `usnavajo` and `name` unchanged; `nzakl` for `aqams`, a hand entry CLDR 48.2.0 no longer has; the rest as Broiler.VM; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid spec:ecma402@3d4c558#sec-unicode-extension-components ref:intlref@1
 script: Intl.getCanonicalLocales("en-t-d0-name")[0]
 note: row L8 (data, C5): CLDR's BCP 47 aliases of -u- and -t- values
@@ -1298,9 +1255,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-u-sd-fi01"
 out: value: str:"en-u-sd-axzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("en-u-sd-fi01")[0]
 note: rows L9 (a correction of Broiler.VM, decision D32) and L8 (data, C5): UTS #35 Annex C writes a subdivision alias of CLDR's whose replacement is a region as the region in lower case followed by zzzz
@@ -1311,9 +1266,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-u-sd-fi01"
 out: value: str:"en-u-sd-axzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales(Intl.getCanonicalLocales("en-u-sd-fi01")[0])[0]
 note: rows L9 and L8: the canonical tag canonicalizes to itself
@@ -1324,9 +1277,7 @@ area: intl
 op: Intl.Locale.prototype.toString
 in: str:"en-u-sd-fi01"
 out: value: str:"en-u-sd-axzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: new Intl.Locale("en-u-sd-fi01").toString()
 note: rows L9 and L8, through Intl.Locale
@@ -1337,9 +1288,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-u-rg-fi01"
 out: value: str:"en-u-rg-axzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("en-u-rg-fi01")[0]
 note: rows L9 (a correction of Broiler.VM, decision D32) and L8 (data, C5): UTS #35 Annex C writes a subdivision alias of CLDR's whose replacement is a region as the region in lower case followed by zzzz
@@ -1350,9 +1299,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-u-rg-fi01"
 out: value: str:"en-u-rg-axzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales(Intl.getCanonicalLocales("en-u-rg-fi01")[0])[0]
 note: rows L9 and L8: the canonical tag canonicalizes to itself
@@ -1363,9 +1310,7 @@ area: intl
 op: Intl.Locale.prototype.toString
 in: str:"en-u-rg-fi01"
 out: value: str:"en-u-rg-axzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: new Intl.Locale("en-u-rg-fi01").toString()
 note: rows L9 and L8, through Intl.Locale
@@ -1376,9 +1321,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-u-rg-cn71"
 out: value: str:"en-u-rg-twzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("en-u-rg-cn71")[0]
 note: rows L9 (a correction of Broiler.VM, decision D32) and L8 (data, C5): UTS #35 Annex C writes a subdivision alias of CLDR's whose replacement is a region as the region in lower case followed by zzzz
@@ -1389,9 +1332,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-u-rg-cn71"
 out: value: str:"en-u-rg-twzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales(Intl.getCanonicalLocales("en-u-rg-cn71")[0])[0]
 note: rows L9 and L8: the canonical tag canonicalizes to itself
@@ -1402,9 +1343,7 @@ area: intl
 op: Intl.Locale.prototype.toString
 in: str:"en-u-rg-cn71"
 out: value: str:"en-u-rg-twzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: new Intl.Locale("en-u-rg-cn71").toString()
 note: rows L9 and L8, through Intl.Locale
@@ -1415,9 +1354,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"zh-u-sd-cn91"
 out: value: str:"zh-u-sd-hkzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("zh-u-sd-cn91")[0]
 note: rows L9 (a correction of Broiler.VM, decision D32) and L8 (data, C5): UTS #35 Annex C writes a subdivision alias of CLDR's whose replacement is a region as the region in lower case followed by zzzz
@@ -1428,9 +1365,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"zh-u-sd-cn91"
 out: value: str:"zh-u-sd-hkzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales(Intl.getCanonicalLocales("zh-u-sd-cn91")[0])[0]
 note: rows L9 and L8: the canonical tag canonicalizes to itself
@@ -1441,9 +1376,7 @@ area: intl
 op: Intl.Locale.prototype.toString
 in: str:"zh-u-sd-cn91"
 out: value: str:"zh-u-sd-hkzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: new Intl.Locale("zh-u-sd-cn91").toString()
 note: rows L9 and L8, through Intl.Locale
@@ -1454,9 +1387,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"fr-u-sd-frgp"
 out: value: str:"fr-u-sd-gpzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("fr-u-sd-frgp")[0]
 note: rows L9 (a correction of Broiler.VM, decision D32) and L8 (data, C5): UTS #35 Annex C writes a subdivision alias of CLDR's whose replacement is a region as the region in lower case followed by zzzz
@@ -1467,9 +1398,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"fr-u-sd-frgp"
 out: value: str:"fr-u-sd-gpzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales(Intl.getCanonicalLocales("fr-u-sd-frgp")[0])[0]
 note: rows L9 and L8: the canonical tag canonicalizes to itself
@@ -1480,9 +1409,7 @@ area: intl
 op: Intl.Locale.prototype.toString
 in: str:"fr-u-sd-frgp"
 out: value: str:"fr-u-sd-gpzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: new Intl.Locale("fr-u-sd-frgp").toString()
 note: rows L9 and L8, through Intl.Locale
@@ -1493,9 +1420,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"fr-u-rg-frgua"
 out: value: str:"fr-u-rg-gpzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("fr-u-rg-frgua")[0]
 note: rows L9 (a correction of Broiler.VM, decision D32) and L8 (data, C5): UTS #35 Annex C writes a subdivision alias of CLDR's whose replacement is a region as the region in lower case followed by zzzz
@@ -1506,9 +1431,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"fr-u-rg-frgua"
 out: value: str:"fr-u-rg-gpzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales(Intl.getCanonicalLocales("fr-u-rg-frgua")[0])[0]
 note: rows L9 and L8: the canonical tag canonicalizes to itself
@@ -1519,9 +1442,7 @@ area: intl
 op: Intl.Locale.prototype.toString
 in: str:"fr-u-rg-frgua"
 out: value: str:"fr-u-rg-gpzzzz"
-class: divergence
-divergence.broiler-js: rows L9 and L8 (data, C5): the subdivision aliases whose replacement is a region are missing from Broiler.JS's hand-written alias table (row L8), so the value is kept as given; the generated CLDR 48.2.0 alias table (decision D11) answers it; answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L9 (a correction of Broiler.VM, decision D32): a subdivision alias whose replacement is a region is written as the region, upper case and two letters, so the result is no canonical tag and a second canonicalization reads it as a key, where UTS #35 Annex C writes the region lower case followed by zzzz; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: new Intl.Locale("fr-u-rg-frgua").toString()
 note: rows L9 and L8, through Intl.Locale
@@ -1532,8 +1453,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-t-sh"
 out: value: str:"en-t-sr-latn"
-class: divergence
-divergence.broiler-js: row L10: A `-t-` tlang whose language alias adds a subtag: `en-t-sh`; Broiler.JS answers `Error: System.IndexOutOfRangeException` from `CanonicalizeTransformedExtension`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("en-t-sh")[0]
 note: row L10: the -t- extension's tlang is canonicalized as a language tag, an alias's added subtags included
@@ -1555,8 +1475,7 @@ area: intl
 op: Intl.getCanonicalLocales
 in: str:"en-t-sgn-gr"
 out: value: str:"en-t-gss"
-class: divergence
-divergence.broiler-js: row L10: A `-t-` tlang whose language alias adds a subtag: `en-t-sh`; Broiler.JS answers `Error: System.IndexOutOfRangeException` from `CanonicalizeTransformedExtension`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-canonicalizeunicodelocaleid ref:intlref@1
 script: Intl.getCanonicalLocales("en-t-sgn-gr")[0]
 note: row L10: the -t- extension's tlang is canonicalized as a language tag, an alias's added subtags included
@@ -1633,8 +1552,7 @@ area: intl
 op: Intl.Locale.prototype.maximize
 in: str:"und-Zzzz"
 out: value: str:"en-Latn-US"
-class: divergence
-divergence.broiler-js: row L12: `Zzzz` and `ZZ` in Add Likely Subtags: `und-Zzzz`, `und-ZZ`, `und-Zzzz-ZZ` maximized ...; Broiler.JS answers `en-Zzzz-US`, `en-Latn-ZZ`, `en-Zzzz-ZZ`; `en-Zzzz-ZZ`, `en-Zzzz`: the unknown script and region kept; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("und-Zzzz").maximize().toString()
 note: row L12: Zzzz and ZZ are unknown values, which Add Likely Subtags replaces
@@ -1645,8 +1563,7 @@ area: intl
 op: Intl.Locale.prototype.maximize
 in: str:"und-ZZ"
 out: value: str:"en-Latn-US"
-class: divergence
-divergence.broiler-js: row L12: `Zzzz` and `ZZ` in Add Likely Subtags: `und-Zzzz`, `und-ZZ`, `und-Zzzz-ZZ` maximized ...; Broiler.JS answers `en-Zzzz-US`, `en-Latn-ZZ`, `en-Zzzz-ZZ`; `en-Zzzz-ZZ`, `en-Zzzz`: the unknown script and region kept; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("und-ZZ").maximize().toString()
 note: row L12: Zzzz and ZZ are unknown values, which Add Likely Subtags replaces
@@ -1657,8 +1574,7 @@ area: intl
 op: Intl.Locale.prototype.maximize
 in: str:"und-Zzzz-ZZ"
 out: value: str:"en-Latn-US"
-class: divergence
-divergence.broiler-js: row L12: `Zzzz` and `ZZ` in Add Likely Subtags: `und-Zzzz`, `und-ZZ`, `und-Zzzz-ZZ` maximized ...; Broiler.JS answers `en-Zzzz-US`, `en-Latn-ZZ`, `en-Zzzz-ZZ`; `en-Zzzz-ZZ`, `en-Zzzz`: the unknown script and region kept; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.maximize ref:intlref@1
 script: new Intl.Locale("und-Zzzz-ZZ").maximize().toString()
 note: row L12: Zzzz and ZZ are unknown values, which Add Likely Subtags replaces
@@ -1669,8 +1585,7 @@ area: intl
 op: Intl.Locale.prototype.minimize
 in: str:"und-Zzzz-ZZ"
 out: value: str:"en"
-class: divergence
-divergence.broiler-js: row L12: `Zzzz` and `ZZ` in Add Likely Subtags: `und-Zzzz`, `und-ZZ`, `und-Zzzz-ZZ` maximized ...; Broiler.JS answers `en-Zzzz-US`, `en-Latn-ZZ`, `en-Zzzz-ZZ`; `en-Zzzz-ZZ`, `en-Zzzz`: the unknown script and region kept; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.minimize ref:intlref@1
 script: new Intl.Locale("und-Zzzz-ZZ").minimize().toString()
 note: row L12: Zzzz and ZZ are unknown values, which Add Likely Subtags replaces
@@ -1681,8 +1596,7 @@ area: intl
 op: Intl.Locale.prototype.minimize
 in: str:"en-Zzzz-US"
 out: value: str:"en"
-class: divergence
-divergence.broiler-js: row L12: `Zzzz` and `ZZ` in Add Likely Subtags: `und-Zzzz`, `und-ZZ`, `und-Zzzz-ZZ` maximized ...; Broiler.JS answers `en-Zzzz-US`, `en-Latn-ZZ`, `en-Zzzz-ZZ`; `en-Zzzz-ZZ`, `en-Zzzz`: the unknown script and region kept; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.minimize ref:intlref@1
 script: new Intl.Locale("en-Zzzz-US").minimize().toString()
 note: row L12: Zzzz and ZZ are unknown values, which Add Likely Subtags replaces
@@ -1693,8 +1607,7 @@ area: intl
 op: Intl.Locale (variants option)
 in: str:"en" str:"\u212Aaaaa"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row L14: Non-ASCII letters in option values: Intl.Locale `variants: "U+212Aaaaa"`, `numberingSystem: "U+212Ahmr"` ...; Broiler.JS answers accepts them, lowered by `ToLowerInvariant` before the ASCII grammar is checked: `en-kaaaa`, `en-u-nu-khmr`, `en-u-co-phokebk`, `en-u-fw-mok`; NumberFormat answers `latn`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor spec:ecma402@3d4c558#sec-updatelanguageid overruled:intlref@1=value:str:"en"
 script: new Intl.Locale("en", {variants: "\u212aaaaa"}).toString()
 note: row L14: the variants option must be variant subtags, ASCII, so a KELVIN SIGN is refused; Intl.Locale's UpdateLanguageId reads the variants option and throws a RangeError unless it is a sequence of unicode_variant_subtag; the reference does not read the option at all (V8's --js-intl-locale-variants is off by default) (the reference answered str:"en")
@@ -1705,8 +1618,7 @@ area: intl
 op: Intl.Locale (numberingSystem option)
 in: str:"en" str:"\u212Ahmr"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row L14: Non-ASCII letters in option values: Intl.Locale `variants: "U+212Aaaaa"`, `numberingSystem: "U+212Ahmr"` ...; Broiler.JS answers accepts them, lowered by `ToLowerInvariant` before the ASCII grammar is checked: `en-kaaaa`, `en-u-nu-khmr`, `en-u-co-phokebk`, `en-u-fw-mok`; NumberFormat answers `latn`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor ref:intlref@1
 script: new Intl.Locale("en", {numberingSystem: "\u212ahmr"}).toString()
 note: row L14: an option value must be ASCII type subtags; a letter culture casing folds into ASCII is refused
@@ -1717,8 +1629,7 @@ area: intl
 op: Intl.Locale (collation option)
 in: str:"en" str:"pho\u212Aebk"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row L14: Non-ASCII letters in option values: Intl.Locale `variants: "U+212Aaaaa"`, `numberingSystem: "U+212Ahmr"` ...; Broiler.JS answers accepts them, lowered by `ToLowerInvariant` before the ASCII grammar is checked: `en-kaaaa`, `en-u-nu-khmr`, `en-u-co-phokebk`, `en-u-fw-mok`; NumberFormat answers `latn`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor ref:intlref@1
 script: new Intl.Locale("en", {collation: "pho\u212aebk"}).toString()
 note: row L14: an option value must be ASCII type subtags; a letter culture casing folds into ASCII is refused
@@ -1729,8 +1640,7 @@ area: intl
 op: Intl.Locale (firstDayOfWeek option)
 in: str:"en" str:"mo\u212A"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row L14: Non-ASCII letters in option values: Intl.Locale `variants: "U+212Aaaaa"`, `numberingSystem: "U+212Ahmr"` ...; Broiler.JS answers accepts them, lowered by `ToLowerInvariant` before the ASCII grammar is checked: `en-kaaaa`, `en-u-nu-khmr`, `en-u-co-phokebk`, `en-u-fw-mok`; NumberFormat answers `latn`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl-locale-constructor ref:intlref@1
 script: new Intl.Locale("en", {firstDayOfWeek: "mo\u212a"}).toString()
 note: row L14: an option value must be ASCII type subtags; a letter culture casing folds into ASCII is refused
@@ -1774,8 +1684,7 @@ area: intl
 op: Intl.NumberFormat (numberingSystem option)
 in: str:"en" str:"\u212Ahmr"
 out: error: RangeError
-class: divergence
-divergence.broiler-js: row L14: Non-ASCII letters in option values: Intl.Locale `variants: "U+212Aaaaa"`, `numberingSystem: "U+212Ahmr"` ...; Broiler.JS answers accepts them, lowered by `ToLowerInvariant` before the ASCII grammar is checked: `en-kaaaa`, `en-u-nu-khmr`, `en-u-co-phokebk`, `en-u-fw-mok`; NumberFormat answers `latn`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.numberformat ref:intlref@1
 script: new Intl.NumberFormat("en", {numberingSystem: "\u212ahmr"}).resolvedOptions().numberingSystem
 note: row L14: the numberingSystem option must match the type nonterminal, ASCII
@@ -1786,8 +1695,7 @@ area: intl
 op: Intl.Locale.prototype.getCalendars
 in: str:"en-u-ca-japanese-co-emoji-hc-h23-nu-arab-fw-wed"
 out: value: str:"[\"japanese\"]"
-class: divergence
-divergence.broiler-js: row L15: An information method on a Locale that carries the keyword: `getCalendars`, `getCollations`, `getHourCycles` ...; Broiler.JS answers the keyword's value and then the engine's default: `["japanese", "gregory"]`, `["emoji", "default"]`, `["h23", "h12"]`, `["arab", "latn"]`; `["phonebk", "default"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.getCalendars ref:intlref@1
 script: JSON.stringify(new Intl.Locale("en-u-ca-japanese-co-emoji-hc-h23-nu-arab-fw-wed").getCalendars())
 note: row L15: a keyword's value is the whole answer of the matching information method
@@ -1798,8 +1706,7 @@ area: intl
 op: Intl.Locale.prototype.getCollations
 in: str:"en-u-ca-japanese-co-emoji-hc-h23-nu-arab-fw-wed"
 out: value: str:"[\"emoji\"]"
-class: divergence
-divergence.broiler-js: row L15: An information method on a Locale that carries the keyword: `getCalendars`, `getCollations`, `getHourCycles` ...; Broiler.JS answers the keyword's value and then the engine's default: `["japanese", "gregory"]`, `["emoji", "default"]`, `["h23", "h12"]`, `["arab", "latn"]`; `["phonebk", "default"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.getCollations ref:intlref@1
 script: JSON.stringify(new Intl.Locale("en-u-ca-japanese-co-emoji-hc-h23-nu-arab-fw-wed").getCollations())
 note: row L15: a keyword's value is the whole answer of the matching information method
@@ -1810,8 +1717,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"en-u-ca-japanese-co-emoji-hc-h23-nu-arab-fw-wed"
 out: value: str:"[\"h23\"]"
-class: divergence
-divergence.broiler-js: row L15: An information method on a Locale that carries the keyword: `getCalendars`, `getCollations`, `getHourCycles` ...; Broiler.JS answers the keyword's value and then the engine's default: `["japanese", "gregory"]`, `["emoji", "default"]`, `["h23", "h12"]`, `["arab", "latn"]`; `["phonebk", "default"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.getHourCycles ref:intlref@1
 script: JSON.stringify(new Intl.Locale("en-u-ca-japanese-co-emoji-hc-h23-nu-arab-fw-wed").getHourCycles())
 note: row L15: a keyword's value is the whole answer of the matching information method
@@ -1822,8 +1728,7 @@ area: intl
 op: Intl.Locale.prototype.getNumberingSystems
 in: str:"en-u-ca-japanese-co-emoji-hc-h23-nu-arab-fw-wed"
 out: value: str:"[\"arab\"]"
-class: divergence
-divergence.broiler-js: row L15: An information method on a Locale that carries the keyword: `getCalendars`, `getCollations`, `getHourCycles` ...; Broiler.JS answers the keyword's value and then the engine's default: `["japanese", "gregory"]`, `["emoji", "default"]`, `["h23", "h12"]`, `["arab", "latn"]`; `["phonebk", "default"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.Locale.prototype.getNumberingSystems ref:intlref@1
 script: JSON.stringify(new Intl.Locale("en-u-ca-japanese-co-emoji-hc-h23-nu-arab-fw-wed").getNumberingSystems())
 note: row L15: a keyword's value is the whole answer of the matching information method
@@ -1834,8 +1739,7 @@ area: intl
 op: Intl.Locale.prototype.getCollations
 in: str:"de-u-co-phonebk"
 out: value: str:"[\"phonebk\"]"
-class: divergence
-divergence.broiler-js: row L15: An information method on a Locale that carries the keyword: `getCalendars`, `getCollations`, `getHourCycles` ...; Broiler.JS answers the keyword's value and then the engine's default: `["japanese", "gregory"]`, `["emoji", "default"]`, `["h23", "h12"]`, `["arab", "latn"]`; `["phonebk", "default"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("de-u-co-phonebk").getCollations())
 note: row L15: the co keyword is the whole answer
@@ -1846,8 +1750,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"und-u-hc-h11"
 out: value: str:"[\"h11\"]"
-class: divergence
-divergence.broiler-js: row L15: An information method on a Locale that carries the keyword: `getCalendars`, `getCollations`, `getHourCycles` ...; Broiler.JS answers the keyword's value and then the engine's default: `["japanese", "gregory"]`, `["emoji", "default"]`, `["h23", "h12"]`, `["arab", "latn"]`; `["phonebk", "default"]` ...; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("und-u-hc-h11").getHourCycles())
 note: row L15: the hc keyword is the whole answer
@@ -1872,7 +1775,6 @@ out: value: str:"[\"emoji\",\"eor\"]"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"emoji\",\"eor\"]"
 per-engine.broiler-vm: value: str:"[]"
-divergence.broiler-js: row L17: `getCollations` with no keyword, a locale whose language the Collator supports: `en`, `en-US`, `en-GB`, `de` ...; Broiler.JS answers `["default"]` for every locale; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("en").getCollations())
 note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS's adapter hands the operation the collations its own Collator, which keeps its host path until SJL-17, resolves for the locale (decision D33 (c))
@@ -1886,7 +1788,6 @@ out: value: str:"[\"emoji\",\"eor\"]"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"emoji\",\"eor\"]"
 per-engine.broiler-vm: value: str:"[]"
-divergence.broiler-js: row L17: `getCollations` with no keyword, a locale whose language the Collator supports: `en`, `en-US`, `en-GB`, `de` ...; Broiler.JS answers `["default"]` for every locale; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("en-US").getCollations())
 note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS's adapter hands the operation the collations its own Collator, which keeps its host path until SJL-17, resolves for the locale (decision D33 (c))
@@ -1900,7 +1801,6 @@ out: value: str:"[\"emoji\",\"eor\"]"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"emoji\",\"eor\"]"
 per-engine.broiler-vm: value: str:"[]"
-divergence.broiler-js: row L17: `getCollations` with no keyword, a locale whose language the Collator supports: `en`, `en-US`, `en-GB`, `de` ...; Broiler.JS answers `["default"]` for every locale; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("en-GB").getCollations())
 note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS's adapter hands the operation the collations its own Collator, which keeps its host path until SJL-17, resolves for the locale (decision D33 (c))
@@ -1914,7 +1814,6 @@ out: value: str:"[\"emoji\",\"eor\",\"phonebk\"]"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"emoji\",\"eor\",\"phonebk\"]"
 per-engine.broiler-vm: value: str:"[\"phonebk\"]"
-divergence.broiler-js: row L17: `getCollations` with no keyword, a locale whose language the Collator supports: `en`, `en-US`, `en-GB`, `de` ...; Broiler.JS answers `["default"]` for every locale; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("de").getCollations())
 note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS's adapter hands the operation the collations its own Collator, which keeps its host path until SJL-17, resolves for the locale (decision D33 (c))
@@ -1928,7 +1827,6 @@ out: value: str:"[\"emoji\",\"eor\",\"phonebk\"]"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"emoji\",\"eor\",\"phonebk\"]"
 per-engine.broiler-vm: value: str:"[\"phonebk\"]"
-divergence.broiler-js: row L17: `getCollations` with no keyword, a locale whose language the Collator supports: `en`, `en-US`, `en-GB`, `de` ...; Broiler.JS answers `["default"]` for every locale; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("de-DE").getCollations())
 note: row L17: CollationsOfLocale lists the collations of Intl.Collator's data for the locale (decision D33 (c): each engine's Collator data, which stays its own until SJL-17); Broiler.VM's Collator data offers phonebk for German alone (JSD-0043), so its plan answers that list; Broiler.JS's adapter hands the operation the collations its own Collator, which keeps its host path until SJL-17, resolves for the locale (decision D33 (c))
@@ -1942,8 +1840,6 @@ out: value: str:"[\"emoji\",\"eor\"]"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"emoji\",\"eor\"]"
 per-engine.broiler-vm: value: str:"[]"
-divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default, for Broiler.JS the list its own Intl.Collator resolves (decision D33 (c); row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L18 (a correction of Broiler.VM): getCollations of a locale whose language the Collator lacks answers ["emoji", "eor"], where CollationsOfLocale answers DefaultLocale's collations, en-US's, which are none; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("fr-FR").getCollations())
 note: rows L18 (a correction of Broiler.VM, decision D32) and L17: for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations, and otherwise the locale's; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's adapter hands the operation the collations its own Collator resolves for the locale (decision D33 (c)), emoji and eor and the language's tailorings
@@ -1957,8 +1853,6 @@ out: value: str:"[\"emoji\",\"eor\",\"trad\"]"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"emoji\",\"eor\"]"
 per-engine.broiler-vm: value: str:"[]"
-divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default, for Broiler.JS the list its own Intl.Collator resolves (decision D33 (c); row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L18 (a correction of Broiler.VM): getCollations of a locale whose language the Collator lacks answers ["emoji", "eor"], where CollationsOfLocale answers DefaultLocale's collations, en-US's, which are none; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("es-419").getCollations())
 note: rows L18 (a correction of Broiler.VM, decision D32) and L17: for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations, and otherwise the locale's; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's adapter hands the operation the collations its own Collator resolves for the locale (decision D33 (c)), emoji and eor and the language's tailorings
@@ -1972,8 +1866,6 @@ out: value: str:"[\"emoji\",\"eor\",\"unihan\"]"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"emoji\",\"eor\",\"unihan\"]"
 per-engine.broiler-vm: value: str:"[]"
-divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default, for Broiler.JS the list its own Intl.Collator resolves (decision D33 (c); row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L18 (a correction of Broiler.VM): getCollations of a locale whose language the Collator lacks answers ["emoji", "eor"], where CollationsOfLocale answers DefaultLocale's collations, en-US's, which are none; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("ja").getCollations())
 note: rows L18 (a correction of Broiler.VM, decision D32) and L17: for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations, and otherwise the locale's; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's adapter hands the operation the collations its own Collator resolves for the locale (decision D33 (c)), emoji and eor and the language's tailorings
@@ -1987,8 +1879,6 @@ out: value: str:"[\"emoji\",\"eor\",\"pinyin\",\"stroke\",\"unihan\",\"zhuyin\"]
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"emoji\",\"eor\",\"phonetic\",\"pinyin\",\"stroke\",\"trad\",\"unihan\",\"zhuyin\"]"
 per-engine.broiler-vm: value: str:"[]"
-divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default, for Broiler.JS the list its own Intl.Collator resolves (decision D33 (c); row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L18 (a correction of Broiler.VM): getCollations of a locale whose language the Collator lacks answers ["emoji", "eor"], where CollationsOfLocale answers DefaultLocale's collations, en-US's, which are none; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("zh-TW").getCollations())
 note: rows L18 (a correction of Broiler.VM, decision D32) and L17: for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations, and otherwise the locale's; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's adapter hands the operation the collations its own Collator resolves for the locale (decision D33 (c)), emoji and eor and the language's tailorings
@@ -2002,8 +1892,6 @@ out: value: str:"[\"compat\",\"emoji\",\"eor\"]"
 class: impl-defined
 per-engine.broiler-js: value: str:"[\"emoji\",\"eor\"]"
 per-engine.broiler-vm: value: str:"[]"
-divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default, for Broiler.JS the list its own Intl.Collator resolves (decision D33 (c); row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
-divergence.broiler-vm: row L18 (a correction of Broiler.VM): getCollations of a locale whose language the Collator lacks answers ["emoji", "eor"], where CollationsOfLocale answers DefaultLocale's collations, en-US's, which are none; answered by SJL-9.4, Broiler.VM's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("ar-EG").getCollations())
 note: rows L18 (a correction of Broiler.VM, decision D32) and L17: for a language the Collator does not support, CollationsOfLocale reads DefaultLocale's collations, and otherwise the locale's; Broiler.VM's DefaultLocale is en-US, whose Collator data holds no collation (decision D32); Broiler.JS's adapter hands the operation the collations its own Collator resolves for the locale (decision D33 (c)), emoji and eor and the language's tailorings
@@ -2014,8 +1902,7 @@ area: intl
 op: Intl.Locale.prototype.getCollations
 in: str:"und"
 out: value: str:"[\"emoji\",\"eor\"]"
-class: divergence
-divergence.broiler-js: rows L18 and L17: getCollations answers ["default"] for every locale, und included, where CollationsOfLocale answers the found locale's collations without the default, for Broiler.JS the list its own Intl.Collator resolves (decision D33 (c); row L17, a correction of Broiler.JS); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("und").getCollations())
 note: rows L18 and L17: und answers emoji and eor, CollationsOfLocale's own list
@@ -2100,8 +1987,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"und-Avst"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("und-Avst").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2112,8 +1998,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"und-Chrs"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("und-Chrs").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2124,8 +2009,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"und-Cprt"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("und-Cprt").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2136,8 +2020,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"und-Elym"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("und-Elym").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2148,8 +2031,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"und-Hatr"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("und-Hatr").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2160,8 +2042,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"und-Hung"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("und-Hung").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2172,8 +2053,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"und-Khar"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("und-Khar").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2184,8 +2064,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"und-Lydi"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("und-Lydi").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2196,8 +2075,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"und-Ougr"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("und-Ougr").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2208,8 +2086,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"ks"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ks").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2220,8 +2097,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"lrc"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("lrc").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2232,8 +2108,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"bal"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("bal").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2244,8 +2119,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"bqi"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("bqi").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2256,8 +2130,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"pa-PK"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("pa-PK").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2268,8 +2141,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"uz-AF"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("uz-AF").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2280,8 +2152,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"az-IR"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("az-IR").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2292,8 +2163,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"ku"
 out: value: str:"ltr"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("ku").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2304,8 +2174,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"sd-IN"
 out: value: str:"ltr"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("sd-IN").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2316,8 +2185,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"und-IL"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("und-IL").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2328,8 +2196,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"und-SA"
 out: value: str:"rtl"
-class: divergence
-divergence.broiler-js: row L24: `getTextInfo` direction from data: `und-<script>` for every script CLDR 48.2.0's script metadata names ...; Broiler.JS answers hand lists of right-to-left scripts and languages: `ltr` for those eleven scripts and for `ks`, `lrc`, `bal`, `bqi`, `pa-PK`, `uz-AF`, `az-IR`, `und-IL`, `und-SA` ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale ref:intlref@1
 script: new Intl.Locale("und-SA").getTextInfo().direction
 note: row L24 (data, C5): the script, or the likely script, read in CLDR's script metadata
@@ -2362,8 +2229,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"und-Zzzz"
 out: value: undefined
-class: divergence
-divergence.broiler-js: row L25: `getTextInfo` when no direction is known: `xyz`, `und-Zzzz`, `und-Qaaa`, `und-Zyyy`, `und-Latf`; Broiler.JS answers `{direction: "ltr"}`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale overruled:intlref@1=value:str:"ltr"
 script: new Intl.Locale("und-Zzzz").getTextInfo().direction
 note: row L25: the locale's script is Zzzz, the unknown script; TextDirectionOfLocale returns undefined when no direction is known; TextDirectionOfLocale returns undefined when the script's ordering is neither right-to-left nor left-to-right or cannot be determined; ICU answers ltr by default (the reference answered str:"ltr")
@@ -2374,8 +2240,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"und-Qaaa"
 out: value: undefined
-class: divergence
-divergence.broiler-js: row L25: `getTextInfo` when no direction is known: `xyz`, `und-Zzzz`, `und-Qaaa`, `und-Zyyy`, `und-Latf`; Broiler.JS answers `{direction: "ltr"}`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale overruled:intlref@1=value:str:"ltr"
 script: new Intl.Locale("und-Qaaa").getTextInfo().direction
 note: row L25: the locale's script is Qaaa, a private-use script; TextDirectionOfLocale returns undefined when no direction is known; TextDirectionOfLocale returns undefined when the script's ordering is neither right-to-left nor left-to-right or cannot be determined; ICU answers ltr by default (the reference answered str:"ltr")
@@ -2386,8 +2251,7 @@ area: intl
 op: Intl.Locale.prototype.getTextInfo
 in: str:"und-Zyyy"
 out: value: undefined
-class: divergence
-divergence.broiler-js: row L25: `getTextInfo` when no direction is known: `xyz`, `und-Zzzz`, `und-Qaaa`, `und-Zyyy`, `und-Latf`; Broiler.JS answers `{direction: "ltr"}`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-textdirectionoflocale overruled:intlref@1=value:str:"ltr"
 script: new Intl.Locale("und-Zyyy").getTextInfo().direction
 note: row L25: the locale's script is Zyyy, the common script, whose ordering is neither; TextDirectionOfLocale returns undefined when no direction is known; TextDirectionOfLocale returns undefined when the script's ordering is neither right-to-left nor left-to-right or cannot be determined; ICU answers ltr by default (the reference answered str:"ltr")
@@ -2398,8 +2262,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"ar-EG"
 out: value: str:"[6,[5,6]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ar-EG").getWeekInfo())
 note: row L26 (data, C5): CLDR's week data for the region
@@ -2410,8 +2273,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"en-IN"
 out: value: str:"[7,[7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en-IN").getWeekInfo())
 note: row L26 (data, C5): CLDR's week data for the region
@@ -2422,8 +2284,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"fa-IR"
 out: value: str:"[6,[5]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("fa-IR").getWeekInfo())
 note: row L26 (data, C5): CLDR's week data for the region
@@ -2434,8 +2295,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"en-MV"
 out: value: str:"[5,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en-MV").getWeekInfo())
 note: row L26 (data, C5): CLDR's week data for the region
@@ -2479,8 +2339,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"he-IL"
 out: value: str:"[7,[5,6]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("he-IL").getWeekInfo())
 note: row L26 (data, C5): CLDR's week data for the region
@@ -2502,8 +2361,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"zh-CN"
 out: value: str:"[1,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("zh-CN").getWeekInfo())
 note: row L26 (data, C5): CLDR's week data for the region
@@ -2514,8 +2372,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"en"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L21: RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en").getWeekInfo())
 note: row L21: RegionPreference reads the -u-rg- override, the -u-sd- subdivision's region and the likely region, and a -u-fw- keyword that names a weekday overrides the first day
@@ -2526,8 +2383,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"ja"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L21: RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ja").getWeekInfo())
 note: row L21: RegionPreference reads the -u-rg- override, the -u-sd- subdivision's region and the likely region, and a -u-fw- keyword that names a weekday overrides the first day
@@ -2538,8 +2394,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"ar"
 out: value: str:"[6,[5,6]]"
-class: divergence
-divergence.broiler-js: row L21: RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ar").getWeekInfo())
 note: row L21: RegionPreference reads the -u-rg- override, the -u-sd- subdivision's region and the likely region, and a -u-fw- keyword that names a weekday overrides the first day
@@ -2550,8 +2405,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"und"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L21: RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("und").getWeekInfo())
 note: row L21: RegionPreference reads the -u-rg- override, the -u-sd- subdivision's region and the likely region, and a -u-fw- keyword that names a weekday overrides the first day
@@ -2562,8 +2416,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"en-US-u-rg-gbzzzz"
 out: value: str:"[1,[6,7]]"
-class: divergence
-divergence.broiler-js: row L21: RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en-US-u-rg-gbzzzz").getWeekInfo())
 note: row L21: RegionPreference reads the -u-rg- override, the -u-sd- subdivision's region and the likely region, and a -u-fw- keyword that names a weekday overrides the first day
@@ -2574,8 +2427,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"en-u-rg-sazzzz"
 out: value: str:"[7,[5,6]]"
-class: divergence
-divergence.broiler-js: row L21: RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en-u-rg-sazzzz").getWeekInfo())
 note: row L21: RegionPreference reads the -u-rg- override, the -u-sd- subdivision's region and the likely region, and a -u-fw- keyword that names a weekday overrides the first day
@@ -2586,8 +2438,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"zh-u-rg-twzzzz"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L21: RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("zh-u-rg-twzzzz").getWeekInfo())
 note: row L21: RegionPreference reads the -u-rg- override, the -u-sd- subdivision's region and the likely region, and a -u-fw- keyword that names a weekday overrides the first day
@@ -2598,8 +2449,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"en-u-sd-usca"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L21: RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en-u-sd-usca").getWeekInfo())
 note: row L21: RegionPreference reads the -u-rg- override, the -u-sd- subdivision's region and the likely region, and a -u-fw- keyword that names a weekday overrides the first day
@@ -2621,8 +2471,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"en-u-fw-xyz"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L21: RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en-u-fw-xyz").getWeekInfo())
 note: row L21: RegionPreference reads the -u-rg- override, the -u-sd- subdivision's region and the likely region, and a -u-fw- keyword that names a weekday overrides the first day
@@ -2817,8 +2666,7 @@ area: intl
 op: Intl.NumberFormat, resolvedOptions().locale
 in: str:"en-US-x-foo"
 out: value: str:"en-US"
-class: divergence
-divergence.broiler-js: row L29: The resolved locale is an available locale: a request with variants or private use whose prefix is available ...; Broiler.JS answers the request itself: `de-CH-1996`, `en-US-x-foo`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-resolvelocale ref:intlref@1
 script: new Intl.NumberFormat("en-US-x-foo").resolvedOptions().locale
 note: row L29: ResolveLocale answers the available locale that matched, with the supported extension keywords, never the request's own variants or private use
@@ -2829,8 +2677,7 @@ area: intl
 op: Intl.DateTimeFormat, resolvedOptions().locale
 in: str:"en-US-x-foo"
 out: value: str:"en-US"
-class: divergence
-divergence.broiler-js: row L29: The resolved locale is an available locale: a request with variants or private use whose prefix is available ...; Broiler.JS answers the request itself: `de-CH-1996`, `en-US-x-foo`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-resolvelocale ref:intlref@1
 script: new Intl.DateTimeFormat("en-US-x-foo").resolvedOptions().locale
 note: row L29: ResolveLocale answers the available locale that matched, with the supported extension keywords, never the request's own variants or private use
@@ -2844,7 +2691,6 @@ out: value: str:"en"
 class: impl-defined
 per-engine.broiler-js: value: str:"en-US"
 per-engine.broiler-vm: value: str:"en-US"
-divergence.broiler-js: row L29: The resolved locale is an available locale: a request with variants or private use whose prefix is available ...; Broiler.JS answers the request itself: `de-CH-1996`, `en-US-x-foo`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvelocale ref:intlref@1
 script: new Intl.PluralRules("en-US-x-foo").resolvedOptions().locale
 note: row L29: ResolveLocale answers the available locale that matched, with the supported extension keywords, never the request's own variants or private use; [[AvailableLocales]] is implementation-defined (row L28): both engines' lists hold en-US for every service (decision D5), so each answers the prefix that matched, en-US; the reference's PluralRules list holds only the language
@@ -2855,8 +2701,7 @@ area: intl
 op: Intl.Collator, resolvedOptions().locale
 in: str:"en-US-x-foo"
 out: value: str:"en-US"
-class: divergence
-divergence.broiler-js: row L29: The resolved locale is an available locale: a request with variants or private use whose prefix is available ...; Broiler.JS answers the request itself: `de-CH-1996`, `en-US-x-foo`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-resolvelocale ref:intlref@1
 script: new Intl.Collator("en-US-x-foo").resolvedOptions().locale
 note: row L29: ResolveLocale answers the available locale that matched, with the supported extension keywords, never the request's own variants or private use
@@ -2867,8 +2712,7 @@ area: intl
 op: Intl.NumberFormat, resolvedOptions().locale
 in: str:"de-DE-1996"
 out: value: str:"de-DE"
-class: divergence
-divergence.broiler-js: row L29: The resolved locale is an available locale: a request with variants or private use whose prefix is available ...; Broiler.JS answers the request itself: `de-CH-1996`, `en-US-x-foo`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-resolvelocale ref:intlref@1
 script: new Intl.NumberFormat("de-DE-1996").resolvedOptions().locale
 note: row L29: ResolveLocale answers the available locale that matched, with the supported extension keywords, never the request's own variants or private use
@@ -2879,8 +2723,7 @@ area: intl
 op: Intl.DateTimeFormat, resolvedOptions().locale
 in: str:"de-DE-1996"
 out: value: str:"de-DE"
-class: divergence
-divergence.broiler-js: row L29: The resolved locale is an available locale: a request with variants or private use whose prefix is available ...; Broiler.JS answers the request itself: `de-CH-1996`, `en-US-x-foo`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-resolvelocale ref:intlref@1
 script: new Intl.DateTimeFormat("de-DE-1996").resolvedOptions().locale
 note: row L29: ResolveLocale answers the available locale that matched, with the supported extension keywords, never the request's own variants or private use
@@ -2894,7 +2737,6 @@ out: value: str:"de"
 class: impl-defined
 per-engine.broiler-js: value: str:"de-DE"
 per-engine.broiler-vm: value: str:"de-DE"
-divergence.broiler-js: row L29: The resolved locale is an available locale: a request with variants or private use whose prefix is available ...; Broiler.JS answers the request itself: `de-CH-1996`, `en-US-x-foo`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvelocale ref:intlref@1
 script: new Intl.PluralRules("de-DE-1996").resolvedOptions().locale
 note: row L29: ResolveLocale answers the available locale that matched, with the supported extension keywords, never the request's own variants or private use; [[AvailableLocales]] is implementation-defined (row L28): both engines' lists hold de-DE for every service (decision D5), so each answers the prefix that matched, de-DE; the reference's PluralRules list holds only the language
@@ -2908,7 +2750,6 @@ out: value: str:"de"
 class: impl-defined
 per-engine.broiler-js: value: str:"de-DE"
 per-engine.broiler-vm: value: str:"de-DE"
-divergence.broiler-js: row L29: The resolved locale is an available locale: a request with variants or private use whose prefix is available ...; Broiler.JS answers the request itself: `de-CH-1996`, `en-US-x-foo`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvelocale ref:intlref@1
 script: new Intl.Collator("de-DE-1996").resolvedOptions().locale
 note: row L29: ResolveLocale answers the available locale that matched, with the supported extension keywords, never the request's own variants or private use; [[AvailableLocales]] is implementation-defined (row L28): both engines' lists hold de-DE for every service (decision D5), so each answers the prefix that matched, de-DE; the reference's Collator list holds only the language
@@ -2944,7 +2785,6 @@ out: value: str:"en"
 class: impl-defined
 per-engine.broiler-js: value: str:"en-US"
 per-engine.broiler-vm: value: str:"en-US"
-divergence.broiler-js: row L29: The resolved locale is an available locale: a request with variants or private use whose prefix is available ...; Broiler.JS answers the request itself: `de-CH-1996`, `en-US-x-foo`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
 prov: spec:ecma402@3d4c558#sec-resolvelocale ref:intlref@1
 script: new Intl.PluralRules("en-US-u-xx-yyy").resolvedOptions().locale
 note: row L29: ResolveLocale answers the available locale that matched, with the supported extension keywords, never the request's own variants or private use; [[AvailableLocales]] is implementation-defined (row L28): both engines' lists hold en-US for every service (decision D5), so each answers the prefix that matched, en-US; the reference's PluralRules list holds only the language
@@ -2966,8 +2806,7 @@ area: intl
 op: Intl.ListFormat, resolvedOptions().locale
 in: str:"en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-yyy"
 out: value: str:"en"
-class: divergence
-divergence.broiler-js: row L30: The relevant extension keys of each service: `en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-y ...; Broiler.JS answers every keyword and attribute kept, `en-u-attr-ca-japanese-co-phonebk-hc-h23-kf-upper-kn-nu-arab-xx-yyy`, in those six services; `en-u-nu-arab`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-resolvelocale spec:ecma402@3d4c558#sec-Intl.ListFormat ref:intlref@1
 script: new Intl.ListFormat("en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-yyy").resolvedOptions().locale
 note: row L30: ResolveLocale keeps only the service's relevant extension keys
@@ -2978,8 +2817,7 @@ area: intl
 op: Intl.DisplayNames, resolvedOptions().locale
 in: str:"en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-yyy"
 out: value: str:"en"
-class: divergence
-divergence.broiler-js: row L30: The relevant extension keys of each service: `en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-y ...; Broiler.JS answers every keyword and attribute kept, `en-u-attr-ca-japanese-co-phonebk-hc-h23-kf-upper-kn-nu-arab-xx-yyy`, in those six services; `en-u-nu-arab`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-resolvelocale spec:ecma402@3d4c558#sec-Intl.DisplayNames ref:intlref@1
 script: new Intl.DisplayNames("en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-yyy", {type: "region"}).resolvedOptions().locale
 note: row L30: ResolveLocale keeps only the service's relevant extension keys
@@ -2990,8 +2828,7 @@ area: intl
 op: Intl.PluralRules, resolvedOptions().locale
 in: str:"en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-yyy"
 out: value: str:"en"
-class: divergence
-divergence.broiler-js: row L30: The relevant extension keys of each service: `en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-y ...; Broiler.JS answers every keyword and attribute kept, `en-u-attr-ca-japanese-co-phonebk-hc-h23-kf-upper-kn-nu-arab-xx-yyy`, in those six services; `en-u-nu-arab`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-resolvelocale spec:ecma402@3d4c558#sec-intl.pluralrules ref:intlref@1
 script: new Intl.PluralRules("en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-yyy").resolvedOptions().locale
 note: row L30: ResolveLocale keeps only the service's relevant extension keys
@@ -3002,8 +2839,7 @@ area: intl
 op: Intl.Segmenter, resolvedOptions().locale
 in: str:"en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-yyy"
 out: value: str:"en"
-class: divergence
-divergence.broiler-js: row L30: The relevant extension keys of each service: `en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-y ...; Broiler.JS answers every keyword and attribute kept, `en-u-attr-ca-japanese-co-phonebk-hc-h23-kf-upper-kn-nu-arab-xx-yyy`, in those six services; `en-u-nu-arab`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-resolvelocale spec:ecma402@3d4c558#sec-intl.segmenter ref:intlref@1
 script: new Intl.Segmenter("en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-yyy").resolvedOptions().locale
 note: row L30: ResolveLocale keeps only the service's relevant extension keys
@@ -3014,8 +2850,7 @@ area: intl
 op: Intl.DurationFormat, resolvedOptions().locale
 in: str:"en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-yyy"
 out: value: str:"en-u-nu-arab"
-class: divergence
-divergence.broiler-js: row L30: The relevant extension keys of each service: `en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-y ...; Broiler.JS answers every keyword and attribute kept, `en-u-attr-ca-japanese-co-phonebk-hc-h23-kf-upper-kn-nu-arab-xx-yyy`, in those six services; `en-u-nu-arab`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-resolvelocale spec:ecma402@3d4c558#sec-Intl.DurationFormat ref:intlref@1
 script: new Intl.DurationFormat("en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-yyy").resolvedOptions().locale
 note: row L30: ResolveLocale keeps only the service's relevant extension keys
@@ -3026,8 +2861,7 @@ area: intl
 op: Intl.RelativeTimeFormat, resolvedOptions().locale
 in: str:"en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-yyy"
 out: value: str:"en-u-nu-arab"
-class: divergence
-divergence.broiler-js: row L30: The relevant extension keys of each service: `en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-y ...; Broiler.JS answers every keyword and attribute kept, `en-u-attr-ca-japanese-co-phonebk-hc-h23-kf-upper-kn-nu-arab-xx-yyy`, in those six services; `en-u-nu-arab`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-resolvelocale spec:ecma402@3d4c558#sec-Intl.RelativeTimeFormat ref:intlref@1
 script: new Intl.RelativeTimeFormat("en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-yyy").resolvedOptions().locale
 note: row L30: ResolveLocale keeps only the service's relevant extension keys
@@ -3038,8 +2872,7 @@ area: intl
 op: Intl.PluralRules, resolvedOptions().locale
 in: str:"en-u-nu-arab"
 out: value: str:"en"
-class: divergence
-divergence.broiler-js: row L30: The relevant extension keys of each service: `en-u-attr-ca-japanese-nu-arab-co-phonebk-kn-kf-upper-hc-h23-xx-y ...; Broiler.JS answers every keyword and attribute kept, `en-u-attr-ca-japanese-co-phonebk-hc-h23-kf-upper-kn-nu-arab-xx-yyy`, in those six services; `en-u-nu-arab`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-resolvelocale spec:ecma402@3d4c558#sec-intl.pluralrules ref:intlref@1
 script: new Intl.PluralRules("en-u-nu-arab").resolvedOptions().locale
 note: row L30: PluralRules has no relevant extension key
@@ -3063,8 +2896,7 @@ area: intl
 op: Intl.DisplayNames.supportedLocalesOf
 in: undefined
 out: value: str:"function"
-class: divergence
-divergence.broiler-js: row L37: `Intl.DisplayNames.supportedLocalesOf`; Broiler.JS answers absent; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.DisplayNames.supportedLocalesOf ref:intlref@1
 script: typeof Intl.DisplayNames.supportedLocalesOf
 note: row L37: the function exists
@@ -3075,8 +2907,7 @@ area: intl
 op: Intl.DisplayNames.supportedLocalesOf
 in: str:"en-US" str:"de"
 out: value: str:"en-US,de"
-class: divergence
-divergence.broiler-js: row L37: `Intl.DisplayNames.supportedLocalesOf`; Broiler.JS answers absent; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-Intl.DisplayNames.supportedLocalesOf spec:ecma402@3d4c558#sec-filterlocales ref:intlref@1
 script: Intl.DisplayNames.supportedLocalesOf(["en-US", "de"]).join()
 note: row L37: it filters as every service's does
@@ -3133,8 +2964,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"en"
 out: value: str:"[\"h12\",\"h23\"]"
-class: divergence
-divergence.broiler-js: rows L19 and L20 and L21: `getHourCycles` with no keyword, the region's preferred cycle: 40 tags; Broiler.JS answers a hand table of twelve-hour regions, and `en` alone without a region: `h23` for those; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | `getHourCycles`: the cycles in use after the preferred one; Broiler.JS answers one value: `["h12"]`, `["h23"]`; a correction of Broiler.JS (JSD-0082, C1) | RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h12\"]"
 script: JSON.stringify(new Intl.Locale("en").getHourCycles())
 note: rows L19, L20, L21: HourCyclesOfLocale lists the cycles in common use in the lookup region, the likely region, US, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h12\"]")
@@ -3145,8 +2975,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"en-US"
 out: value: str:"[\"h12\",\"h23\"]"
-class: divergence
-divergence.broiler-js: rows L19 and L20: `getHourCycles` with no keyword, the region's preferred cycle: 40 tags; Broiler.JS answers a hand table of twelve-hour regions, and `en` alone without a region: `h23` for those; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | `getHourCycles`: the cycles in use after the preferred one; Broiler.JS answers one value: `["h12"]`, `["h23"]`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h12\"]"
 script: JSON.stringify(new Intl.Locale("en-US").getHourCycles())
 note: rows L19, L20: HourCyclesOfLocale lists the cycles in common use in the lookup region, US, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h12\"]")
@@ -3157,8 +2986,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"en-GB"
 out: value: str:"[\"h23\",\"h12\"]"
-class: divergence
-divergence.broiler-js: rows L19 and L20: `getHourCycles` with no keyword, the region's preferred cycle: 40 tags; Broiler.JS answers a hand table of twelve-hour regions, and `en` alone without a region: `h23` for those; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | `getHourCycles`: the cycles in use after the preferred one; Broiler.JS answers one value: `["h12"]`, `["h23"]`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h23\"]"
 script: JSON.stringify(new Intl.Locale("en-GB").getHourCycles())
 note: rows L19, L20: HourCyclesOfLocale lists the cycles in common use in the lookup region, GB, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h23\"]")
@@ -3169,8 +2997,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"ja-JP"
 out: value: str:"[\"h23\",\"h11\",\"h12\"]"
-class: divergence
-divergence.broiler-js: rows L19 and L20: `getHourCycles` with no keyword, the region's preferred cycle: 40 tags; Broiler.JS answers a hand table of twelve-hour regions, and `en` alone without a region: `h23` for those; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | `getHourCycles`: the cycles in use after the preferred one; Broiler.JS answers one value: `["h12"]`, `["h23"]`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h23\"]"
 script: JSON.stringify(new Intl.Locale("ja-JP").getHourCycles())
 note: rows L19, L20: HourCyclesOfLocale lists the cycles in common use in the lookup region, JP, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h23\"]")
@@ -3181,8 +3008,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"ja"
 out: value: str:"[\"h23\",\"h11\",\"h12\"]"
-class: divergence
-divergence.broiler-js: rows L19 and L20 and L21: `getHourCycles` with no keyword, the region's preferred cycle: 40 tags; Broiler.JS answers a hand table of twelve-hour regions, and `en` alone without a region: `h23` for those; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | `getHourCycles`: the cycles in use after the preferred one; Broiler.JS answers one value: `["h12"]`, `["h23"]`; a correction of Broiler.JS (JSD-0082, C1) | RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h23\"]"
 script: JSON.stringify(new Intl.Locale("ja").getHourCycles())
 note: rows L19, L20, L21: HourCyclesOfLocale lists the cycles in common use in the lookup region, the likely region, JP, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h23\"]")
@@ -3193,8 +3019,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"es-419"
 out: value: str:"[\"h12\",\"h23\"]"
-class: divergence
-divergence.broiler-js: rows L19 and L20: `getHourCycles` with no keyword, the region's preferred cycle: 40 tags; Broiler.JS answers a hand table of twelve-hour regions, and `en` alone without a region: `h23` for those; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | `getHourCycles`: the cycles in use after the preferred one; Broiler.JS answers one value: `["h12"]`, `["h23"]`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h12\"]"
 script: JSON.stringify(new Intl.Locale("es-419").getHourCycles())
 note: rows L19, L20: HourCyclesOfLocale lists the cycles in common use in the lookup region, 419, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h12\"]")
@@ -3205,8 +3030,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"ko-KR"
 out: value: str:"[\"h12\",\"h23\"]"
-class: divergence
-divergence.broiler-js: rows L19 and L20: `getHourCycles` with no keyword, the region's preferred cycle: 40 tags; Broiler.JS answers a hand table of twelve-hour regions, and `en` alone without a region: `h23` for those; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | `getHourCycles`: the cycles in use after the preferred one; Broiler.JS answers one value: `["h12"]`, `["h23"]`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h12\"]"
 script: JSON.stringify(new Intl.Locale("ko-KR").getHourCycles())
 note: rows L19, L20: HourCyclesOfLocale lists the cycles in common use in the lookup region, KR, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h12\"]")
@@ -3217,8 +3041,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"zh-TW"
 out: value: str:"[\"h12\",\"h23\"]"
-class: divergence
-divergence.broiler-js: rows L19 and L20: `getHourCycles` with no keyword, the region's preferred cycle: 40 tags; Broiler.JS answers a hand table of twelve-hour regions, and `en` alone without a region: `h23` for those; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | `getHourCycles`: the cycles in use after the preferred one; Broiler.JS answers one value: `["h12"]`, `["h23"]`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h12\"]"
 script: JSON.stringify(new Intl.Locale("zh-TW").getHourCycles())
 note: rows L19, L20: HourCyclesOfLocale lists the cycles in common use in the lookup region, TW, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h12\"]")
@@ -3229,8 +3052,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"ar"
 out: value: str:"[\"h12\",\"h23\"]"
-class: divergence
-divergence.broiler-js: rows L19 and L20 and L21: `getHourCycles` with no keyword, the region's preferred cycle: 40 tags; Broiler.JS answers a hand table of twelve-hour regions, and `en` alone without a region: `h23` for those; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | `getHourCycles`: the cycles in use after the preferred one; Broiler.JS answers one value: `["h12"]`, `["h23"]`; a correction of Broiler.JS (JSD-0082, C1) | RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h12\"]"
 script: JSON.stringify(new Intl.Locale("ar").getHourCycles())
 note: rows L19, L20, L21: HourCyclesOfLocale lists the cycles in common use in the lookup region, the likely region, EG, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h12\"]")
@@ -3241,8 +3063,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"und"
 out: value: str:"[\"h12\",\"h23\"]"
-class: divergence
-divergence.broiler-js: rows L19 and L20 and L21: `getHourCycles` with no keyword, the region's preferred cycle: 40 tags; Broiler.JS answers a hand table of twelve-hour regions, and `en` alone without a region: `h23` for those; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | `getHourCycles`: the cycles in use after the preferred one; Broiler.JS answers one value: `["h12"]`, `["h23"]`; a correction of Broiler.JS (JSD-0082, C1) | RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h12\"]"
 script: JSON.stringify(new Intl.Locale("und").getHourCycles())
 note: rows L19, L20, L21: HourCyclesOfLocale lists the cycles in common use in the lookup region, the likely region, US, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h12\"]")
@@ -3253,8 +3074,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"de"
 out: value: str:"[\"h23\",\"h12\"]"
-class: divergence
-divergence.broiler-js: rows L19 and L20: `getHourCycles` with no keyword, the region's preferred cycle: 40 tags; Broiler.JS answers a hand table of twelve-hour regions, and `en` alone without a region: `h23` for those; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | `getHourCycles`: the cycles in use after the preferred one; Broiler.JS answers one value: `["h12"]`, `["h23"]`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h23\"]"
 script: JSON.stringify(new Intl.Locale("de").getHourCycles())
 note: rows L19, L20: HourCyclesOfLocale lists the cycles in common use in the lookup region, the likely region, DE, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h23\"]")
@@ -3265,8 +3085,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"fr"
 out: value: str:"[\"h23\",\"h12\"]"
-class: divergence
-divergence.broiler-js: rows L19 and L20: `getHourCycles` with no keyword, the region's preferred cycle: 40 tags; Broiler.JS answers a hand table of twelve-hour regions, and `en` alone without a region: `h23` for those; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list | `getHourCycles`: the cycles in use after the preferred one; Broiler.JS answers one value: `["h12"]`, `["h23"]`; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h23\"]"
 script: JSON.stringify(new Intl.Locale("fr").getHourCycles())
 note: rows L19, L20: HourCyclesOfLocale lists the cycles in common use in the lookup region, the likely region, FR, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h23\"]")
@@ -3277,8 +3096,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"en-US-u-rg-gbzzzz"
 out: value: str:"[\"h23\",\"h12\"]"
-class: divergence
-divergence.broiler-js: row L21: RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h23\"]"
 script: JSON.stringify(new Intl.Locale("en-US-u-rg-gbzzzz").getHourCycles())
 note: rows L21: HourCyclesOfLocale lists the cycles in common use in the lookup region, the -u-rg- override, GB, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h23\"]")
@@ -3289,8 +3107,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"en-u-rg-sazzzz"
 out: value: str:"[\"h12\",\"h23\"]"
-class: divergence
-divergence.broiler-js: row L21: RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h12\"]"
 script: JSON.stringify(new Intl.Locale("en-u-rg-sazzzz").getHourCycles())
 note: rows L21: HourCyclesOfLocale lists the cycles in common use in the lookup region, the -u-rg- override, SA, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h12\"]")
@@ -3301,8 +3118,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"zh-u-rg-twzzzz"
 out: value: str:"[\"h12\",\"h23\"]"
-class: divergence
-divergence.broiler-js: row L21: RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h12\"]"
 script: JSON.stringify(new Intl.Locale("zh-u-rg-twzzzz").getHourCycles())
 note: rows L21: HourCyclesOfLocale lists the cycles in common use in the lookup region, the -u-rg- override, TW, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h12\"]")
@@ -3313,8 +3129,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"en-u-sd-usca"
 out: value: str:"[\"h12\",\"h23\"]"
-class: divergence
-divergence.broiler-js: row L21: RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h12\"]"
 script: JSON.stringify(new Intl.Locale("en-u-sd-usca").getHourCycles())
 note: rows L21: HourCyclesOfLocale lists the cycles in common use in the lookup region, the subdivision's region, US, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h12\"]")
@@ -3325,8 +3140,7 @@ area: intl
 op: Intl.Locale.prototype.getHourCycles
 in: str:"en-u-sd-gbsct"
 out: value: str:"[\"h23\",\"h12\"]"
-class: divergence
-divergence.broiler-js: row L21: RegionPreference in `getHourCycles` and `getWeekInfo`: a locale with no region (`en`, `ja`, `ar`, `und`) ...; Broiler.JS answers the tag's own region only, or none: `en` Monday; `rg` and `sd` ignored; a correction of Broiler.JS (JSD-0082, C1); answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-hourcyclesoflocale spec:ecma402@3d4c558#sec-regionpreference ref:intlcldr@1 overruled:intlref@1=value:str:"[\"h12\"]"
 script: JSON.stringify(new Intl.Locale("en-u-sd-gbsct").getHourCycles())
 note: rows L21: HourCyclesOfLocale lists the cycles in common use in the lookup region, the subdivision's region, GB, in descending preference: UTS #35 Time Data's preferred cycle, then its allowed ones; HourCyclesOfLocale lists every cycle in common use in the region, in descending preference; ICU answers the preferred one alone (the reference answered str:"[\"h12\"]")
@@ -3348,8 +3162,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"aa"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("aa").getWeekInfo())
 note: row L26 (data, C5): week data; aa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -3415,8 +3228,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"af"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("af").getWeekInfo())
 note: row L26 (data, C5): week data; af, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -3757,8 +3569,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"en-AU"
 out: value: str:"[1,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("en-AU").getWeekInfo())
 note: row L26 (data, C5): week data; en-AU, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -4099,8 +3910,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"fa"
 out: value: str:"[6,[5]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("fa").getWeekInfo())
 note: row L26 (data, C5): week data; fa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -4188,8 +3998,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"fil"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("fil").getWeekInfo())
 note: row L26 (data, C5): week data; fil, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -4354,8 +4163,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"he"
 out: value: str:"[7,[5,6]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("he").getWeekInfo())
 note: row L26 (data, C5): week data; he, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -4399,8 +4207,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"hi"
 out: value: str:"[7,[7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("hi").getWeekInfo())
 note: row L26 (data, C5): week data; hi, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -4433,8 +4240,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"hi-IN"
 out: value: str:"[7,[7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("hi-IN").getWeekInfo())
 note: row L26 (data, C5): week data; hi-IN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -4533,8 +4339,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"id"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("id").getWeekInfo())
 note: row L26 (data, C5): week data; id, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -4567,8 +4372,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"id-ID"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("id-ID").getWeekInfo())
 note: row L26 (data, C5): week data; id-ID, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -4722,8 +4526,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"ko"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ko").getWeekInfo())
 note: row L26 (data, C5): week data; ko, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -5086,8 +4889,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"pt"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("pt").getWeekInfo())
 note: row L26 (data, C5): week data; pt, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -5142,8 +4944,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"pt-PT"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("pt-PT").getWeekInfo())
 note: row L26 (data, C5): week data; pt-PT, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -5275,8 +5076,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"sa"
 out: value: str:"[7,[7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("sa").getWeekInfo())
 note: row L26 (data, C5): week data; sa, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -5606,8 +5406,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"th"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("th").getWeekInfo())
 note: row L26 (data, C5): week data; th, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -5640,8 +5439,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"th-TH"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("th-TH").getWeekInfo())
 note: row L26 (data, C5): week data; th-TH, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -5707,8 +5505,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"ur"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("ur").getWeekInfo())
 note: row L26 (data, C5): week data; ur, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -5906,8 +5703,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"zh-Hans-CN"
 out: value: str:"[1,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("zh-Hans-CN").getWeekInfo())
 note: row L26 (data, C5): week data; zh-Hans-CN, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -5940,8 +5736,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"zh-Hans-SG"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("zh-Hans-SG").getWeekInfo())
 note: row L26 (data, C5): week data; zh-Hans-SG, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -5974,8 +5769,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"zh-Hant"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("zh-Hant").getWeekInfo())
 note: row L26 (data, C5): week data; zh-Hant, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data
@@ -6041,8 +5835,7 @@ area: intl
 op: Intl.Locale.prototype.getWeekInfo
 in: str:"zu"
 out: value: str:"[7,[6,7]]"
-class: divergence
-divergence.broiler-js: row L26: `getWeekInfo` by region data: 40 tags; Broiler.JS answers a hand table of Sunday-first regions and a fixed weekend: `{1, [6, 7]}`, `{7, [6, 7]}`, ...; data policy (C5): its embedding takes CLDR 48.2.0 for every locale of decision D5's list; answered by SJL-9.5, this engine's cut-over to the shared Intl library
+class: normative
 prov: spec:ecma402@3d4c558#sec-weekinfooflocale ref:intlref@1
 script: (function (w) { return JSON.stringify([w.firstDay, w.weekend]); })(new Intl.Locale("zu").getWeekInfo())
 note: row L26 (data, C5): week data; zu, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data

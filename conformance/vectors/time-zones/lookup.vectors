@@ -175,12 +175,10 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"etc/utc"
 out: value: str:"Etc/UTC"
-class: impl-defined
-per-engine.broiler-js: value: str:"Etc/UTC"
-per-engine.broiler-vm: value: str:"UTC"
-prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
+class: normative
+prov: proposal:temporal@e8cc03fc#sec-createdatetimeformat spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "etc/utc" }).resolvedOptions().timeZone
-note: row Z9, an ASCII-case-insensitive match takes the identifier's own case; row Z8: implementation-defined until the specification edition both engines pin settles it (JSD-0076, X2); out is the identifier, as the canonical-tz text has it. Broiler.JS keeps the name (its docs/roadmap/SharedLibraries.md, record of SJL-8.1); Broiler.VM reports the primary (JSD-0054, JSD-0076 Z8)
+note: row Z9, an ASCII-case-insensitive match takes the identifier's own case; row Z8: the identifier as given, case-normalised, which e8cc03fc's CreateDateTimeFormat keeps as [[Identifier]] (decision D15 of Broiler.VM's JSD-0082, settled by the pinned text); Broiler.JS keeps the name, and Broiler.VM, which reported the primary, answers it since its cut-over SJL-9.4, so the two engines' expectations are one since corpus revision 38
 since: 21
 
 id: time-zones/case/0017
@@ -210,12 +208,10 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"gmt"
 out: value: str:"GMT"
-class: impl-defined
-per-engine.broiler-js: value: str:"GMT"
-per-engine.broiler-vm: value: str:"UTC"
-prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
+class: normative
+prov: proposal:temporal@e8cc03fc#sec-createdatetimeformat spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "gmt" }).resolvedOptions().timeZone
-note: row Z9, an ASCII-case-insensitive match takes the identifier's own case; row Z8: implementation-defined until the specification edition both engines pin settles it (JSD-0076, X2); out is the identifier, as the canonical-tz text has it. Broiler.JS keeps the name (its docs/roadmap/SharedLibraries.md, record of SJL-8.1); Broiler.VM reports the primary (JSD-0054, JSD-0076 Z8)
+note: row Z9, an ASCII-case-insensitive match takes the identifier's own case; row Z8: the identifier as given, case-normalised, which e8cc03fc's CreateDateTimeFormat keeps as [[Identifier]] (decision D15 of Broiler.VM's JSD-0082, settled by the pinned text); Broiler.JS keeps the name, and Broiler.VM, which reported the primary, answers it since its cut-over SJL-9.4, so the two engines' expectations are one since corpus revision 38
 since: 21
 
 id: time-zones/case/0020
@@ -366,12 +362,10 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"us/eastern"
 out: value: str:"US/Eastern"
-class: impl-defined
-per-engine.broiler-js: value: str:"US/Eastern"
-per-engine.broiler-vm: value: str:"America/New_York"
-prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
+class: normative
+prov: proposal:temporal@e8cc03fc#sec-createdatetimeformat spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "us/eastern" }).resolvedOptions().timeZone
-note: row Z9, an ASCII-case-insensitive match takes the identifier's own case; row Z8: implementation-defined until the specification edition both engines pin settles it (JSD-0076, X2); out is the identifier, as the canonical-tz text has it. Broiler.JS keeps the name (its docs/roadmap/SharedLibraries.md, record of SJL-8.1); Broiler.VM reports the primary (JSD-0054, JSD-0076 Z8)
+note: row Z9, an ASCII-case-insensitive match takes the identifier's own case; row Z8: the identifier as given, case-normalised, which e8cc03fc's CreateDateTimeFormat keeps as [[Identifier]] (decision D15 of Broiler.VM's JSD-0082, settled by the pinned text); Broiler.JS keeps the name, and Broiler.VM, which reported the primary, answers it since its cut-over SJL-9.4, so the two engines' expectations are one since corpus revision 38
 since: 21
 
 id: time-zones/case/0034
@@ -401,12 +395,10 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"asia/calcutta"
 out: value: str:"Asia/Calcutta"
-class: impl-defined
-per-engine.broiler-js: value: str:"Asia/Calcutta"
-per-engine.broiler-vm: value: str:"Asia/Kolkata"
-prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
+class: normative
+prov: proposal:temporal@e8cc03fc#sec-createdatetimeformat spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "asia/calcutta" }).resolvedOptions().timeZone
-note: row Z9, an ASCII-case-insensitive match takes the identifier's own case; row Z8: implementation-defined until the specification edition both engines pin settles it (JSD-0076, X2); out is the identifier, as the canonical-tz text has it. Broiler.JS keeps the name (its docs/roadmap/SharedLibraries.md, record of SJL-8.1); Broiler.VM reports the primary (JSD-0054, JSD-0076 Z8)
+note: row Z9, an ASCII-case-insensitive match takes the identifier's own case; row Z8: the identifier as given, case-normalised, which e8cc03fc's CreateDateTimeFormat keeps as [[Identifier]] (decision D15 of Broiler.VM's JSD-0082, settled by the pinned text); Broiler.JS keeps the name, and Broiler.VM, which reported the primary, answers it since its cut-over SJL-9.4, so the two engines' expectations are one since corpus revision 38
 since: 21
 
 id: time-zones/case/0037
@@ -436,12 +428,10 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"cst6cdt"
 out: value: str:"CST6CDT"
-class: impl-defined
-per-engine.broiler-js: value: str:"CST6CDT"
-per-engine.broiler-vm: value: str:"America/Chicago"
-prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
+class: normative
+prov: proposal:temporal@e8cc03fc#sec-createdatetimeformat spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "cst6cdt" }).resolvedOptions().timeZone
-note: row Z9, an ASCII-case-insensitive match takes the identifier's own case; row Z8: implementation-defined until the specification edition both engines pin settles it (JSD-0076, X2); out is the identifier, as the canonical-tz text has it. Broiler.JS keeps the name (its docs/roadmap/SharedLibraries.md, record of SJL-8.1); Broiler.VM reports the primary (JSD-0054, JSD-0076 Z8)
+note: row Z9, an ASCII-case-insensitive match takes the identifier's own case; row Z8: the identifier as given, case-normalised, which e8cc03fc's CreateDateTimeFormat keeps as [[Identifier]] (decision D15 of Broiler.VM's JSD-0082, settled by the pinned text); Broiler.JS keeps the name, and Broiler.VM, which reported the primary, answers it since its cut-over SJL-9.4, so the two engines' expectations are one since corpus revision 38
 since: 21
 
 id: time-zones/case/0040

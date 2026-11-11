@@ -1922,6 +1922,14 @@ Each part met only as revised is weaker evidence than a part met as written, as 
 owed to the next stage: the corpus revision that retires both engines' Intl divergences, Broiler.VM's per-engine Z8
 expectation among them (plan task 9.6), and then Broiler.VM's pin move, with the notes its JSD-0082 owes at that re-pin.
 
+*Added 2026-11-10:* corpus revision 38 (`conformance/vectors/REVISIONS.md`) is that revision. It retires Broiler.VM's 41
+Intl divergence fields (rows Z8, L9 and L18, corrected at SJL-9.4) and 1,705 of this engine's 1,773, which SJL-9.5
+answers on both CI hosts, and makes row Z8's 157 time-zone vectors `normative`, the two engines' expectations merged
+into out (decision D15). It keeps 68 of this engine's fields: the 44 whose answer depends on whether the host lists one
+of decision D5's extra locales (decision D7, revisions 35 to 37), and 24 that still hold on both hosts, the four of the
+owner's decision of 2026-11-08 and the 20 the changelog lists among the answers that still differ after SJL-9.5. Broiler.VM's
+pin move is the next stage.
+
 **The frontend's syntax half (SJL-13.1), filed 2026-10-26: all five sub-areas accepted, the library's shape and its
 request decided, the stage table and the classification filed, and the owner's decisions of 2026-10-26 recorded.**
 - **The records.** Broiler.VM's record is
