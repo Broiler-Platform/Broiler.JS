@@ -62,6 +62,20 @@ public class DecimalToLocaleStringTests
         // halfExpand, the default rounding mode, rounds a half away from zero.
         Assert.Equal("-2", Eval("(Decimal('-15') / 10m).toLocaleString('en', { maximumFractionDigits: 0 })"));
         Assert.Equal("0", Eval("(0m).toLocaleString('en')"));
+        // The default digit options round the exact digits to three fraction digits, as for a Number.
+        Assert.Equal("12,345,678,901,234,567,890.123",
+            Eval("(Decimal('12345678901234567890123456789') / 1000000000m).toLocaleString('en')"));
+    }
+
+    // A negative decimal zero keeps its sign, as ECMA-402 formats a Number's -0, although .NET's decimal formatting writes
+    // it as "0" (JSDecimal.ToIntlDecimal).
+    [Theory]
+    [InlineData("(-0m)")]
+    [InlineData("(0m * -1m)")]
+    public void A_negative_zero_keeps_its_sign(string value)
+    {
+        Assert.Equal("-0", Eval($"{value}.toLocaleString('en')"));
+        Assert.Equal("true", Eval($"{value}.toLocaleString('en') === (-0).toLocaleString('en')"));
     }
 
     // The options are refused as Intl.NumberFormat refuses them, and a malformed tag is a RangeError, as ECMA-402's
@@ -74,13 +88,20 @@ public class DecimalToLocaleStringTests
         => Assert.Equal(expected, Eval($"var e = 'none'; try {{ {Value}.toLocaleString({arguments}); }} catch (x) {{ e = x.name; }} e"));
 
     // With no locales the default-locale provider decides (decision D7, row L35), under a host culture as under none: the
-    // answer is Intl.NumberFormat's with no locales, never the host culture's own .NET formatting.
+    // answer is Intl.NumberFormat's with no locales, never the host culture's own .NET formatting. Each answer is taken
+    // under a culture the test names, so that the culture of the machine running the tests does not decide it: the
+    // invariant culture, whose default locale is en-US, as under invariant globalization; en-US itself; and de-DE.
     [Fact]
     public void With_no_locales_the_default_locale_provider_decides()
     {
-        Assert.Equal("1,234,567.891", Eval($"{Value}.toLocaleString()"));
-        Assert.Equal("1,234,567.891", Eval($"{Value}.toLocaleString(undefined)"));
-        Assert.Equal("true", Eval($"{Value}.toLocaleString() === new Intl.NumberFormat().format('1234567.891')"));
+        foreach (var culture in new[] { "", "en-US" })
+        {
+            Assert.Equal("1,234,567.891", UnderCulture(culture, () => Eval($"{Value}.toLocaleString()")));
+            Assert.Equal("1,234,567.891", UnderCulture(culture, () => Eval($"{Value}.toLocaleString(undefined)")));
+            Assert.Equal("true", UnderCulture(culture, () => Eval($"{Value}.toLocaleString() === new Intl.NumberFormat().format('1234567.891')")));
+            Assert.Equal("en-US", UnderCulture(culture, () => Eval("new Intl.NumberFormat().resolvedOptions().locale")));
+        }
+
         Assert.Equal("1.234.567,891", UnderCulture("de-DE", () => Eval($"{Value}.toLocaleString()")));
         Assert.Equal("true", UnderCulture("de-DE", () => Eval($"{Value}.toLocaleString() === new Intl.NumberFormat().format('1234567.891')")));
         Assert.Equal("de-DE", UnderCulture("de-DE", () => Eval("new Intl.NumberFormat().resolvedOptions().locale")));

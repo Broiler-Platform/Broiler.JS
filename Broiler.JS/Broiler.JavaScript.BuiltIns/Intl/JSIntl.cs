@@ -109,9 +109,11 @@ public static class JSIntl
             new JSFunction(static (in Arguments a) =>
             {
                 var key = a.Get1().StringValue;
-                // The numbering-system and calendar enumerations are backed by real data; other keys
-                // (currency, collation, …) return an empty list rather than throwing, until their data
-                // is wired up.
+                // Every key ECMA-402 names is backed by data: calendar, collation, currency, numberingSystem,
+                // timeZone and unit; any other key is the RangeError below. Revised 2026-11-11, when currency and
+                // unit moved to the shared library; the comment read "The numbering-system and calendar
+                // enumerations are backed by real data; other keys (currency, collation, …) return an empty list
+                // rather than throwing, until their data is wired up."
                 if (key == "numberingSystem")
                 {
                     var list = JSValue.CreateArray();
