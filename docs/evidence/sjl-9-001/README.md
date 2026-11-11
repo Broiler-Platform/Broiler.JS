@@ -888,6 +888,85 @@ on their bundles and none accepted. Review is deferred (EX-30, in Broiler.VM), a
 reading meets no gate: Broiler.VM's half reads clauses 11 to 15 and its own dataset runs for clause 5, and the record
 over both repositories is Broiler.VM's *("and its own dataset runs for clause 5" added 2026-11-11, at review)*.
 
+## Clauses 7 and 8 read again, 2026-11-11 (after the owner's rulings)
+
+*Added 2026-11-11, after the owner's rulings of that day on the two clauses the section "SJL-9's exit reading,
+Broiler.JS's half" reads not met, each the owner's own dated choice, asked and answered. Clause 7: "Fix (1); move (2) to
+SJL-17", the alternatives not taken being "Fix both in code now" and "Revise the list for both". Clause 8: "Fix in
+code", the alternative not taken being "Record as SJL-D-17 path". It reads those two clauses again at the commit that
+carries the change. It changes no rule, judges none of the rule's parts again, and declares nothing of SJL-9 met: the
+gate waits as the exit reading says. The exit reading's section is left as written.*
+
+**The change** is branch `js-c78`'s three commits on `origin/main` `6758d47e` (Broiler-Platform/Broiler.JS#1113):
+`fde5f8d4` (clause 7), `61939b58` (clause 8) and `556eba43` (the changelog). The commit that adds this section changes
+no code, so the readings are of the code at `556eba43`, the branch's head for code; the merge commit that lands the
+branch is named here when it merges.
+- **Clause 7 (1).** `Intl.supportedValuesOf("currency")` and `("unit")` are the shared library's `SupportedValues.Of`
+  over this engine's locale data (`JSIntl.cs`, `SupportedValuesArray`). `JSIntl.cs` drops `using UnicodeCldr.LocaleData;`,
+  `BuiltIns` its `PackageReference` and `Directory.Packages.props` the package's version, each marked by a dated comment
+  quoting the line; no other project reads the package.
+- **Clause 7 (2).** Dated notes in [`SharedLibraries.md`](../../roadmap/SharedLibraries.md) move the Collator's hand
+  resolution from SJL-9's deletion list to SJL-17's, at SJL-17.5: `GetUnicodeExtensionType`,
+  `RemoveUnicodeExtensionKeyword` and `ReflectExtensionKeyword`, `ResolveLocaleFromCanonical`'s keyword filter over
+  `CollatorRelevantKeys`, and `JSIntlCollator`'s `StripUnicodeExtension`. The notes are on SJL-9's deletion list, on the
+  cut-over's "Where the records depart from this plan", on the note on decision SJL-D-22 and on SJL-17's deletion list.
+  No code changes for it. JSD-0082's decision D24 and the milestone's SJL-9.5 list are Broiler.VM's, and they get their
+  notes in Broiler.VM's half.
+- **Clause 8.** `Decimal.prototype.toLocaleString(locales, options)` (`Decimal/JSDecimal.cs`) makes a new
+  `Intl.NumberFormat` over its two arguments, as ECMA-402's `Number.prototype.toLocaleString` does, and formats the
+  value's exact decimal through the shared `NumberFormatter`; with no `locales` the locale is the default-locale
+  provider's (decision D7, row L35). `DecimalToLocaleStringTests` holds it in `en` and `de`, with options, under a host
+  culture and under invariant globalization. No revision of the Decimal proposal is pinned here, and test262 at
+  `ccaac100` has no Decimal path or feature, so `locales` and `options` are read as ECMA-402 reads them for a Number.
+
+**What it is read from**, in [`readings-2026-11-11/`](readings-2026-11-11/answers.txt):
+- `searches-556eba43.txt`, and `searches-6758d47e.txt` at the base: the package, its namespace and types; the list's
+  other entries; the Collator's members; the code changed since the after commit `a5f2692e`; the exit reading's search
+  for the host's culture; `JSDecimal.cs`'s own culture-sensitive calls; and, at the head, the built `BuiltIns`' output,
+  which holds no assembly of the package.
+- `answers.txt`: the answers at the base `6758d47e` and at `556eba43`, each from a scratch tree `git archive` wrote
+  from the commit, built in Release with `--disable-build-servers` by the .NET SDK 10.0.404, one run at a time on an
+  idle machine, with no `LANG`. They are the engine vectors of corpus revision 38 in UTC and `America/New_York`; test262
+  `ccaac100`'s `test/intl402/Intl/supportedValuesOf/`, in both variants and both zones; part C's programs and part D's,
+  by this bundle's `collect.py` `datasets` and `invariant` steps into a scratch folder; and the probe. These runs are
+  not the rule's parts: the parts' verdicts at `a5f2692e` stand, and the reports themselves are not retained, only
+  their digests and what moved.
+- `probe.js`, with its answers at both commits in `probe-6758d47e.txt` and `probe-556eba43.txt`: the two lists, and
+  `Decimal.prototype.toLocaleString`'s answers, with no `LANG`, under `LANG=de_DE.UTF-8`, and under invariant
+  globalization with and without it, each run's answers under a header naming the shell's and the probe's digests and
+  the environment. Each run ends with a line `[object Object]` that is not the probe's, as the class-L probes' files
+  do (section "Class L" above).
+
+**What moved between the base and `556eba43`.** Only `Decimal.prototype.toLocaleString`'s answers, as the changelog's
+entry of 2026-11-11 lists them. The engine vectors' reports are the same bytes at both commits in each zone, and the same
+bytes as corpus revision 38's own run of this engine. Every test262 case passes at both commits. Every part C and part D
+program answers the same bytes, and `default-locale-is-supported.js` passes in both variants at both. In the probe the
+currency list is the same 307 codes, in the same order, at both commits and in every environment, and the unit list the
+same 45: the shared table's currency codes are the package's list, code for code, so no answer of
+`Intl.supportedValuesOf` moves, and the list is the one ECMA-402 asks for (sorted, each once, each a well-formed code
+that `Intl.DisplayNames` and `Intl.NumberFormat` accept, as test262's `currencies-accepted-by-*.js` hold). No vector
+reads the currency or unit list.
+
+| Clause | Its words | Read from, at `556eba43` | Reading, and what it rests on |
+|---|---|---|---|
+| 7 | "The deletion list is absent." | the list as the milestone's SJL-9.5 and JSD-0082's decision D24 give it, read with the owner's ruling of 2026-11-11 as [`SharedLibraries.md`](../../roadmap/SharedLibraries.md)'s dated notes on SJL-9's and SJL-17's deletion lists record it; `searches-556eba43.txt`; and, for the entries the cut-over deleted, [`cutover/deletion-search.txt`](cutover/deletion-search.txt) at `21bed66c`, since no code under `Broiler.JS/` or `Broiler.ECMAScript/` has changed from `21bed66c` to `556eba43` but `JSIntl.cs`, `JSDecimal.cs`, `BuiltIns`' project file and a test, none of which declares a deleted name again | **Met** at `556eba43`: as written for every entry but the Collator's hand resolution, and for that entry on the list as the owner's ruling revises it, which is weaker evidence. This engine's use of `Broiler.Unicode.Cldr.LocaleData` for Intl data is gone: no code names the package's namespace or types, only the dated comments of the change and older comments do; no project references the package and `Directory.Packages.props` names no version, but in the XML comments that record the removed lines; and the built `BuiltIns` carries no assembly of the package. Every other entry is absent, as the exit reading found it, and the deleted files and row T42's members are named by no code. The Collator's members are present, all five, read by the Collator alone: by the ruling they are SJL-17's to delete at SJL-17.5, not SJL-9's |
+| 8 | "Host globalization remains only behind the optional providers." | part D's programs and `default-locale-is-supported.js` under invariant globalization at `556eba43`, by `collect.py`'s `invariant` step, locally (not the rule's part D); the exit reading's search for the host's culture, and a search of `JSDecimal.cs` for the culture-sensitive calls that name no culture, both in `searches-556eba43.txt`; and the probe | **Not met as written** at `556eba43`, for a reader the exit reading did not see; **met for the reader it named.** `Decimal.prototype.toLocaleString` reads the host's culture only through the default-locale provider: the exit reading's search finds no host-culture call in it, only the dated comment that quotes the removed line, and finds the host's culture read elsewhere exactly where the exit reading read it as the providers (decisions D6 and D7), the Collator (SJL-17's) and SJL-D-17's .NET format-string extension and legacy `Date.parse`. Under invariant globalization every program answers as at the base and `default-locale-is-supported.js` passes. But the `m` literal's `Decimal` itself reads the host's current culture, through calls that name none, which that search cannot find: `JSDecimal`'s two parses (`decimal.TryParse` with no format provider, lines 53 and 64; the second is the factory the `m` literal's code calls) and its text (`decimal.ToString` with none, in `toString`, `toFixed`, string concatenation, `EqualsLiteral` and the `long.Parse` of `CreateInstance`). The probe shows it, at the base and at `556eba43` alike: under `LANG=de_DE.UTF-8`, `1234567.891m` is the value `1234567891`, `.` being that culture's group separator. Decision SJL-D-17 keeps "`Decimal` and `m` literals" in this engine but, as the exit reading reads it for `toLocaleString`, names no culture-dependent reading of them, where it names the .NET format string and the culture-dependent legacy `Date.parse`; no other decision keeps it. The owner's ruling and this change cover `toLocaleString` alone, so nothing of it is changed here. No search of the tree outside `JSDecimal.cs` for culture-sensitive calls that name no culture has been made, so outside it the clause rests on the named-API search alone |
+
+**So:** clause 7 is met at `556eba43`, on the owner's revision of the list for the Collator's entries, which is weaker
+evidence than the list as written; clause 8 is met for `Decimal.prototype.toLocaleString` and not met as written, for
+the `m` literal's own parse and text.
+
+**What would meet clause 8 now.** The `m` literal's `Decimal` reading and writing its digits with the invariant culture
+(an `m` literal's digits are source text, whose decimal point is `.` under every host), or a dated decision that keeps
+its culture-dependent reading and says why, as SJL-D-17 does for the .NET format string; then a search of the tree for
+culture-sensitive calls that name no culture, and the clause read again at the commit that carries it. Neither is this
+reading's to take; choosing is the owner's.
+
+**Open items** this reading leaves, none done here: clause 8's reader above; JSD-0082's decision D24 and the
+milestone's SJL-9.5 deletion list, which get their dated notes on the ruling in Broiler.VM's half, with JSD-0084's
+decision E11 if Broiler.VM's half reads SJL-17's list there too; and every open item of the exit reading but clause 7's
+two entries and clause 8's `toLocaleString`, which stand as that section lists them.
+
 ## State
 
 **2026-10-26, at SJL-9.1: the rule and its data only. Nothing here is a verdict, and nothing has been taken.**
@@ -939,6 +1018,14 @@ SJL-3, and on review; nothing is accepted. *(Revised 2026-11-11, at review; from
 records keep." it read "clauses 1 to 10 against this bundle's evidence: clauses 1 to 6 and 8 to 10 read met, clause 5
 and clause 9 on parts met only as revised, which is weaker evidence, and clauses 1 and 3 on the owner's ruling of
 2026-11-11, "Confirm both"; clause 7 is not met, for two entries of the deletion list the cut-over's records keep.")*
+
+*2026-11-11, after the owner's rulings on clauses 7 and 8:* the section "Clauses 7 and 8 read again, 2026-11-11 (after
+the owner's rulings)" reads both at branch `js-c78`'s change, whose code is `556eba43`'s: clause 7 is met, on the
+owner's revision of the deletion list for the Collator's hand resolution, which moves to SJL-17's list and is weaker
+evidence for those entries; clause 8 is met for `Decimal.prototype.toLocaleString` and not met as written, for the `m`
+literal's `Decimal`, whose own parse and text read the host's culture through calls that name none. The paragraph
+above, on the exit reading, is left as written. That is no verdict on SJL-9, whose gate waits as that paragraph says;
+nothing is accepted.
 
 **What the bundle will hold:**
 - `base/`: parts A and B's base runs, each imported unchanged with the digest of its zip;

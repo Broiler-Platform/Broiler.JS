@@ -2013,6 +2013,31 @@ This is no verdict on SJL-9. Its gate waits on Broiler.VM's clauses 11 to 15, wh
 reading reads in its bundle of the same name, and on SJL-7 and SJL-8 meeting theirs, and so on SJL-3 meeting SJL-3's.
 None of it is accepted: no second holder exists to review it.
 
+**Clauses 7 and 8 read again, 2026-11-11 (after the owner's rulings).** *(Added 2026-11-11.)* The exit reading above
+says "The bundle says what would meet each of clauses 7 and 8; choosing is the owner's." The owner chose that day, each
+asked and answered: for clause 7, "Fix (1); move (2) to SJL-17", the alternatives not taken being "Fix both in code
+now" and "Revise the list for both"; for clause 8, "Fix in code", the alternative not taken being "Record as SJL-D-17
+path". Branch `js-c78` carries the change: `Intl.supportedValuesOf`'s currency and unit lists are the shared library's
+`SupportedValues`, and `BuiltIns` no longer references `Broiler.Unicode.Cldr.LocaleData`, whose version leaves
+`Directory.Packages.props`; the Collator's hand resolution moves to SJL-17's deletion list, at SJL-17.5, by the dated
+notes on this section's deletion list and on SJL-17's; and `Decimal.prototype.toLocaleString` formats through the
+shared Intl number formatting, its locale with no `locales` the default-locale provider's. Bundle
+[`sjl-9-001`](../evidence/sjl-9-001/README.md), "Clauses 7 and 8 read again, 2026-11-11 (after the owner's rulings)",
+reads both clauses at the change's code:
+- **Clause 7: met**, as written for every entry but the Collator's hand resolution, and for that entry on the owner's
+  revision of the list, which is weaker evidence.
+- **Clause 8: met for `Decimal.prototype.toLocaleString`, and not met as written**, for a reader the exit reading did
+  not see: the `m` literal's `Decimal` reads the host's current culture in its own parse and text, through calls that
+  name no culture, which the exit reading's search for named calls cannot find. No decision keeps that reading, and the
+  ruling covers `toLocaleString` alone. The bundle says what would meet the clause; choosing is the owner's.
+- **Nothing else moved**: the engine vectors, test262's `supportedValuesOf` directory and part C's and part D's programs
+  answer at the change as at its base, the currency and unit lists among them, and `toLocaleString`'s answers move as
+  the changelog lists them.
+
+This is no verdict on SJL-9: its gate waits as the paragraph above says. Broiler.VM's half records the ruling on clause
+7 in JSD-0082's decision D24 and the milestone's SJL-9.5 deletion list. None of it is accepted: no second holder exists
+to review it.
+
 **The frontend's syntax half (SJL-13.1), filed 2026-10-26: all five sub-areas accepted, the library's shape and its
 request decided, the stage table and the classification filed, and the owner's decisions of 2026-10-26 recorded.**
 - **The records.** Broiler.VM's record is

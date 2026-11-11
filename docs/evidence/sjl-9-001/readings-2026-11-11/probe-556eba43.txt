@@ -1,0 +1,128 @@
+# shell sha256 3851cf73be165eb785d12edd500009b1ce324b3bf989261948ec56b45c892fdb; probe sha256 ba1bcc0611aba3c0bb6be9d58339bd739393468b877c046410de75123ca9fd58; TZ=UTC, LANG LC_ALL LANGUAGE unset; 2026-11-11T15:26:27Z
+defaultLocale => en-US
+currency.length => 307
+currency => ADP,AED,AFA,AFN,ALK,ALL,AMD,ANG,AOA,AOK,AON,AOR,ARA,ARL,ARM,ARP,ARS,ATS,AUD,AWG,AZM,AZN,BAD,BAM,BAN,BBD,BDT,BEC,BEF,BEL,BGL,BGM,BGN,BGO,BHD,BIF,BMD,BND,BOB,BOL,BOP,BOV,BRB,BRC,BRE,BRL,BRN,BRR,BRZ,BSD,BTN,BUK,BWP,BYB,BYN,BYR,BZD,CAD,CDF,CHE,CHF,CHW,CLE,CLF,CLP,CNH,CNX,CNY,COP,COU,CRC,CSD,CSK,CUC,CUP,CVE,CYP,CZK,DDM,DEM,DJF,DKK,DOP,DZD,ECS,ECV,EEK,EGP,ERN,ESA,ESB,ESP,ETB,EUR,FIM,FJD,FKP,FRF,GBP,GEK,GEL,GHC,GHS,GIP,GMD,GNF,GNS,GQE,GRD,GTQ,GWE,GWP,GYD,HKD,HNL,HRD,HRK,HTG,HUF,IDR,IEP,ILP,ILR,ILS,INR,IQD,IRR,ISJ,ISK,ITL,JMD,JOD,JPY,KES,KGS,KHR,KMF,KPW,KRH,KRO,KRW,KWD,KYD,KZT,LAK,LBP,LKR,LRD,LSL,LTL,LTT,LUC,LUF,LUL,LVL,LVR,LYD,MAD,MAF,MCF,MDC,MDL,MGA,MGF,MKD,MKN,MLF,MMK,MNT,MOP,MRO,MRU,MTL,MTP,MUR,MVP,MVR,MWK,MXN,MXP,MXV,MYR,MZE,MZM,MZN,NAD,NGN,NIC,NIO,NLG,NOK,NPR,NZD,OMR,PAB,PEI,PEN,PES,PGK,PHP,PKR,PLN,PLZ,PTE,PYG,QAR,RHD,ROL,RON,RSD,RUB,RUR,RWF,SAR,SBD,SCR,SDD,SDG,SDP,SEK,SGD,SHP,SIT,SKK,SLE,SLL,SOS,SRD,SRG,SSP,STD,STN,SUR,SVC,SYP,SZL,THB,TJR,TJS,TMM,TMT,TND,TOP,TPE,TRL,TRY,TTD,TWD,TZS,UAH,UAK,UGS,UGX,USD,USN,USS,UYI,UYP,UYU,UYW,UZS,VEB,VED,VEF,VES,VND,VNN,VUV,WST,XAF,XAG,XAU,XBA,XBB,XBC,XBD,XCD,XCG,XDR,XEU,XFO,XFU,XOF,XPD,XPF,XPT,XRE,XSU,XTS,XUA,XXX,YDD,YER,YUD,YUM,YUN,YUR,ZAL,ZAR,ZMK,ZMW,ZRN,ZRZ,ZWD,ZWG,ZWL,ZWR
+unit.length => 45
+unit => acre,bit,byte,celsius,centimeter,day,degree,fahrenheit,fluid-ounce,foot,gallon,gigabit,gigabyte,gram,hectare,hour,inch,kilobit,kilobyte,kilogram,kilometer,liter,megabit,megabyte,meter,microsecond,mile,mile-scandinavian,milliliter,millimeter,millisecond,minute,month,nanosecond,ounce,percent,petabyte,pound,second,stone,terabit,terabyte,week,yard,year
+currency sorted-unique => true
+unit sorted-unique => true
+typeof => decimal
+d.toString => 1234567.891
+d.toLocaleString() => 1,234,567.891
+d.toLocaleString(undefined) => 1,234,567.891
+d.toLocaleString('en') => 1,234,567.891
+d.toLocaleString('en-US') => 1,234,567.891
+d.toLocaleString('de') => 1.234.567,891
+d.toLocaleString('de-DE') => 1.234.567,891
+d.toLocaleString('fr') => 1 234 567,891
+d.toLocaleString('hi-u-nu-deva') => १२,३४,५६७.८९१
+d.toLocaleString('en',{maximumFractionDigits:1}) => 1,234,567.9
+d.toLocaleString('de',{style:'currency',currency:'EUR'}) => 1.234.567,89 €
+d.toLocaleString('en',{notation:'compact'}) => 1.2M
+d.toLocaleString(undefined,{minimumFractionDigits:4}) => 1,234,567.8910
+n.toLocaleString('en',{maximumFractionDigits:0}) => -1
+big.toLocaleString('en',{maximumFractionDigits:20}) => 12,345,678,901,234,567,890.123456789
+big.toLocaleString('en',{maximumSignificantDigits:21}) => 12,345,678,901,234,567,890.1
+z.toLocaleString('en') => 0
+d.toLocaleString('xx-invalid-') => throws RangeError: Invalid language tag
+d.toLocaleString('en',{style:'currency'}) => throws TypeError: Intl.NumberFormat currency style requires a currency option
+Decimal.prototype.toLocaleString.length => 0
+[object Object]
+# exit 0
+
+# shell sha256 3851cf73be165eb785d12edd500009b1ce324b3bf989261948ec56b45c892fdb; probe sha256 ba1bcc0611aba3c0bb6be9d58339bd739393468b877c046410de75123ca9fd58; TZ=UTC, LANG=de_DE.UTF-8; 2026-11-11T15:26:28Z
+defaultLocale => de-DE
+currency.length => 307
+currency => ADP,AED,AFA,AFN,ALK,ALL,AMD,ANG,AOA,AOK,AON,AOR,ARA,ARL,ARM,ARP,ARS,ATS,AUD,AWG,AZM,AZN,BAD,BAM,BAN,BBD,BDT,BEC,BEF,BEL,BGL,BGM,BGN,BGO,BHD,BIF,BMD,BND,BOB,BOL,BOP,BOV,BRB,BRC,BRE,BRL,BRN,BRR,BRZ,BSD,BTN,BUK,BWP,BYB,BYN,BYR,BZD,CAD,CDF,CHE,CHF,CHW,CLE,CLF,CLP,CNH,CNX,CNY,COP,COU,CRC,CSD,CSK,CUC,CUP,CVE,CYP,CZK,DDM,DEM,DJF,DKK,DOP,DZD,ECS,ECV,EEK,EGP,ERN,ESA,ESB,ESP,ETB,EUR,FIM,FJD,FKP,FRF,GBP,GEK,GEL,GHC,GHS,GIP,GMD,GNF,GNS,GQE,GRD,GTQ,GWE,GWP,GYD,HKD,HNL,HRD,HRK,HTG,HUF,IDR,IEP,ILP,ILR,ILS,INR,IQD,IRR,ISJ,ISK,ITL,JMD,JOD,JPY,KES,KGS,KHR,KMF,KPW,KRH,KRO,KRW,KWD,KYD,KZT,LAK,LBP,LKR,LRD,LSL,LTL,LTT,LUC,LUF,LUL,LVL,LVR,LYD,MAD,MAF,MCF,MDC,MDL,MGA,MGF,MKD,MKN,MLF,MMK,MNT,MOP,MRO,MRU,MTL,MTP,MUR,MVP,MVR,MWK,MXN,MXP,MXV,MYR,MZE,MZM,MZN,NAD,NGN,NIC,NIO,NLG,NOK,NPR,NZD,OMR,PAB,PEI,PEN,PES,PGK,PHP,PKR,PLN,PLZ,PTE,PYG,QAR,RHD,ROL,RON,RSD,RUB,RUR,RWF,SAR,SBD,SCR,SDD,SDG,SDP,SEK,SGD,SHP,SIT,SKK,SLE,SLL,SOS,SRD,SRG,SSP,STD,STN,SUR,SVC,SYP,SZL,THB,TJR,TJS,TMM,TMT,TND,TOP,TPE,TRL,TRY,TTD,TWD,TZS,UAH,UAK,UGS,UGX,USD,USN,USS,UYI,UYP,UYU,UYW,UZS,VEB,VED,VEF,VES,VND,VNN,VUV,WST,XAF,XAG,XAU,XBA,XBB,XBC,XBD,XCD,XCG,XDR,XEU,XFO,XFU,XOF,XPD,XPF,XPT,XRE,XSU,XTS,XUA,XXX,YDD,YER,YUD,YUM,YUN,YUR,ZAL,ZAR,ZMK,ZMW,ZRN,ZRZ,ZWD,ZWG,ZWL,ZWR
+unit.length => 45
+unit => acre,bit,byte,celsius,centimeter,day,degree,fahrenheit,fluid-ounce,foot,gallon,gigabit,gigabyte,gram,hectare,hour,inch,kilobit,kilobyte,kilogram,kilometer,liter,megabit,megabyte,meter,microsecond,mile,mile-scandinavian,milliliter,millimeter,millisecond,minute,month,nanosecond,ounce,percent,petabyte,pound,second,stone,terabit,terabyte,week,yard,year
+currency sorted-unique => true
+unit sorted-unique => true
+typeof => decimal
+d.toString => 1234567891
+d.toLocaleString() => 1.234.567.891
+d.toLocaleString(undefined) => 1.234.567.891
+d.toLocaleString('en') => 1,234,567,891
+d.toLocaleString('en-US') => 1,234,567,891
+d.toLocaleString('de') => 1.234.567.891
+d.toLocaleString('de-DE') => 1.234.567.891
+d.toLocaleString('fr') => 1 234 567 891
+d.toLocaleString('hi-u-nu-deva') => १,२३,४५,६७,८९१
+d.toLocaleString('en',{maximumFractionDigits:1}) => 1,234,567,891
+d.toLocaleString('de',{style:'currency',currency:'EUR'}) => 1.234.567.891,00 €
+d.toLocaleString('en',{notation:'compact'}) => 1.2B
+d.toLocaleString(undefined,{minimumFractionDigits:4}) => 1.234.567.891,0000
+n.toLocaleString('en',{maximumFractionDigits:0}) => -5
+big.toLocaleString('en',{maximumFractionDigits:20}) => 12,345,678,901,234,567,890,123,456,789
+big.toLocaleString('en',{maximumSignificantDigits:21}) => 12,345,678,901,234,567,890,100,000,000
+z.toLocaleString('en') => 0
+d.toLocaleString('xx-invalid-') => throws RangeError: Invalid language tag
+d.toLocaleString('en',{style:'currency'}) => throws TypeError: Intl.NumberFormat currency style requires a currency option
+Decimal.prototype.toLocaleString.length => 0
+[object Object]
+# exit 0
+
+# shell sha256 3851cf73be165eb785d12edd500009b1ce324b3bf989261948ec56b45c892fdb; probe sha256 ba1bcc0611aba3c0bb6be9d58339bd739393468b877c046410de75123ca9fd58; TZ=UTC, LANG unset, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1; 2026-11-11T15:26:29Z
+defaultLocale => en-US
+currency.length => 307
+currency => ADP,AED,AFA,AFN,ALK,ALL,AMD,ANG,AOA,AOK,AON,AOR,ARA,ARL,ARM,ARP,ARS,ATS,AUD,AWG,AZM,AZN,BAD,BAM,BAN,BBD,BDT,BEC,BEF,BEL,BGL,BGM,BGN,BGO,BHD,BIF,BMD,BND,BOB,BOL,BOP,BOV,BRB,BRC,BRE,BRL,BRN,BRR,BRZ,BSD,BTN,BUK,BWP,BYB,BYN,BYR,BZD,CAD,CDF,CHE,CHF,CHW,CLE,CLF,CLP,CNH,CNX,CNY,COP,COU,CRC,CSD,CSK,CUC,CUP,CVE,CYP,CZK,DDM,DEM,DJF,DKK,DOP,DZD,ECS,ECV,EEK,EGP,ERN,ESA,ESB,ESP,ETB,EUR,FIM,FJD,FKP,FRF,GBP,GEK,GEL,GHC,GHS,GIP,GMD,GNF,GNS,GQE,GRD,GTQ,GWE,GWP,GYD,HKD,HNL,HRD,HRK,HTG,HUF,IDR,IEP,ILP,ILR,ILS,INR,IQD,IRR,ISJ,ISK,ITL,JMD,JOD,JPY,KES,KGS,KHR,KMF,KPW,KRH,KRO,KRW,KWD,KYD,KZT,LAK,LBP,LKR,LRD,LSL,LTL,LTT,LUC,LUF,LUL,LVL,LVR,LYD,MAD,MAF,MCF,MDC,MDL,MGA,MGF,MKD,MKN,MLF,MMK,MNT,MOP,MRO,MRU,MTL,MTP,MUR,MVP,MVR,MWK,MXN,MXP,MXV,MYR,MZE,MZM,MZN,NAD,NGN,NIC,NIO,NLG,NOK,NPR,NZD,OMR,PAB,PEI,PEN,PES,PGK,PHP,PKR,PLN,PLZ,PTE,PYG,QAR,RHD,ROL,RON,RSD,RUB,RUR,RWF,SAR,SBD,SCR,SDD,SDG,SDP,SEK,SGD,SHP,SIT,SKK,SLE,SLL,SOS,SRD,SRG,SSP,STD,STN,SUR,SVC,SYP,SZL,THB,TJR,TJS,TMM,TMT,TND,TOP,TPE,TRL,TRY,TTD,TWD,TZS,UAH,UAK,UGS,UGX,USD,USN,USS,UYI,UYP,UYU,UYW,UZS,VEB,VED,VEF,VES,VND,VNN,VUV,WST,XAF,XAG,XAU,XBA,XBB,XBC,XBD,XCD,XCG,XDR,XEU,XFO,XFU,XOF,XPD,XPF,XPT,XRE,XSU,XTS,XUA,XXX,YDD,YER,YUD,YUM,YUN,YUR,ZAL,ZAR,ZMK,ZMW,ZRN,ZRZ,ZWD,ZWG,ZWL,ZWR
+unit.length => 45
+unit => acre,bit,byte,celsius,centimeter,day,degree,fahrenheit,fluid-ounce,foot,gallon,gigabit,gigabyte,gram,hectare,hour,inch,kilobit,kilobyte,kilogram,kilometer,liter,megabit,megabyte,meter,microsecond,mile,mile-scandinavian,milliliter,millimeter,millisecond,minute,month,nanosecond,ounce,percent,petabyte,pound,second,stone,terabit,terabyte,week,yard,year
+currency sorted-unique => true
+unit sorted-unique => true
+typeof => decimal
+d.toString => 1234567.891
+d.toLocaleString() => 1,234,567.891
+d.toLocaleString(undefined) => 1,234,567.891
+d.toLocaleString('en') => 1,234,567.891
+d.toLocaleString('en-US') => 1,234,567.891
+d.toLocaleString('de') => 1,234,567.891
+d.toLocaleString('de-DE') => 1,234,567.891
+d.toLocaleString('fr') => 1,234,567.891
+d.toLocaleString('hi-u-nu-deva') => 1,234,567.891
+d.toLocaleString('en',{maximumFractionDigits:1}) => 1,234,567.9
+d.toLocaleString('de',{style:'currency',currency:'EUR'}) => €1,234,567.89
+d.toLocaleString('en',{notation:'compact'}) => 1.2M
+d.toLocaleString(undefined,{minimumFractionDigits:4}) => 1,234,567.8910
+n.toLocaleString('en',{maximumFractionDigits:0}) => -1
+big.toLocaleString('en',{maximumFractionDigits:20}) => 12,345,678,901,234,567,890.123456789
+big.toLocaleString('en',{maximumSignificantDigits:21}) => 12,345,678,901,234,567,890.1
+z.toLocaleString('en') => 0
+d.toLocaleString('xx-invalid-') => throws RangeError: Invalid language tag
+d.toLocaleString('en',{style:'currency'}) => throws TypeError: Intl.NumberFormat currency style requires a currency option
+Decimal.prototype.toLocaleString.length => 0
+[object Object]
+# exit 0
+
+# shell sha256 3851cf73be165eb785d12edd500009b1ce324b3bf989261948ec56b45c892fdb; probe sha256 ba1bcc0611aba3c0bb6be9d58339bd739393468b877c046410de75123ca9fd58; TZ=UTC, LANG=de_DE.UTF-8, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1; 2026-11-11T15:26:29Z
+defaultLocale => en-US
+currency.length => 307
+currency => ADP,AED,AFA,AFN,ALK,ALL,AMD,ANG,AOA,AOK,AON,AOR,ARA,ARL,ARM,ARP,ARS,ATS,AUD,AWG,AZM,AZN,BAD,BAM,BAN,BBD,BDT,BEC,BEF,BEL,BGL,BGM,BGN,BGO,BHD,BIF,BMD,BND,BOB,BOL,BOP,BOV,BRB,BRC,BRE,BRL,BRN,BRR,BRZ,BSD,BTN,BUK,BWP,BYB,BYN,BYR,BZD,CAD,CDF,CHE,CHF,CHW,CLE,CLF,CLP,CNH,CNX,CNY,COP,COU,CRC,CSD,CSK,CUC,CUP,CVE,CYP,CZK,DDM,DEM,DJF,DKK,DOP,DZD,ECS,ECV,EEK,EGP,ERN,ESA,ESB,ESP,ETB,EUR,FIM,FJD,FKP,FRF,GBP,GEK,GEL,GHC,GHS,GIP,GMD,GNF,GNS,GQE,GRD,GTQ,GWE,GWP,GYD,HKD,HNL,HRD,HRK,HTG,HUF,IDR,IEP,ILP,ILR,ILS,INR,IQD,IRR,ISJ,ISK,ITL,JMD,JOD,JPY,KES,KGS,KHR,KMF,KPW,KRH,KRO,KRW,KWD,KYD,KZT,LAK,LBP,LKR,LRD,LSL,LTL,LTT,LUC,LUF,LUL,LVL,LVR,LYD,MAD,MAF,MCF,MDC,MDL,MGA,MGF,MKD,MKN,MLF,MMK,MNT,MOP,MRO,MRU,MTL,MTP,MUR,MVP,MVR,MWK,MXN,MXP,MXV,MYR,MZE,MZM,MZN,NAD,NGN,NIC,NIO,NLG,NOK,NPR,NZD,OMR,PAB,PEI,PEN,PES,PGK,PHP,PKR,PLN,PLZ,PTE,PYG,QAR,RHD,ROL,RON,RSD,RUB,RUR,RWF,SAR,SBD,SCR,SDD,SDG,SDP,SEK,SGD,SHP,SIT,SKK,SLE,SLL,SOS,SRD,SRG,SSP,STD,STN,SUR,SVC,SYP,SZL,THB,TJR,TJS,TMM,TMT,TND,TOP,TPE,TRL,TRY,TTD,TWD,TZS,UAH,UAK,UGS,UGX,USD,USN,USS,UYI,UYP,UYU,UYW,UZS,VEB,VED,VEF,VES,VND,VNN,VUV,WST,XAF,XAG,XAU,XBA,XBB,XBC,XBD,XCD,XCG,XDR,XEU,XFO,XFU,XOF,XPD,XPF,XPT,XRE,XSU,XTS,XUA,XXX,YDD,YER,YUD,YUM,YUN,YUR,ZAL,ZAR,ZMK,ZMW,ZRN,ZRZ,ZWD,ZWG,ZWL,ZWR
+unit.length => 45
+unit => acre,bit,byte,celsius,centimeter,day,degree,fahrenheit,fluid-ounce,foot,gallon,gigabit,gigabyte,gram,hectare,hour,inch,kilobit,kilobyte,kilogram,kilometer,liter,megabit,megabyte,meter,microsecond,mile,mile-scandinavian,milliliter,millimeter,millisecond,minute,month,nanosecond,ounce,percent,petabyte,pound,second,stone,terabit,terabyte,week,yard,year
+currency sorted-unique => true
+unit sorted-unique => true
+typeof => decimal
+d.toString => 1234567.891
+d.toLocaleString() => 1,234,567.891
+d.toLocaleString(undefined) => 1,234,567.891
+d.toLocaleString('en') => 1,234,567.891
+d.toLocaleString('en-US') => 1,234,567.891
+d.toLocaleString('de') => 1,234,567.891
+d.toLocaleString('de-DE') => 1,234,567.891
+d.toLocaleString('fr') => 1,234,567.891
+d.toLocaleString('hi-u-nu-deva') => 1,234,567.891
+d.toLocaleString('en',{maximumFractionDigits:1}) => 1,234,567.9
+d.toLocaleString('de',{style:'currency',currency:'EUR'}) => €1,234,567.89
+d.toLocaleString('en',{notation:'compact'}) => 1.2M
+d.toLocaleString(undefined,{minimumFractionDigits:4}) => 1,234,567.8910
+n.toLocaleString('en',{maximumFractionDigits:0}) => -1
+big.toLocaleString('en',{maximumFractionDigits:20}) => 12,345,678,901,234,567,890.123456789
+big.toLocaleString('en',{maximumSignificantDigits:21}) => 12,345,678,901,234,567,890.1
+z.toLocaleString('en') => 0
+d.toLocaleString('xx-invalid-') => throws RangeError: Invalid language tag
+d.toLocaleString('en',{style:'currency'}) => throws TypeError: Intl.NumberFormat currency style requires a currency option
+Decimal.prototype.toLocaleString.length => 0
+[object Object]
+# exit 0
+
