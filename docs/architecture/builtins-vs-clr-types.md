@@ -213,6 +213,12 @@ rather than the BCL." Neither is vendored: the locale data is a package referenc
 Where the algorithms and the data of these two directories go next is planned in
 [`SharedLibraries.md`](../roadmap/SharedLibraries.md).)*
 
+*(Noted 2026-11-11, on the owner's ruling of that day on milestone SJL-9's clause 7: the sentence above read "it
+references the published `Broiler.Unicode.Cldr.LocaleData` package for locale data", which held until the change of
+that day. From it no project references the package: `BuiltIns` reads its locale data through the shared
+`Broiler.ECMAScript.Intl` library, from the data home's tables it embeds (since milestone SJL-9.5), and `Intl.supportedValuesOf`'s currency and unit lists, the
+package's last use, are that library's `SupportedValues`. The sentence is left as written.)*
+
 - **Spec-exactness.** `Temporal` is a specification with its own arithmetic, calendars and
   ambiguity-resolution rules. `DateTime` is not a partial implementation of it; it is a
   different design, and test262 tests the difference.

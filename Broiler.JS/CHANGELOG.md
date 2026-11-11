@@ -37,11 +37,18 @@ code"):
     `Intl.NumberFormat` refuses them: `{ style: "currency" }` with no currency is a `TypeError`, and a malformed tag a
     `RangeError`, where both were ignored;
   - the digits are formatted exactly, as a String's are by `Intl.NumberFormat`, and the default digit options round them
-    to three fraction digits, as for a Number, where every digit was written: `12345678901234567890.123456789m` gives
-    `"12,345,678,901,234,567,890.123"` in `en`;
+    to three fraction digits, as for a Number, where every digit was written:
+    `(Decimal("12345678901234567890123456789") / 1000000000m).toLocaleString("en")` gives
+    `"12,345,678,901,234,567,890.123"`, where it gave `"12345678901234567890.123456789"`;
+  - a negative zero keeps its sign, as a Number's does: `(-0m).toLocaleString("en")` and `(0m * -1m).toLocaleString("en")`
+    give `"-0"`, as `(-0).toLocaleString("en")` does, where both gave `"0"`;
   - with no `locales`, under a host culture such as `de-DE`, the answer is that locale's CLDR format through the
-    default-locale provider (`"1.234.567,891"`), where it was the culture's .NET general format (`"1234567,891"`); under
-    invariant globalization it is `en-US`'s.
+    default-locale provider: `(Decimal("1234567891") / 1000m).toLocaleString()` gives `"1.234.567,891"`, where it gave
+    the culture's .NET general format (`"1234567,891"`); under invariant globalization it is `en-US`'s. An `m` literal's
+    own digits are still read and written with the host's culture, which this change leaves as it was (bundle
+    `sjl-9-001`'s clause 8 reading, below, leaves it open for the owner): under `de-DE` the literal `1234567.891m` is the
+    value 1234567891, `.` being that culture's group separator, so `(1234567.891m).toLocaleString()` gives
+    `"1.234.567.891"`, where it gave `"1234567891"`.
 
   The cases are `Broiler.JavaScript.BuiltIns.Tests`' `DecimalToLocaleStringTests`; test262 at `ccaac100` holds no
   `Decimal` path. Bundle [`sjl-9-001`](../docs/evidence/sjl-9-001/README.md), "Clauses 7 and 8 read again, 2026-11-11

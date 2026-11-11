@@ -1775,7 +1775,7 @@ This repository's part of it:
   Collator's hand resolution leaves this list for SJL-17's, at SJL-17.5: `GetUnicodeExtensionType`,
   `RemoveUnicodeExtensionKeyword` and `ReflectExtensionKeyword`, `ResolveLocaleFromCanonical`'s keyword filter over
   `CollatorRelevantKeys`, and `JSIntlCollator`'s `StripUnicodeExtension`, so "negotiation" here is read as negotiation
-  but the Collator's, which the deletion list under "Collation (SJL-17.1)" below takes (its dated note). That is a
+  other than the Collator's, which the deletion list under "Collation (SJL-17.1)" below takes (its dated note). That is a
   revision of the list, and clause 7's reading rests on it for those entries, which is weaker evidence than the list as
   written. By the ruling's first part, the change of 2026-11-11 that carries this note removes the third item's last
   use, `Intl.supportedValuesOf`'s currency and unit lists, which are the shared library's `SupportedValues` now, with
@@ -1922,10 +1922,10 @@ evidence: the bases and the after runs are taken at the merge that lands SJL-9.5
   *(Noted 2026-11-11, on the owner's ruling of that day on SJL-9's clause 7, "Fix (1); move (2) to SJL-17". This item
   begins "Task 8.7 says to remove `Broiler.Unicode.Cldr.LocaleData`; it stays for `supportedValuesOf`" and ends
   "`GetUnicodeExtensionType`, `RemoveUnicodeExtensionKeyword` and `ReflectExtensionKeyword`, which the deletion list
-  names, stay, since the Collator reads them until SJL-17.5." The first departure is closed by the change of
+  names, stay, since the Collator reads them until SJL-17.5." The departure on task 8.7 is closed by the change of
   2026-11-11 that carries this note: `supportedValuesOf`'s currency and unit lists are the shared library's
   `SupportedValues`, and `BuiltIns`' reference to the package and its version in `Directory.Packages.props` are gone.
-  The second is a departure no longer: by the ruling's second part those three members, with
+  The departure on the three members is a departure no longer: by the ruling's second part those three members, with
   `ResolveLocaleFromCanonical`'s keyword filter over `CollatorRelevantKeys` and `JSIntlCollator`'s
   `StripUnicodeExtension`, are on SJL-17's deletion list, at SJL-17.5, and not on SJL-9's (the dated notes on both
   lists), so "which the deletion list names" is read as SJL-17's list from that day. The item is left as written.)*
