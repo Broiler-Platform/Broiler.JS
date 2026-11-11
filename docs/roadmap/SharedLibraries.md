@@ -1540,6 +1540,16 @@ This repository's part of it:
   XML for the list's main-data locales and their parents, from the CLDR repository's tag `release-48-2`, and the
   generator writes each locale's own symbols from it, a reading of D21 and of D10's "from the same packages" that the
   bundle's section states for the owner to confirm.)*
+  *(Noted 2026-11-11, on the owner's ruling of that day, "Confirm both", the owner's own dated choice, asked and
+  answered. The note above ends "a reading of D21 and of D10's "from the same packages" that the bundle's section
+  states for the owner to confirm."; the owner confirmed both readings as the home took them. The home's pin of
+  CLDR's `common/main` XML for the list's main-data locales and `en-001` is decision D21's "through the locale's parent
+  chain to root", beside the `root.xml` it names; and those files' source, the CLDR repository at the tag
+  `release-48-2`, which Broiler.VM's `root.xml` `repository-source` line names, is decision D10's "from the same
+  packages". The alternatives not taken were "Confirm, revise text", dated revisions of D21 and D10 in Broiler.VM's
+  JSD-0082, and "Do not confirm". Nothing in the home changes, and Broiler.VM's entries are unchanged. Bundle
+  [`sjl-9-001`](../evidence/sjl-9-001/README.md), "The data home", records the ruling; JSD-0082 (Broiler.VM) gets its
+  note on decisions D21 and D10 in Broiler.VM's half of SJL-9's exit reading. The note above is left as written.)*
 - **The data contract** (decision D8): two layers, the tables as an `IIntlDataSet` and the questions as an
   `ILocaleData`, which this engine's host-culture provider also implements, ordered by `CompositeLocaleData`: the
   shared data first, then the optional secondary provider, then the parent and root. Broiler.VM keeps its

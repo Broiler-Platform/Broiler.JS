@@ -366,6 +366,16 @@ which has no budget rule." No other record states them.
   this home's reading of its "through the locale's parent chain to root"; and decision D10 describes the superset's
   extra files as "from the same packages", while these come from the CLDR repository at the tag Broiler.VM's own
   `root.xml` came from, which Broiler.VM's `repository-source` line names. Each of Broiler.VM's entries is unchanged.
+  *(Noted 2026-11-11, on the owner's ruling of that day, "Confirm both", the owner's own dated choice, asked and
+  answered. It answers the sentence above that begins "**Two readings depart from JSD-0082's text**, for the owner to
+  confirm": both readings stand as this section took them. Decision D21's "through the locale's parent chain to root"
+  is read so that the home also pins CLDR's `common/main` XML for the list's main-data locales and `en-001`, beside the
+  `root.xml` the decision names; and decision D10's "from the same packages" is read as the CLDR repository at the tag
+  `release-48-2`, the tag Broiler.VM's `root.xml` `repository-source` line names. The alternatives not taken were
+  "Confirm, revise text", dated revisions of D21 and D10 in Broiler.VM's JSD-0082, and "Do not confirm". Nothing in
+  the home, its pin or its tables changes, and each of Broiler.VM's entries is unchanged. JSD-0082 (Broiler.VM) gets
+  its own dated note on decisions D21 and D10 in Broiler.VM's half of SJL-9's exit reading. The sentence above is left
+  as written.)*
 - **What CLDR 48.2.0 does not carry**, read, not decided: 34 per-locale `languages.json`, `scripts.json`,
   `territories.json` or `variants.json` files of `cldr-localenames-full` for locales of Broiler.JS's list, which the
   home's [`cldr/README.md`](../../../Broiler.ECMAScript/data/intl/cldr/README.md) lists and the display-name table
