@@ -1940,6 +1940,32 @@ of decision D5's extra locales (decision D7, revisions 35 to 37), and 24 that st
 owner's decision of 2026-11-08 and the 20 the changelog lists among the answers that still differ after SJL-9.5. Broiler.VM's
 pin move is the next stage.
 
+**SJL-9's exit reading, Broiler.JS's half, 2026-11-11.** *(Added 2026-11-11.)* The paragraph above ends "Broiler.VM's
+pin move is the next stage."; that stage is taken, Broiler.VM's pin moved to corpus revision 38
+(Broiler-Platform/Broiler.VM#199, observed), and SJL-9.6 has nothing left in either repository. Bundle
+[`sjl-9-001`](../evidence/sjl-9-001/README.md), "SJL-9's exit reading, Broiler.JS's half", reads the milestone's clauses
+1 to 10, the data home's, the Intl library's and this engine's, against its evidence at the after commit `a5f2692e`. It
+takes no run, changes no rule and revises no clause:
+- **Read met:** clauses 1 to 6 and 8 to 10. Clauses 2, 4, 6, 8 and 10 rest on the rule and the home's tests as
+  written. Clauses 1 and 3 rest, for the `common/main` XML files of the pin's third block, on the owner's ruling of
+  2026-11-11, "Confirm both" (the dated note under "The data home" above). Clause 5 rests on part C as its revision of
+  2026-11-10 restates it, weaker evidence, and holds only with Broiler.VM's dataset runs after its cut-over, which
+  decision D22 adds and Broiler.VM's half reads. Clause 9 rests on parts A and B as their revision of 2026-11-09
+  restates them, weaker evidence; as the rule is written it is not met.
+- **Not met:** clause 7, "The deletion list is absent". Two of its entries stay at the after commit, as this plan's
+  records of the cut-over already say: this engine's use of `Broiler.Unicode.Cldr.LocaleData` for Intl data, the
+  currency and unit lists of `Intl.supportedValuesOf`, with the package reference; and the Collator's hand resolution
+  of its `co`, `kf` and `kn` keys, kept until SJL-17.5. No decision revises the list for either. The bundle says what
+  would meet the clause; choosing it is the owner's.
+- **Open, and not done here:** corpus revision 38's kept fields whose reasons still end "answered by SJL-9.5", owed to
+  a later restating revision; the shared stream's next version, published only with the owner's approval, which
+  carries row L19's `getHourCycles` moves to Broiler.VM; the dated note the design document owes on the deleted
+  adapter; and JSD-0082's own note on decisions D21 and D10, in Broiler.VM's half.
+
+This is no verdict on SJL-9. Its gate waits on Broiler.VM's clauses 11 to 15, which Broiler.VM's half of the exit
+reading reads in its bundle of the same name, and on SJL-7 and SJL-8 meeting theirs, and so on SJL-3 meeting SJL-3's.
+None of it is accepted: no second holder exists to review it.
+
 **The frontend's syntax half (SJL-13.1), filed 2026-10-26: all five sub-areas accepted, the library's shape and its
 request decided, the stage table and the classification filed, and the owner's decisions of 2026-10-26 recorded.**
 - **The records.** Broiler.VM's record is

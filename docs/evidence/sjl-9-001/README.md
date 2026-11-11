@@ -773,6 +773,86 @@ builds and the machine in `local/`. Paths in retained logs are written as `<tree
 None of it is accepted: no second holder exists to review it, and SJL-9 may not meet its gate before SJL-7 and SJL-8
 meet theirs, and so not before SJL-3 meets SJL-3's.
 
+## SJL-9's exit reading, Broiler.JS's half, 2026-11-11
+
+*Added 2026-11-11, after SJL-9.6 had nothing left in either repository. It reads the milestone's clauses 1 to 10, the
+data home's 1 to 3, the Intl library's 4 to 6 and this engine's 7 to 10, against this bundle's evidence at the commit
+each piece was taken. It takes no run, changes no rule, revises no clause and declares nothing of SJL-9 met: the
+milestone's gate waits on Broiler.VM's clauses 11 to 15, which Broiler.VM's half of the exit reading reads in its own
+bundle of the same name, on SJL-7, SJL-8 and SJL-3 meeting theirs, and on review.*
+
+**What it reads.** The milestone's words are Broiler.VM's
+`docs/javascript-shared-libraries/milestones/sjl-9-locale-data-and-intl.md` at `origin/main` `7461cf86` (read only).
+The evidence is this bundle's: the after commit `a5f2692e88a9aafeaa850bebe9c3399f6263353b` and its base
+`8841799642ff61499faa01dc894b6fec768c8af6` (section "The evidence (SJL-9.6)"); the home's tests at the after commit
+([`home/after/`](home/after/clauses.txt)); the cut-over's deletion search, taken at the cut-over's head `21bed66c`,
+from which `git diff --name-only 21bed66c a5f2692e` names no path under `Broiler.ECMAScript/` and none under
+`Broiler.JS/` but `Broiler.JS/CHANGELOG.md`, so it holds for the after commit's code; and `Broiler.JS/CHANGELOG.md` at
+the after commit. The rule's "Other rules" says how each clause is read: the data home's and the home clauses by the
+tests SJL-9.2 and SJL-9.3 commit, clause 8 under invariant globalization by part D, clause 9 by parts A and B, clauses
+7 and 10 from the tree and the changelog; and JSD-0082's decision D22 reads home clause 5 as "the vectors at library
+level, plus the differential check over the dataset inputs, plus both engines' dataset runs after the cut-overs". A
+clause is read met when every piece it is read from holds.
+
+| Clause | Its words | Read from, at the commit | Reading, and what it rests on |
+|---|---|---|---|
+| 1 | "The data is generated from pinned, hashed inputs, and regeneration is byte-identical." | `IntlPinTests`, `IntlTableSourceTests` and `GeneratedTableTests` (rule SL7 regenerates the tables and compares them byte for byte, its witness refused), passing at `a5f2692e` ([`home/after/tests.log`](home/after/tests.log)); section "The data home" for how the pin's inputs were retrieved and Broiler.VM's byte identity shown | **Read met** at `a5f2692e`, by the tests as written. The pin's third block, the `common/main` XML files decision D21 reads, is among the pinned, hashed inputs on the two readings of decisions D21 and D10 the owner confirmed on 2026-11-11, "Confirm both" (section "The data home", its dated note), so for those files the clause rests on that ruling |
+| 2 | "The public CLDR version is exposed." | `IntlPinTests` (`IntlDataVersions.CldrVersion`, 48.2.0) and `GeneratedTableTests` (the manifest's `cldr-version`), passing at `a5f2692e` | **Read met** at `a5f2692e`, by the tests as written; it rests on no revision and no ruling |
+| 3 | "The agreed locale set is complete." | `IntlCompletenessTests`, passing at `a5f2692e`, for both lists: decision D34's keys for every locale of this engine's list, the values D34 and D21 name, and every symbol of every main-data locale held to CLDR's XML resolution, with a removed line as its control | **Read met** at `a5f2692e`, per embedding, as the milestone's dated reading of the clause by decision D5 says (it revises nothing). The symbols read from CLDR's XML rest on decision D21's reading that the owner confirmed on 2026-11-11, "Confirm both" |
+| 4 | "Each sub-area that is not refused is implemented under the conventions." | `Broiler.ECMAScript.Intl.Tests` by sub-area at `a5f2692e`, (a) `LocaleIdentifierTests`, (b) `DecimalAndPluralTests`, (c) `NumbersAndTextTests` and `CurrencyNamesAndGroupingTests`, (d) `DateTimeTests` and `DateTimeLocaleDataTests`, (e) `DurationTests`, with `ContractTests` and `CompositeLocaleDataTests`; the differential check against Broiler.VM's code (`DifferentialCheckTests`, decision D22; [`algorithms/differential-summary.txt`](algorithms/differential-summary.txt), no difference unclassified); and rules SL1 to SL10 (`Architecture.Tests`), all passing | **Read met** at `a5f2692e`. No sub-area is refused: JSD-0082 accepts all five. It rests on no revision and no ruling. The shared workflow's push run at the after commit, run 42799996553 of `Shared libraries`, concluded success with every job, the assurance check (SL8) among them; that run is observed, not retained here, and the reading does not rest on it |
+| 5 | "Its vectors and reference datasets pass." | the vectors at library level, `LibraryRunTests` passing at `a5f2692e`, and the Native AOT probe's run of corpus revision 37 with no failure, its report byte for byte the JIT's ([`home/after/probe-run-linux-x64.log`](home/after/probe-run-linux-x64.log)); the differential check over the dataset inputs (as clause 4); and this engine's dataset run after its cut-over, part C | **Read met for this engine's share.** Part C is NOT MET as the rule is written and MET as `decision-rule-revised-2026-11-10.md` restates it, `locales:128` being class L19 on the owner's ruling of 2026-11-10, "Dated part C revision": that revision was written after SJL-9.5's local pre-check runs had been seen, so this share rests on weaker evidence for part C. Decision D22's last piece, Broiler.VM's dataset runs after its cut-over, is Broiler.VM's to read; the clause holds only when its half reads them |
+| 6 | "The `SL` rules pass, and the Native AOT probe runs." | `Architecture.Tests` (`SharedRuleTests` and `RuleRegisterTests`, rules SL1 to SL10 with their witnesses) passing at `a5f2692e`; the probe published for `linux-x64` with no warning and no managed assembly, and run over the corpus with no failure ([`home/after/probe-publish-linux-x64.log`](home/after/probe-publish-linux-x64.log), [`probe-run-linux-x64.log`](home/after/probe-run-linux-x64.log)) | **Read met** at `a5f2692e`; it rests on no revision and no ruling. The local restore and the probe's publication took `-p:NuGetAudit=false`, because NU1903 on `Microsoft.DotNet.ILCompiler` 10.0.12 is a warning made an error in the probe's restore ([`home/after/build.log`](home/after/build.log)); no rule names the audit. The shared workflow's push run at the after commit (run 42799996553, observed, not retained) has both `Native AOT probe` legs successful |
+| 7 | "The deletion list is absent." | [`cutover/deletion-search.txt`](cutover/deletion-search.txt) and the tree at `a5f2692e`, against the list as the milestone's SJL-9.5 and JSD-0082's decision D24 give it | **Not met.** Two of the list's entries are present at `a5f2692e`, and the cut-over's own records name each as a departure, not as absent: "its uses of `Broiler.Unicode.Cldr.LocaleData` for Intl data", since `Intl.supportedValuesOf`'s `currency` and `unit` lists read the package's `IntlEnumerationData` (`Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs`) and `BuiltIns` keeps the package reference, with `Directory.Packages.props` its version (section "The cut-over's records", "`Broiler.Unicode.Cldr.LocaleData` stays"); and negotiation, since `GetUnicodeExtensionType`, `RemoveUnicodeExtensionKeyword` and `ReflectExtensionKeyword` still resolve the Collator's `co`, `kf` and `kn` by hand, members the plan's record says "the deletion list names" and keeps until SJL-17.5 ([`SharedLibraries.md`](../../roadmap/SharedLibraries.md), "Where the records depart from this plan"). No decision revises the list for either. Every other entry is absent, and no deleted type or member is referenced by code |
+| 8 | "Host globalization remains only behind the optional providers." | part D at `a5f2692e`, MET as the rule is written ([`invariant/after/`](invariant/after/)); and the changelog's "What stays this engine's" at `a5f2692e` | **Read met**, as the rule reads the clause, under invariant globalization: every program completes with every line, no line is an `abort:` line, and `default-locale-is-supported.js` passes in both variants. It rests on no revision and no ruling. The changelog names what keeps the host: the default-locale and available-locale providers (decision D7), the host-culture provider (decision D6), and `Intl.Collator`'s data and comparison, which are SJL-17's (SJL-D-24 (c); the milestone's "Does not do": "It does not share collation"). This bundle retains no search of the tree for a host globalization API outside those providers, as bundle `sjl-7-001`'s host-API search does for its clause 6; the reading outside invariant globalization rests on the changelog's record |
+| 9 | "test262 `intl402` per path meets the area rule." | parts A and B, runs 42800071052 and 42800076421 (UTC) and 42800082920 and 42800090851 (`America/New_York`), base `88417996` and after `a5f2692e` (section "The evidence (SJL-9.6)") | **Read met under the rule's revision of 2026-11-09**, on weaker evidence. As the rule is written parts A and B are NOT MET, so as written the clause is not met: `intl402/DateTimeFormat/prototype/format/numbering-system.js` passes at the base and fails after, in both variants and both zones. `decision-rule-revised-2026-11-09.md` admits that path as class L (row T12, the owner's ruling of 2026-11-09, "Follow CLDR"), with its probe in the after runs' own shell, and it was written after SJL-9.5's local pre-check runs had been seen. No other verdict of the suite moved in either zone |
+| 10 | "Every correction is listed." | `Broiler.JS/CHANGELOG.md` at `a5f2692e`, "Intl moves to the shared Intl library" | **Read met** at `a5f2692e`: each row of decision D25's list of corrections of this engine, (a) to (e), is named there, with the implementation-defined changes (C3), the data changes (C5) and row L35's default-locale change. Parts A and B list no row in class C1, so test262 adds no correction to list. It rests on no revision and no ruling |
+
+**So, of Broiler.JS's clauses 1 to 10:** clauses 1 to 6 and 8 to 10 read met, and clause 7 does not.
+- Clauses 2, 4, 6, 8 and 10 rest on the rule and the tests as written.
+- Clauses 1 and 3 rest, for the XML files of the pin's third block and the symbols read from them, on the owner's
+  ruling of 2026-11-11, "Confirm both".
+- Clause 5 rests on part C as revised on 2026-11-10 (weaker evidence, the owner's ruling "Dated part C revision"),
+  and holds only with Broiler.VM's dataset runs, which its half reads.
+- Clause 9 rests on parts A and B as revised on 2026-11-09 (weaker evidence, the owner's ruling "Follow CLDR"); as
+  written it is not met.
+
+**What would meet clause 7.** Each entry gone from the tree, and the clause read again there: `Intl.supportedValuesOf`'s
+currency and unit lists from the shared library, its `SupportedValues` wired for those two keys, with the package's
+use, its reference in `BuiltIns` and its version in `Directory.Packages.props` removed; and the Collator's `co`, `kf`
+and `kn` resolved through the shared ResolveLocale, with the three members deleted, which the records leave to
+SJL-17.5. The rule reads the deletion list from the tree at SJL-9.6, so a reading at a later commit, or a dated decision
+that moves either entry out of SJL-9's list, is the owner's to choose; this reading takes neither.
+
+**Open items these readings depend on.** None is done here.
+- **Corpus revision 38's 20 kept fields** whose reasons' last clause, "answered by SJL-9.5, this engine's cut-over to
+  the shared Intl library", no longer holds (`conformance/vectors/REVISIONS.md`, row 38): left for a later revision to
+  restate, with the Broiler.JS answers some of those reasons quote. No clause above reads them; clause 5's vectors are
+  read at library level.
+- **The shared stream's next version**, published only with the owner's approval, which carries the library's fix of
+  row L19 (Broiler-Platform/Broiler.JS#1108, `b9ae4b5a`) to Broiler.VM, whose package pin predates it: Broiler.VM's
+  `getHourCycles` moves at its re-pin for the tags JSD-0082's note of 2026-11-11 on row L19 names. Part C's class L19
+  still admits `locales:128` then, since its expected answer stays the pinned copy's.
+- **Clause 7's two entries**, above.
+- **The data home's two readings in JSD-0082's own text.** The owner confirmed them without revising D21 and D10, so
+  JSD-0082's text and the home keep reading differently, reconciled by the ruling's records; JSD-0082's note on D21
+  and D10 is Broiler.VM's to file.
+- **`Broiler.ECMAScript/docs/intl/design.md`'s note on row T37** still names the deleted
+  `NumberingSystemDecimalData`; the library's next records merge owes it a dated note (section "The cut-over's
+  records").
+- **Part D's logs** do not record the environment the runner handed the shell (part D's dated note); a later
+  collection writes it.
+- **The probe's restore** needs `-p:NuGetAudit=false` locally while NU1903 flags `Microsoft.DotNet.ILCompiler`
+  10.0.12 (clause 6).
+- **The later stage this bundle's section "What this bundle does not do" names is taken**: corpus revision 38,
+  merged as `3493462a` (Broiler-Platform/Broiler.JS#1112), and Broiler.VM's pin moved to it (Broiler-Platform/Broiler.VM#199,
+  observed), with the notes JSD-0082 owed at that re-pin. That section is left as written.
+
+**The gate.** SJL-9 may not meet its gate before SJL-7 and SJL-8 meet theirs, and so not before SJL-3 meets SJL-3's.
+Read in both ledgers on 2026-11-11: SJL-3 is `In progress` with clause 7, this engine's measurement half, unmet by the
+owner's decision of 2026-10-20, and Broiler.VM's clause 13 unmet; SJL-7 and SJL-8 are `In progress`, every clause met
+on their bundles and none accepted. Review is deferred (EX-30, in Broiler.VM), and nothing here is accepted. This
+reading meets no gate: Broiler.VM's half reads clauses 11 to 15, and the record over both repositories is Broiler.VM's.
+
 ## State
 
 **2026-10-26, at SJL-9.1: the rule and its data only. Nothing here is a verdict, and nothing has been taken.**
@@ -812,6 +892,12 @@ verdict, and nothing has been taken." above held until then. The rule commit, wh
 when the change that carries it had merged, is `509788820f7cfa60517e6aecc61437f6ecc2bde2` (Broiler-Platform/Broiler.JS#1077), the base commit
 `8841799642ff61499faa01dc894b6fec768c8af6`, and the after commit `a5f2692e88a9aafeaa850bebe9c3399f6263353b`
 (Broiler-Platform/Broiler.JS#1110). *(Added 2026-11-10, at review.)*
+
+*2026-11-11, at SJL-9's exit reading:* the section "SJL-9's exit reading, Broiler.JS's half" reads the milestone's
+clauses 1 to 10 against this bundle's evidence: clauses 1 to 6 and 8 to 10 read met, clause 5 and clause 9 on parts
+met only as revised, which is weaker evidence, and clauses 1 and 3 on the owner's ruling of 2026-11-11, "Confirm
+both"; clause 7 is not met, for two entries of the deletion list the cut-over's records keep. That is no verdict on
+SJL-9, whose gate waits on Broiler.VM's clauses 11 to 15, on SJL-7, SJL-8 and SJL-3, and on review; nothing is accepted.
 
 **What the bundle will hold:**
 - `base/`: parts A and B's base runs, each imported unchanged with the digest of its zip;
