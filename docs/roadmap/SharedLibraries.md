@@ -1543,8 +1543,9 @@ This repository's part of it:
   *(Noted 2026-11-11, on the owner's ruling of that day, "Confirm both", the owner's own dated choice, asked and
   answered. The note above ends "a reading of D21 and of D10's "from the same packages" that the bundle's section
   states for the owner to confirm."; the owner confirmed both readings as the home took them. The home's pin of
-  CLDR's `common/main` XML for the list's main-data locales and `en-001` is decision D21's "through the locale's parent
-  chain to root", beside the `root.xml` it names; and those files' source, the CLDR repository at the tag
+  CLDR's `common/main` XML for the list's main-data locales and their parents (which adds `en-001`) is decision D21's
+  "through the locale's parent chain to root", beside the `root.xml` it names *(the words "and their parents (which
+  adds `en-001`)" revised 2026-11-11, at review, to the words of the note above; read "and `en-001`")*; and those files' source, the CLDR repository at the tag
   `release-48-2`, which Broiler.VM's `root.xml` `repository-source` line names, is decision D10's "from the same
   packages". The alternatives not taken were "Confirm, revise text", dated revisions of D21 and D10 in Broiler.VM's
   JSD-0082, and "Do not confirm". Nothing in the home changes, and Broiler.VM's entries are unchanged. Bundle
@@ -1946,21 +1947,37 @@ pin move is the next stage."; that stage is taken, Broiler.VM's pin moved to cor
 [`sjl-9-001`](../evidence/sjl-9-001/README.md), "SJL-9's exit reading, Broiler.JS's half", reads the milestone's clauses
 1 to 10, the data home's, the Intl library's and this engine's, against its evidence at the after commit `a5f2692e`. It
 takes no run, changes no rule and revises no clause:
-- **Read met:** clauses 1 to 6 and 8 to 10. Clauses 2, 4, 6, 8 and 10 rest on the rule and the home's tests as
-  written. Clauses 1 and 3 rest, for the `common/main` XML files of the pin's third block, on the owner's ruling of
-  2026-11-11, "Confirm both" (the dated note under "The data home" above). Clause 5 rests on part C as its revision of
-  2026-11-10 restates it, weaker evidence, and holds only with Broiler.VM's dataset runs after its cut-over, which
-  decision D22 adds and Broiler.VM's half reads. Clause 9 rests on parts A and B as their revision of 2026-11-09
-  restates them, weaker evidence; as the rule is written it is not met.
+- **Read met:** clauses 1 to 4, 6, 9 and 10. Clauses 2 and 10 rest on the rule and the home's tests as written, and
+  clauses 4 and 6 too, save that the assurance half of rule SL8 rests on the shared workflow's push run at the after
+  commit, observed and not retained. Clauses 1 and 3 rest, for the `common/main` XML files of the pin's third block,
+  on the owner's ruling of 2026-11-11, "Confirm both" (the dated note under "The data home" above). Clause 9 rests on
+  parts A and B as their revision of 2026-11-09 restates them, weaker evidence; as the rule is written it is not met.
+- **Read met for this engine's share only:** clause 5, on part C as its revision of 2026-11-10 restates it, weaker
+  evidence. It holds only with Broiler.VM's dataset runs after its cut-over, which decision D22 adds, and is completed,
+  or not, by Broiler.VM's half reading them.
 - **Not met:** clause 7, "The deletion list is absent". Two of its entries stay at the after commit, as this plan's
   records of the cut-over already say: this engine's use of `Broiler.Unicode.Cldr.LocaleData` for Intl data, the
   currency and unit lists of `Intl.supportedValuesOf`, with the package reference; and the Collator's hand resolution
-  of its `co`, `kf` and `kn` keys, kept until SJL-17.5. No decision revises the list for either. The bundle says what
-  would meet the clause; choosing it is the owner's.
+  of its `co`, `kf` and `kn` keys, kept until SJL-17.5. No decision revises the list for either.
+- **Not met:** clause 8, "Host globalization remains only behind the optional providers". It holds under invariant
+  globalization, part D as the rule is written. Outside it, `Decimal.prototype.toLocaleString` reads the host's
+  culture directly, behind no provider, and no decision keeps it, where the .NET format-string extension's readers
+  fall outside the clause by SJL-D-17. The bundle says what would meet each of clauses 7 and 8; choosing is the owner's.
 - **Open, and not done here:** corpus revision 38's kept fields whose reasons still end "answered by SJL-9.5", owed to
   a later restating revision; the shared stream's next version, published only with the owner's approval, which
   carries row L19's `getHourCycles` moves to Broiler.VM; the dated note the design document owes on the deleted
-  adapter; and JSD-0082's own note on decisions D21 and D10, in Broiler.VM's half.
+  adapter; JSD-0082's own note on decisions D21 and D10, in Broiler.VM's half; and clause 8's reader, which task 8.4
+  neither moved onto the default-locale provider nor recorded.
+
+*(The list above revised 2026-11-11, at review. Its first item read "**Read met:** clauses 1 to 6 and 8 to 10. Clauses
+2, 4, 6, 8 and 10 rest on the rule and the home's tests as written. Clauses 1 and 3 rest, for the `common/main` XML
+files of the pin's third block, on the owner's ruling of 2026-11-11, "Confirm both" (the dated note under "The data
+home" above). Clause 5 rests on part C as its revision of 2026-11-10 restates it, weaker evidence, and holds only with
+Broiler.VM's dataset runs after its cut-over, which decision D22 adds and Broiler.VM's half reads. Clause 9 rests on
+parts A and B as their revision of 2026-11-09 restates them, weaker evidence; as the rule is written it is not met.";
+its clause 7 item ended "No decision revises the list for either. The bundle says what would meet the clause;
+choosing it is the owner's."; and its last item ended "and JSD-0082's own note on decisions D21 and D10, in
+Broiler.VM's half.". The clause 5 and clause 8 items are new.)*
 
 This is no verdict on SJL-9. Its gate waits on Broiler.VM's clauses 11 to 15, which Broiler.VM's half of the exit
 reading reads in its bundle of the same name, and on SJL-7 and SJL-8 meeting theirs, and so on SJL-3 meeting SJL-3's.
@@ -2770,7 +2787,7 @@ the summary here does not replace them.
 | **SJL-8** — time zones and calendars | Move the generators and pins here and `Temporal` off host zones and .NET calendars | Its Broiler.JS clauses, the reference datasets included |
 | **SJL-11** — regular expressions | After Broiler.Regex meets every requirement and implements duplicate named groups, retire the translator, the routing and `RegExpValidator`, re-point the scanner's literal check to Broiler.Regex's validate entry, and keep `RegExpUnicodeValidator` as a forwarder to it *(revised 2026-10-25, at SJL-11.1, by Broiler.VM's JSD-0081, decisions D21 and D22; read "After Broiler.Regex meets every requirement and implements duplicate named groups, retire the translator and the validators")* | Clauses 4 to 7: translator gone, test262 `RegExp` per path, duplicate named groups still working, corrections listed; `Component.md` §3 closed |
 | **SJL-10** — Temporal core | The area's library work and cut-over | Its Broiler.JS clauses, the polyfill dataset included |
-| **SJL-9** — locale data and Intl | SJL-9.2: the acceptance data (Broiler.VM's Intl reference datasets copied here, and the Intl vectors), then the data home here, the CLDR generator and its pins with this engine's tables; SJL-9.3: `Broiler.ECMAScript.Intl`, stage by stage; publication with the owner's approval; then SJL-9.5, this engine's cut-over, in one merge, with host globalization only behind the optional provider (SJL-D-22 (c)) *(revised 2026-10-26, at SJL-9.1, by Broiler.VM's JSD-0082, decisions D3 and D16; read "Move the CLDR generator and pins here; host globalization only behind the optional provider (SJL-D-22 (c))")* | Its Broiler.JS clauses 7 to 10, and the data-home and home clauses 1 to 6, which this repository hosts *(revised 2026-10-26, at SJL-9.1; read "Its Broiler.JS clauses")* |
+| **SJL-9** — locale data and Intl | SJL-9.2: the acceptance data (Broiler.VM's Intl reference datasets copied here, and the Intl vectors), then the data home here, the CLDR generator and its pins with this engine's tables; SJL-9.3: `Broiler.ECMAScript.Intl`, stage by stage; publication with the owner's approval; then SJL-9.5, this engine's cut-over, in one merge, with host globalization only behind the optional provider (SJL-D-22 (c)) *(revised 2026-10-26, at SJL-9.1, by Broiler.VM's JSD-0082, decisions D3 and D16; read "Move the CLDR generator and pins here; host globalization only behind the optional provider (SJL-D-22 (c))")* *(Noted 2026-11-11, at SJL-9's exit reading, at review: the steps this cell names, from "SJL-9.2: the acceptance data" to "SJL-9.5, this engine's cut-over, in one merge", are taken, and SJL-9.6 has nothing left in either repository. The next action is Broiler.VM's half of the exit reading, its clauses 11 to 15, its dataset runs for clause 5 and the record over both repositories, and the owner's choice on clauses 7 and 8, which this engine's half reads not met ("SJL-9's exit reading, Broiler.JS's half, 2026-11-11" above). The cell is left as written.)* | Its Broiler.JS clauses 7 to 10, and the data-home and home clauses 1 to 6, which this repository hosts *(revised 2026-10-26, at SJL-9.1; read "Its Broiler.JS clauses")* |
 | **SJL-17** — collation | Share the collation algorithm after SJL-9 | Its Broiler.JS clauses: host collation only behind the optional provider |
 | **SJL-13** — the shared syntax library | SJL-13.1 is filed: the area verdict, the stage table, the classification and the rule ("The frontend's syntax half (SJL-13.1)" and "The shared syntax library (SJL-13)" above). The `syntax` vectors are corpus revisions 29 and 30, both engines' first runs classified (bundle [`sjl-13-001`](../evidence/sjl-13-001/README.md)'s README); next, their merge, after Broiler.VM's change that carries the correspondence's row P16b (decision D-asi of 2026-10-27), and Broiler.VM's pin; then SJL-13.2, `Broiler.ECMAScript.Frontend` in stages 4a to 4f, one merge each, developed against the parse corpus, the vectors and the classification; then the publication of the stream version that carries it, with the owner's approval. Broiler.VM's two steps are Broiler.VM's *(revised 2026-10-26, at SJL-13.1, by Broiler.VM's JSD-0083; read "Implement the frontend's syntax half in this repository")* *(revised 2026-10-27, at the `syntax` vectors; read "Next, the `syntax` vectors at a corpus revision; then SJL-13.2, `Broiler.ECMAScript.Frontend` in stages 4a to 4f")* *(revised 2026-10-27, decision D-asi; read "both engines' first runs classified but a difference left for the correspondence to answer (bundle `sjl-13-001`'s README); next, their merge and Broiler.VM's pin;")* | Home clauses 1 to 3: under the contract and conventions, the parse corpus and syntax tests at library level as the classification fixes them, SL9 and the Native AOT probe, each judged at the library commit by bundle [`sjl-13-001`](../evidence/sjl-13-001/README.md)'s rule *(revised 2026-10-26, at SJL-13.1; read "Home clauses 1 to 3: under the contract and conventions, the parse corpus and syntax tests at library level, SL9 and the Native AOT probe")* |
 | **SJL-14** — Broiler.JS on the shared syntax library | SJL-14.0 and SJL-14.1 are filed: the start, a reading of the owner's words, and the decisions D40 to D56 and D64 (D48 the owner's own, not taken), in "Broiler.JS on the shared syntax library (SJL-14)" above; bundle [`sjl-14-001`](../evidence/sjl-14-001/README.md)'s rule, corrections, dispositions and inputs. Next, W1: the bridge, with the inherited context and the test-only switch off by default, judged by identity; the side-by-side runs; then W2, the cut-over, preferably after SJL-11.5, with the adapter packages and the deletions; then the evidence *(revised 2026-11-03, at SJL-14.1; read "Move the compiler and the portable compiler onto the frontend; make `Ast` and `Parser` obsolete adapter packages (SJL-D-12 (i))")* *(Noted 2026-10-26, at SJL-13.1: SJL-14 waits on SJL-13. It files its own start entry; its records can be written once SJL-13.1's have merged and SJL-13.2's stage 4c has given the tree, and its bridge merges after stage 4f. SJL-13.1's area verdict, Broiler.VM's JSD-0083, covers this engine's front end too, so SJL-14 files no verdict of its own. JSD-0083's decision D41 reads how the compiler parses with the frontend at SJL-14: through a bridge to its own tree, moving onto the shared tree at SJL-15.5. SJL-14.1's records revise this row.)* *(Noted 2026-11-03, later, on the owner's answer to D48: where this row reads "D48 the owner's own, not taken", the owner has since answered, "Please defer the measurement", choosing (i): clause 6 is kept as written, unmet until a controlled lane exists, as the note after "D48, the owner's own choice" above records.)* | Clauses 1 to 6, the Native AOT sample regenerated and run included |
