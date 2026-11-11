@@ -10,6 +10,32 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### The `m` literal's `Decimal` reads and writes its digits with the invariant culture (2026-11-11, milestone SJL-9's clause 8)
+
+On the owner's ruling of 2026-11-11 on the `m` literal's host-culture parse and text, "Fix in this PR" (the alternatives
+not taken being "Fix in a follow-up PR" and "Record as SJL-D-17 path"):
+
+- **The `m` literal's `Decimal`** (a non-standard extension that decision SJL-D-17 keeps here) parses and writes its
+  digits with the invariant culture under every host: the literal's own parse, the `Decimal` function's parse of a
+  String, `toString`, `toFixed`, string concatenation and the equality with a string literal. Until this change each
+  read the host's current culture, through .NET calls that named none, so the answers under a host culture other than
+  the invariant one move to the invariant culture's; with no `LANG`, whose culture is the invariant one, **no answer
+  moves**:
+  - under `de-DE`, whose group separator is `.`, `1234567.891m` is the value 1234567.891, where it was 1234567891, so
+    `(1234567.891m).toString()` gives `"1234567.891"` and `(1234567.891m).toLocaleString()` `"1.234.567,891"`, where
+    they gave `"1234567891"` and `"1.234.567.891"`; `(1.5m).toFixed(1)` gives `"1.5"`, where it gave `"15,0"`; and
+    `1.5m == "1.5"` is `true`, where it was `false`; `tr-TR` answers as `de-DE` did and now does;
+  - under `sv-SE`, whose decimal point is `,`, an `m` literal with a fraction is its value, where it was a `TypeError`
+    (`1.5m` threw "1.5m is not a valid big integer"), and `Decimal("\u22125")`, that culture's minus sign in .NET, is a
+    `TypeError`, as under the invariant culture, where it was -5;
+  - a `Decimal`'s text under such a host is the invariant culture's: `(Decimal("1234567891") / 1000m).toString()` gives
+    `"1234567.891"`, where it gave `"1234567,891"`.
+
+  The cases are `Broiler.JavaScript.BuiltIns.Tests`' `DecimalCultureTests`, each under the invariant culture and under
+  `de-DE`, `sv-SE` and `tr-TR`; test262 at `ccaac100` holds no `Decimal` path. Bundle
+  [`sjl-9-001`](../docs/evidence/sjl-9-001/README.md), "Clauses 7 and 8 read again, 2026-11-11 (after the owner's
+  rulings)", reads clause 8 again at this change.
+
 ### `Intl.supportedValuesOf`'s currencies and units, and `Decimal.prototype.toLocaleString`, on the shared Intl library (2026-11-11, milestone SJL-9's clauses 7 and 8)
 
 On the owner's rulings of 2026-11-11 on milestone SJL-9's exit clauses 7 ("Fix (1); move (2) to SJL-17") and 8 ("Fix in
@@ -48,7 +74,11 @@ code"):
     own digits are still read and written with the host's culture, which this change leaves as it was (bundle
     `sjl-9-001`'s clause 8 reading, below, leaves it open for the owner): under `de-DE` the literal `1234567.891m` is the
     value 1234567891, `.` being that culture's group separator, so `(1234567.891m).toLocaleString()` gives
-    `"1.234.567.891"`, where it gave `"1234567891"`.
+    `"1.234.567.891"`, where it gave `"1234567891"`. *(Noted 2026-11-11, on the owner's ruling of that day on the `m`
+    literal, "Fix in this PR": the sentences from "An `m` literal's own digits are still read and written with the host's
+    culture, which this change leaves as it was" held until the entry above, "The `m` literal's `Decimal` reads and
+    writes its digits with the invariant culture"; from it `(1234567.891m).toLocaleString()` under `de-DE` gives
+    `"1.234.567,891"`.)*
 
   The cases are `Broiler.JavaScript.BuiltIns.Tests`' `DecimalToLocaleStringTests`; test262 at `ccaac100` holds no
   `Decimal` path. Bundle [`sjl-9-001`](../docs/evidence/sjl-9-001/README.md), "Clauses 7 and 8 read again, 2026-11-11
