@@ -2029,7 +2029,10 @@ reads both clauses at the change's code:
 - **Clause 8: met for `Decimal.prototype.toLocaleString`, and not met as written**, for a reader the exit reading did
   not see: the `m` literal's `Decimal` reads the host's current culture in its own parse and text, through calls that
   name no culture, which the exit reading's search for named calls cannot find. No decision keeps that reading, and the
-  ruling covers `toLocaleString` alone. The bundle says what would meet the clause; choosing is the owner's.
+  ruling covers `toLocaleString` alone. The bundle says what would meet the clause; choosing is the owner's. *(Noted
+  2026-11-11, at review: a search of the tree for such calls, made at review, also finds a few sites outside the `m`
+  literal that read the host's culture for a sign or a linguistic comparison, none for a decimal or group separator;
+  the bundle's clause 8 row names them, and the clause's reading stands.)*
 - **Nothing else moved**: the engine vectors, test262's `supportedValuesOf` directory and part C's and part D's programs
   answer at the change as at its base, the currency and unit lists among them, and `toLocaleString`'s answers move as
   the changelog lists them.
