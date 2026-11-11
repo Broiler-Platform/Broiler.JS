@@ -160,10 +160,12 @@ class CommittedFileTests(unittest.TestCase):
             else:
                 self.assertFalse(any(k.startswith("per-engine.") for k in vector), vector_id)
                 if "row Z8: the identifier as given" in vector.get("note", ""):
-                    # Row Z8 since revision 38: out is the identifier as the script gives it, in its case.
+                    # Row Z8 since revision 38: out is the identifier as the script gives it, case-normalised, and
+                    # the vector cites the clause that settles it, the pinned Temporal revision's CreateDateTimeFormat.
                     self.assertEqual("Intl.DateTimeFormat, resolved timeZone", vector["op"], vector_id)
                     self.assertEqual("normative", vector["class"], vector_id)
                     self.assertIn("decision D15", vector["note"], vector_id)
+                    self.assertIn(generator.Z8_CLAUSE, vector["prov"].split(" "), vector_id)
                 self.assertIn(vector["class"], ("normative", "divergence"), vector_id)
                 self.assertEqual(vector["class"] == "divergence", any(k.startswith("divergence.") for k in vector), vector_id)
                 if vector["op"] != "Intl.Locale.prototype.getTimeZones":

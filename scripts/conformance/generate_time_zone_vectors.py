@@ -28,15 +28,16 @@ code (Broiler.VM's `docs/evidence/sjl-8-001/correspondence.md`, whose rows the n
 default build without backzone or `factory`, CLDR 48.2.0's primaries, under SJL-D-20, which both engines' plans
 commit them to. So every vector whose outcome follows from that data and the specification's algorithms is
 `normative`, and so, since corpus revision 38, is the name an `Intl.DateTimeFormat` resolves a non-primary identifier
-to (row Z8): the identifier as given, in its case, which the Temporal revision both engines pin, `e8cc03fc`, keeps as
-[[Identifier]] in CreateDateTimeFormat, and which both engines answer since Broiler.VM's cut-over SJL-9.4 corrected its
-answer (decision D15 of Broiler.VM's JSD-0082, "Settled by the pinned text: the identifier as given, case-normalised";
-its vectors' per-engine expectations "become one at the next revision"). One kind is not: the zones a region uses (row
-Z12, which the Intl Locale Info proposal leaves to the implementation), `impl-defined`, with each engine's expectation
-from its plan. *(Revised 2026-11-10, at corpus revision 38. Until then this paragraph read: "Two are not: the name an
-`Intl.DateTimeFormat` resolves a non-primary identifier to (row Z8, which JSD-0076 leaves each engine's until the
-specification edition both pin settles it), and the zones a region uses (row Z12, which the Intl Locale Info proposal
-leaves to the implementation); both are `impl-defined`, with each engine's expectation from its plan.")*
+to (row Z8): the identifier as given, case-normalised, which the Temporal revision both engines pin, `e8cc03fc`,
+keeps as [[Identifier]] in CreateDateTimeFormat, the clause those vectors cite, and which both engines answer since
+Broiler.VM's cut-over SJL-9.4 corrected its answer (decision D15 of Broiler.VM's JSD-0082, "Settled by the pinned
+text: the identifier as given, case-normalised"; its vectors' per-engine expectations "become one at the next
+revision"). One kind is not: the zones a region uses (row Z12, which the Intl Locale Info proposal leaves to the
+implementation), `impl-defined`, with each engine's expectation from its plan. *(Revised 2026-11-10, at corpus
+revision 38. Until then this paragraph read: "Two are not: the name an `Intl.DateTimeFormat` resolves a non-primary
+identifier to (row Z8, which JSD-0076 leaves each engine's until the specification edition both pin settles it), and
+the zones a region uses (row Z12, which the Intl Locale Info proposal leaves to the implementation); both are
+`impl-defined`, with each engine's expectation from its plan.")*
 
 The output is deterministic: the same inputs give the same bytes. Vector identifiers are stable and are never reused;
 a later revision appends.
@@ -62,8 +63,8 @@ from generate_number_vectors import js_string_body, string_value  # noqa: E402
 # cut-over, milestone SJL-8.6, corrects. Revision 24 adds the Temporal area (generate_temporal_vectors.py) and
 # changes nothing here, nor does revision 25, which classifies its differences, nor revision 26, which retires them.
 # Revision 38 makes row Z8's 157 vectors normative, each engine's per-engine expectation merged into out, the
-# identifier as given (decision D15 of Broiler.VM's JSD-0082), which Broiler.VM answers since its SJL-9.4; no out
-# changes.
+# identifier as given, case-normalised (decision D15 of Broiler.VM's JSD-0082), which Broiler.VM answers since its
+# SJL-9.4, and cites the clause that settles it, the pinned Temporal revision's CreateDateTimeFormat; no out changes.
 CORPUS_REVISION = 38
 FIRST_REVISION = 21
 GENERATOR = T.GENERATOR
@@ -79,14 +80,18 @@ EPOCH = IDENTIFIERS + ("sec-getnamedtimezoneepochnanoseconds",)
 RECORDS = IDENTIFIERS + ("sec-time-zone-identifier-record", "sec-availablenamedtimezoneidentifiers")
 OFFSET_IDENTIFIER = ("sec-time-zone-identifiers", "sec-time-zone-offset-strings")
 FORMATTER = ("sec-istimezoneoffsetstring", "sec-time-zone-offset-strings", "sec-availablenamedtimezoneidentifiers")
+# The clause that settles row Z8 (decision D15): the pinned Temporal revision's CreateDateTimeFormat keeps the
+# identifier as given, case-normalised, as [[Identifier]]. The pinned ECMA-262 edition does not contain it, so a Z8
+# vector cites it by `proposal:`, as the Intl area's twins of row Z8 do (corpus revision 38).
+Z8_CLAUSE = "proposal:temporal@e8cc03fc#sec-createdatetimeformat"
 
 # Row Z8's note. Until revision 38 the vector was impl-defined, with Broiler.JS's expectation out and Broiler.VM's the
 # primary, and its note read: "row Z8: implementation-defined until the specification edition both engines pin settles
 # it (JSD-0076, X2); out is the identifier, as the canonical-tz text has it. Broiler.JS keeps the name (its
 # docs/roadmap/SharedLibraries.md, record of SJL-8.1); Broiler.VM reports the primary (JSD-0054, JSD-0076 Z8)".
-Z8_SETTLED = ("row Z8: the identifier as given, in its case, which e8cc03fc's CreateDateTimeFormat keeps as "
-              "[[Identifier]] (decision D15 of Broiler.VM's JSD-0082, settled by the pinned text); Broiler.JS keeps the "
-              "name, and Broiler.VM, which reported the primary, answers it since its cut-over SJL-9.4, so the two "
+Z8_SETTLED = ("row Z8: the identifier as given, case-normalised, which e8cc03fc's CreateDateTimeFormat keeps as "
+              "[[Identifier]] (decision D15 of Broiler.VM's JSD-0082, settled by the pinned text); Broiler.JS keeps "
+              "the name, and Broiler.VM, which reported the primary, answers it since its cut-over SJL-9.4, so the two "
               "engines' expectations are one since corpus revision 38")
 Z12_PLANS = ("row Z12: the Intl Locale Info proposal's TimeZonesOfLocale leaves the zones in common use to the "
              "implementation; both plans answer zone.tab's zones of the region, ordinal (JSD-0076 X2 and the adapter "
@@ -429,9 +434,11 @@ class Corpus:
         else:
             record["out"] = str_out(identifier)
             if identifier != primary:
-                # Row Z8 (revision 38): normative, out the identifier as given, which both engines answer. Until then
-                # the vector was impl-defined, its per-engine.broiler-js field out and its per-engine.broiler-vm field
-                # the primary, str_out(primary).
+                # Row Z8 (revision 38): normative, out the identifier as given, case-normalised, which both engines
+                # answer, citing the clause that settles it. Until then the vector was impl-defined, its
+                # per-engine.broiler-js field out and its per-engine.broiler-vm field the primary, str_out(primary),
+                # and its prov the FORMATTER clauses and the reference only.
+                record["prov"] = f"{Z8_CLAUSE} {record['prov']}"
                 record["note"] = f"{note}; {Z8_SETTLED}"
         self.add(file, group, record)
 
