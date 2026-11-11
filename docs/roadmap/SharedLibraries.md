@@ -2032,7 +2032,18 @@ reads both clauses at the change's code:
   ruling covers `toLocaleString` alone. The bundle says what would meet the clause; choosing is the owner's. *(Noted
   2026-11-11, at review: a search of the tree for such calls, made at review, also finds a few sites outside the `m`
   literal that read the host's culture for a sign or a linguistic comparison, none for a decimal or group separator;
-  the bundle's clause 8 row names them, and the clause's reading stands.)*
+  the bundle's clause 8 row names them, and the clause's reading stands.)* *(Noted 2026-11-11, on the owner's ruling of
+  that day on the `m` literal's host-culture parse and text, "Fix in this PR", the alternatives not taken being "Fix in a
+  follow-up PR" and "Record as SJL-D-17 path": this item reads clause 8 "met for `Decimal.prototype.toLocaleString`, and
+  not met as written, for a reader the exit reading did not see: the `m` literal's `Decimal` reads the host's current
+  culture in its own parse and text". Branch `js-c78` now passes the invariant culture at every parse and every text
+  conversion of the `m` literal's `Decimal`, with tests under host cultures, and no other path the literal takes reads a
+  culture. The bundle's subsection "Clause 8 read again after the `m` literal's fix, 2026-11-11" reads clause 8 met for
+  `toLocaleString` and for the `m` literal, and still not met as written, for the sites outside the `m` literal that the
+  search at review names, which read the host's culture for a sign or a linguistic comparison: the ruling names the
+  Decimal's parses and formats alone, and no decision keeps those sites. The bundle says what would meet the clause;
+  choosing is the owner's. No answer moved but the `m` literal's under a host culture other than the invariant one, with
+  the `toLocaleString` answers that follow from them.)*
 - **Nothing else moved**: the engine vectors, test262's `supportedValuesOf` directory and part C's and part D's programs
   answer at the change as at its base, the currency and unit lists among them, and `toLocaleString`'s answers move as
   the changelog lists them.
