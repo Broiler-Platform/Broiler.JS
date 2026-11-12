@@ -1170,7 +1170,11 @@ exit reading says.*
 
 **The change** is branch `js-c78`'s commits `0705e80b` (the fixes and their tests), `490826e3` (the rules the build
 holds, and the kept paths' comments; no code) and `2509c343` (the changelog) on `7581a2f6`. The commit that adds this
-subsection changes no code, so the reading is of the code at `2509c343`, which is `490826e3`'s.
+subsection changes no code. At review, `88eeb895` adds the banned-API rule, its suppressions at the kept paths and the
+scope property's fix, none of which is executable code, and `e6d38e0c` the changelog's lines for them, so the reading
+is of the code at `88eeb895`, whose answers are `2509c343`'s (`answers-review.txt`). *(Revised 2026-11-12, at review;
+from "changes no code" it read "changes no code, so the reading is of the code at `2509c343`, which is
+`490826e3`'s.")*
 - **What was searched.** At `7581a2f6`, `Broiler.JS.slnx` built with every globalization rule on
   (`-p:AnalysisModeGlobalization=All`) finds 143 distinct sites of the five rules the ruling names, 85 of them in the
   engine's product projects (CA1305 63, CA1310 16, CA1309 4, CA1304 1, CA1311 1) and 58 in the test, benchmark and
@@ -1196,13 +1200,21 @@ subsection changes no code, so the reading is of the code at `2509c343`, which i
   the `assert` module's message, the typed arrays' and `DataView`'s offset messages, the persistent cache's quarantine
   name, the IL writer and the expression printer.
 - **Kept on the host's culture**, on the ruling: the default-locale provider (`JSIntlLocaleProviders.DefaultLocale`,
-  decision D7), the host-culture provider (`HostCultureLocaleData.Culture`, decision D6), `Intl.Collator`'s comparison
+  decision D7), the host-culture provider (`HostCultureLocaleData.Culture`, and its list of the host's cultures,
+  `ReadCultures`, decision D6), `Intl.Collator`'s comparison
   (`ResolveCompareInfo`, the host's until milestone SJL-17, decision SJL-D-24 (c)), and SJL-D-17's paths: the .NET
   format-string extension of `Number.prototype.toLocaleString` and of `Date.prototype.toLocaleString`
   (`FormatWithNetCulture`) and the legacy `Date.parse`'s culture-dependent fallback (`DateParser`). Each names the
-  culture it reads (`CultureInfo.CurrentCulture`, `DateTimeFormatInfo.CurrentInfo` or `GetCultureInfo` of a locale),
-  which the five rules accept, so none raises a diagnostic and none carries a suppression: a `SuppressMessage` there
-  would suppress nothing. Each now says, in a dated comment where it reads the host's culture, that it is kept and why.
+  culture it reads (`CultureInfo.CurrentCulture`, `DateTimeFormatInfo.CurrentInfo`, `GetCultureInfo` of a locale, or
+  `GetCultures`), which the five rules accept, so none raises a diagnostic of theirs. The ruling asks for "each kept
+  site (providers, SJL-D-17's paths, the Collator) suppressed with its reason": the banned-API rule RS0030 (below) bans
+  those reads everywhere else in the engine's product projects, and each kept site suppresses it in place, a
+  `#pragma warning disable RS0030` with its reason on the line, beside a comment that names its decision and the
+  ruling. *(Revised 2026-11-12, at review; the host-culture provider was named by "`HostCultureLocaleData.Culture`"
+  alone, and from "which the five rules accept" the bullet read "which the five rules accept, so none raises a
+  diagnostic and none carries a suppression: a `SuppressMessage` there would suppress nothing. Each now says, in a dated
+  comment where it reads the host's culture, that it is kept and why.", which left the ruling's form, a suppression
+  with its reason, unused, and a new read of the host's culture by name outside the kept paths free to build.)*
 - **Left, each with its reason.** The source generator's prefix tests, `TryParse` calls and name ordering
   (`Broiler.JavaScript.JSClassGenerator`, sections 4 and 5, and its `OrderBy` of names): a netstandard2.0 compiler
   plug-in, outside the rules' scope, whose strings are C# symbol names and digits its own regular expressions matched,
@@ -1228,6 +1240,27 @@ subsection changes no code, so the reading is of the code at `2509c343`, which i
   from a clean tree of `490826e3`, each of three fixes reverted in turn (the CLR bridge's `DateTime.Parse`, the module
   loader's `StartsWith(".")` and the shell's `ToLower()`) makes the owning project's ordinary Release build fail with
   CA1305, CA1310, and CA1304 with CA1311, as errors; nothing of the control is committed.
+  *(Added 2026-11-12, at review.)* The five rules accept a call that names the host's culture, so a new
+  `CultureInfo.CurrentCulture`, `StringComparison.CurrentCulture` or `StringComparer.CurrentCulture` outside the kept
+  paths built; the review showed it with a probe. The same projects now also hold the banned-API rule RS0030 as an
+  error (`host-culture.globalconfig`), from the analyzer package `Microsoft.CodeAnalysis.BannedApiAnalyzers`, which is
+  private to the build and ships in no package, over `Broiler.JS/BannedSymbols.HostCulture.txt`: the host's current
+  culture and UI culture by every name .NET gives them (`CultureInfo`'s and `Thread`'s, `DateTimeFormatInfo.CurrentInfo`,
+  `NumberFormatInfo.CurrentInfo`, `RegionInfo.CurrentRegion`), the culture-sensitive comparisons
+  (`StringComparison.CurrentCulture` and `CurrentCultureIgnoreCase`, `StringComparer`'s two of those names), and every
+  .NET culture, comparison or region built from the host's data (`CultureInfo`'s constructors, `GetCultureInfo`,
+  `GetCultureInfoByIetfLanguageTag`, `CreateSpecificCulture` and `GetCultures`, `CompareInfo.GetCompareInfo`, and
+  `RegionInfo`'s constructors), each overload by its signature, since the analyzer bans no overload a method's name
+  alone gives. The scope property is now set by the file whatever the environment holds: before, an environment
+  variable `BroilerHostCultureRules=false` turned every rule off in every product project without a word, as the review
+  showed; a build that finds the variable set says it is ignored, as the file does for `BroilerParseThroughBridge`.
+  `control-88eeb895.txt` is the control, from a clean tree of `88eeb895`: a file of nineteen such reads in a product
+  project, `Broiler.JavaScript.Storage`, fails its Release build with RS0030 at each, and fails it alike with the
+  environment variable set to `false`, which the build reports as ignored; the same file in a test project,
+  `Broiler.JavaScript.Storage.Tests`, builds; and two kept sites with their suppressions removed, the legacy
+  `Date.parse`'s and the host-culture provider's, fail their projects' builds with RS0030. The scope is still chosen by
+  folder and name, and no test asserts which projects are in it: a product project placed outside `Broiler.JS/`, or
+  given a name ending in `Tests` or `Sample`, would not be held, and nothing would say so.
 - **Tests**, each case under the invariant culture and under `de-DE`, `sv-SE` and `tr-TR`, applied as
   `DecimalToLocaleStringTests` applies a culture: `Broiler.JavaScript.Integration.Tests`' `ClrBridgeHostCultureTests`
   (a String read as a `long` with a sign, as a `DateTime` and as a `DateTimeOffset`, and an object's detail text),
@@ -1262,6 +1295,12 @@ subsection changes no code, so the reading is of the code at `2509c343`, which i
   `probe-culture-2509c343.txt`, `7581a2f6`'s being `75695cdd`'s committed answers, as `answers-2509c343.txt` checks;
   `t262c-7581a2f6.tsv` and `t262c-2509c343.tsv`, every case's status in each environment;
 - `control-490826e3.txt`: the control above.
+- *Added 2026-11-12, at review:* `control-88eeb895.txt`, the banned-API rule's control above; `answers-review.txt`, the
+  answers taken at review (below), with `probe-messages.js` and its answers at `7581a2f6`, `2509c343` and `88eeb895`
+  (`probe-messages-*.txt`), `probe-88eeb895.txt`, `probe-culture-88eeb895.txt` and `probe-sites-88eeb895.txt`,
+  `t262c-ny-7581a2f6.tsv` and `t262c-ny-2509c343.tsv` (the culture paths under `tr_TR` and `de_DE` in
+  `America/New_York`), and `t262r-paths.txt` with `t262r-7581a2f6.tsv` and `t262r-2509c343.tsv` (the RegExp paths
+  below).
 
 **What moved between `7581a2f6` and `2509c343`.** Only answers that a host culture other than the invariant one had made
 wrong, each to the invariant culture's answer, and each by the fix (`0705e80b`); with no `LANG` and under invariant
@@ -1287,23 +1326,53 @@ folding's fix moves none of them.
   (11 December, now 12 November), a value's detail text and the debugger's description of a number under `de-DE`,
   `sv-SE` and `tr-TR` (`1,5`, now `1.5`; under `sv-SE` `−2`, now `-2`), the error messages of `String.fromCodePoint(1.5)`
   and of a Number called as a function under the three cultures (`1,5`, now `1.5`), and the shell's package version
-  under `tr-TR` (`1.0.0-prevıew`, now `1.0.0-preview`).
+  under `tr-TR` (`1.0.0-prevıew`, now `1.0.0-preview`). *(Noted 2026-11-12, at review: the error messages' moves
+  were measured on trial trees before `0705e80b` and `2509c343` were committed, and no committed reading held them.
+  `probe-messages.js` now takes them from trees of the commits (`probe-messages-7581a2f6.txt`,
+  `probe-messages-2509c343.txt`, `probe-messages-88eeb895.txt`), and they move as written: under `de_DE`, `sv_SE` and
+  `tr_TR` both messages write `1,5` at `7581a2f6` and `1.5` at `2509c343` and `88eeb895`, and with no `LANG` and under
+  invariant globalization `1.5` at all three. The typed array's and `DataView`'s offset messages write the same text at
+  all three in every environment. "Outside the committed answers" is left as written; for these two messages it held
+  until this note.)*
+- *Added 2026-11-12, at review* (`answers-review.txt`, from scratch trees `git archive` wrote from `7581a2f6`,
+  `2509c343` and `88eeb895`, each built and run as above):
+  - test262 over the culture paths under `LANG=tr_TR.UTF-8` and `LANG=de_DE.UTF-8` in `America/New_York` too, which
+    the runs above took in UTC alone (`t262c-ny-*.tsv`): no case's status moves between `7581a2f6` and `2509c343`, and
+    at both commits each run answers as the committed run of the same `LANG` in UTC;
+  - `t262c-paths.txt` does not hold every path a RegExp with the `i` flag reaches outside Unicode mode: it leaves out
+    the files at the root of `test/built-ins/RegExp`, String's `match`, `matchAll`, `replace`, `replaceAll`, `search`
+    and `split`, and annexB's RegExp. `t262r-paths.txt` lists them, and test262 over them (`t262r-*.tsv`), in UTC with
+    no `LANG` and under `LANG=tr_TR.UTF-8` and `LANG=de_DE.UTF-8`, moves no case's status between the commits, and at
+    both answers under each `LANG` as with none, so the case folding's fix moves none of them either;
+  - at `88eeb895`, `probe.js`, `probe-culture.js` and `probe-sites.js` answer every line as the committed answers at
+    `2509c343` in every environment (`probe-88eeb895.txt`, `probe-culture-88eeb895.txt`, `probe-sites-88eeb895.txt`), and
+    `probe-messages.js` as at `2509c343`. The shells are builds of their own, not the bytes of the shells
+    `answers-2509c343.txt` names.
 
-| Clause | Its words | Read from, at `2509c343` | Reading, and what it rests on |
+| Clause | Its words | Read from, at `2509c343`, and at review at `88eeb895` | Reading, and what it rests on |
 |---|---|---|---|
-| 8 | "Host globalization remains only behind the optional providers." | `scan-2509c343.txt`; `searches-2509c343.txt`; `holescan-2509c343.txt`; `control-490826e3.txt`; part D's programs and `default-locale-is-supported.js` under invariant globalization, locally; the probes under their environments and the culture test262 paths under their four; the new tests | **Met as written** at `2509c343`. The analyzer build finds no site of the five rules in the engine's product projects, where the build now holds them as errors, and no site is suppressed: the paths that keep the host's culture name the culture they read, which the rules accept, and they are the kept paths the ruling names, the default-locale and host-culture providers (decisions D7 and D6), SJL-D-17's .NET format strings of `toLocaleString` and its legacy `Date.parse`, and `Intl.Collator`'s comparison, SJL-17's. The exit reading's search for named host-culture calls finds the host's culture read there and, outside the engine's code, only in a benchmark's probe of the host (section 3). The readers outside the rules' reach are fixed: every numeric parse names a format provider but the source generator's (section 4; `LambdaRewriter`'s spans lines and names it on the next), no .NET regular expression ignores case by the host's culture (section 7), and the scratch scan lists no value made text whose decimal point, date or sign a culture decides. Under invariant globalization every program answers as at the base, and under `de_DE`, `sv_SE` and `tr_TR` the probes and the culture test262 paths answer as with no `LANG` but where the default-locale provider decides. The evidence that keeps it is the enforcement: the build fails on a reintroduced reader of the five rules' kinds, as the control shows. What the rules cannot see, a `TryParse` with no format provider, a .NET `Regex` that ignores case, and a value made text by interpolation, concatenation or a writer, is held by this reading's searches at `2509c343` and by nothing after it. |
+| 8 | "Host globalization remains only behind the optional providers." | `scan-2509c343.txt`; `searches-2509c343.txt`; `holescan-2509c343.txt`; `control-490826e3.txt`; `control-88eeb895.txt`; `answers-review.txt`; part D's programs and `default-locale-is-supported.js` under invariant globalization, locally; the probes under their environments and the culture test262 paths under their four; the new tests | **Met as written** at `88eeb895`, whose code is `2509c343`'s with the banned-API rule and its suppressions. The analyzer build finds no site of the five rules in the engine's product projects, where the build now holds them as errors, and no site of theirs is suppressed: the paths that keep the host's culture name the culture they read, which the rules accept, and they are the kept paths the ruling names, the default-locale and host-culture providers (decisions D7 and D6), SJL-D-17's .NET format strings of `toLocaleString` and its legacy `Date.parse`, and `Intl.Collator`'s comparison, SJL-17's; the banned-API rule RS0030, which the build also holds, bans such a read everywhere else, and its only suppressions are at those paths (`answers-review.txt`'s search at `88eeb895`). The exit reading's search for named host-culture calls finds the host's culture read there and, outside the engine's code, only in a benchmark's probe of the host (section 3). The readers outside the rules' reach are fixed: every numeric parse names a format provider but the source generator's (section 4; `LambdaRewriter`'s spans lines and names it on the next), no .NET regular expression ignores case by the host's culture (section 7), and the scratch scan lists no value made text whose decimal point, date or sign a culture decides. Under invariant globalization every program answers as at the base, and under `de_DE`, `sv_SE` and `tr_TR` the probes and the culture test262 paths answer as with no `LANG` but where the default-locale provider decides. The evidence that keeps it is the enforcement: the build fails on a reintroduced reader of the five rules' kinds, and on a read of the host's culture by name or a .NET culture built from the host's data outside the kept paths, as the controls show. What the rules cannot see, a `TryParse` with no format provider, a .NET `Regex` that ignores case, and a value made text by interpolation, concatenation or a writer, is held by this reading's searches at `2509c343` and by nothing after it, and so is a product project outside the rules' scope, which no test names. *(Revised 2026-11-12, at review; the column read "Read from, at `2509c343`" and did not name `control-88eeb895.txt` and `answers-review.txt`, and the cell read "**Met as written** at `2509c343`.", "and no site is suppressed: the paths", "SJL-17's. The exit reading's", "the build fails on a reintroduced reader of the five rules' kinds, as the control shows." and "by nothing after it.": a read of the host's culture by name outside the kept paths, which the five rules accept, was held then by section 3's search at `2509c343` alone, and the cell did not say so.)* |
 
-**So:** clause 8 is met as written at `2509c343`: the host's globalization is read only behind the optional providers
-and on the paths the owner's ruling keeps, each of which names the culture it reads and says why it stays, and the
-engine's build holds CA1304, CA1305, CA1309, CA1310 and CA1311 as errors in its product projects, which is the evidence
-that keeps it so. This reads the clause; it declares nothing of SJL-9 met.
+**So:** clause 8 is met as written at `88eeb895`: the host's globalization is read only behind the optional providers
+and on the paths the owner's ruling keeps, each of which names the culture it reads, suppresses the banned-API rule in
+place and says why it stays, and the engine's build holds CA1304, CA1305, CA1309, CA1310 and CA1311 as errors in its
+product projects, with RS0030 over a read of the host's culture by name outside the kept paths, which is the evidence
+that keeps it so for the kinds those rules see. This reads the clause; it declares nothing of SJL-9 met. *(Revised
+2026-11-12, at review; it read "clause 8 is met as written at `2509c343`", "each of which names the culture it reads
+and says why it stays" and "in its product projects, which is the evidence that keeps it so.")*
 
 **Open items** this reading leaves, none done here:
 - the readers the five rules cannot see, which no build check holds after this reading: a numeric `TryParse` with no
   format provider, a .NET `Regex` built with `RegexOptions.IgnoreCase` and no `RegexOptions.CultureInvariant`, and a
   value made text by interpolation, concatenation, `StringBuilder.Append` or a writer. A rule of the engine's
   architecture tests over the source, or a project analyzer like the scratch scan's, could hold them; choosing is the
-  owner's;
+  owner's. *(Noted 2026-11-12, at review: a fourth kind the five rules do not see, a read of the host's culture by name
+  outside the kept paths, `CultureInfo.CurrentCulture`, `DateTimeFormatInfo.CurrentInfo`, `StringComparison` or
+  `StringComparer.CurrentCulture`, or a `GetCultureInfo` of the host's name, was held by section 3's search at
+  `2509c343` alone and was not named here; the banned-API rule of `88eeb895` holds it now, as the bullet "The rules the
+  build holds" says. The item's text above is left as written.)*;
+- the rules' scope, chosen by folder and project name, which no test asserts: an architecture test that lists the
+  product projects of `Broiler.JS.slnx` and checks that each is held could close it *(added 2026-11-12, at review)*;
 - the source generator's own prefix tests, `TryParse` calls and name ordering, which read the build machine's culture,
   not the engine host's;
 - the CLR bridge's unmarshalling of an object into a `Dictionary<,>`, which gives an empty dictionary whatever the
@@ -1400,7 +1469,10 @@ and the rules are enforced, 2026-11-12" reads clause 8 at `2509c343`: met as wri
 behind the providers and on the paths the ruling keeps, SJL-D-17's and the Collator's, and the rules the build holds
 being the evidence that keeps it so. No answer moved but answers a host culture other than the invariant one had made
 wrong, each to the invariant culture's; with no `LANG` and under invariant globalization nothing moved. The paragraphs
-above are left as written. That is no verdict on SJL-9, whose gate waits as the exit reading's paragraph says; nothing
+above are left as written. *(Noted 2026-11-12, at review: "the rules the build holds being the evidence that keeps it
+so" held for the kinds the five rules see, which do not include a read of the host's culture by name outside the kept
+paths; `88eeb895` adds the banned-API rule RS0030 over those reads, each kept path suppressing it in place with its
+reason, and the subsection now reads the clause at `88eeb895`, whose answers are `2509c343`'s.)* That is no verdict on SJL-9, whose gate waits as the exit reading's paragraph says; nothing
 is accepted.
 
 **What the bundle will hold:**

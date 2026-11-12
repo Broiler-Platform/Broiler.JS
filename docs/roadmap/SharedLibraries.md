@@ -2062,12 +2062,18 @@ reads both clauses at the change's code:
   find: numeric parses that name no format provider, a case-insensitive RegExp's .NET regular expression, and values
   made text by interpolation whose decimal point, date or minus sign a culture decided; it has tests under host
   cultures. The engine's build holds the rules CA1304, CA1305, CA1309, CA1310 and CA1311 as errors in its product
-  projects, and the paths that keep the host's culture, the providers (decisions D6 and D7), SJL-D-17's .NET format
-  strings and legacy `Date.parse`, and `Intl.Collator`'s comparison until SJL-17, name the culture they read and say
-  why they stay. The bundle's subsection "Clause 8 read again after every host-culture reader is fixed and the rules
-  are enforced, 2026-11-12" reads clause 8 met as written, the rules the build holds being the evidence that keeps it.
-  No answer moved but answers a host culture other than the invariant one had made wrong, each to the invariant
-  culture's.)*
+  projects, with the banned-API rule RS0030 over a read of the host's culture by name outside the paths that keep it,
+  and those paths, the providers (decisions D6 and D7), SJL-D-17's .NET format strings and legacy `Date.parse`, and
+  `Intl.Collator`'s comparison until SJL-17, name the culture they read, suppress that rule in place and say why they
+  stay. The bundle's subsection "Clause 8 read again after every host-culture reader is fixed and the rules are
+  enforced, 2026-11-12" reads clause 8 met as written, the rules the build holds being the evidence that keeps it for
+  the kinds they see. No answer moved but answers a host culture other than the invariant one had made wrong, each to
+  the invariant culture's.)* *(Revised 2026-11-12, at review of that note; from "in its product projects" it read "in
+  its product projects, and the paths that keep the host's culture, the providers (decisions D6 and D7), SJL-D-17's
+  .NET format strings and legacy `Date.parse`, and `Intl.Collator`'s comparison until SJL-17, name the culture they
+  read and say why they stay", and it ended "the rules the build holds being the evidence that keeps it."; the five
+  rules accept a read of the host's culture by name, so a new one outside those paths built until the banned-API rule,
+  and the owner's ruling asks for each kept path "suppressed with its reason".)*
 - **Nothing else moved**: the engine vectors, test262's `supportedValuesOf` directory and part C's and part D's programs
   answer at the change as at its base, the currency and unit lists among them, and `toLocaleString`'s answers move as
   the changelog lists them.

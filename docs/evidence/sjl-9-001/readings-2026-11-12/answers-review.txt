@@ -1,0 +1,83 @@
+# SJL-9 clause 8, the answers taken at review (2026-11-12) of branch js-c78's change for the owner's ruling of 2026-11-11,
+# "Fix all + enforce": at 7581a2f6 (the change's base), 2509c343 (the code the subsection first read) and 88eeb895 (the
+# banned-API rule, its suppressions and the scope property's fix, no executable code). Each from a scratch tree git archive
+# wrote from the commit (docs/evidence left out), Broiler.JS/Broiler.JavaScript built in Release with --disable-build-servers
+# by the .NET SDK 10.0.404, one run at a time on an idle machine, TZ as named, LANG unset unless named.
+# Shell BroilerJS.dll at 7581a2f6a3a4586dbcae7de1cb5aba7fc25974ee: 868678977582656e81034fbe28aff5c063202bee21d47f1439251b489f4a7edf; a build of its own, not the bytes of answers-2509c343.txt's shell at that commit (e5bf5c8588dd3b22...)
+# Shell BroilerJS.dll at 2509c3430e16d4622abbbe8dbafdeaa2cd01cb3d: 79a87d1ba406f9419b33928b77efa65c41cf54bdade6d7a52434e2bd8840d91d; a build of its own, not the bytes of answers-2509c343.txt's shell at that commit (56e1cc3e20437f3e...)
+# Shell BroilerJS.dll at 88eeb895cf75830ba947e5f581ae589b1e2ce71d: 7dc2c32f37b15db5d8b1d17061cf8fa2ffdda88ab6aa3d047e60fa809493e545
+
+## The banned-API rule's suppressions at 88eeb895 (git grep -n 'pragma warning disable RS0030' over the tree's C# files): each is a kept path
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDatePrototype.Formatters.cs:170:#pragma warning disable RS0030 // Kept: toLocaleString's .NET format-string extension reads the host's culture (SJL-D-17).
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCultureLocaleData.cs:240:#pragma warning disable RS0030 // Kept: the host-culture provider reads the host's data for a locale it lists (decision D6).
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCultureLocaleData.cs:383:#pragma warning disable RS0030 // Kept: the host-culture provider lists the host's cultures (decision D6).
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2702:#pragma warning disable RS0030 // Kept: Intl.Collator's comparison reads the host's collation data until SJL-17 (SJL-D-24 (c)).
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlLocaleProviders.cs:69:#pragma warning disable RS0030 // Kept: the default-locale provider reads the host's culture (decision D7).
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumberPrototype.cs:278:#pragma warning disable RS0030 // Kept: toLocaleString's .NET format-string extension reads the host's culture (SJL-D-17).
+  Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:254:#pragma warning disable RS0030 // Kept: the legacy Date.parse's fallback reads the host's culture (SJL-D-17).
+## Other suppressions of the five rules or of RS0030 at 88eeb895 (SuppressMessage, NoWarn, pragma, severity none/silent/suggestion/warning)
+  none
+
+## probe-messages.js (probe-messages-*.txt): per environment, each line at the three commits
+TZ=UTC, LANG unset:
+  String.fromCodePoint(1.5): 7581a2f6 'throws RangeError: Invalid code point 1.5'; 2509c343 'throws RangeError: Invalid code point 1.5'; 88eeb895 as 2509c343
+  var n = 1.5; n(): 7581a2f6 'throws TypeError: 1.5 is not a function'; 2509c343 'throws TypeError: 1.5 is not a function'; 88eeb895 as 2509c343
+  new Uint16Array(new ArrayBuffer(8), 3): 7581a2f6 'throws RangeError: Start offset 3 is outside the bounds of the buffer'; 2509c343 'throws RangeError: Start offset 3 is outside the bounds of the buffer'; 88eeb895 as 2509c343
+  new DataView(new ArrayBuffer(2)).getInt32(0): 7581a2f6 'throws RangeError: Offset 0 is outside the bounds of DataView'; 2509c343 'throws RangeError: Offset 0 is outside the bounds of DataView'; 88eeb895 as 2509c343
+  /I/i.test('i'), /i/i.test('\u0130'), /I/iu.test('i'): 7581a2f6 'true,false,true'; 2509c343 'true,false,true'; 88eeb895 as 2509c343
+TZ=UTC, LANG=de_DE.UTF-8:
+  String.fromCodePoint(1.5): 7581a2f6 'throws RangeError: Invalid code point 1,5'; 2509c343 'throws RangeError: Invalid code point 1.5' (moved); 88eeb895 as 2509c343
+  var n = 1.5; n(): 7581a2f6 'throws TypeError: 1,5 is not a function'; 2509c343 'throws TypeError: 1.5 is not a function' (moved); 88eeb895 as 2509c343
+  new Uint16Array(new ArrayBuffer(8), 3): 7581a2f6 'throws RangeError: Start offset 3 is outside the bounds of the buffer'; 2509c343 'throws RangeError: Start offset 3 is outside the bounds of the buffer'; 88eeb895 as 2509c343
+  new DataView(new ArrayBuffer(2)).getInt32(0): 7581a2f6 'throws RangeError: Offset 0 is outside the bounds of DataView'; 2509c343 'throws RangeError: Offset 0 is outside the bounds of DataView'; 88eeb895 as 2509c343
+  /I/i.test('i'), /i/i.test('\u0130'), /I/iu.test('i'): 7581a2f6 'true,true,true'; 2509c343 'true,false,true' (moved); 88eeb895 as 2509c343
+TZ=UTC, LANG=sv_SE.UTF-8:
+  String.fromCodePoint(1.5): 7581a2f6 'throws RangeError: Invalid code point 1,5'; 2509c343 'throws RangeError: Invalid code point 1.5' (moved); 88eeb895 as 2509c343
+  var n = 1.5; n(): 7581a2f6 'throws TypeError: 1,5 is not a function'; 2509c343 'throws TypeError: 1.5 is not a function' (moved); 88eeb895 as 2509c343
+  new Uint16Array(new ArrayBuffer(8), 3): 7581a2f6 'throws RangeError: Start offset 3 is outside the bounds of the buffer'; 2509c343 'throws RangeError: Start offset 3 is outside the bounds of the buffer'; 88eeb895 as 2509c343
+  new DataView(new ArrayBuffer(2)).getInt32(0): 7581a2f6 'throws RangeError: Offset 0 is outside the bounds of DataView'; 2509c343 'throws RangeError: Offset 0 is outside the bounds of DataView'; 88eeb895 as 2509c343
+  /I/i.test('i'), /i/i.test('\u0130'), /I/iu.test('i'): 7581a2f6 'true,true,true'; 2509c343 'true,false,true' (moved); 88eeb895 as 2509c343
+TZ=UTC, LANG=tr_TR.UTF-8:
+  String.fromCodePoint(1.5): 7581a2f6 'throws RangeError: Invalid code point 1,5'; 2509c343 'throws RangeError: Invalid code point 1.5' (moved); 88eeb895 as 2509c343
+  var n = 1.5; n(): 7581a2f6 'throws TypeError: 1,5 is not a function'; 2509c343 'throws TypeError: 1.5 is not a function' (moved); 88eeb895 as 2509c343
+  new Uint16Array(new ArrayBuffer(8), 3): 7581a2f6 'throws RangeError: Start offset 3 is outside the bounds of the buffer'; 2509c343 'throws RangeError: Start offset 3 is outside the bounds of the buffer'; 88eeb895 as 2509c343
+  new DataView(new ArrayBuffer(2)).getInt32(0): 7581a2f6 'throws RangeError: Offset 0 is outside the bounds of DataView'; 2509c343 'throws RangeError: Offset 0 is outside the bounds of DataView'; 88eeb895 as 2509c343
+  /I/i.test('i'), /i/i.test('\u0130'), /I/iu.test('i'): 7581a2f6 'false,true,true'; 2509c343 'true,false,true' (moved); 88eeb895 as 2509c343
+TZ=UTC, LANG unset, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1:
+  String.fromCodePoint(1.5): 7581a2f6 'throws RangeError: Invalid code point 1.5'; 2509c343 'throws RangeError: Invalid code point 1.5'; 88eeb895 as 2509c343
+  var n = 1.5; n(): 7581a2f6 'throws TypeError: 1.5 is not a function'; 2509c343 'throws TypeError: 1.5 is not a function'; 88eeb895 as 2509c343
+  new Uint16Array(new ArrayBuffer(8), 3): 7581a2f6 'throws RangeError: Start offset 3 is outside the bounds of the buffer'; 2509c343 'throws RangeError: Start offset 3 is outside the bounds of the buffer'; 88eeb895 as 2509c343
+  new DataView(new ArrayBuffer(2)).getInt32(0): 7581a2f6 'throws RangeError: Offset 0 is outside the bounds of DataView'; 2509c343 'throws RangeError: Offset 0 is outside the bounds of DataView'; 88eeb895 as 2509c343
+  /I/i.test('i'), /i/i.test('\u0130'), /I/iu.test('i'): 7581a2f6 'true,false,true'; 2509c343 'true,false,true'; 88eeb895 as 2509c343
+
+## probe.js, probe-culture.js and probe-sites.js at 88eeb895 against the committed answers at 2509c343, header lines aside
+  probe.js: 120 lines at 88eeb895, 120 at 2509c343; lines that differ: 0
+  probe-culture.js: 88 lines at 88eeb895, 88 at 2509c343; lines that differ: 0
+  probe-sites.js: 225 lines at 88eeb895, 225 at 2509c343; lines that differ: 0
+
+## test262 ccaac100, the culture paths (t262c-paths.txt) under tr_TR and de_DE in America/New_York, original and terser, --include-negative, per environment
+tr_TR-NY 7581a2f6: 3282 cases; failed 137, passed 2824, skipped 321
+tr_TR-NY 2509c343: 3282 cases; failed 137, passed 2824, skipped 321
+  cases whose status differs between 7581a2f6 and 2509c343 in tr_TR-NY: 0
+de_DE-NY 7581a2f6: 3282 cases; failed 127, passed 2834, skipped 321
+de_DE-NY 2509c343: 3282 cases; failed 127, passed 2834, skipped 321
+  cases whose status differs between 7581a2f6 and 2509c343 in de_DE-NY: 0
+7581a2f6, tr_TR-NY: cases whose status differs from the committed tr_TR-UTC run's (t262c-7581a2f6.tsv): 0
+7581a2f6, de_DE-NY: cases whose status differs from the committed de_DE-UTC run's (t262c-7581a2f6.tsv): 0
+2509c343, tr_TR-NY: cases whose status differs from the committed tr_TR-UTC run's (t262c-2509c343.tsv): 0
+2509c343, de_DE-NY: cases whose status differs from the committed de_DE-UTC run's (t262c-2509c343.tsv): 0
+
+## test262 ccaac100, the RegExp paths t262c-paths.txt leaves out (t262r-paths.txt), original and terser, --include-negative, per environment
+nolang-UTC 7581a2f6: 1776 cases; failed 2, passed 1774
+nolang-UTC 2509c343: 1776 cases; failed 2, passed 1774
+  cases whose status differs between 7581a2f6 and 2509c343 in nolang-UTC: 0
+tr_TR-UTC 7581a2f6: 1776 cases; failed 2, passed 1774
+tr_TR-UTC 2509c343: 1776 cases; failed 2, passed 1774
+  cases whose status differs between 7581a2f6 and 2509c343 in tr_TR-UTC: 0
+de_DE-UTC 7581a2f6: 1776 cases; failed 2, passed 1774
+de_DE-UTC 2509c343: 1776 cases; failed 2, passed 1774
+  cases whose status differs between 7581a2f6 and 2509c343 in de_DE-UTC: 0
+7581a2f6, tr_TR-UTC: cases whose status differs from nolang-UTC's: 0
+7581a2f6, de_DE-UTC: cases whose status differs from nolang-UTC's: 0
+2509c343, tr_TR-UTC: cases whose status differs from nolang-UTC's: 0
+2509c343, de_DE-UTC: cases whose status differs from nolang-UTC's: 0
