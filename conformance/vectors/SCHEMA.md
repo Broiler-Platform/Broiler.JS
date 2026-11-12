@@ -133,7 +133,15 @@ the Intl vectors whose Broiler.JS expectation is one of decision D5's extra loca
 only where the host's ICU lists a culture for the locale, since its available locales are the host's cultures
 (decision D7 of Broiler.VM's JSD-0082, as the owner kept it that day). Until then the paragraph above was the whole
 rule for an `impl-defined` vector: "the plan commits the engine to it, and the engine does not do it yet", and a
-divergence field held "a link to the plan that answers it".)*
+divergence field held "a link to the plan that answers it".)* *(Noted 2026-11-12, at corpus revision 39, on the
+owner's decision of that day, asked and answered, "Keep as revision 39 has it" (not taken: "Keep both under D7" and
+"Retire both"). The sentence "The field classifies any differing outcome on every host (section 8), so on a host that
+provides what the expectation needs a match is reported as the divergence no longer holding, and a later difference
+there would be classified too" keeps a field whose reason names the hosts by a locale they list or lack, and not one
+whose reason names a CI host: such a field retires once this repository's CI runs no host of that name, as revision 39
+retires the Intl area's `js-n3c-cldr-ci-ubuntu`. A field whose reason names a locale that no CI host lists stays under
+decision D7, since a host that lists that locale could show its difference, as revision 39 keeps `js-t10-shaw` and
+`js-t10-t12-shaw`.)*
 
 A vector an engine fails is never deleted or reclassified to make it pass. A classification change
 is a dated entry in [REVISIONS.md](REVISIONS.md), in a new corpus revision.
