@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -77,7 +78,11 @@ internal static class HostCultureProjects
     [
         "BroilerHostCultureRules", "IsTestProject", "EnforceExtendedAnalyzerRules", "AssemblyName", "OutputType",
         "LangVersion", "DefineConstants", "Nullable", "AllowUnsafeBlocks", "TargetPath", "TargetFramework", "ProjectAssetsFile",
+        "NoWarn", "RunAnalyzers", "RunAnalyzersDuringBuild",
     ];
+
+    /// <summary>The rules the build holds over the product projects, which no product project may silence by its own configuration.</summary>
+    internal static readonly string[] HostCultureRules = ["CA1304", "CA1305", "CA1309", "CA1310", "CA1311", "RS0030"];
 
     internal static readonly string[] EvaluatedItems =
     [
@@ -90,6 +95,24 @@ internal static class HostCultureProjects
     /// <summary>The configuration this test assembly was built in, which the evaluation and the read build outputs use.</summary>
     internal static string Configuration { get; } = new DirectoryInfo(AppContext.BaseDirectory).Parent!.Name;
 
+    /// <summary>
+    /// The configuration whose preprocessor symbols the reading also parses each product project's sources with: Debug when
+    /// the test is built in Release and Release when it is built in Debug (Debug-Linux for Release-Linux, and so on), so that
+    /// code under <c>#if DEBUG</c> or <c>#if RELEASE</c> is read whichever the test is built in.
+    /// </summary>
+    internal static string OtherConfiguration { get; } = Other(Configuration);
+
+    private static string Other(string configuration) =>
+        configuration.StartsWith("Release", StringComparison.OrdinalIgnoreCase) ? "Debug" + configuration["Release".Length..]
+        : configuration.StartsWith("Debug", StringComparison.OrdinalIgnoreCase) ? "Release" + configuration["Debug".Length..]
+        : "Debug";
+
+    /// <summary>A project's preprocessor symbols in <paramref name="configuration"/>, as MSBuild evaluates them.</summary>
+    internal static string[] DefinesIn(EvaluatedProject project, string configuration) =>
+        Defines(EvaluateOne(project.Path, configuration, ["DefineConstants", "BroilerHostCultureRules"], []).Property("DefineConstants"));
+
+    internal static string[] Defines(string value) =>
+        [.. value.Split([';', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
     internal static string GlobalConfig => System.IO.Path.Combine(Root, EngineFolder, "host-culture.globalconfig");
 
     internal static string BannedSymbols => System.IO.Path.Combine(Root, EngineFolder, "BannedSymbols.HostCulture.txt");
@@ -169,6 +192,8 @@ internal static class HostCultureProjects
                     yield return relative + " is a product project and the compiler is not given host-culture.globalconfig";
                 if (!banned || !analyzer)
                     yield return relative + " is a product project and the banned-API analyzer does not read BannedSymbols.HostCulture.txt";
+                foreach (var silenced in Silenced(project, globalConfig))
+                    yield return relative + " is a product project and " + silenced;
                 continue;
             }
 
@@ -190,6 +215,47 @@ internal static class HostCultureProjects
 
     }
 
+    /// <summary>
+    /// Each way a product project's own configuration silences a host-culture rule: <c>NoWarn</c> naming it, analyzers turned
+    /// off, or a severity for it in an analyzer config other than <c>host-culture.globalconfig</c>, a global one the project
+    /// is given or an <c>.editorconfig</c> at or above its folder.
+    /// </summary>
+    internal static IEnumerable<string> Silenced(EvaluatedProject project, string globalConfig)
+    {
+        var noWarn = Defines(project.Property("NoWarn"));
+        foreach (var rule in HostCultureRules.Where(r => noWarn.Contains(r, StringComparer.OrdinalIgnoreCase)))
+            yield return "NoWarn names " + rule;
+        foreach (var switchName in (string[])["RunAnalyzers", "RunAnalyzersDuringBuild"])
+        {
+            if (string.Equals(project.Property(switchName).Trim(), "false", StringComparison.OrdinalIgnoreCase))
+                yield return switchName + " is false";
+        }
+
+        var configs = project.FullPaths("GlobalAnalyzerConfigFiles").Where(p => !string.Equals(p, globalConfig, StringComparison.Ordinal)).ToList();
+        for (var directory = new DirectoryInfo(System.IO.Path.GetDirectoryName(project.Path)!); directory is not null; directory = directory.Parent)
+        {
+            var editorConfig = System.IO.Path.Combine(directory.FullName, ".editorconfig");
+            if (!File.Exists(editorConfig))
+                continue;
+            configs.Add(editorConfig);
+            if (File.ReadLines(editorConfig).Any(static l => Regex.IsMatch(l, @"^\s*root\s*=\s*true\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)))
+                break;
+        }
+
+        foreach (var config in configs.Where(File.Exists))
+        {
+            var number = 0;
+            foreach (var line in File.ReadLines(config))
+            {
+                number++;
+                var entry = Regex.Match(line, @"^\s*dotnet_(analyzer_)?diagnostic\.([^.\s]+)\.severity\s*=", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                if (entry.Success && (HostCultureRules.Contains(entry.Groups[2].Value, StringComparer.OrdinalIgnoreCase)
+                    || string.Equals(entry.Groups[2].Value, "category-Globalization", StringComparison.OrdinalIgnoreCase)))
+                    yield return Relative(config) + ":" + number.ToString(System.Globalization.CultureInfo.InvariantCulture) + " sets a severity for " + entry.Groups[2].Value;
+            }
+        }
+    }
+
     internal static bool IsTrue(string value) => string.Equals(value.Trim(), "true", StringComparison.OrdinalIgnoreCase);
 
     private static string Shown(string value) => value.Length == 0 ? "(empty)" : value;
@@ -203,7 +269,7 @@ internal static class HostCultureProjects
         {
             try
             {
-                results[path] = EvaluateOne(path);
+                results[path] = EvaluateOne(path, Configuration, EvaluatedProperties, EvaluatedItems);
             }
             catch (InvalidOperationException exception)
             {
@@ -215,14 +281,15 @@ internal static class HostCultureProjects
         return [.. paths.Select(p => results[p])];
     }
 
-    private static EvaluatedProject EvaluateOne(string path)
+    /// <summary>One project's evaluation; at least two properties are asked for, so that MSBuild answers in JSON.</summary>
+    private static EvaluatedProject EvaluateOne(string path, string configuration, IReadOnlyList<string> properties, IReadOnlyList<string> itemNames)
     {
-        var arguments = new List<string> { "msbuild", path, "-nologo", "-p:Configuration=" + Configuration };
-        arguments.AddRange(EvaluatedProperties.Select(static p => "-getProperty:" + p));
-        arguments.AddRange(EvaluatedItems.Select(static i => "-getItem:" + i));
+        var arguments = new List<string> { "msbuild", path, "-nologo", "-p:Configuration=" + configuration };
+        arguments.AddRange(properties.Select(static p => "-getProperty:" + p));
+        arguments.AddRange(itemNames.Select(static i => "-getItem:" + i));
         var output = Run(arguments, System.IO.Path.GetDirectoryName(path)!);
         using var json = JsonDocument.Parse(output);
-        var properties = json.RootElement.GetProperty("Properties").EnumerateObject()
+        var values = json.RootElement.GetProperty("Properties").EnumerateObject()
             .ToDictionary(static p => p.Name, static p => p.Value.GetString() ?? string.Empty, StringComparer.Ordinal);
         var items = new Dictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>>(StringComparer.Ordinal);
         if (json.RootElement.TryGetProperty("Items", out var itemTypes))
@@ -234,7 +301,7 @@ internal static class HostCultureProjects
             }
         }
 
-        return new EvaluatedProject(path, properties, items);
+        return new EvaluatedProject(path, values, items);
     }
 
     private static string Dotnet => Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") is { Length: > 0 } host ? host : "dotnet";

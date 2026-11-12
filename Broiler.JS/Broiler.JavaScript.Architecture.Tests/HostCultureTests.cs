@@ -21,10 +21,14 @@ namespace Broiler.JavaScript.Architecture.Tests;
 /// folds case without <c>RegexOptions.CultureInvariant</c>, and an interpolated string, <c>string.Format</c> or
 /// <c>StringBuilder.AppendFormat</c> that makes a number, a date or another formattable value text with no provider, culture
 /// or invariant format. This test finds them by
-/// Roslyn's semantic model over each product project's own sources, compiled in memory as its build compiles them; a kept
-/// path is exempt only inside the <c>#pragma warning disable RS0030 // Kept: …</c> region the RS0030 suppressions use. It
-/// also asserts, by MSBuild's own evaluation of each project, that every product project is in the rules' scope and that
-/// every test, benchmark, sample and tool project is outside it.
+/// Roslyn's semantic model over each product project's own sources, compiled in memory as its build compiles them, and
+/// read again under the other configuration's preprocessor symbols where a source's code differs there (Debug when the
+/// test is built in Release); a kept path is exempt only inside the <c>#pragma warning disable RS0030 // Kept: …</c>
+/// region the RS0030 suppressions use, and no product source may silence RS0030 another way. It also asserts, by
+/// MSBuild's own evaluation of each project, that every product project is in the rules' scope, silencing none of the
+/// rules by its own configuration, and that every test, benchmark, sample and tool project is outside it. The reading
+/// costs most of the engine architecture tests' time: one <c>dotnet msbuild</c> process per project, four at a time, and an
+/// in-memory compilation of every product project with its source generator.
 /// </remarks>
 public sealed class HostCultureTests(ITestOutputHelper output)
 {
@@ -57,7 +61,11 @@ public sealed class HostCultureTests(ITestOutputHelper output)
             .ToString());
     }
 
-    /// <summary>Non-vacuity: the reading compiles each product project of the solution as its build does, with no error.</summary>
+    /// <summary>
+    /// Non-vacuity: the reading compiles each product project of the solution as its build does, with no syntax or
+    /// declaration error and no error in a source it binds (a source it does not bind holds no node a reader could be), and
+    /// reads in the other configuration too each source whose code differs there.
+    /// </summary>
     [Fact]
     public void The_reading_compiles_every_product_project_of_the_solution_without_an_error()
     {
@@ -68,6 +76,8 @@ public sealed class HostCultureTests(ITestOutputHelper output)
             var relative = HostCultureProjects.Relative(reading.Project.Path);
             output.WriteLine(relative + ": " + reading.Sources + " source(s), " + reading.Generated + " generated, "
                 + reading.Errors.Count + " error(s), " + reading.Findings.Count + " reader(s)");
+            foreach (var other in reading.ReadInOtherConfiguration)
+                output.WriteLine("  read in " + HostCultureProjects.OtherConfiguration + " too: " + other);
             if (inSolution.Contains(reading.Project.Path))
             {
                 if (reading.Errors.Count > 0)
@@ -83,12 +93,14 @@ public sealed class HostCultureTests(ITestOutputHelper output)
         Assert.True(failures.Count == 0, string.Join("\n  ", failures));
         Assert.Contains(Readings.Value, static r => r.Project.Name == "Broiler.JavaScript.BuiltIns" && r.Sources > 0 && r.Generated > 0);
         Assert.Contains(Readings.Value, static r => r.Project.Name == "Broiler.JavaScript.Runtime" && r.Sources > 0);
+        Assert.Contains(Readings.Value, static r => r.ReadInOtherConfiguration.Count > 0);
     }
 
     /// <summary>
     /// The kept paths the reading exempts are the RS0030 suppressions of the paths the ruling of 2026-11-11 keeps, in the
     /// form the owner accepted on 2026-11-12 ("Accept RS0030 form"): every <c>#pragma warning disable RS0030</c> in a product
-    /// project opens a kept path, naming its reason.
+    /// project opens a kept path, naming its reason, and no product source silences RS0030 any other way (a
+    /// <c>#pragma warning disable</c> that names no code, or a <c>SuppressMessage</c> of RS0030).
     /// </summary>
     [Fact]
     public void Every_RS0030_suppression_in_a_product_project_is_a_kept_path_and_the_reading_finds_them()
@@ -99,6 +111,8 @@ public sealed class HostCultureTests(ITestOutputHelper output)
             output.WriteLine("kept path: " + path);
         Assert.NotEmpty(kept);
         Assert.Equal(suppressions, kept);
+        var others = Readings.Value.SelectMany(static r => r.OtherSuppressions).Order(StringComparer.Ordinal).ToList();
+        Assert.True(others.Count == 0, "Product sources silence RS0030 outside the kept-path form:\n  " + string.Join("\n  ", others));
     }
 
     [Theory]
@@ -116,6 +130,19 @@ public sealed class HostCultureTests(ITestOutputHelper output)
         Assert.NotEmpty(refused[kind]);
         Assert.Equal(refused[kind], found.Where(static f => !f.Kept).Select(static f => f.Line).Distinct().Order());
         Assert.Equal(kept[kind], found.Where(static f => f.Kept).Select(static f => f.Line).Distinct().Order());
+    }
+
+    [Fact]
+    public void The_witness_silencing_RS0030_outside_the_kept_path_form_is_refused_on_exactly_its_marked_lines()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "witnesses", "host-culture-readers.cs.witness");
+        var lines = File.ReadAllLines(path);
+        var marked = Enumerable.Range(1, lines.Length).Where(n => lines[n - 1].TrimEnd().EndsWith("// silences: RS0030", StringComparison.Ordinal)).ToList();
+        var found = HostCultureReaders.OtherRs0030Suppressions(CSharpSyntaxTree.ParseText(File.ReadAllText(path), cancellationToken: TestContext.Current.CancellationToken).GetRoot(TestContext.Current.CancellationToken)).ToList();
+        foreach (var (line, form) in found)
+            output.WriteLine(line + ": " + form);
+        Assert.NotEmpty(marked);
+        Assert.Equal(marked, found.Select(static f => f.Line).Order());
     }
 
     [Fact]
@@ -167,6 +194,37 @@ public sealed class HostCultureTests(ITestOutputHelper output)
                 "Broiler.JS/samples/Widget/Widget.csproj is listed as a sample and the product project Broiler.JS/Broiler.JavaScript.Widget/Broiler.JavaScript.Widget.csproj references it",
             ],
             violations);
+    }
+
+    [Fact]
+    public void The_scope_refuses_a_product_project_that_silences_a_host_culture_rule()
+    {
+        var config = Path.Combine(Path.GetTempPath(), "host-culture-silenced-" + Guid.NewGuid().ToString("N") + ".globalconfig");
+        File.WriteAllLines(config, ["is_global = true", "dotnet_diagnostic.RS0030.severity = none"]);
+        try
+        {
+            var given = Synthetic("Broiler.JS/Broiler.JavaScript.Widget/Broiler.JavaScript.Widget.csproj", "true", isTest: false, given: true);
+            var properties = new Dictionary<string, string>(given.Properties, StringComparer.Ordinal) { ["NoWarn"] = "CS1591;CA1305", ["RunAnalyzersDuringBuild"] = "false" };
+            var items = new Dictionary<string, IReadOnlyList<IReadOnlyDictionary<string, string>>>(given.Items, StringComparer.Ordinal)
+            {
+                ["GlobalAnalyzerConfigFiles"] =
+                [
+                    new Dictionary<string, string>(StringComparer.Ordinal) { ["Identity"] = "host-culture.globalconfig", ["FullPath"] = HostCultureProjects.GlobalConfig },
+                    new Dictionary<string, string>(StringComparer.Ordinal) { ["Identity"] = config, ["FullPath"] = config },
+                ],
+            };
+            var violations = HostCultureProjects.ScopeViolations([given with { Properties = properties, Items = items }], [], HostCultureProjects.GlobalConfig, HostCultureProjects.BannedSymbols).ToList();
+            foreach (var violation in violations)
+                output.WriteLine(violation);
+            Assert.Equal(3, violations.Count);
+            Assert.Contains(violations, static v => v.EndsWith("is a product project and NoWarn names CA1305", StringComparison.Ordinal));
+            Assert.Contains(violations, static v => v.EndsWith("is a product project and RunAnalyzersDuringBuild is false", StringComparison.Ordinal));
+            Assert.Contains(violations, static v => v.EndsWith(":2 sets a severity for RS0030", StringComparison.Ordinal));
+        }
+        finally
+        {
+            File.Delete(config);
+        }
     }
 
     private static EvaluatedProject Synthetic(string relative, string rules, bool isTest, bool given, string? references = null)

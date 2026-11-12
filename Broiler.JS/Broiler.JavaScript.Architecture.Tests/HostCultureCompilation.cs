@@ -9,6 +9,7 @@ using System.Runtime.Loader;
 using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Broiler.JavaScript.Architecture.Tests;
@@ -21,13 +22,17 @@ internal sealed record ProjectReading(
     IReadOnlyList<string> Errors,
     IReadOnlyList<ReaderFinding> Findings,
     IReadOnlyList<string> Kept,
-    IReadOnlyList<string> Suppressions);
+    IReadOnlyList<string> Suppressions,
+    IReadOnlyList<string> OtherSuppressions,
+    IReadOnlyList<string> ReadInOtherConfiguration);
 
 /// <summary>
 /// Compiles a product project in memory as its build does: its <c>Compile</c> items, language version, preprocessor
 /// symbols, nullable context, unsafe switch, assembly name and source generators, all as MSBuild evaluates them, against
 /// the platform's assemblies and the compile assets of its restore (the test project references every product project of
-/// the solution and the source generator, so that their builds exist when it runs).
+/// the solution and the source generator, so that their builds exist when it runs). A source whose code differs under the
+/// other configuration's preprocessor symbols (<see cref="HostCultureProjects.OtherConfiguration"/>, as MSBuild evaluates
+/// them) is read under those too, in a second compilation that differs from the first by those sources alone.
 /// </summary>
 internal static class HostCultureCompilation
 {
@@ -35,7 +40,7 @@ internal static class HostCultureCompilation
 
     internal static ProjectReading Read(EvaluatedProject project, IReadOnlyList<EvaluatedProject> all)
     {
-        var parse = new CSharpParseOptions(Language(project.Property("LangVersion")), preprocessorSymbols: Defines(project));
+        var parse = new CSharpParseOptions(Language(project.Property("LangVersion")), preprocessorSymbols: HostCultureProjects.Defines(project.Property("DefineConstants")));
         var sources = project.FullPaths("Compile")
             .Where(static p => p.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
             .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)
@@ -53,38 +58,81 @@ internal static class HostCultureCompilation
                 : OutputKind.DynamicallyLinkedLibrary,
             nullableContextOptions: Nullable(project.Property("Nullable")),
             allowUnsafe: HostCultureProjects.IsTrue(project.Property("AllowUnsafeBlocks")));
-        Compilation compilation = CSharpCompilation.Create(name, sources, References(project, all), options);
-
+        var source = CSharpCompilation.Create(name, sources, References(project, all), options);
         var generators = Generators(project, all);
-        if (generators.Count > 0)
-        {
-            CSharpGeneratorDriver.Create(generators, parseOptions: parse).RunGeneratorsAndUpdateCompilation(compilation, out var updated, out _);
-            compilation = updated;
-        }
+        GeneratorDriver? driver = generators.Count > 0 ? CSharpGeneratorDriver.Create(generators, parseOptions: parse) : null;
+        var compilation = Generate(ref driver, source);
 
-        var errors = compilation.GetDiagnostics()
+        // The errors asserted are the compilation's syntax and declaration errors, every source and generated source's, and
+        // the errors of each source the reading binds, bodies included; a source the reading does not bind, which holds no
+        // node a reader could be, is not bound for its bodies' errors (the engine's generated Unicode tables alone would
+        // take most of the test's time).
+        static string PathOf(SyntaxTree tree) => HostCultureProjects.Relative(tree.FilePath);
+        var findings = HostCultureReaders.Read(compilation, sources, PathOf, out var boundErrors);
+        var errors = compilation.GetParseDiagnostics().Concat(compilation.GetDeclarationDiagnostics())
             .Where(static d => d.Severity == DiagnosticSeverity.Error)
             .Select(static d => d.ToString())
+            .Concat(boundErrors)
+            .Distinct(StringComparer.Ordinal)
             .ToList();
-        var findings = HostCultureReaders.Read(compilation, sources, static tree => HostCultureProjects.Relative(tree.FilePath));
         var kept = new List<string>();
         var suppressions = new List<string>();
+        var others = new List<string>();
         foreach (var tree in sources)
         {
-            var path = HostCultureProjects.Relative(tree.FilePath);
+            var path = PathOf(tree);
             var root = tree.GetRoot();
             kept.AddRange(HostCultureReaders.KeptRegions(root).Select(r => path + ":" + r.Start.ToString(CultureInfo.InvariantCulture)));
             suppressions.AddRange(HostCultureReaders.Rs0030Disables(root).Select(line => path + ":" + line.ToString(CultureInfo.InvariantCulture)));
+            others.AddRange(HostCultureReaders.OtherRs0030Suppressions(root).Select(s => path + ":" + s.Line.ToString(CultureInfo.InvariantCulture) + ": " + s.Form));
         }
 
-        return new ProjectReading(project, sources.Count, compilation.SyntaxTrees.Count() - sources.Count, errors, findings, kept, suppressions);
+        // The other configuration: only a source with a conditional directive can read differently, and only those whose
+        // code (their tokens, not their trivia) differs are parsed again and read again.
+        var differing = new List<(SyntaxTree Release, SyntaxTree Other)>();
+        if (sources.Any(static t => HasConditional(t)))
+        {
+            var otherParse = parse.WithPreprocessorSymbols(HostCultureProjects.DefinesIn(project, HostCultureProjects.OtherConfiguration));
+            foreach (var tree in sources.Where(static t => HasConditional(t)))
+            {
+                var other = CSharpSyntaxTree.ParseText(tree.GetText(), otherParse, tree.FilePath);
+                if (!other.GetRoot().DescendantTokens().Select(static t => t.Text).SequenceEqual(tree.GetRoot().DescendantTokens().Select(static t => t.Text), StringComparer.Ordinal))
+                    differing.Add((tree, other));
+            }
+
+            if (differing.Count > 0)
+            {
+                var otherSource = differing.Aggregate((Compilation)source, static (c, d) => c.ReplaceSyntaxTree(d.Release, d.Other));
+                driver = driver?.WithUpdatedParseOptions(otherParse);
+                var otherCompilation = Generate(ref driver, otherSource);
+                var configuration = " (in " + HostCultureProjects.OtherConfiguration + ")";
+                var known = findings.Select(static f => (f.Path, f.Line, f.Kind)).ToHashSet();
+                findings.AddRange(HostCultureReaders.Read(otherCompilation, differing.Select(static d => d.Other), PathOf, out var otherErrors)
+                    .Where(f => !known.Contains((f.Path, f.Line, f.Kind)))
+                    .Select(f => f with { Detail = f.Detail + configuration }));
+                errors.AddRange(otherCompilation.GetDeclarationDiagnostics().Where(static d => d.Severity == DiagnosticSeverity.Error)
+                    .Select(static d => d.ToString()).Concat(otherErrors).Distinct(StringComparer.Ordinal).Except(errors, StringComparer.Ordinal)
+                    .Select(e => e + configuration).ToList());
+            }
+        }
+
+        return new ProjectReading(project, sources.Count, compilation.SyntaxTrees.Count() - sources.Count, errors, findings, kept, suppressions, others,
+            [.. differing.Select(d => PathOf(d.Release))]);
     }
+
+    private static Compilation Generate(ref GeneratorDriver? driver, Compilation compilation)
+    {
+        if (driver is null)
+            return compilation;
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updated, out _);
+        return updated;
+    }
+
+    private static bool HasConditional(SyntaxTree tree) =>
+        HostCultureReaders.Directives(tree.GetRoot()).Any(static d => d is IfDirectiveTriviaSyntax or ElifDirectiveTriviaSyntax);
 
     private static LanguageVersion Language(string value) =>
         LanguageVersionFacts.TryParse(value, out var version) ? version : LanguageVersion.Latest;
-
-    private static string[] Defines(EvaluatedProject project) =>
-        [.. project.Property("DefineConstants").Split([';', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
 
     private static NullableContextOptions Nullable(string value) => value.Trim().ToLowerInvariant() switch
     {

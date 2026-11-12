@@ -77,57 +77,109 @@ internal static class HostCultureReaders
         "System.Guid", "System.Version", "System.Text.Rune", "char", "bool",
     };
 
+    private static readonly System.Text.RegularExpressions.Regex ItemShape = new(@"\G\{(\d+)\s*(,\s*-?\d+\s*)?(:([^}]*))?\}", RegexOptions.CultureInvariant);
+
     private static readonly System.Text.RegularExpressions.Regex InlineIgnoreCase = new(@"\(\?[imnsx]*i[imnsx]*(-[imnsx]*)?[:)]", RegexOptions.CultureInvariant);
 
-    private static readonly System.Text.RegularExpressions.Regex CompositeItem = new(@"\{(\d+)\s*(,\s*-?\d+\s*)?(:([^}]*))?\}", RegexOptions.CultureInvariant);
+
+    /// <summary>The names of the methods an invocation must call to be one of the readers; any other invocation is not bound.</summary>
+    private static readonly HashSet<string> InvokedNames = new([.. ParseNames, .. RegexStatics, "Format", "AppendFormat"], StringComparer.Ordinal);
 
     /// <summary>Every reader in <paramref name="trees"/>, each named by <paramref name="pathOf"/> and its line.</summary>
-    internal static List<ReaderFinding> Read(Compilation compilation, IEnumerable<SyntaxTree> trees, Func<SyntaxTree, string> pathOf)
+    internal static List<ReaderFinding> Read(Compilation compilation, IEnumerable<SyntaxTree> trees, Func<SyntaxTree, string> pathOf) =>
+        Read(compilation, trees, pathOf, out _);
+
+    /// <summary>
+    /// Every reader in <paramref name="trees"/>, and the errors of each tree the reading binds: its syntax, declarations
+    /// and bodies, by the same semantic model the reading binds it with, so that every finding, and every place none is
+    /// found, rests on code that binds.
+    /// </summary>
+    /// <remarks>
+    /// An invocation or a method group is bound only when the name it calls or names is one a reader has (a method's name
+    /// cannot be aliased); object creations, attributes and interpolated strings, whose type may be named by an alias or
+    /// not at all, are always bound. A tree with none of these, such as a generated table of constant data, is not bound,
+    /// and its bodies' errors are not read.
+    /// </remarks>
+    internal static List<ReaderFinding> Read(Compilation compilation, IEnumerable<SyntaxTree> trees, Func<SyntaxTree, string> pathOf, out List<string> errors)
+    {
+        var read = trees.AsParallel().AsOrdered().WithDegreeOfParallelism(Math.Max(1, Math.Min(4, Environment.ProcessorCount)))
+            .Select(tree => ReadTree(compilation, tree, pathOf))
+            .ToList();
+        errors = [.. read.SelectMany(static r => r.Errors)];
+        return [.. read.SelectMany(static r => r.Findings)];
+    }
+
+    private static string? CalledName(ExpressionSyntax expression) => expression switch
+    {
+        MemberAccessExpressionSyntax access => access.Name.Identifier.ValueText,
+        MemberBindingExpressionSyntax binding => binding.Name.Identifier.ValueText,
+        SimpleNameSyntax name => name.Identifier.ValueText,
+        _ => null,
+    };
+
+    private static (List<ReaderFinding> Findings, List<string> Errors) ReadTree(Compilation compilation, SyntaxTree tree, Func<SyntaxTree, string> pathOf)
     {
         var findings = new List<ReaderFinding>();
-        foreach (var tree in trees)
+        var model = compilation.GetSemanticModel(tree);
+        var bound = false;
+        IOperation? Bind(SyntaxNode node)
         {
-            var model = compilation.GetSemanticModel(tree);
-            var root = tree.GetRoot();
-            var kept = KeptRegions(root);
-            var path = pathOf(tree);
-            void Add(SyntaxNode at, ReaderKind kind, string detail)
-            {
-                var line = at.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
-                findings.Add(new ReaderFinding(path, line, kind, detail, kept.Any(r => line > r.Start && line < r.End)));
-            }
+            bound = true;
+            return model.GetOperation(node);
+        }
 
-            foreach (var node in root.DescendantNodes())
-            {
-                switch (node)
-                {
-                    case InvocationExpressionSyntax:
-                        if (model.GetOperation(node) is IInvocationOperation invocation)
-                        {
-                            ReadParse(invocation, Add);
-                            ReadRegex(invocation.TargetMethod, invocation.Arguments, invocation, Add);
-                            ReadComposite(invocation, Add);
-                        }
+        var root = tree.GetRoot();
+        var kept = KeptRegions(root);
+        var path = pathOf(tree);
+        void Add(SyntaxNode at, ReaderKind kind, string detail)
+        {
+            var line = at.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
+            findings.Add(new ReaderFinding(path, line, kind, detail, kept.Any(r => line > r.Start && line < r.End)));
+        }
 
-                        break;
-                    case BaseObjectCreationExpressionSyntax:
-                        if (model.GetOperation(node) is IObjectCreationOperation creation && creation.Constructor is { } constructor)
-                            ReadRegex(constructor, creation.Arguments, creation, Add);
-                        break;
-                    case AttributeSyntax:
-                        if (model.GetOperation(node) is IAttributeOperation { Operation: IObjectCreationOperation attribute } && attribute.Constructor is { } attributeConstructor
-                            && attributeConstructor.ContainingType.ToDisplayString() == "System.Text.RegularExpressions.GeneratedRegexAttribute")
-                            ReadRegex(attributeConstructor, attribute.Arguments, attribute, Add);
-                        break;
-                    case InterpolatedStringExpressionSyntax:
-                        if (model.GetOperation(node) is IInterpolatedStringOperation interpolated)
-                            ReadInterpolated(interpolated, Add);
-                        break;
-                }
+        foreach (var node in root.DescendantNodes())
+        {
+            switch (node)
+            {
+                case InvocationExpressionSyntax call:
+                    if ((CalledName(call.Expression) is not { } called || InvokedNames.Contains(called))
+                        && Bind(node) is IInvocationOperation invocation)
+                    {
+                        ReadParse(invocation, Add);
+                        ReadRegex(compilation, invocation.TargetMethod, invocation.Arguments, invocation, Add);
+                        ReadComposite(invocation, Add);
+                    }
+
+                    break;
+                case BaseObjectCreationExpressionSyntax:
+                    if (Bind(node) is IObjectCreationOperation creation && creation.Constructor is { } constructor)
+                        ReadRegex(compilation, constructor, creation.Arguments, creation, Add);
+                    break;
+                case AttributeSyntax:
+                    if (Bind(node) is IAttributeOperation { Operation: IObjectCreationOperation attribute } && attribute.Constructor is { } attributeConstructor
+                        && attributeConstructor.ContainingType.ToDisplayString() == "System.Text.RegularExpressions.GeneratedRegexAttribute")
+                        ReadRegex(compilation, attributeConstructor, attribute.Arguments, attribute, Add);
+                    break;
+                case InterpolatedStringExpressionSyntax:
+                    if (Bind(node) is IInterpolatedStringOperation interpolated)
+                        ReadInterpolated(interpolated, Add);
+                    break;
+                case IdentifierNameSyntax or MemberAccessExpressionSyntax or GenericNameSyntax:
+                    // A method group, such as Select(int.Parse) or Func<string, double> f = double.Parse: a delegate
+                    // creation, which no invocation shows. The syntax of the reference is the group itself, so a
+                    // name inside a member access is not read twice, and the callee of an invocation is not one.
+                    if (CalledName((ExpressionSyntax)node) is { } grouped && ParseNames.Contains(grouped)
+                        && !(node.Parent is InvocationExpressionSyntax { Expression: var callee } && callee == node)
+                        && MethodReference(Bind(node)) is { } reference && reference.Syntax == node)
+                        ReadParseGroup(reference, Add);
+                    break;
             }
         }
 
-        return findings;
+        var errors = bound
+            ? model.GetDiagnostics().Where(static d => d.Severity == DiagnosticSeverity.Error).Select(static d => d.ToString()).ToList()
+            : [];
+        return (findings, errors);
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -145,6 +197,36 @@ internal static class HostCultureReaders
             add(invocation.Syntax, ReaderKind.Parse, shown + " names no format provider: " + Shown(invocation.Syntax));
         else if (IsNull(provider.Value))
             add(invocation.Syntax, ReaderKind.Parse, shown + " passes a null format provider: " + Shown(invocation.Syntax));
+    }
+
+    /// <summary>A parse named as a method group: refused when none of its parameters is a format provider, as nothing can give it one.</summary>
+    private static void ReadParseGroup(IMethodReferenceOperation reference, Action<SyntaxNode, ReaderKind, string> add)
+    {
+        var method = reference.Method;
+        if (!ParseNames.Contains(method.Name) || !IsParsedByCulture(method.ContainingType) || method.Parameters.Any(static p => IsFormatProvider(p.Type)))
+            return;
+        add(reference.Syntax, ReaderKind.Parse, method.ContainingType.ToDisplayString() + "." + method.Name
+            + " as a method group names no format provider: " + Shown(reference.Syntax.FirstAncestorOrSelf<StatementSyntax>() ?? reference.Syntax.Parent ?? reference.Syntax));
+    }
+
+    private static IMethodReferenceOperation? MethodReference(IOperation? operation)
+    {
+        while (true)
+        {
+            switch (operation)
+            {
+                case IMethodReferenceOperation reference:
+                    return reference;
+                case IDelegateCreationOperation creation:
+                    operation = creation.Target;
+                    break;
+                case IConversionOperation conversion:
+                    operation = conversion.Operand;
+                    break;
+                default:
+                    return null;
+            }
+        }
     }
 
     private static bool IsParsedByCulture(INamedTypeSymbol? type)
@@ -171,7 +253,7 @@ internal static class HostCultureReaders
     // ---------------------------------------------------------------------------------------------
     // Regex.
 
-    private static void ReadRegex(IMethodSymbol method, IEnumerable<IArgumentOperation> arguments, IOperation at, Action<SyntaxNode, ReaderKind, string> add)
+    private static void ReadRegex(Compilation compilation, IMethodSymbol method, IEnumerable<IArgumentOperation> arguments, IOperation at, Action<SyntaxNode, ReaderKind, string> add)
     {
         var type = method.ContainingType?.ToDisplayString();
         var isConstructor = method.MethodKind == MethodKind.Constructor;
@@ -197,7 +279,7 @@ internal static class HostCultureReaders
 
         var (known, value, invariant) = options is null || options.ArgumentKind == ArgumentKind.DefaultValue
             ? (true, 0, false)
-            : Options(options.Value);
+            : Options(compilation, options.Value, 0);
         if (invariant || (known && (value & CultureInvariant) != 0))
             return;
 
@@ -210,10 +292,22 @@ internal static class HostCultureReaders
             add(at.Syntax, ReaderKind.Regex, "the pattern turns IgnoreCase on, (?i), without RegexOptions.CultureInvariant: " + Shown(at.Syntax));
     }
 
-    /// <summary>The options an expression gives: whether its value is known when compiled, the value, and whether an or of it names CultureInvariant.</summary>
-    private static (bool Known, int Value, bool Invariant) Options(IOperation operation)
+    /// <summary>
+    /// The options an expression gives: whether its value is known when compiled, the value, and whether an or of it names
+    /// CultureInvariant. A static readonly field of the compilation's own sources gives its initializer's options, when its
+    /// type declares no static constructor that could assign it again.
+    /// </summary>
+    private static (bool Known, int Value, bool Invariant) Options(Compilation compilation, IOperation operation, int depth)
     {
         operation = Unwrap(operation);
+        if (depth < 8 && operation is IFieldReferenceOperation { Field: { IsStatic: true, IsReadOnly: true } field }
+            && !field.ContainingType.StaticConstructors.Any(static c => !c.IsImplicitlyDeclared)
+            && field.DeclaringSyntaxReferences is [var declaration]
+            && declaration.GetSyntax() is VariableDeclaratorSyntax { Initializer.Value: { } initializer }
+            && compilation.ContainsSyntaxTree(initializer.SyntaxTree)
+            && compilation.GetSemanticModel(initializer.SyntaxTree).GetOperation(initializer) is { } initial)
+            return Options(compilation, initial, depth + 1);
+
         if (operation.ConstantValue is { HasValue: true, Value: { } constant })
         {
             var value = Convert.ToInt32(constant, CultureInfo.InvariantCulture);
@@ -222,8 +316,8 @@ internal static class HostCultureReaders
 
         if (operation is IBinaryOperation { OperatorKind: BinaryOperatorKind.Or } or)
         {
-            var left = Options(or.LeftOperand);
-            var right = Options(or.RightOperand);
+            var left = Options(compilation, or.LeftOperand, depth);
+            var right = Options(compilation, or.RightOperand, depth);
             return (left.Known && right.Known, left.Value | right.Value, left.Invariant || right.Invariant);
         }
 
@@ -235,7 +329,10 @@ internal static class HostCultureReaders
 
     private static void ReadInterpolated(IInterpolatedStringOperation interpolated, Action<SyntaxNode, ReaderKind, string> add)
     {
+        // $"..." + $"..." given to a handler is one handler's content: the handler is above the additions.
         var parent = interpolated.Parent;
+        while (parent is IInterpolatedStringAdditionOperation addition)
+            parent = addition.Parent;
         if (parent is IInterpolatedStringHandlerCreationOperation handler)
         {
             if (HandlerNamesProvider(handler))
@@ -315,12 +412,11 @@ internal static class HostCultureReaders
         var composite = formatArgument.Value.ConstantValue.Value as string;
         if (composite is not null)
         {
-            foreach (Match item in CompositeItem.Matches(composite))
+            foreach (var (index, format) in CompositeItems(composite))
             {
-                var index = int.Parse(item.Groups[1].Value, NumberStyles.None, CultureInfo.InvariantCulture);
                 if (!formats.TryGetValue(index, out var list))
                     formats[index] = list = [];
-                list.Add(item.Groups[4].Success ? item.Groups[4].Value : null);
+                list.Add(format);
             }
         }
 
@@ -354,6 +450,36 @@ internal static class HostCultureReaders
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// The format items of a composite format, each with its index and its format string, if any: <c>{{</c> and <c>}}</c>
+    /// are escaped braces, not items.
+    /// </summary>
+    internal static List<(int Index, string? Format)> CompositeItems(string composite)
+    {
+        var items = new List<(int Index, string? Format)>();
+        for (var i = 0; i < composite.Length; i++)
+        {
+            var c = composite[i];
+            if ((c == '{' || c == '}') && i + 1 < composite.Length && composite[i + 1] == c)
+            {
+                i++;
+                continue;
+            }
+
+            if (c != '{')
+                continue;
+            var end = composite.IndexOf('}', i + 1);
+            if (end < 0)
+                break;
+            var item = ItemShape.Match(composite, i, end - i + 1);
+            if (item.Success)
+                items.Add((int.Parse(item.Groups[1].Value, NumberStyles.None, CultureInfo.InvariantCulture), item.Groups[4].Success ? item.Groups[4].Value : null));
+            i = end;
+        }
+
+        return items;
     }
 
     /// <summary>The type shown when <paramref name="value"/> becomes text by the current culture with <paramref name="format"/>; null when no culture changes it.</summary>
@@ -390,6 +516,8 @@ internal static class HostCultureReaders
         var name = type.ToDisplayString();
         if (type.SpecialType == SpecialType.System_DateTime || name == "System.DateTimeOffset")
             return letter is 'O' or 'o' or 'R' or 'r' or 's' or 'u' ? null : name;
+        if (name is "System.DateOnly" or "System.TimeOnly")
+            return letter is 'O' or 'o' or 'R' or 'r' ? null : name;
         if (name == "System.TimeSpan")
             return specifier.Length == 0 || letter is 'c' or 't' or 'T' ? null : name;
         return name;
@@ -414,8 +542,7 @@ internal static class HostCultureReaders
     {
         var regions = new List<(int Start, int End)>();
         int? open = null;
-        foreach (var directive in root.DescendantTrivia(descendIntoTrivia: true)
-            .Select(static t => t.GetStructure()).OfType<PragmaWarningDirectiveTriviaSyntax>())
+        foreach (var directive in Directives(root).OfType<PragmaWarningDirectiveTriviaSyntax>())
         {
             if (!directive.ErrorCodes.Any(static c => c.ToString().Trim() == "RS0030"))
                 continue;
@@ -442,10 +569,43 @@ internal static class HostCultureReaders
 
     /// <summary>The line of every <c>#pragma warning disable</c> of RS0030 in a source, kept path or not.</summary>
     internal static IEnumerable<int> Rs0030Disables(SyntaxNode root) =>
-        root.DescendantTrivia(descendIntoTrivia: true)
-            .Select(static t => t.GetStructure()).OfType<PragmaWarningDirectiveTriviaSyntax>()
+        Directives(root).OfType<PragmaWarningDirectiveTriviaSyntax>()
             .Where(static d => d.DisableOrRestoreKeyword.IsKind(SyntaxKind.DisableKeyword) && d.ErrorCodes.Any(static c => c.ToString().Trim() == "RS0030"))
             .Select(static d => d.GetLocation().GetLineSpan().StartLinePosition.Line + 1);
+
+    /// <summary>
+    /// Every other way a source silences RS0030, which no kept path may use: a <c>#pragma warning disable</c> that names no
+    /// code, and so disables every rule, and a <c>SuppressMessage</c> or <c>UnconditionalSuppressMessage</c> attribute that
+    /// names RS0030.
+    /// </summary>
+    internal static IEnumerable<(int Line, string Form)> OtherRs0030Suppressions(SyntaxNode root)
+    {
+        foreach (var directive in Directives(root).OfType<PragmaWarningDirectiveTriviaSyntax>())
+        {
+            if (directive.DisableOrRestoreKeyword.IsKind(SyntaxKind.DisableKeyword) && directive.ErrorCodes.Count == 0)
+                yield return (directive.GetLocation().GetLineSpan().StartLinePosition.Line + 1, "#pragma warning disable names no code, so it disables RS0030 too");
+        }
+
+        if (!root.SyntaxTree.GetText().ToString().Contains("SuppressMessage", StringComparison.Ordinal))
+            yield break;
+        foreach (var attribute in root.DescendantNodes().OfType<AttributeSyntax>())
+        {
+            var name = attribute.Name switch
+            {
+                QualifiedNameSyntax qualified => qualified.Right.Identifier.ValueText,
+                AliasQualifiedNameSyntax alias => alias.Name.Identifier.ValueText,
+                SimpleNameSyntax simple => simple.Identifier.ValueText,
+                _ => attribute.Name.ToString(),
+            };
+            if (name is "SuppressMessage" or "SuppressMessageAttribute" or "UnconditionalSuppressMessage" or "UnconditionalSuppressMessageAttribute"
+                && attribute.ArgumentList?.Arguments.Any(static a => a.Expression.ToString().Contains("RS0030", StringComparison.Ordinal)) == true)
+                yield return (attribute.GetLocation().GetLineSpan().StartLinePosition.Line + 1, "[" + Shown(attribute) + "] suppresses RS0030");
+        }
+    }
+
+    /// <summary>The directives of a source, found without walking the nodes that hold none.</summary>
+    internal static IEnumerable<DirectiveTriviaSyntax> Directives(SyntaxNode root) =>
+        root.DescendantTrivia(static n => n.ContainsDirectives).Where(static t => t.IsDirective).Select(static t => t.GetStructure()).OfType<DirectiveTriviaSyntax>();
 
     private static bool IsFormatProvider(ITypeSymbol type) =>
         type.ToDisplayString().TrimEnd('?') == FormatProvider || type.AllInterfaces.Any(static i => i.ToDisplayString() == FormatProvider);
