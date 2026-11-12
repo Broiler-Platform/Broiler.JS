@@ -1,0 +1,91 @@
+# shell sha256 259a47b87d72088c37258233bc57f6e021ec59f0556b01956910c8eaf7466c3b; probe sha256 072406451a95d924708c98c228da8954750edcbc3407901a0d5644a8d0a104ae
+## TZ=UTC, LANG unset
+eval('if (') => throws SyntaxError: Unexpected token EOF:  at 0, 0
+eval('var x = {a: 1;') => throws SyntaxError: Unexpected token SemiColon: ; at 2, 14
+eval('for (;;') => throws SyntaxError: Unexpected token EOF:  at 0, 0
+new Uint16Array(new ArrayBuffer(8), 1) => throws RangeError: Start offset 1 is outside the bounds of the buffer
+new Uint32Array(new ArrayBuffer(6)) => throws RangeError: byte length of TypedArray should be multiple of 4
+/(a)(b)/.exec('ab'); RegExp.$1 + RegExp.$2 => ab
+duplicate named groups => ["yy",null,"y"]
+non-configurable element pop => throws TypeError: Cannot delete property 1
+non-configurable element splice => 1
+generator prototype => [object Generator] 1
+class private and computed members => -1,-2,-3
+switch default => d-1,zero,d1
+stack lines => true
+negative numbers in text => -1,-2.5,-3,-4,-5,-6
+BigInt and Decimal-free fixed text => -7,1.3,-1.3
+[object Object]
+# exit 0
+## TZ=UTC, LANG=de_DE.UTF-8
+eval('if (') => throws SyntaxError: Unexpected token EOF:  at 0, 0
+eval('var x = {a: 1;') => throws SyntaxError: Unexpected token SemiColon: ; at 2, 14
+eval('for (;;') => throws SyntaxError: Unexpected token EOF:  at 0, 0
+new Uint16Array(new ArrayBuffer(8), 1) => throws RangeError: Start offset 1 is outside the bounds of the buffer
+new Uint32Array(new ArrayBuffer(6)) => throws RangeError: byte length of TypedArray should be multiple of 4
+/(a)(b)/.exec('ab'); RegExp.$1 + RegExp.$2 => ab
+duplicate named groups => ["yy",null,"y"]
+non-configurable element pop => throws TypeError: Cannot delete property 1
+non-configurable element splice => 1
+generator prototype => [object Generator] 1
+class private and computed members => -1,-2,-3
+switch default => d-1,zero,d1
+stack lines => true
+negative numbers in text => -1,-2.5,-3,-4,-5,-6
+BigInt and Decimal-free fixed text => -7,1.3,-1.3
+[object Object]
+# exit 0
+## TZ=UTC, LANG=sv_SE.UTF-8
+eval('if (') => throws SyntaxError: Unexpected token EOF:  at 0, 0
+eval('var x = {a: 1;') => throws SyntaxError: Unexpected token SemiColon: ; at 2, 14
+eval('for (;;') => throws SyntaxError: Unexpected token EOF:  at 0, 0
+new Uint16Array(new ArrayBuffer(8), 1) => throws RangeError: Start offset 1 is outside the bounds of the buffer
+new Uint32Array(new ArrayBuffer(6)) => throws RangeError: byte length of TypedArray should be multiple of 4
+/(a)(b)/.exec('ab'); RegExp.$1 + RegExp.$2 => ab
+duplicate named groups => ["yy",null,"y"]
+non-configurable element pop => throws TypeError: Cannot delete property 1
+non-configurable element splice => 1
+generator prototype => [object Generator] 1
+class private and computed members => -1,-2,-3
+switch default => d-1,zero,d1
+stack lines => true
+negative numbers in text => -1,-2.5,-3,-4,-5,-6
+BigInt and Decimal-free fixed text => -7,1.3,-1.3
+[object Object]
+# exit 0
+## TZ=UTC, LANG=tr_TR.UTF-8
+eval('if (') => throws SyntaxError: Unexpected token EOF:  at 0, 0
+eval('var x = {a: 1;') => throws SyntaxError: Unexpected token SemiColon: ; at 2, 14
+eval('for (;;') => throws SyntaxError: Unexpected token EOF:  at 0, 0
+new Uint16Array(new ArrayBuffer(8), 1) => throws RangeError: Start offset 1 is outside the bounds of the buffer
+new Uint32Array(new ArrayBuffer(6)) => throws RangeError: byte length of TypedArray should be multiple of 4
+/(a)(b)/.exec('ab'); RegExp.$1 + RegExp.$2 => ab
+duplicate named groups => ["yy",null,"y"]
+non-configurable element pop => throws TypeError: Cannot delete property 1
+non-configurable element splice => 1
+generator prototype => [object Generator] 1
+class private and computed members => -1,-2,-3
+switch default => d-1,zero,d1
+stack lines => true
+negative numbers in text => -1,-2.5,-3,-4,-5,-6
+BigInt and Decimal-free fixed text => -7,1.3,-1.3
+[object Object]
+# exit 0
+## TZ=UTC, LANG unset, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+eval('if (') => throws SyntaxError: Unexpected token EOF:  at 0, 0
+eval('var x = {a: 1;') => throws SyntaxError: Unexpected token SemiColon: ; at 2, 14
+eval('for (;;') => throws SyntaxError: Unexpected token EOF:  at 0, 0
+new Uint16Array(new ArrayBuffer(8), 1) => throws RangeError: Start offset 1 is outside the bounds of the buffer
+new Uint32Array(new ArrayBuffer(6)) => throws RangeError: byte length of TypedArray should be multiple of 4
+/(a)(b)/.exec('ab'); RegExp.$1 + RegExp.$2 => ab
+duplicate named groups => ["yy",null,"y"]
+non-configurable element pop => throws TypeError: Cannot delete property 1
+non-configurable element splice => 1
+generator prototype => [object Generator] 1
+class private and computed members => -1,-2,-3
+switch default => d-1,zero,d1
+stack lines => true
+negative numbers in text => -1,-2.5,-3,-4,-5,-6
+BigInt and Decimal-free fixed text => -7,1.3,-1.3
+[object Object]
+# exit 0

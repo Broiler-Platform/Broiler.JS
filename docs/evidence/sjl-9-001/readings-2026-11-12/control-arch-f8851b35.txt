@@ -1,0 +1,43 @@
+# The control of the host-culture readers' architecture test (HostCultureTests), stage js-arch, 2026-11-12. Nothing of
+# it is committed but this record. Each state is a clean git archive tree of f8851b35b30eeead253aac2bb3fe383f4b8fa2e7
+# (docs/evidence left out), changed as the state says; the engine Architecture test project is built in Release with
+# --disable-build-servers and HostCultureTests run with no LANG, TZ=UTC.
+
+## state 0: the tree as committed
+# build exit 0; HostCultureTests: 12 cases, 12 passed, 0 failed; test exit 0
+
+## state 1: one planted reader of each kind in a product project, Broiler.JS/Broiler.JavaScript.Storage/HostCultureControl.cs:
+#   using System.Text.RegularExpressions;
+#   
+#   namespace Broiler.JavaScript.Storage;
+#   
+#   // The control's planted readers, one of each kind the host-culture readers' test refuses (not committed).
+#   internal static class HostCultureControl
+#   {
+#       internal static bool Parse(string text) => int.TryParse(text, out _);
+#   
+#       internal static bool Fold(string text) => Regex.IsMatch(text, "i", RegexOptions.IgnoreCase);
+#   
+#       internal static string Write(double value) => $"value {value}";
+#   }
+# The project's Release build, with CA1304, CA1305, CA1309, CA1310, CA1311 and RS0030 as errors, does not refuse them.
+# build exit 0; HostCultureTests: 12 cases, 11 passed, 1 failed; test exit 1
+# The failing case, No_product_project_reads_the_hosts_culture_where_no_build_rule_sees:
+ The product projects read the host's culture where no build rule sees, at 3 place(s):
+   Broiler.JS/Broiler.JavaScript.Storage/HostCultureControl.cs:10: Regex folding case without CultureInvariant: RegexOptions.IgnoreCase without RegexOptions.CultureInvariant: Regex.IsMatch(text, "i", RegexOptions.IgnoreCase)
+   Broiler.JS/Broiler.JavaScript.Storage/HostCultureControl.cs:12: value made text with no provider: the interpolation hole {value} of type double: $"value {value}"
+   Broiler.JS/Broiler.JavaScript.Storage/HostCultureControl.cs:8: parse with no format provider: int.TryParse names no format provider: int.TryParse(text, out _)
+ Name the invariant culture (string.Create(CultureInfo.InvariantCulture, ...), a provider argument) or RegexOptions.CultureInvariant, or, on a path the owner keeps on the host's culture, put the line inside "#pragma warning disable RS0030 // Kept: <reason> (<decision>)" and its restore.
+
+## state 2: a product project renamed out of the rules' scope: Broiler.JS/Broiler.JavaScript.Minimal becomes
+## Broiler.JS/Broiler.JavaScript.MinimalTests, folder and project file, with the solution's line and the test project's reference
+# Its Release build passes, and its name now ends in Tests, which Broiler.JS/Directory.Build.props leaves outside the rules.
+# build exit 0; HostCultureTests: 12 cases, 11 passed, 1 failed; test exit 1
+# The failing case, Every_product_project_is_in_the_host_culture_rules_scope_and_no_other_project_is:
+ The host-culture rules' scope departs from the projects' kinds:
+   Broiler.JS/Broiler.JavaScript.MinimalTests/Broiler.JavaScript.MinimalTests.csproj is a product project and evaluates BroilerHostCultureRules=false
+   Broiler.JS/Broiler.JavaScript.MinimalTests/Broiler.JavaScript.MinimalTests.csproj is a product project and the compiler is not given host-culture.globalconfig
+   Broiler.JS/Broiler.JavaScript.MinimalTests/Broiler.JavaScript.MinimalTests.csproj is a product project and the banned-API analyzer does not read BannedSymbols.HostCulture.txt
+
+## state 3: the product code of caa3863c (origin/main): arch-readers-caa3863c.txt
+# build exit 0; HostCultureTests: 12 cases, 11 passed, 1 failed; test exit 1

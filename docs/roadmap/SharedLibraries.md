@@ -2074,6 +2074,22 @@ reads both clauses at the change's code:
   read and say why they stay", and it ended "the rules the build holds being the evidence that keeps it."; the five
   rules accept a read of the host's culture by name, so a new one outside those paths built until the banned-API rule,
   and the owner's ruling asks for each kept path "suppressed with its reason".)*
+  *(Noted 2026-11-12, on the owner's answers of that day to the questions Broiler-Platform/Broiler.JS#1114 put, "Accept
+  RS0030 form" (the alternative not taken being "Add architecture test too"), "Keep as is" (not taken: "Narrow to the
+  literal grammar") and "Follow-up arch test" (not taken: "Leave as recorded"): the note above reads clause 8 "met as
+  written, the rules the build holds being the evidence that keeps it for the kinds they see", and that reading stands.
+  The kept paths keep their in-place RS0030 suppressions in the form the owner accepted; the `Decimal` function keeps
+  reading a String with `NumberStyles.Number` and the invariant culture, until a revision of the Decimal proposal is
+  pinned; and branch `js-arch` adds the engine's architecture test `HostCultureTests`, which holds the readers those
+  rules do not see, a numeric or date parse that names no format provider, a .NET regular expression that folds case
+  without `RegexOptions.CultureInvariant`, and a value made text by interpolation or composite formatting with no
+  provider, culture or invariant format, in the product projects outside the kept paths, and asserts, by MSBuild's
+  evaluation of every project, that every product project is in the rules' scope and every test, benchmark, sample and
+  tool project outside it. The readers it found, interpolations of integers a script sees only when they are not
+  negative and the compiled RegExp arm's options, now name the invariant culture, and no answer moved. A value made text
+  by concatenation, `StringBuilder.Append` or a writer is not one of the ruling's kinds and stays open. Bundle
+  [`sjl-9-001`](../evidence/sjl-9-001/README.md), "The readers no build rule sees and the rules' scope, held by an
+  architecture test, 2026-11-12", records it. None of it is accepted: no second holder exists to review it.)*
 - **Nothing else moved**: the engine vectors, test262's `supportedValuesOf` directory and part C's and part D's programs
   answer at the change as at its base, the currency and unit lists among them, and `toLocaleString`'s answers move as
   the changelog lists them.
