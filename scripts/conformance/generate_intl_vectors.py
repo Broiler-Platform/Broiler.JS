@@ -81,7 +81,7 @@ DEFAULT_OUT = CORPUS / "intl"
 INTLREF = SCRIPTS / "intlref.mjs"
 UNION = REPOSITORY / "docs" / "evidence" / "sjl-9-001" / "locales" / "union.tsv"
 SINCE = 27              # the corpus revision that added the area
-CORPUS_REVISION = 38    # the corpus revision this generator writes: REVISIONS.md's last row
+CORPUS_REVISION = 39    # the corpus revision this generator writes: REVISIONS.md's last row
 GENERATOR = "generate_intl_vectors.py"
 DIVERGENCES = SCRIPTS / "intl-divergences.txt"
 
@@ -1949,19 +1949,23 @@ def rows_note(rows: str) -> str:
     return "rows " + ", ".join(named[:-1]) + " and " + named[-1]
 
 
-def family_cases(extra: Sequence[str]) -> None:
+def family_cases(extra: Sequence[str], two_digit_hours: Iterable[str] = ()) -> None:
     """One vector per table family for each extra locale (decision D17). Each note names the family's rows, the row of
     its table and every row a difference of the family's vector confirms: a percent's fraction digits (M5); a day
-    period's flexible rules, its dropping under a 24-hour cycle and its names (T17, T20, T14); and a time pattern's
-    U+202F, hour cycle and day-period names (T12, T10, T14)."""
+    period's flexible rules, its dropping under a 24-hour cycle and its names (T17, T20, T14); a time pattern's
+    U+202F, hour cycle and day-period names (T12, T10, T14); and, for a locale of two_digit_hours, whose CLDR 48.2.0
+    durationUnit-type-hms begins hh, a duration's two-digit hours (U14, decision D34), which GetDurationUnitOptions
+    applies whatever style the hours resolve (corpus revision 39, the owner's decision of 2026-11-12, "Row U14": until
+    then the duration family's note named U15 alone)."""
+    two_digit_hours = set(two_digit_hours)
     for tag in extra:
         t = js(tag)
         note = f"{tag}, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data"
 
         def family(sub: str, op: str, script: str, inputs: Iterable, rows: str, clauses: Iterable[str], what: str,
-                   **kwargs) -> Case:
-            return add(sub, "families", op, script, inputs, rows, clauses, f"{rows_note(rows)}: {what}; {note}",
-                       **kwargs)
+                   rows_label: str | None = None, **kwargs) -> Case:
+            return add(sub, "families", op, script, inputs, rows, clauses,
+                       f"{rows_label or rows_note(rows)}: {what}; {note}", **kwargs)
         family("a", "Intl.Locale.prototype.maximize", f"new Intl.Locale({t}).maximize().toString()", [tag], "L5",
             E("sec-Intl.Locale.prototype.maximize"), "likely subtags")
         family("a", "Intl.Locale.prototype.getWeekInfo",
@@ -2020,8 +2024,16 @@ def family_cases(extra: Sequence[str]) -> None:
         family("d", "Intl.DateTimeFormat (timeZoneName)",
             f'(function (p) {{ for (var i = 0; i < p.length; i++) if (p[i].type === "timeZoneName") return p[i].value; }})(new Intl.DateTimeFormat({t}, {{timeZone: "America/New_York", timeZoneName: "long"}}).formatToParts({FRIDAY}))',
             [tag], "T22", E("sec-formatdatetimepattern"), "time zone names")
-        family("e", DFMT, df(tag, 'style: "long"', "{hours: 1, minutes: 2, seconds: 3}"), [tag], "U15",
-            E("sec-partitiondurationformatpattern"), "the duration's unit and list patterns")
+        if tag in two_digit_hours:
+            family("e", DFMT, df(tag, 'style: "long"', "{hours: 1, minutes: 2, seconds: 3}"), [tag], "U15 U14",
+                E("sec-partitiondurationformatpattern"), "the duration's unit and list patterns, and the two-digit "
+                "hours of CLDR 48.2.0's durationUnit-type-hms, which decision D34 reads whatever style the hours resolve",
+                # U14 is labelled as the digital vectors' notes label it (corpus revision 39, at the review of the
+                # owner's answers of 2026-11-12: until then this note wrote "U14 (data, C5)").
+                rows_label="rows U15 (data, C5) and U14 (data, C5; decision D34)")
+        else:
+            family("e", DFMT, df(tag, 'style: "long"', "{hours: 1, minutes: 2, seconds: 3}"), [tag], "U15",
+                E("sec-partitiondurationformatpattern"), "the duration's unit and list patterns")
 
 
 # ---- Running the references -----------------------------------------------------------------------------------
@@ -2279,7 +2291,8 @@ def generate(node: str, witness_node: str, cldr_dir: Path, out: Path, spec: Path
     cases_d()
     cases_e()
     cldr_cases(cldr, extra)
-    family_cases(extra)
+    family_cases(extra, [tag for tag in extra if cldr.has("cldr-numbers-full", f"main/{tag}/numbers.json")
+                         and (digital_answer(cldr, tag) or "").startswith("01")])
     cases = list(CASES)
     for case in cases:
         if set(case.rows) & D21_ROWS and "broiler-vm" not in case.per_engine and "broiler-vm" not in case.per_engine_ref \

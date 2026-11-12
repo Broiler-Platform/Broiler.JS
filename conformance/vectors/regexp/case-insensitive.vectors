@@ -253,8 +253,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"i" str:"i" str:"\u0130"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("i", "i").test("\u0130")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -265,8 +264,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"I" str:"i" str:"\u0131"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("I", "i").test("\u0131")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -288,8 +286,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"I" str:"i" str:"\u0130"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("I", "i").test("\u0130")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -300,8 +297,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"\u0130" str:"i" str:"i"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("\u0130", "i").test("i")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -312,8 +308,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"\u0130" str:"i" str:"I"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("\u0130", "i").test("I")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -335,8 +330,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"\u0131" str:"i" str:"I"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("\u0131", "i").test("I")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -347,8 +341,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"[a-z]" str:"i" str:"\u0130"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-compilecharacterclass spec:es2026@0248456c#sec-compiletocharset spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("[a-z]", "i").test("\u0130")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -370,8 +363,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"[\u0130]" str:"i" str:"i"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-compilecharacterclass spec:es2026@0248456c#sec-compiletocharset spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("[\u0130]", "i").test("i")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -382,8 +374,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"[\u0131]" str:"i" str:"I"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-compilecharacterclass spec:es2026@0248456c#sec-compiletocharset spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("[\u0131]", "i").test("I")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -493,8 +484,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"(?i:i)" str:"" str:"\u0130"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-updatemodifiers ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("(?i:i)", "").test("\u0130")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -527,8 +517,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"(\u0131)\\1" str:"i" str:"\u0131I"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-backreference-matcher spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("(\u0131)\\1", "i").test("\u0131I")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -539,8 +528,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"(i)\\1" str:"i" str:"i\u0130"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-backreference-matcher spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("(i)\\1", "i").test("i\u0130")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -551,8 +539,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"(I)\\1" str:"i" str:"I\u0131"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-backreference-matcher spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("(I)\\1", "i").test("I\u0131")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -618,8 +605,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"\u0130" str:"i" str:"i\u0307"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("\u0130", "i").test("i\u0307")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -641,8 +627,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"[\u0130-\u0131]" str:"i" str:"I"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-compilecharacterclass spec:es2026@0248456c#sec-compiletocharset spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("[\u0130-\u0131]", "i").test("I")
 note: correspondence row M2a: Canonicalize reads no culture: the Turkic and Lithuanian mappings are not its, so every case holds in every host culture (Broiler.JS's part D)
@@ -1244,8 +1229,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"(?i:\u0131)" str:"" str:"I"
 out: value: bool:false
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-updatemodifiers ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("(?i:\u0131)", "").test("I")
 note: correspondence row M2a: the same, negated and through \w
@@ -1267,8 +1251,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"[^i]" str:"i" str:"\u0130"
 out: value: bool:true
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-compilecharacterclass spec:es2026@0248456c#sec-compiletocharset spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("[^i]", "i").test("\u0130")
 note: correspondence row M2a: the same, negated and through \w
@@ -1279,8 +1262,7 @@ area: regexp
 op: RegExp.prototype.test
 in: str:"[^I]" str:"i" str:"\u0131"
 out: value: bool:true
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexp.prototype.test spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-compilecharacterclass spec:es2026@0248456c#sec-compiletocharset spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: new RegExp("[^I]", "i").test("\u0131")
 note: correspondence row M2a: the same, negated and through \w
@@ -1313,8 +1295,7 @@ area: regexp
 op: RegExpBuiltinExec
 in: str:"(I)\\1" str:"i" str:"I\u0130" int:0
 out: value: str:"lastIndex=0;null"
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-backreference-matcher spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: function $s(v) { return v === undefined ? "u" : v.length + ":" + v; } function $p(v) { return v === undefined ? "u" : v[0] + "-" + v[1]; } function $g(o, f) { if (o === undefined) return "u"; var k = Object.keys(o), t = "" + k.length; for (var j = 0; j < k.length; j++) t += ";<" + k[j] + ">=" + f(o[k[j]]); return t; } function $x(r, m) { var t = "lastIndex=" + r.lastIndex; if (m === null) return t + ";null"; t += ";index=" + m.index + ";length=" + m.length; for (var i = 0; i < m.length; i++) t += ";" + i + "=" + $s(m[i]); t += ";groups=" + $g(m.groups, $s); if (m.indices === undefined) return t + ";indices=u"; t += ";indices=" + m.indices.length; for (var j = 0; j < m.indices.length; j++) t += ";" + j + "=" + $p(m.indices[j]); return t + ";igroups=" + $g(m.indices.groups, $p); } var r = new RegExp("(I)\\1", "i"); r.lastIndex = 0; $x(r, r.exec("I\u0130"))
 note: correspondence row M2a: a back-reference canonicalizes both sides
@@ -1325,8 +1306,7 @@ area: regexp
 op: RegExpBuiltinExec
 in: str:"(?<n>\u0130)\\k<n>" str:"i" str:"\u0130i" int:0
 out: value: str:"lastIndex=0;null"
-class: divergence
-divergence.broiler-js: row M2a: the dotted and dotless i, i and I against U+0130 and U+0131, in literals, classes and back-references, without u; Broiler.JS answers, under tr-TR, true for i and U+0130 and for I and U+0131, and under lt-LT true for i and I against U+0130, with the negated classes false: RegexOptions.IgnoreCase without CultureInvariant reads .NET's current culture; under the invariant culture it answers as Canonicalize does, and a run there reports the field as no longer holding; a correction of Broiler.JS (JSD-0081; decision D33, its bundle sjl-11-001's part D); answered by SJL-11.5, Broiler.JS's cut-over to Broiler.Regex
+class: normative
 prov: spec:es2026@0248456c#sec-regexpbuiltinexec spec:es2026@0248456c#sec-compilepattern spec:es2026@0248456c#sec-compilesubpattern spec:es2026@0248456c#sec-backreference-matcher spec:es2026@0248456c#sec-runtime-semantics-canonicalize-ch ref:regexpref@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: function $s(v) { return v === undefined ? "u" : v.length + ":" + v; } function $p(v) { return v === undefined ? "u" : v[0] + "-" + v[1]; } function $g(o, f) { if (o === undefined) return "u"; var k = Object.keys(o), t = "" + k.length; for (var j = 0; j < k.length; j++) t += ";<" + k[j] + ">=" + f(o[k[j]]); return t; } function $x(r, m) { var t = "lastIndex=" + r.lastIndex; if (m === null) return t + ";null"; t += ";index=" + m.index + ";length=" + m.length; for (var i = 0; i < m.length; i++) t += ";" + i + "=" + $s(m[i]); t += ";groups=" + $g(m.groups, $s); if (m.indices === undefined) return t + ";indices=u"; t += ";indices=" + m.indices.length; for (var j = 0; j < m.indices.length; j++) t += ";" + j + "=" + $p(m.indices[j]); return t + ";igroups=" + $g(m.indices.groups, $p); } var r = new RegExp("(?<n>\u0130)\\k<n>", "i"); r.lastIndex = 0; $x(r, r.exec("\u0130i"))
 note: correspondence row M2a: a back-reference canonicalizes both sides

@@ -89,8 +89,7 @@ area: syntax
 op: ParseScript
 in: str:"class C { f = new.target === undefined; } new C().f"
 out: value: bool:true
-class: divergence
-divergence.broiler-vm: row D32: `new.target` in a class field initialiser at function depth 0 (alone, or in an arrow in it); Broiler.VM answers refused 2101 at `new`: ParseFieldTail parses the initialiser without raising functionDepth, so ParseNewTarget refuses; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
+class: normative
 prov: spec:es2026@0248456c#sec-scripts-static-semantics-early-errors spec:es2026@0248456c#sec-static-semantics-contains
 script: class C { f = new.target === undefined; } new C().f
 note: catalogue row EE0163; correspondence row D32: accepted, new.target in a class field initialiser, which Contains does not enter (a correction of Broiler.VM that step 1 makes)
@@ -101,8 +100,7 @@ area: syntax
 op: ParseScript
 in: str:"class C { f = () => new.target; } new C().f() === undefined"
 out: value: bool:true
-class: divergence
-divergence.broiler-vm: row D32: `new.target` in a class field initialiser at function depth 0 (alone, or in an arrow in it); Broiler.VM answers refused 2101 at `new`: ParseFieldTail parses the initialiser without raising functionDepth, so ParseNewTarget refuses; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
+class: normative
 prov: spec:es2026@0248456c#sec-scripts-static-semantics-early-errors spec:es2026@0248456c#sec-static-semantics-contains
 script: class C { f = () => new.target; } new C().f() === undefined
 note: catalogue row EE0163; correspondence row D32: accepted, new.target in an arrow in a class field initialiser (a correction of Broiler.VM that step 1 makes)
