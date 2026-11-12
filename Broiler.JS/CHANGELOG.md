@@ -10,6 +10,59 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### Every host-culture reader outside the providers and SJL-D-17's paths names the invariant culture or an ordinal comparison, and the build holds the globalization rules (2026-11-12, milestone SJL-9's clause 8)
+
+On the owner's ruling of 2026-11-11 on clause 8's remaining host-culture readers, "Fix all + enforce" (the alternatives
+not taken being "Fix all, no enforcement" and "Scope clause 8 to Intl"):
+
+- **Every site that formatted or parsed a value, mapped case or compared strings without naming a culture or a
+  comparison** now names the invariant culture or an ordinal comparison, in the engine's product projects: every site
+  the .NET globalization analyzers find (CA1304, CA1305, CA1309, CA1310 and CA1311), the numeric parses they do not
+  flag (`TryParse` with no format provider), a case-insensitive RegExp, and the error messages and printers that
+  interpolated a double, a date or a possibly negative offset. Until this change each read the host's current culture,
+  so the answers below move under a host culture other than the invariant one, to the invariant culture's; with no
+  `LANG`, whose culture is the invariant one, and under invariant globalization, **no answer moves**:
+  - a RegExp with the `i` flag outside Unicode mode, a .NET `Regex` with `RegexOptions.IgnoreCase`, folds case by the
+    invariant culture's equivalences, as ECMAScript's Canonicalize does: under `tr-TR` `/I/i.test("i")` and
+    `/(?i:I)b/.test("ib")` are `true`, where they were `false`, and under `de-DE`, `sv-SE` and `tr-TR`
+    `/i/i.test("İ")` is `false`, where it was `true`;
+  - the CLR bridge reads a String it turns into a .NET `long` with the invariant culture's signs (`JSString`'s
+    `BigIntValue`): under `sv-SE`, whose minus sign in .NET is U+2212, `"−5"` is 0, as under the invariant culture,
+    where it was -5;
+  - the CLR bridge reads a String it turns into a .NET `DateTime` or `DateTimeOffset` with the invariant culture's
+    format (`JSValueToClrConverter`'s four date conversions): under `de-DE` and `tr-TR` `"11/12/2026 13:45:00"` is
+    12 November 2026, where it was 11 December. The engine's records say only that this conversion parses a string "by
+    the platform for a host method", and name no format;
+  - a number in a value's detail text (`JSValue.ToDetailString`) and in the debugger's description of it is the
+    invariant culture's: under `de-DE` an object `{ a: 1.5 }` reads `{a: 1.5}`, where it read `{a: 1,5}`, and under
+    `sv-SE` -2 is written `-2`, where it was `−2`;
+  - an error message that writes a number is the invariant culture's: `String.fromCodePoint(1.5)` throws "Invalid code
+    point 1.5" and a Number called as a function "1.5 is not a function", where under `de-DE`, `sv-SE` and `tr-TR` they
+    wrote `1,5`;
+  - the shell lowers a `#r "nuget: Name, Version"` reference's version by the invariant culture's casing: under
+    `tr-TR` `1.0.0-PREVIEW` is `1.0.0-preview`, where it was `1.0.0-prevıew`.
+
+  The other fixed sites write array and property indexes, JSON's keys and source text, RegExp's escapes and its own
+  group names, template delimiters, private names, module specifiers, stack trace lines, ids and IL dumps, whose text no
+  culture decided (an index, a line or a hexadecimal digit is written alike under every culture, and an ordinal test of
+  an ASCII prefix answers as the linguistic one did); they are fixed so that no call reads the host's culture. The
+  cases are `Broiler.JavaScript.Integration.Tests`' `ClrBridgeHostCultureTests`, `Broiler.JavaScript.Debugger.Tests`'
+  `DebuggerHostCultureTests`, `Broiler.JavaScript.Compiler.Tests`' `ShellPackageVersionCultureTests` and
+  `Broiler.JavaScript.BuiltIns.Tests`' `HostCultureScriptPathTests`, each under the invariant culture and under
+  `de-DE`, `sv-SE` and `tr-TR`.
+- **The build holds the rules.** CA1304, CA1305, CA1309, CA1310 and CA1311 are errors in the engine's product projects
+  (`Broiler.JS/host-culture.globalconfig`, which `Broiler.JS/Directory.Build.props` hands to every project below
+  `Broiler.JS/` but the test projects, the benchmarks, the samples, the perf tools and the source generator), so a call
+  that formats, parses, maps case or compares strings without naming a culture or a comparison no longer builds there.
+- **What keeps the host's culture**, each naming the culture it reads, which the rules accept: the default-locale
+  provider (decision D7), the host-culture provider (decision D6), `Intl.Collator`'s comparison until milestone SJL-17,
+  and the .NET format-string extension of `Number.prototype.toLocaleString` and `Date.prototype.toLocaleString` and the
+  culture-dependent legacy `Date.parse`, which decision SJL-D-17 keeps. Under `tr-TR`, `String.prototype.toLocaleLowerCase`
+  with no locale lowers by the default locale, Turkish, as before.
+
+Bundle [`sjl-9-001`](../docs/evidence/sjl-9-001/README.md), "Clause 8 read again after every host-culture reader is
+fixed and the rules are enforced, 2026-11-12", reads clause 8 again at this change.
+
 ### The `m` literal's `Decimal` reads and writes its digits with the invariant culture (2026-11-11, milestone SJL-9's clause 8)
 
 On the owner's ruling of 2026-11-11 on the `m` literal's host-culture parse and text, "Fix in this PR" (the alternatives
