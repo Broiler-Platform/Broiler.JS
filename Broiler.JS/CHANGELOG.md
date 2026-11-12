@@ -10,7 +10,7 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
-### Every host-culture reader outside the providers and SJL-D-17's paths names the invariant culture or an ordinal comparison, and the build holds the globalization rules (2026-11-12, milestone SJL-9's clause 8)
+### Every host-culture reader outside the providers, SJL-D-17's paths and the Collator's comparison names the invariant culture or an ordinal comparison, and the build holds the globalization rules (2026-11-12, milestone SJL-9's clause 8)
 
 On the owner's ruling of 2026-11-11 on clause 8's remaining host-culture readers, "Fix all + enforce" (the alternatives
 not taken being "Fix all, no enforcement" and "Scope clause 8 to Intl"):
@@ -54,7 +54,15 @@ not taken being "Fix all, no enforcement" and "Scope clause 8 to Intl"):
   (`Broiler.JS/host-culture.globalconfig`, which `Broiler.JS/Directory.Build.props` hands to every project below
   `Broiler.JS/` but the test projects, the benchmarks, the samples, the perf tools and the source generator), so a call
   that formats, parses, maps case or compares strings without naming a culture or a comparison no longer builds there.
-- **What keeps the host's culture**, each naming the culture it reads, which the rules accept: the default-locale
+  Those rules accept a call that names the host's culture, so the same projects also hold the banned-API rule RS0030
+  as an error, over `Broiler.JS/BannedSymbols.HostCulture.txt`: a direct read of the host's culture
+  (`CultureInfo.CurrentCulture`, `DateTimeFormatInfo.CurrentInfo`, `StringComparison.CurrentCulture`,
+  `StringComparer.CurrentCulture` and the like) or a .NET culture built from the host's data
+  (`CultureInfo.GetCultureInfo` and the like) builds only on the paths below, each of which suppresses the rule in
+  place with its reason. An environment variable `BroilerHostCultureRules` does not turn the rules off; the build says
+  it is ignored. What the rules do not see is a numeric `TryParse` with no format provider, a .NET `Regex` that ignores
+  case without `RegexOptions.CultureInvariant`, and a value made text by interpolation, concatenation or a writer.
+- **What keeps the host's culture**, each naming the culture it reads and suppressing RS0030 in place: the default-locale
   provider (decision D7), the host-culture provider (decision D6), `Intl.Collator`'s comparison until milestone SJL-17,
   and the .NET format-string extension of `Number.prototype.toLocaleString` and `Date.prototype.toLocaleString` and the
   culture-dependent legacy `Date.parse`, which decision SJL-D-17 keeps. Under `tr-TR`, `String.prototype.toLocaleLowerCase`
