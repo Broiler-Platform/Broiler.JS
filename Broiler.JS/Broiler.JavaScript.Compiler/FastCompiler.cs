@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Globalization;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Ast.Statements;
@@ -171,7 +172,7 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         // browser's devtools does with VM123, so each compiled program is identifiable and its
         // frames can be attributed to it.
         var wasAnonymous = location == null;
-        location = location ?? "vm" + Interlocked.Increment(ref anonymousProgramSequence).ToString() + ".js";
+        location = location ?? "vm" + Interlocked.Increment(ref anonymousProgramSequence).ToString(CultureInfo.InvariantCulture) + ".js";
 
         // A frame naming vm16.js still does not say what vm16.js *is*, and a payload a loader
         // evaluated exists nowhere on disk to go and look at. Opt-in, via

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Runtime.ExceptionServices;
 using System.Threading;
+using System.Globalization;
 
 namespace Broiler.JavaScript.ExpressionCompiler;
 
@@ -88,7 +89,7 @@ public static class CompilationStack
         // An unparseable or negative value is the default, not an error: a compilation is
         // the wrong place to report a malformed environment, and refusing to compile would
         // be a far worse outcome than ignoring the setting.
-        return int.TryParse(configured, out var value) && value >= 0
+        return int.TryParse(configured, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) && value >= 0
             ? value
             : DefaultSizeBytes;
     }

@@ -1,3 +1,4 @@
+using System.Globalization;
 namespace Broiler.JavaScript.Runtime;
 
 /// <summary>
@@ -71,7 +72,7 @@ public struct StringIndexKeyEnumerator(int length) : IElementEnumerator
         {
             hasValue = true;
             index = (uint)this.index;
-            value = JSValue.CreateString(index.ToString());
+            value = JSValue.CreateString(index.ToString(CultureInfo.InvariantCulture));
             return true;
         }
         hasValue = false;
@@ -84,7 +85,7 @@ public struct StringIndexKeyEnumerator(int length) : IElementEnumerator
     {
         if (++index < length)
         {
-            value = JSValue.CreateString(((uint)index).ToString());
+            value = JSValue.CreateString(((uint)index).ToString(CultureInfo.InvariantCulture));
             return true;
         }
         value = JSUndefined.Value;
@@ -95,7 +96,7 @@ public struct StringIndexKeyEnumerator(int length) : IElementEnumerator
     {
         if (++index < length)
         {
-            value = JSValue.CreateString(((uint)index).ToString());
+            value = JSValue.CreateString(((uint)index).ToString(CultureInfo.InvariantCulture));
             return true;
         }
         value = @default;
@@ -106,7 +107,7 @@ public struct StringIndexKeyEnumerator(int length) : IElementEnumerator
     {
         if (++index < length)
         {
-            return JSValue.CreateString(((uint)index).ToString());
+            return JSValue.CreateString(((uint)index).ToString(CultureInfo.InvariantCulture));
         }
         return @default;
     }

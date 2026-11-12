@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Reflection;
 using System.Text;
+using System.Globalization;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Storage;
 
@@ -147,7 +148,7 @@ public class JSException : Exception
             {
                 // Already collected: render what was captured at the throw.
                 foreach (var (target, file, line, column) in trace)
-                    sb.AppendLine($"    at {target}:{file}:{line},{column}");
+                    sb.AppendLine(CultureInfo.InvariantCulture, $"    at {target}:{file}:{line},{column}");
 
                 return JSValue.CreateString(sb.ToString());
             }
@@ -155,7 +156,7 @@ public class JSException : Exception
             if (trace.Count > 0)
             {
                 var f = trace[0];
-                sb.AppendLine($"    at {f.target}:{f.file}:{f.line},{f.column}");
+                sb.AppendLine(CultureInfo.InvariantCulture, $"    at {f.target}:{f.file}:{f.line},{f.column}");
             }
 
             var beforeWalk = trace.Count;

@@ -28,13 +28,15 @@ namespace BroilerJS.Utils
 
             public ExtensionConfiguration(string name)
             {
-                if (name.StartsWith("nuget:"))
+                if (name.StartsWith("nuget:", StringComparison.Ordinal))
                 {
                     name = name.Split(':')[1];
                 }
                 var tokens = name.Split(',');
                 Package = tokens[0].Trim();
-                Version = tokens[1].Trim().ToLower();
+                // Lowered by the invariant culture's casing (milestone SJL-9's clause 8, on the owner's ruling of 2026-11-11,
+                // "Fix all + enforce"); until then `ToLower()`, the host's, under tr-TR lowered `PREVIEW` to `prevıew`.
+                Version = tokens[1].Trim().ToLowerInvariant();
                 if (Package.StartsWith("BroilerJS", StringComparison.OrdinalIgnoreCase))
                 {
                     PreRelease = true;

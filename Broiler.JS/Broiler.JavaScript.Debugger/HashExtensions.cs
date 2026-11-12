@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using System.Globalization;
 
 namespace Broiler.JavaScript.Debugger;
 
@@ -9,7 +10,7 @@ public static class HashExtensions
     {
         var sb = new StringBuilder();
         foreach(var b in Encoding.UTF8.GetBytes(text))
-            sb.Append(b.ToString("x2"));
+            sb.Append(b.ToString("x2", CultureInfo.InvariantCulture));
 
         return sb.ToString();
     }

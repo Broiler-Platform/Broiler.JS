@@ -32,7 +32,7 @@ internal static class JSJsonParser
 
     private static void AddJsonObjectProperty(JSObject target, string name, JSValue value)
     {
-        if (uint.TryParse(name, out var index) && index != uint.MaxValue && index.ToString() == name)
+        if (uint.TryParse(name, NumberStyles.None, CultureInfo.InvariantCulture, out var index) && index != uint.MaxValue && index.ToString(CultureInfo.InvariantCulture) == name)
         {
             target.FastAddValue(index, value, JSPropertyAttributes.EnumerableConfigurableValue);
             return;
@@ -118,7 +118,7 @@ internal static class JSJsonParser
 
             var value = Build(ref reader, text, sources, out var source);
             if (sources != null)
-                value = sources((j, j.Length.ToString(), value, source!));
+                value = sources((j, j.Length.ToString(CultureInfo.InvariantCulture), value, source!));
 
             if (!value.IsUndefined)
                 j.Add(value);

@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using System.Globalization;
 
 namespace Lokad.ILPack.Metadata
 {
@@ -144,7 +145,7 @@ namespace Lokad.ILPack.Metadata
             }
             else if ((member = entity as MemberInfo) != null)
             {
-                sb.Append($"\"{member}\"");
+                sb.Append(CultureInfo.InvariantCulture, $"\"{member}\"");
                 if (member.DeclaringType != null)
                 {
                     sb.Append(" of ");
@@ -153,7 +154,7 @@ namespace Lokad.ILPack.Metadata
             }
             else
             {
-                sb.Append($"\"{entity}\"");
+                sb.Append(CultureInfo.InvariantCulture, $"\"{entity}\"");
             }
 
             return sb.ToString();

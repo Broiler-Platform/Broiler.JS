@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Globalization;
 using Broiler.JavaScript.Storage;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
@@ -99,7 +100,7 @@ public static class MarshalExtensions
                         var en = new PropertyEnumerator(@object, true, true);
 
                         while (en.MoveNext(out var key, out var value))
-                            list.Add(Convert.ChangeType(key.ToString(), keyType), value.ForceConvert(valueType));
+                            list.Add(Convert.ChangeType(key.ToString(), keyType, CultureInfo.InvariantCulture), value.ForceConvert(valueType));
 
                         return true;
                     }

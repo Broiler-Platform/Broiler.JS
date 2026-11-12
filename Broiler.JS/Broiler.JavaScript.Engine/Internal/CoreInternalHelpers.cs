@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Globalization;
 
 namespace Broiler.JavaScript.Engine.Internal;
 
@@ -143,7 +144,7 @@ internal static class CoreInternalHelpers
                         var en = new PropertyEnumerator(@object, true, true);
 
                         while (en.MoveNext(out var key, out var value))
-                            list.Add(Convert.ChangeType(key.ToString(), keyType), value.ForceConvert(valueType));
+                            list.Add(Convert.ChangeType(key.ToString(), keyType, CultureInfo.InvariantCulture), value.ForceConvert(valueType));
 
                         return true;
                     }

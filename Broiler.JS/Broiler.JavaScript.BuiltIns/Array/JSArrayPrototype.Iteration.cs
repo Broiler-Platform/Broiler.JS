@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.BuiltIns.Generator;
@@ -626,7 +627,7 @@ public partial class JSArray
             // FlattenIntoArray: HasProperty then Get, so holes are skipped and exotic
             // sources (a Proxy / array-like) are observed through their has/get traps
             // rather than only their dense own elements (test262 flat/proxy-access-count).
-            if (!@this.HasProperty(CreateString(i.ToString())).BooleanValue)
+            if (!@this.HasProperty(CreateString(i.ToString(CultureInfo.InvariantCulture))).BooleanValue)
                 continue;
 
             var elementValue = @this[i];

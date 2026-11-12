@@ -15,6 +15,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using System.Globalization;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 
@@ -440,7 +441,7 @@ public sealed class AssemblyCodeCache : ICodeCache, IDisposable
 
             try
             {
-                File.Move(artifact, $"{artifact}.bad-{DateTime.UtcNow:yyyyMMddHHmmssfff}-{Guid.NewGuid():N}");
+                File.Move(artifact, string.Create(CultureInfo.InvariantCulture, $"{artifact}.bad-{DateTime.UtcNow:yyyyMMddHHmmssfff}-{Guid.NewGuid():N}"));
                 moved = true;
             }
             catch (IOException)

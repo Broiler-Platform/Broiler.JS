@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
@@ -36,7 +37,7 @@ internal sealed class JSRegExpStringIterator : JSObject
     private static JSObject GetPrototype()
     {
         var iteratorPrototype = GetIteratorPrototype();
-        var key = iteratorPrototype == null ? string.Empty : iteratorPrototype.UniqueID.ToString();
+        var key = iteratorPrototype == null ? string.Empty : iteratorPrototype.UniqueID.ToString(CultureInfo.InvariantCulture);
         return Prototypes.GetOrAdd(key, _ => CreateIteratorPrototype(iteratorPrototype));
     }
 

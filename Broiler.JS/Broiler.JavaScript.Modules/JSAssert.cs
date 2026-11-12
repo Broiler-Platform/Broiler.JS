@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
@@ -70,7 +71,7 @@ public partial class JSAssert : JSFunction
 
         if (!(diff < marginalDiff))
         {
-            var msg = !msgObj.IsUndefined ? msgObj.ToString() : $"Values {left},{right} are not same difference is {diff}";
+            var msg = !msgObj.IsUndefined ? msgObj.ToString() : string.Create(CultureInfo.InvariantCulture, $"Values {left},{right} are not same difference is {diff}");
             throw new JSException(msg);
         }
 

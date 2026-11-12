@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Globalization;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Ast.Misc;
@@ -896,7 +897,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             name = name[..^1];
 
         var underscore = name.LastIndexOf('_');
-        if (underscore > 0 && int.TryParse(name[(underscore + 1)..], out _))
+        if (underscore > 0 && int.TryParse(name[(underscore + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
             name = name[..underscore];
 
         return name;

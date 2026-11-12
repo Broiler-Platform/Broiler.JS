@@ -10,6 +10,7 @@ using System;
 using System.CodeDom.Compiler;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Globalization;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.Runtime;
@@ -157,11 +158,11 @@ public partial class JSJSON : JSObject
                 if (indent != null)
                     sb.WriteLine();
 
-                var jsValue = ToJson(array[index], CreateString(index.ToString()));
+                var jsValue = ToJson(array[index], CreateString(index.ToString(CultureInfo.InvariantCulture)));
                 // A PropertyList never filters array elements; only a function
                 // replacer is consulted here.
                 if (replacer != null)
-                    jsValue = replacer((array, CreateString(index.ToString()), jsValue));
+                    jsValue = replacer((array, CreateString(index.ToString(CultureInfo.InvariantCulture)), jsValue));
 
                 // SerializeJSONArray: an element whose serialization is undefined — an
                 // undefined / callable / Symbol value — is rendered as the literal "null".
@@ -360,7 +361,7 @@ public partial class JSJSON : JSObject
             value = holder[index];
         }
 
-        var key = index.ToString();
+        var key = index.ToString(CultureInfo.InvariantCulture);
         if (sourceMap != null)
         {
             var context = new JSObject();

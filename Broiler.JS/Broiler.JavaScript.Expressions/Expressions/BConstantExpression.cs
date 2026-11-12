@@ -1,5 +1,6 @@
 ﻿using System;
 using System.CodeDom.Compiler;
+using System.Globalization;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Expressions;
 
@@ -19,7 +20,7 @@ public class BConstantExpression(object value, Type type) : BExpression(BExpress
             writer.Write($"\"{Escape(Value.ToString())}\"");
             return;
         }
-        writer.Write(Value);
+        writer.Write(System.Convert.ToString(Value, CultureInfo.InvariantCulture));
     }
 
     private string Escape(string text) => text

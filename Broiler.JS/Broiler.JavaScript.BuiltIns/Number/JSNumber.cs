@@ -369,7 +369,7 @@ public sealed partial class JSNumber : JSPrimitive
 
     public override string ToLocaleString(string format, CultureInfo culture) => value.ToString(format, culture.NumberFormat);
 
-    public override string ToDetailString() => value.ToString();
+    public override string ToDetailString() => value.ToString(CultureInfo.InvariantCulture);
 
 
     public static bool IsNaN(JSValue n) => double.IsNaN(n.DoubleValue);
@@ -521,7 +521,7 @@ public sealed partial class JSNumber : JSPrimitive
 
     public override bool StrictEqualsLiteral(double value) => this.value == value;
 
-    public override JSValue InvokeFunction(in Arguments a) => throw JSEngine.NewTypeError($"{value} is not a function");
+    public override JSValue InvokeFunction(in Arguments a) => throw JSEngine.NewTypeError(string.Create(CultureInfo.InvariantCulture, $"{value} is not a function"));
 
     internal override JSValue Is(JSValue value)
     {

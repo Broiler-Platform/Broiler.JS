@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Globalization;
 
 namespace Broiler.JavaScript.Runtime;
 
@@ -634,7 +635,7 @@ public partial class JSObject : JSValue
             while (es.MoveNext(out var hasValue, out var value, out var index))
             {
                 if (hasValue)
-                    yield return (index.ToString(), value);
+                    yield return (index.ToString(CultureInfo.InvariantCulture), value);
             }
 
             var ownProperties = GetOwnProperties();

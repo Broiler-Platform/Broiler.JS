@@ -68,15 +68,15 @@ partial class FastCompiler
                 if (l.TokenType == TokenTypes.TemplatePart || l.TokenType == TokenTypes.TemplateEnd)
                 {
                     var r = l.Start.Span.Value;
-                    if (r.StartsWith("`"))
+                    if (r.StartsWith("`", StringComparison.Ordinal))
                         r = r.Substring(1);
 
-                    if (r.StartsWith("}"))
+                    if (r.StartsWith("}", StringComparison.Ordinal))
                         r = r.TrimStart('}');
 
-                    if (r.EndsWith("${"))
+                    if (r.EndsWith("${", StringComparison.Ordinal))
                         r = r.Substring(0, r.Length - 2);
-                    else if (r.EndsWith("`"))
+                    else if (r.EndsWith("`", StringComparison.Ordinal))
                         r = r.Substring(0, r.Length - 1);
 
                     // ES TRV normalization: <CR> and <CRLF> in the raw template text both map to

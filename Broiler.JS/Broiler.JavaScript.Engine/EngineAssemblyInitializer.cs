@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Globalization;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Engine.Internal;
 using Broiler.JavaScript.Runtime;
@@ -84,7 +85,7 @@ internal static class EngineAssemblyInitializer
                 if (string.IsNullOrWhiteSpace(file))
                     file = "file";
 
-                sb.AppendLine($"    at {fx}:{file}:{line},{column}");
+                sb.AppendLine(CultureInfo.InvariantCulture, $"    at {fx}:{file}:{line},{column}");
                 trace.Add((fx, file, line, column));
             }
         };

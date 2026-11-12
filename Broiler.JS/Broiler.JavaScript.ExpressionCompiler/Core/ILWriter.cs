@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Globalization;
 using Broiler.JavaScript.ExpressionCompiler.Generator;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Core;
@@ -64,7 +65,7 @@ public class ILWriter(ILGenerator il, TextWriter? writer = null)
             return;
 
         writer.Write("IL_");
-        writer.Write(il.ILOffset.ToString("X4"));
+        writer.Write(il.ILOffset.ToString("X4", CultureInfo.InvariantCulture));
         writer.Write(": ");
     }
 
@@ -159,14 +160,14 @@ public class ILWriter(ILGenerator il, TextWriter? writer = null)
     internal void Emit(in OpCode code, float value)
     {
         PrintOffset();
-        writer?.WriteLine($"{code.Name} {value}");
+        writer?.WriteLine(string.Create(CultureInfo.InvariantCulture, $"{code.Name} {value}"));
         il.Emit(code, value);
     }
 
     internal void Emit(in OpCode code, double value)
     {
         PrintOffset();
-        writer?.WriteLine($"{code.Name} {value}");
+        writer?.WriteLine(string.Create(CultureInfo.InvariantCulture, $"{code.Name} {value}"));
         il.Emit(code, value);
     }
 

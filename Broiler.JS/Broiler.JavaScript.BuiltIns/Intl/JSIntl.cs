@@ -853,7 +853,7 @@ public static class JSIntl
         HashSet<string> seen = null;
         for (uint i = 0; i < length; i++)
         {
-            if (!localesObject.HasProperty(JSValue.CreateString(i.ToString())).BooleanValue)
+            if (!localesObject.HasProperty(JSValue.CreateString(i.ToString(CultureInfo.InvariantCulture))).BooleanValue)
                 continue;
 
             var locale = localesObject[i];

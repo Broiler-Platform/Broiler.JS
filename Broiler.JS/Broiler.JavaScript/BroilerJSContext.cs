@@ -167,7 +167,7 @@ namespace BroilerJS
 
             var filePath = module.filePath;
 
-            if (!filePath.EndsWith(".csx"))
+            if (!filePath.EndsWith(".csx", StringComparison.Ordinal))
             {
                 await base.CompileModuleAsync(module);
                 return;
@@ -253,7 +253,7 @@ namespace BroilerJS
             while ((line = sr.ReadLine() ) != null)
             {
                 var l = line.TrimStart();
-                if(l.StartsWith("#r \"nuget: "))
+                if(l.StartsWith("#r \"nuget: ", StringComparison.Ordinal))
                 {
                     var name = ParseName(l);
                     if (name == "BroilerJS.Core")

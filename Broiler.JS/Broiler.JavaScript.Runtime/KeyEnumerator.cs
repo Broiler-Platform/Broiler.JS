@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.Runtime;
@@ -145,7 +146,7 @@ public class KeyEnumerator : IElementEnumerator
             var indexSnapshot = jSObject.GetOwnIndexedElementEnumerator(showEnumerableOnly);
             while (indexSnapshot.MoveNext(out var hasValueAtStart, out var _, out var ui))
                 if (hasValueAtStart)
-                    ownIndexNamesAtStart.Add(ui.ToString());
+                    ownIndexNamesAtStart.Add(ui.ToString(CultureInfo.InvariantCulture));
         }
     }
 
@@ -178,7 +179,7 @@ public class KeyEnumerator : IElementEnumerator
         {
             while (elements.MoveNext(out var hasValueout, out var _, out var ui))
             {
-                var name = ui.ToString();
+                var name = ui.ToString(CultureInfo.InvariantCulture);
                 if (IndexAddedDuringEnumeration(name))
                     continue;
                 if (!Accept(name))
@@ -240,7 +241,7 @@ public class KeyEnumerator : IElementEnumerator
                 if (!hasValueout)
                     continue;
 
-                var name = ui.ToString();
+                var name = ui.ToString(CultureInfo.InvariantCulture);
                 if (IndexAddedDuringEnumeration(name))
                     continue;
                 if (!Accept(name))

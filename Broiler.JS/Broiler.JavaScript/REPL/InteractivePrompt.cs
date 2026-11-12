@@ -135,7 +135,7 @@ namespace BroilerJS.REPL
                 direction = (key.Modifiers == ConsoleModifiers.Shift) ? -1 : 1;
                 i = mod((i + direction), s.Count);
 
-                if (Regex.IsMatch(s[i], ".*(?:" + input + ").*", RegexOptions.IgnoreCase))
+                if (Regex.IsMatch(s[i], ".*(?:" + input + ").*", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
                 {
                     yield return s[i];
                 }

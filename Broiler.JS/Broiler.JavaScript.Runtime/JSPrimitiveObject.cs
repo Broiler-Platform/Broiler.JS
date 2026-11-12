@@ -1,6 +1,7 @@
 ﻿using Broiler.JavaScript.Storage;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Broiler.JavaScript.Runtime;
 
@@ -246,7 +247,7 @@ public class JSPrimitiveObject : JSObject
             // which stringifies indices. Emitting raw numbers here would make
             // Object.keys/entries/getOwnPropertyNames return numeric keys.
             if (hasValue)
-                keys.Add(CreateString(index.ToString()));
+                keys.Add(CreateString(index.ToString(CultureInfo.InvariantCulture)));
         }
 
         // Partition the remaining own keys: array-index keys (which belong with the
@@ -276,7 +277,7 @@ public class JSPrimitiveObject : JSObject
         {
             extraIndexKeys.Sort();
             foreach (var index in extraIndexKeys)
-                keys.Add(CreateString(index.ToString()));
+                keys.Add(CreateString(index.ToString(CultureInfo.InvariantCulture)));
         }
 
         // String exotic objects also have a non-writable, non-enumerable,

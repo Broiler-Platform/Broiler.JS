@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
@@ -39,7 +40,7 @@ public static class ListOfExpressionsExtensions
                 continue;
             }
 
-            result.Add(Expression.Constant(Convert.ToInt32(ce.Value)));
+            result.Add(Expression.Constant(Convert.ToInt32(ce.Value, CultureInfo.InvariantCulture)));
         }
 
         return result;
@@ -71,7 +72,7 @@ public static class ListOfExpressionsExtensions
                 continue;
             }
 
-            result.Add(Expression.Constant(Convert.ToInt32(ce.Value)));
+            result.Add(Expression.Constant(Convert.ToInt32(ce.Value, CultureInfo.InvariantCulture)));
         }
 
         return result;
@@ -120,7 +121,7 @@ public static class ListOfExpressionsExtensions
                 continue;
             }
 
-            result.Add(Expression.Constant(Convert.ToDouble(ce.Value)));
+            result.Add(Expression.Constant(Convert.ToDouble(ce.Value, CultureInfo.InvariantCulture)));
         }
 
         return result;
@@ -141,7 +142,7 @@ public static class ListOfExpressionsExtensions
                 continue;
             }
 
-            result.Add(Expression.Constant(Convert.ToDouble(ce.Value)));
+            result.Add(Expression.Constant(Convert.ToDouble(ce.Value, CultureInfo.InvariantCulture)));
         }
 
         return result;

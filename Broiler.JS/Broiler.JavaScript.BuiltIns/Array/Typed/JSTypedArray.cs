@@ -244,17 +244,17 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
                 {
                     var requestedByteLength = (long)byteLength * bytesPerElement;
                     if (requestedByteLength > int.MaxValue)
-                        throw JSEngine.NewRangeError($"Start offset {byteOffset} is outside the bounds of the buffer");
+                        throw JSEngine.NewRangeError(string.Create(CultureInfo.InvariantCulture, $"Start offset {byteOffset} is outside the bounds of the buffer"));
 
                     byteLength = (int)requestedByteLength;
                     explicitLength = len;
                 }
 
                 if (byteOffset < 0 || (byteOffset % bytesPerElement) != 0)
-                    throw JSEngine.NewRangeError($"Start offset {byteOffset} is outside the bounds of the buffer");
+                    throw JSEngine.NewRangeError(string.Create(CultureInfo.InvariantCulture, $"Start offset {byteOffset} is outside the bounds of the buffer"));
 
                 if (byteLength < 0 || ((long)byteOffset + byteLength) > buffer.buffer.Length)
-                    throw JSEngine.NewRangeError($"Start offset {byteOffset} is outside the bounds of the buffer");
+                    throw JSEngine.NewRangeError(string.Create(CultureInfo.InvariantCulture, $"Start offset {byteOffset} is outside the bounds of the buffer"));
 
             }
             return;

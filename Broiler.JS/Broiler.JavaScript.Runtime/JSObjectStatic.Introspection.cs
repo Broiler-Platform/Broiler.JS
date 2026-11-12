@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.Runtime;
@@ -39,7 +40,7 @@ public partial class JSObject
             foreach (var (key, property) in @object.GetElements(false).AllValues())
             {
                 if (!property.IsEmpty)
-                    keys.Add(CreateString(key.ToString()));
+                    keys.Add(CreateString(key.ToString(CultureInfo.InvariantCulture)));
             }
         }
 
@@ -79,7 +80,7 @@ public partial class JSObject
             foreach (var (index, property) in target.GetElements(false).AllValues())
             {
                 if (!property.IsEmpty)
-                    keys.Add(CreateString(index.ToString()));
+                    keys.Add(CreateString(index.ToString(CultureInfo.InvariantCulture)));
             }
 
             var properties = target.GetOwnProperties(false).GetEnumerator(showEnumerableOnly: false);

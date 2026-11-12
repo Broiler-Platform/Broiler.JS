@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Globalization;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
 namespace Broiler.JavaScript.Runtime;
@@ -49,17 +50,22 @@ public static class JSValueToClrConverter
     public static decimal ToDecimal(JSValue value, string name) => value.HasValue() ? (decimal)value.DoubleValue : throw new JSException($"{name} is required");
     public static decimal? ToNullableDecimal(JSValue value, string name) => value.IsNullOrUndefined ? null : (decimal)value.DoubleValue;
 
+    // A String the CLR bridge turns into a DateTime or DateTimeOffset is read with the invariant culture under every host
+    // (milestone SJL-9's clause 8, on the owner's ruling of 2026-11-11, "Fix all + enforce"); until then each of the four
+    // read `DateTime.Parse(value.ToString())`, the host's date format, so that under de-DE "11/12/2026" was 11 December.
+    // The engine's records say only that it parses a string "by the platform for a host method" (bundle sjl-6-001) and
+    // name no format or culture for it.
     public static DateTime ToDateTime(JSValue value, string name) =>
-        value.HasValue() ? (value.ConvertTo(typeof(DateTime), out var dt) ? (DateTime)dt : DateTime.Parse(value.ToString())) : throw new ArgumentException($"{name} is required");
+        value.HasValue() ? (value.ConvertTo(typeof(DateTime), out var dt) ? (DateTime)dt : DateTime.Parse(value.ToString(), CultureInfo.InvariantCulture)) : throw new ArgumentException($"{name} is required");
 
     public static DateTime? ToNullableDateTime(JSValue value, string name) =>
-        value.HasValue() ? (value.ConvertTo(typeof(DateTime), out var dt) ? (DateTime)dt : DateTime.Parse(value.ToString())) : null;
+        value.HasValue() ? (value.ConvertTo(typeof(DateTime), out var dt) ? (DateTime)dt : DateTime.Parse(value.ToString(), CultureInfo.InvariantCulture)) : null;
 
     public static DateTimeOffset ToDateTimeOffset(JSValue value, string name) =>
-        value.HasValue() ? (value.ConvertTo(typeof(DateTimeOffset), out var dto) ? (DateTimeOffset)dto : DateTime.Parse(value.ToString())) : throw new ArgumentException($"{name} is required");
+        value.HasValue() ? (value.ConvertTo(typeof(DateTimeOffset), out var dto) ? (DateTimeOffset)dto : DateTime.Parse(value.ToString(), CultureInfo.InvariantCulture)) : throw new ArgumentException($"{name} is required");
 
     public static DateTimeOffset? ToNullableDateTimeOffset(JSValue value, string name) =>
-        value.HasValue() ? (value.ConvertTo(typeof(DateTimeOffset), out var dto) ? (DateTimeOffset)dto : DateTime.Parse(value.ToString())) : null;
+        value.HasValue() ? (value.ConvertTo(typeof(DateTimeOffset), out var dto) ? (DateTimeOffset)dto : DateTime.Parse(value.ToString(), CultureInfo.InvariantCulture)) : null;
 
     private static readonly Dictionary<Type, MethodInfo> methods = [];
     private static readonly MethodInfo GetAsGeneric = typeof(JSValueToClrConverter).GetMethod(nameof(GetAs));
@@ -69,7 +75,7 @@ public static class JSValueToClrConverter
     {
         foreach (var method in typeof(JSValueToClrConverter).GetMethods())
         {
-            if (!method.Name.StartsWith("To"))
+            if (!method.Name.StartsWith("To", StringComparison.Ordinal))
                 continue;
 
             if (!method.IsStatic)
