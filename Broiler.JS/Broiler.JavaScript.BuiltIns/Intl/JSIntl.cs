@@ -2694,6 +2694,10 @@ public class JSIntlCollator : JSObject
     // but does NOT actually apply the tailoring — only the full BCP-47 culture-construction
     // path is wired through to the ICU tailored collator). Falls back to the locale's default
     // CompareInfo (or the invariant one) when the tailoring isn't recognised.
+    // Kept on the host's culture: Intl.Collator's comparison, which decision SJL-D-24 (c) leaves the host's until
+    // milestone SJL-17 (milestone SJL-9's clause 8, on the owner's ruling of 2026-11-11, "Fix all + enforce"). It names
+    // the culture it reads, so the globalization rules the engine's build holds (Broiler.JS/host-culture.globalconfig)
+    // accept it, and it needs no suppression.
     private static CompareInfo ResolveCompareInfo(string localeTag, string collation, string usage)
     {
         var bareLocale = StripUnicodeExtension(localeTag);

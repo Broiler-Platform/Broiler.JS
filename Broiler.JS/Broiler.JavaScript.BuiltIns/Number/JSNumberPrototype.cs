@@ -269,6 +269,10 @@ partial class JSNumber
         // string needs a .NET culture, which DefaultLocale's en-US is not under invariant globalization, and no
         // ECMA-402 text reaches it. It is listed against JSD-0082's decision D7, one default (row L35), for
         // task 8.7's records to name as outside that reading (listed 2026-11-04, at SJL-9.5).
+        // Kept on the host's culture: the .NET format-string extension of toLocaleString, which decision SJL-D-17 keeps
+        // (milestone SJL-9's clause 8, on the owner's ruling of 2026-11-11, "Fix all + enforce"). It names the culture
+        // it reads, so the globalization rules the engine's build holds (Broiler.JS/host-culture.globalconfig) accept
+        // it, and it needs no suppression.
         if (format.IsString)
         {
             var culture = locale.IsNullOrUndefined

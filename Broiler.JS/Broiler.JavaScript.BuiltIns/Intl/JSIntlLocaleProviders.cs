@@ -62,6 +62,10 @@ internal static class JSIntlLocaleProviders
     {
         get
         {
+            // Kept on the host's culture: the default-locale provider, decision D7 (milestone SJL-9's clause 8, on the
+            // owner's ruling of 2026-11-11, "Fix all + enforce"). It names the culture it reads, so the globalization
+            // rules the engine's build holds (Broiler.JS/host-culture.globalconfig) accept it, and it needs no
+            // suppression.
             var name = CultureInfo.CurrentCulture.Name;
             return string.IsNullOrEmpty(name)
                 ? "en-US"

@@ -155,6 +155,10 @@ public partial class JSDate
     // CultureInfo. <paramref name="standardFormat"/> is the .NET format used when none is supplied.
     // The date is formatted as its DateTimeOffset view, at the host's offset in force at the instant;
     // a date that view cannot hold, outside the years 1 to 9999, is a RangeError (correspondence row R5).
+    // Kept on the host's culture: the .NET format-string extension of toLocaleString, which decision SJL-D-17 keeps
+    // (milestone SJL-9's clause 8, on the owner's ruling of 2026-11-11, "Fix all + enforce"). It names the culture it
+    // reads, so the globalization rules the engine's build holds (Broiler.JS/host-culture.globalconfig) accept it, and
+    // it needs no suppression.
     private string FormatWithNetCulture(JSValue locale, string format, string standardFormat)
     {
         if (!locale.IsUndefined)

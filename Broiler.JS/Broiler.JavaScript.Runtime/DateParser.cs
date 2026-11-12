@@ -247,6 +247,10 @@ public static class DateParser
         if (TryParseExact(text, SecondaryFormats, DateTimeStyles.AssumeLocal, out result))
             return result;
 
+        // Kept on the host's culture: the culture-dependent legacy Date.parse, which decision SJL-D-17 keeps (milestone
+        // SJL-9's clause 8, on the owner's ruling of 2026-11-11, "Fix all + enforce"). It names the culture it reads,
+        // so the globalization rules the engine's build holds (Broiler.JS/host-culture.globalconfig) accept it, and it
+        // needs no suppression.
         if (TryParse(text, CultureInfo.CurrentCulture, out result))
             return result;
 

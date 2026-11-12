@@ -9,6 +9,25 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+  <!-- Milestone SJL-9's clause 8, "Host globalization remains only behind the optional providers", on the owner's ruling
+       of 2026-11-11, "Fix all + enforce": the globalization rules CA1304, CA1305, CA1309, CA1310 and CA1311 are errors in
+       the engine's product projects (host-culture.globalconfig says why each holds). The scope is every project below
+       this folder but the ones that ship no engine code: the test projects (a name ending in "Tests"), the benchmarks,
+       the samples (the samples folder and a name ending in "Sample"), the perf tools under OtherTests, and the source
+       generator, a netstandard2.0 plug-in that runs in the compiler and that the .NET analyzers do not read. A test
+       project is held to nothing here: its answers are pinned by the cultures it sets. -->
+  <PropertyGroup>
+    <BroilerProjectFolder>$([MSBuild]::MakeRelative('$(MSBuildThisFileDirectory)', '$(MSBuildProjectDirectory)').Replace('\', '/'))</BroilerProjectFolder>
+    <BroilerHostCultureRules Condition="'$(BroilerHostCultureRules)' == ''">true</BroilerHostCultureRules>
+    <BroilerHostCultureRules Condition="$(MSBuildProjectName.EndsWith('Tests'))">false</BroilerHostCultureRules>
+    <BroilerHostCultureRules Condition="$(MSBuildProjectName.EndsWith('Sample'))">false</BroilerHostCultureRules>
+    <BroilerHostCultureRules Condition="'$(MSBuildProjectName)' == 'Broiler.JavaScript.JSClassGenerator'">false</BroilerHostCultureRules>
+    <BroilerHostCultureRules Condition="$(BroilerProjectFolder.StartsWith('benchmarks/')) Or $(BroilerProjectFolder.StartsWith('samples/')) Or $(BroilerProjectFolder.StartsWith('OtherTests/'))">false</BroilerHostCultureRules>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(BroilerHostCultureRules)' == 'true'">
+    <GlobalAnalyzerConfigFiles Include="$(MSBuildThisFileDirectory)host-culture.globalconfig" />
+  </ItemGroup>
+
   <!-- Milestone SJL-14.2 (decision D43): building with -p:BroilerParseThroughBridge=true turns the compiler's test-only
        switch on for every compile (JSCompilationOptions.BridgeByDefault), so that the test projects run with the
        compiler parsing through the bridge to the shared syntax library, and the bridge's library flows to every project
