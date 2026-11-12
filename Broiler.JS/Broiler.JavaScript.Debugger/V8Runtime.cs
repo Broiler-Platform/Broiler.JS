@@ -130,7 +130,7 @@ public partial class V8Runtime(V8InspectorProtocol inspectorContext) : V8Protoco
     {
         try
         {
-            var injectedId = $"I-{Interlocked.Increment(ref nextInjectedId)}";
+            var injectedId = string.Create(CultureInfo.InvariantCulture, $"I-{Interlocked.Increment(ref nextInjectedId)}");
             // A script without top-level await under the options of the context the call names,
             // or else the first, the one RunScript runs it in when its own call names none.
             if (!inspectorContext.Contexts.TryGetValue(a.ExecutionContextId, out var c))
@@ -155,7 +155,7 @@ public partial class V8Runtime(V8InspectorProtocol inspectorContext) : V8Protoco
         }
 
         if (!inspectorContext.Contexts.TryGetValue(a.ContextId, out var c))
-            return new ArgumentOutOfRangeException($"{a.ContextId} context not found");
+            return new ArgumentOutOfRangeException(string.Create(CultureInfo.InvariantCulture, $"{a.ContextId} context not found"));
 
         try
         {

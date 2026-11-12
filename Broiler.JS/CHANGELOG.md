@@ -10,6 +10,38 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### The engine's architecture tests hold the host-culture readers no build rule sees, and the host-culture rules' scope (2026-11-12, milestone SJL-9's clause 8)
+
+On the owner's ruling of 2026-11-12 on the readers the globalization rules do not see and on the rules' scope, "Follow-up
+arch test" (the alternative not taken being "Leave as recorded"):
+
+- **`HostCultureTests`**, in `Broiler.JavaScript.Architecture.Tests`, fails on any of three readers of the host's culture
+  in the engine's product projects, which CA1304, CA1305, CA1309, CA1310, CA1311 and RS0030 do not see: a numeric or
+  date `Parse` or `TryParse` that names no format provider, a .NET `Regex` that folds case without
+  `RegexOptions.CultureInvariant`, and an interpolated string, `string.Format` or `StringBuilder.AppendFormat` that
+  makes a number, a date or another formattable value text with no provider, culture or invariant format. It reads
+  each project's own sources by Roslyn's semantic model, compiled as the project's build compiles them, and names each
+  reader by file and line, a parse named as a method group (`Select(int.Parse)`) among them. A source whose code
+  differs under the other configuration's preprocessor symbols (Debug when the test is built in Release) is read under
+  those too. A path the owner keeps on the host's culture is exempt only inside its
+  `#pragma warning disable RS0030 // Kept: …` region, and no product source may silence RS0030 another way (a
+  `#pragma warning disable` that names no code, a `SuppressMessage`). It fails too on a product project that
+  `Broiler.JS/Directory.Build.props` leaves outside the rules, or whose own configuration silences one of them
+  (`NoWarn`, analyzers turned off, a severity in another analyzer config), and on a test, benchmark, sample or tool
+  project it puts inside them, by MSBuild's own evaluation of every project of `Broiler.JS.slnx` and below
+  `Broiler.JS/`. It adds about 16 seconds to the engine Architecture tests on a four-core machine: one
+  `dotnet msbuild` process per project, four at a time, and an in-memory compilation of every product project with
+  its source generator.
+- **The readers it found** now name the invariant culture: interpolations of a signed integer in source positions,
+  error messages, generated names, ids and logs (a Debug build's log of a thrown value's line among them), and of a
+  NuGet version in the shell's package path (`string.Create(CultureInfo.InvariantCulture, …)`), and the compiled arm of a RegExp's .NET `Regex`, whose options
+  name `RegexOptions.CultureInvariant` as the interpreted arm's already did. **No script's answer moves** under any host
+  culture: a culture changes an integer's text only by its minus sign, and every integer fixed is one a script sees only
+  when it is not negative. Outside a script, a negative number in the IL writer's log, in `SparseList<T>`'s message
+  for a negative index and in the debugger's "context not found" error for a `Runtime.evaluate` whose `contextId`,
+  which the DevTools client sends, is negative, is written with `-` under a host culture whose minus sign is another
+  character, such as `sv-SE`'s U+2212, where it was written with that culture's.
+
 ### Every host-culture reader outside the providers, SJL-D-17's paths and the Collator's comparison names the invariant culture or an ordinal comparison, and the build holds the globalization rules (2026-11-12, milestone SJL-9's clause 8)
 
 On the owner's ruling of 2026-11-11 on clause 8's remaining host-culture readers, "Fix all + enforce" (the alternatives

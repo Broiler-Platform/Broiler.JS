@@ -1,4 +1,6 @@
-﻿#nullable enable
+﻿using System.Globalization;
+
+#nullable enable
 
 namespace Broiler.JavaScript.ExpressionCompiler.Expressions;
 
@@ -10,7 +12,7 @@ public readonly struct FunctionName(string? name, string? location = null, int l
     public readonly int Column = column;
 
     public string FullName =>
-        $"{Name}-{Location}:{Line},{Column}";
+        string.Create(CultureInfo.InvariantCulture, $"{Name}-{Location}:{Line},{Column}");
 
     public static implicit operator FunctionName(string name) => new(name);
 

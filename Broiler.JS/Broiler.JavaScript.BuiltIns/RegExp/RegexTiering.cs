@@ -209,9 +209,13 @@ public static class RegexTiering
     {
         try
         {
+            // RegexOptions.CultureInvariant, which the interpreted instance already carries (JSRegExp.CreateRegex builds
+            // every RegExp's .NET Regex with it), is named here too, so that the compiled arm folds case by the invariant
+            // culture whatever options it is handed (milestone SJL-9's clause 8; the host-culture readers' architecture
+            // test, on the owner's ruling of 2026-11-12, "Follow-up arch test", refuses options it cannot see include it).
             return new System.Text.RegularExpressions.Regex(
                 interpreted.ToString(),
-                interpreted.Options | RegexOptions.Compiled,
+                interpreted.Options | RegexOptions.Compiled | RegexOptions.CultureInvariant,
                 interpreted.MatchTimeout);
         }
         catch

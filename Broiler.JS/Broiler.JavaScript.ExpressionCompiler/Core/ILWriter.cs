@@ -106,7 +106,7 @@ public class ILWriter(ILGenerator il, TextWriter? writer = null)
     internal void Emit(in OpCode code, short value)
     {
         PrintOffset();
-        writer?.WriteLine($"{code.Name} {value}");
+        writer?.WriteLine(string.Create(CultureInfo.InvariantCulture, $"{code.Name} {value}"));
         il.Emit(code, value);
     }
 
@@ -117,14 +117,14 @@ public class ILWriter(ILGenerator il, TextWriter? writer = null)
     internal void Emit(in OpCode code, int value)
     {
         PrintOffset();
-        writer?.WriteLine($"{code.Name} {value}");
+        writer?.WriteLine(string.Create(CultureInfo.InvariantCulture, $"{code.Name} {value}"));
         il.Emit(code, value);
     }
 
     internal void Emit(in OpCode code, long value)
     {
         PrintOffset();
-        writer?.WriteLine($"{code.Name} {value}");
+        writer?.WriteLine(string.Create(CultureInfo.InvariantCulture, $"{code.Name} {value}"));
         il.Emit(code, value);
     }
 

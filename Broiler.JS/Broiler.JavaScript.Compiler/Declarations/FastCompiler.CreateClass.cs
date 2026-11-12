@@ -9,6 +9,7 @@ using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
+using System.Globalization;
 using System.Reflection;
 
 namespace Broiler.JavaScript.Compiler;
@@ -383,7 +384,7 @@ partial class FastCompiler
 
         BParameterExpression SharedMemberFunctionVar(BExpression fx, string label)
         {
-            var fnVar = BExpression.Parameter(fx.Type, $"{label}$pf{privateKeyVarCounter++}");
+            var fnVar = BExpression.Parameter(fx.Type, string.Create(CultureInfo.InvariantCulture, $"{label}$pf{privateKeyVarCounter++}"));
             classScopeVariables.Add(fnVar);
             stmts.Add(BExpression.Assign(fnVar, fx));
             return fnVar;
@@ -428,7 +429,7 @@ partial class FastCompiler
                 // `in KeyString` argument) resolves the captured closure variable by
                 // name, and the name must be unique across nested class evaluations.
                 var privateKeyVar = BExpression.Parameter(
-                    typeof(KeyString), $"{privateName}$pk{privateKeyVarCounter++}");
+                    typeof(KeyString), string.Create(CultureInfo.InvariantCulture, $"{privateName}$pk{privateKeyVarCounter++}"));
                 classScopeVariables.Add(privateKeyVar);
                 stmts.Add(BExpression.Assign(privateKeyVar, JSObjectBuilder.MintPrivateName(privateName)));
                 privateNameScope[privateName] = privateKeyVar;
@@ -464,7 +465,7 @@ partial class FastCompiler
                 && property.Kind is AstPropertyKind.Data or AstPropertyKind.Get
                     or AstPropertyKind.Set or AstPropertyKind.Method)
             {
-                var computedNameVar = BExpression.Parameter(typeof(JSValue), $"#className{computedMemberNames.Count}");
+                var computedNameVar = BExpression.Parameter(typeof(JSValue), string.Create(CultureInfo.InvariantCulture, $"#className{computedMemberNames.Count}"));
                 classScopeVariables.Add(computedNameVar);
                 var keyAssign = BExpression.Assign(computedNameVar, ValidateStaticPropertyName(property, GetClassElementName(property)));
                 // The computed key evaluates as strict-mode code at runtime too, so a store
@@ -503,7 +504,7 @@ partial class FastCompiler
                     if (property.IsAutoAccessor && !isPrivateName)
                     {
                         var backingLabel = AutoAccessorBackingLabel(property);
-                        autoAccessorBackingKey = BExpression.Parameter(typeof(KeyString), $"{backingLabel}$acc{privateKeyVarCounter++}");
+                        autoAccessorBackingKey = BExpression.Parameter(typeof(KeyString), string.Create(CultureInfo.InvariantCulture, $"{backingLabel}$acc{privateKeyVarCounter++}"));
                         classScopeVariables.Add((BParameterExpression)autoAccessorBackingKey);
                         stmts.Add(BExpression.Assign(autoAccessorBackingKey, JSObjectBuilder.MintPrivateName(backingLabel)));
 

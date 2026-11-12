@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Reflection.Emit;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Generator;
@@ -117,7 +118,7 @@ public class ILTryBlock(ILWriter iLWriter, Label label, bool hasOuterGuard = fal
         {
             foreach (var (state, target, index) in pendingFinallyJumps)
             {
-                var next = il.DefineLabel($"finally jump next {state}");
+                var next = il.DefineLabel(string.Create(CultureInfo.InvariantCulture, $"finally jump next {state}"));
                 il.EmitLoadLocal(finallyJumpState.LocalIndex);
                 il.Emit(OpCodes.Ldc_I4, state);
                 il.Emit(OpCodes.Bne_Un, next);

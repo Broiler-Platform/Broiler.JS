@@ -1848,11 +1848,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // there a bare `\k<bjsgN>` to an unset group FAILS the match instead. The
             // conditional matches the capture when set and the empty string otherwise, in
             // both modes (the duplicate-name path below already relies on this form).
-            return $"(?(bjsg{indices[0]})\\k<bjsg{indices[0]}>)";
+            return string.Create(CultureInfo.InvariantCulture, $"(?(bjsg{indices[0]})\\k<bjsg{indices[0]}>)");
 
-        var acc = $"(?(bjsg{indices[^1]})\\k<bjsg{indices[^1]}>)";
+        var acc = string.Create(CultureInfo.InvariantCulture, $"(?(bjsg{indices[^1]})\\k<bjsg{indices[^1]}>)");
         for (var k = indices.Count - 2; k >= 0; k--)
-            acc = $"(?(bjsg{indices[k]})\\k<bjsg{indices[k]}>|{acc})";
+            acc = string.Create(CultureInfo.InvariantCulture, $"(?(bjsg{indices[k]})\\k<bjsg{indices[k]}>|{acc})");
         return acc;
     }
 

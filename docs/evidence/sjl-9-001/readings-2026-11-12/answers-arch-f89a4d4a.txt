@@ -1,0 +1,41 @@
+# The answers before and after the host-culture readers' architecture test and the readers it found, stage js-arch,
+# 2026-11-12. Each side from a clean git archive tree of its commit (docs/evidence left out), Release,
+# --disable-build-servers, one step at a time after the machine's idle gate, TZ=UTC, LANG unset for the builds and
+# tests: base caa3863cb0f184dfd36baa31937ae4ad281672bd (origin/main), head f89a4d4a879206ee5750165fd809ba1d946dc27e
+# (the fixes 43807084, the test f8851b35 and the changelog; the commit that adds this file changes no code).
+# The probes run with each side's shell (Broiler.JS/Broiler.JavaScript, BroilerJS.dll) in five environments: LANG
+# unset, de_DE, sv_SE and tr_TR (.UTF-8), and LANG unset under DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1.
+
+build Broiler.JS.slnx: base 0 warnings, 0 errors, exit 0; head 0 warnings, 0 errors, exit 0
+engine Architecture tests: base 16 cases, 16 passed, 0 failed; head 28 cases, 28 passed, 0 failed
+BuiltIns tests: base 3752 cases, 3752 passed, 0 failed; head 3752 cases, 3751 passed, 1 failed
+SL rules (Broiler.ECMAScript.Architecture.Tests): base 32 cases, 32 passed, 0 failed; head 32 cases, 32 passed, 0 failed
+  BuiltIns' one failure at head, ForIn_Does_Not_Visit_Properties_Added_During_Enumeration_Match_Test262 ("p1,p2|p1" for
+  "p1,p2,p3|p1"), passes run alone at head, fails again in two more whole runs at head, and fails in two more whole
+  runs at base, whose first whole run passed it: it is order- or timing-dependent at both commits, and no path this
+  change touches is on it (for-in's key enumeration). Not this change's.
+
+## probes: lines that differ between base and head, environment by environment (each file's first line, the shell's and
+## the probe's digests, left out)
+probe.js: 0 differing lines; sha256 of the rest base 5f30c3d5c2b05a21..., head 5f30c3d5c2b05a21...
+  base shell sha256 bb83b023a3390f05d31052577f640a0392d687196a61084cfd9f532fac52402d; probe sha256 ba1bcc0611aba3c0bb6be9d58339bd739393468b877c046410de75123ca9fd58
+  head shell sha256 259a47b87d72088c37258233bc57f6e021ec59f0556b01956910c8eaf7466c3b; probe sha256 ba1bcc0611aba3c0bb6be9d58339bd739393468b877c046410de75123ca9fd58
+probe-culture.js: 0 differing lines; sha256 of the rest base 65f37072f9dbcc06..., head 65f37072f9dbcc06...
+  base shell sha256 bb83b023a3390f05d31052577f640a0392d687196a61084cfd9f532fac52402d; probe sha256 297b1d50e0879a74713de88580670032fb3a8cfdaea3e3b10cf9e4271be7f264
+  head shell sha256 259a47b87d72088c37258233bc57f6e021ec59f0556b01956910c8eaf7466c3b; probe sha256 297b1d50e0879a74713de88580670032fb3a8cfdaea3e3b10cf9e4271be7f264
+probe-sites.js: 0 differing lines; sha256 of the rest base 9cb8d30f37a84a43..., head 9cb8d30f37a84a43...
+  base shell sha256 bb83b023a3390f05d31052577f640a0392d687196a61084cfd9f532fac52402d; probe sha256 67e357d7b4d3e054306cb79a0c02b8a5425d380c6198dfad32cdbc4d8c0a6c10
+  head shell sha256 259a47b87d72088c37258233bc57f6e021ec59f0556b01956910c8eaf7466c3b; probe sha256 67e357d7b4d3e054306cb79a0c02b8a5425d380c6198dfad32cdbc4d8c0a6c10
+probe-messages.js: 0 differing lines; sha256 of the rest base ed331c1153297751..., head ed331c1153297751...
+  base shell sha256 bb83b023a3390f05d31052577f640a0392d687196a61084cfd9f532fac52402d; probe sha256 1f39b2f2b0276562190672a72990376c0314145efdb8cc0fb5a02dda20ce48f3
+  head shell sha256 259a47b87d72088c37258233bc57f6e021ec59f0556b01956910c8eaf7466c3b; probe sha256 1f39b2f2b0276562190672a72990376c0314145efdb8cc0fb5a02dda20ce48f3
+probe-holes.js: 0 differing lines; sha256 of the rest base 9ec7b76b8220c29a..., head 9ec7b76b8220c29a...
+  base shell sha256 bb83b023a3390f05d31052577f640a0392d687196a61084cfd9f532fac52402d; probe sha256 072406451a95d924708c98c228da8954750edcbc3407901a0d5644a8d0a104ae
+  head shell sha256 259a47b87d72088c37258233bc57f6e021ec59f0556b01956910c8eaf7466c3b; probe sha256 072406451a95d924708c98c228da8954750edcbc3407901a0d5644a8d0a104ae
+
+probe.js, probe-culture.js, probe-sites.js and probe-messages.js are the bundle's probes of 2026-11-11 and 2026-11-12
+(probe-sites.js and probe-messages.js in this folder), run here in the five environments above; probe-holes.js, in this
+folder, reaches the script paths of the fixed interpolations (syntax errors with a line and column, the typed arrays'
+offset and size messages, the legacy RegExp $1 accessors, duplicate named groups, an array's non-configurable element,
+generators, private and computed class members, switch's default, stack lines) and writes negative numbers;
+probe-holes-caa3863c.txt and probe-holes-f89a4d4a.txt are its answers. No line of any probe moves in any environment.

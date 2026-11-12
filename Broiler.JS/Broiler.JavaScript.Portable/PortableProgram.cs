@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Broiler.JavaScript.Portable;
 
@@ -73,17 +74,17 @@ public sealed class PortableProgram
         {
             var instruction = instructions[index];
             if (!Enum.IsDefined(instruction.OpCode))
-                throw new ArgumentOutOfRangeException(nameof(instructions), $"Invalid opcode at {index}.");
+                throw new ArgumentOutOfRangeException(nameof(instructions), string.Create(CultureInfo.InvariantCulture, $"Invalid opcode at {index}."));
             switch (instruction.OpCode)
             {
                 case PortableOpCode.LoadArgument when instruction.Operand < 0 || instruction.Operand >= ParameterCount:
-                    throw new ArgumentOutOfRangeException(nameof(instructions), $"Invalid argument index at {index}.");
+                    throw new ArgumentOutOfRangeException(nameof(instructions), string.Create(CultureInfo.InvariantCulture, $"Invalid argument index at {index}."));
                 case PortableOpCode.LoadLocal or PortableOpCode.StoreLocal
                     when instruction.Operand < 0 || instruction.Operand >= LocalCount:
-                    throw new ArgumentOutOfRangeException(nameof(instructions), $"Invalid local index at {index}.");
+                    throw new ArgumentOutOfRangeException(nameof(instructions), string.Create(CultureInfo.InvariantCulture, $"Invalid local index at {index}."));
                 case PortableOpCode.Jump or PortableOpCode.JumpIfFalse
                     when instruction.Operand < 0 || instruction.Operand >= instructions.Length:
-                    throw new ArgumentOutOfRangeException(nameof(instructions), $"Invalid jump target at {index}.");
+                    throw new ArgumentOutOfRangeException(nameof(instructions), string.Create(CultureInfo.InvariantCulture, $"Invalid jump target at {index}."));
             }
         }
 
@@ -98,11 +99,11 @@ public sealed class PortableProgram
             var inputDepth = stackDepths[index];
             var required = RequiredStack(instruction.OpCode);
             if (inputDepth < required)
-                throw new ArgumentException($"Operand-stack underflow at instruction {index}.", nameof(instructions));
+                throw new ArgumentException(string.Create(CultureInfo.InvariantCulture, $"Operand-stack underflow at instruction {index}."), nameof(instructions));
 
             var outputDepth = inputDepth + StackDelta(instruction.OpCode);
             if (outputDepth > MaximumStack)
-                throw new ArgumentException($"MaximumStack is too small at instruction {index}.", nameof(MaximumStack));
+                throw new ArgumentException(string.Create(CultureInfo.InvariantCulture, $"MaximumStack is too small at instruction {index}."), nameof(MaximumStack));
             if (instruction.OpCode == PortableOpCode.Return)
                 continue;
 
@@ -114,7 +115,7 @@ public sealed class PortableProgram
             if (instruction.OpCode == PortableOpCode.JumpIfFalse)
                 EnqueueSuccessor(instruction.Operand, outputDepth);
             if (index + 1 >= instructions.Length)
-                throw new ArgumentException($"Reachable path falls off the program at instruction {index}.", nameof(instructions));
+                throw new ArgumentException(string.Create(CultureInfo.InvariantCulture, $"Reachable path falls off the program at instruction {index}."), nameof(instructions));
             EnqueueSuccessor(index + 1, outputDepth);
         }
 
@@ -123,7 +124,7 @@ public sealed class PortableProgram
             if (stackDepths[successor] == depth)
                 return;
             if (stackDepths[successor] != -1)
-                throw new ArgumentException($"Inconsistent operand-stack depth at instruction {successor}.", nameof(instructions));
+                throw new ArgumentException(string.Create(CultureInfo.InvariantCulture, $"Inconsistent operand-stack depth at instruction {successor}."), nameof(instructions));
             stackDepths[successor] = depth;
             pending.Enqueue(successor);
         }

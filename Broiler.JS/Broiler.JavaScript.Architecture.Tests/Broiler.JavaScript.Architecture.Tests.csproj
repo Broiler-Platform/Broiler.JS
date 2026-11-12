@@ -37,6 +37,33 @@
     <ProjectReference Include="..\Broiler.JavaScript.Parser\Broiler.JavaScript.Parser.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Runtime\Broiler.JavaScript.Runtime.csproj" />
   </ItemGroup>
+  <!-- The host-culture readers' test (HostCultureTests, milestone SJL-9's clause 8, on the owner's ruling of 2026-11-12,
+       "Follow-up arch test") compiles each product project's sources in memory against what its build compiles against,
+       the other projects' builds among them, and runs the source generator from its build, so every product project of
+       the solution and the generator are referenced here, to be built before it runs, and none is referenced as an
+       assembly: nothing here calls them, and their types stay out of this project's own compile. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Broiler.JavaScript\Broiler.JavaScript.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.All\Broiler.JavaScript.All.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.Ast\Broiler.JavaScript.Ast.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.BuiltIns\Broiler.JavaScript.BuiltIns.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.Clr\Broiler.JavaScript.Clr.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.Compiler\Broiler.JavaScript.Compiler.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.Debugger\Broiler.JavaScript.Debugger.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.Engine\Broiler.JavaScript.Engine.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.ExpressionCompiler\Broiler.JavaScript.ExpressionCompiler.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.Expressions\Broiler.JavaScript.Expressions.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.Extensions\Broiler.JavaScript.Extensions.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.Globals\Broiler.JavaScript.Globals.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.LinqExpressions\Broiler.JavaScript.LinqExpressions.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.Minimal\Broiler.JavaScript.Minimal.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.ModuleExtensions\Broiler.JavaScript.ModuleExtensions.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.Modules\Broiler.JavaScript.Modules.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.Portable\Broiler.JavaScript.Portable.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.Portable.Compiler\Broiler.JavaScript.Portable.Compiler.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.Storage\Broiler.JavaScript.Storage.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Broiler.JavaScript.JSClassGenerator\Broiler.JavaScript.JSClassGenerator.csproj" ReferenceOutputAssembly="false" GlobalPropertiesToRemove="PublishTrimmed;PublishAot;PublishReadyToRun;RuntimeIdentifier;SelfContained" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Architecture.Tests\AssemblyFacts.cs" Link="AssemblyFacts.cs" />
     <None Update="witnesses\*.witness" CopyToOutputDirectory="PreserveNewest" />

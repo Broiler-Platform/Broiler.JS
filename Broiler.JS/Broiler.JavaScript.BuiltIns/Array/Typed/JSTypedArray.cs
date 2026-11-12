@@ -235,7 +235,7 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
                     {
                         byteLength = buffer.buffer.Length - byteOffset;
                         if (byteLength % bytesPerElement != 0)
-                            throw JSEngine.NewRangeError($"byte length of TypedArray should be multiple of {bytesPerElement}");
+                            throw JSEngine.NewRangeError(string.Create(CultureInfo.InvariantCulture, $"byte length of TypedArray should be multiple of {bytesPerElement}"));
 
                         explicitLength = byteLength / bytesPerElement;
                     }

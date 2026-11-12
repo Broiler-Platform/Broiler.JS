@@ -1,0 +1,56 @@
+# The control of the host-culture readers' architecture test's review arms (HostCultureTests), stage js-arch at review,
+# 2026-11-12. Nothing of it is committed but this record. Each state is a clean git archive tree of
+# 36d0c35da2e8da847784ce69d0787f283800e753 (docs/evidence left out), the commit that makes the review's changes to the
+# test, changed as the state says; the engine Architecture test project is built in Release with
+# --disable-build-servers and HostCultureTests run with no LANG, TZ=UTC. The failures' texts, as the test wrote them.
+
+## state 0: the tree as committed
+# build exit 0; HostCultureTests: 14 cases, 14 passed, 0 failed; test exit 0
+
+## state 1: planted in a product project, Broiler.JS/Broiler.JavaScript.Storage/HostCultureControl.cs:
+#   using System.Diagnostics.CodeAnalysis;
+#   using System.Linq;
+#
+#   namespace Broiler.JavaScript.Storage;
+#
+#   // The control's planted readers and suppressions, for the review arms of the host-culture readers' test (not committed).
+#   internal static class HostCultureControl
+#   {
+#       internal static int[] Parse(string[] texts) => texts.Select(int.Parse).ToArray();
+#
+#       [SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs")]
+#       internal static string Write(double value)
+#       {
+#   #pragma warning disable
+#   #if DEBUG
+#           return $"value {value}";
+#   #else
+#           return "value";
+#   #endif
+#   #pragma warning restore
+#       }
+#   }
+# and <PropertyGroup><NoWarn>$(NoWarn);CA1305</NoWarn></PropertyGroup> in Broiler.JavaScript.Storage.csproj. The
+# project's Release build, with the six rules as errors, does not refuse any of it.
+# build exit 0; HostCultureTests: 14 cases, 11 passed, 3 failed; test exit 1
+# The failing cases and their messages:
+#   Broiler.JavaScript.Architecture.Tests.HostCultureTests.No_product_project_reads_the_hosts_culture_where_no_build_rule_sees
+#   Broiler.JavaScript.Architecture.Tests.HostCultureTests.Every_product_project_is_in_the_host_culture_rules_scope_and_no_other_project_is
+#   Broiler.JavaScript.Architecture.Tests.HostCultureTests.Every_RS0030_suppression_in_a_product_project_is_a_kept_path_and_the_reading_finds_them
+   Product sources silence RS0030 outside the kept-path form:
+   The host-culture rules' scope departs from the projects' kinds:
+   The product projects read the host's culture where no build rule sees, at 2 place(s):
+  Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj is a product project and NoWarn names CA1305
+  Broiler.JS/Broiler.JavaScript.Storage/HostCultureControl.cs:11: [SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs")] suppresses RS0030
+  Broiler.JS/Broiler.JavaScript.Storage/HostCultureControl.cs:14: #pragma warning disable names no code, so it disables RS0030 too
+  Broiler.JS/Broiler.JavaScript.Storage/HostCultureControl.cs:16: value made text with no provider: the interpolation hole {value} of type double: $"value {value}" (in Debug)
+  Broiler.JS/Broiler.JavaScript.Storage/HostCultureControl.cs:9: parse with no format provider: int.Parse as a method group names no format provider: int.Parse
+
+## state 2: state 0 with Broiler.JS/Broiler.JavaScript.Runtime/JSException.cs as at f108886f0ba63a674dc8e82343277389d4ea51fe,
+# before b516c9ac fixed its Debug-only log line: the test read in Release, and the line read under the Debug
+# configuration's symbols.
+# build exit 0; HostCultureTests: 14 cases, 13 passed, 1 failed; test exit 1
+# The failing case, No_product_project_reads_the_hosts_culture_where_no_build_rule_sees:
+   The product projects read the host's culture where no build rule sees, at 1 place(s):
+  Broiler.JS/Broiler.JavaScript.Runtime/JSException.cs:197: value made text with no provider: the interpolation hole {line} of type int: $"  Function: {function}, File: {filePath}, Line: {line}" (in Debug)
+# The sources read under Debug too, in state 2 as in state 0: Broiler.JS/Broiler.JavaScript.BuiltIns/Null/JSNull.cs Broiler.JS/Broiler.JavaScript.Runtime/JSException.cs Broiler.JS/Broiler.JavaScript.Runtime/JSUndefined.cs 

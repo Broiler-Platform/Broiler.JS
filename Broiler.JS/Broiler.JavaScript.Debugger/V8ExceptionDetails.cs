@@ -1,6 +1,7 @@
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Runtime;
 using System;
+using System.Globalization;
 
 namespace Broiler.JavaScript.Debugger;
 
@@ -28,7 +29,7 @@ public class V8ExceptionDetails
     {
         if (context != null)
         {
-            ExecutionContextId = $"C-{context.ID}";
+            ExecutionContextId = string.Create(CultureInfo.InvariantCulture, $"C-{context.ID}");
             StackTrace = new V8StackTrace(context);
             LineNumber = context.CurrentLine;
             // The engine's columns are 1-based; the DevTools protocol's are 0-based.

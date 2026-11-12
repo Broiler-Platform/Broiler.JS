@@ -584,7 +584,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         if (isAsync && Generator == null)
             Generator = BExpression.Parameter(typeof(ClrGeneratorV2), "clrGenerator");
 
-        Arguments = (fx?.Generator ?? false) ? BExpression.Parameter(typeof(Arguments), $"a-{sID}") : BExpression.Parameter(typeof(Arguments).MakeByRefType(), $"a-{sID}");
+        Arguments = (fx?.Generator ?? false) ? BExpression.Parameter(typeof(Arguments), string.Create(CultureInfo.InvariantCulture, $"a-{sID}")) : BExpression.Parameter(typeof(Arguments).MakeByRefType(), string.Create(CultureInfo.InvariantCulture, $"a-{sID}"));
         ArgumentsExpression = Arguments;
 
         if (previousThis == null)
@@ -619,8 +619,8 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             NewTargetExpression = nt.Expression;
         }
 
-        Context = BExpression.Parameter(typeof(JSContext), $"{nameof(Context)}{sID}");
-        StackItem = BExpression.Parameter(typeof(FrameToken), $"{nameof(StackItem)}{sID}");
+        Context = BExpression.Parameter(typeof(JSContext), string.Create(CultureInfo.InvariantCulture, $"{nameof(Context)}{sID}"));
+        StackItem = BExpression.Parameter(typeof(FrameToken), string.Create(CultureInfo.InvariantCulture, $"{nameof(StackItem)}{sID}"));
 
         Loop = new LinkedStack<LoopScope>();
         TempVariables = [];

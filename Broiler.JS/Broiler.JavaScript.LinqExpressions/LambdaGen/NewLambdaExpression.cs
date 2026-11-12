@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq.Expressions;
 using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -79,7 +80,7 @@ public static class NewLambdaExpression
         }
 
         if (ctor == null)
-            throw new InvalidOperationException($"No constructor found on {type.FullName} matching {args.Length} parameters");
+            throw new InvalidOperationException(string.Create(CultureInfo.InvariantCulture, $"No constructor found on {type.FullName} matching {args.Length} parameters"));
 
         return Expression.New(ctor, args);
     }

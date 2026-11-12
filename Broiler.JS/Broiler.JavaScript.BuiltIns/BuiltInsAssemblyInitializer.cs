@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Broiler.JavaScript.BuiltIns.Array;
@@ -2007,7 +2008,7 @@ internal static class BuiltInsAssemblyInitializer
         for (var i = 1; i <= 9; i++)
         {
             var n = i;
-            PatchLegacyRegExpAccessor(regExpCtor, $"${i}", (in Arguments _) => LegacyRegExpValue(s => s.Paren(n)));
+            PatchLegacyRegExpAccessor(regExpCtor, string.Create(CultureInfo.InvariantCulture, $"${i}"), (in Arguments _) => LegacyRegExpValue(s => s.Paren(n)));
         }
     }
 

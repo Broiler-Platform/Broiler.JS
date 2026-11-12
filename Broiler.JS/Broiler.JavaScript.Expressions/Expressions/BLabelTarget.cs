@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Globalization;
 using System.Threading;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -13,7 +14,7 @@ public class BLabelTarget
 
     public BLabelTarget(string? name, Type type)
     {
-        name ??= $"LABEL_{Interlocked.Increment(ref id)}";
+        name ??= string.Create(CultureInfo.InvariantCulture, $"LABEL_{Interlocked.Increment(ref id)}");
         Name = name;
         LabelType = type;
     }

@@ -1,4 +1,5 @@
-﻿using System.Reflection.Emit;
+﻿using System.Globalization;
+using System.Reflection.Emit;
 using System.Threading;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Core;
@@ -7,7 +8,7 @@ public class ILWriterLabel(Label value, string label, ILTryBlock tryBlock)
 {
     public readonly Label Value = value;
     public readonly ILTryBlock TryBlock = tryBlock;
-    public readonly string ID = $"{label ?? "LABEL"}_{Interlocked.Increment(ref nextID)}";
+    public readonly string ID = string.Create(CultureInfo.InvariantCulture, $"{label ?? "LABEL"}_{Interlocked.Increment(ref nextID)}");
 
     public int Offset;
 

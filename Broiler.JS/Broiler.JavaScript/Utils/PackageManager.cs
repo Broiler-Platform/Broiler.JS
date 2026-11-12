@@ -10,6 +10,7 @@ using NuGet.Resolver;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -166,7 +167,7 @@ namespace BroilerJS.Utils
                     packageExtractionContext,
                     cancellationToken);
 
-                packages.Add($"{rootPackagesDirectory}/{package.Id}.{package.Version}");
+                packages.Add(string.Create(CultureInfo.InvariantCulture, $"{rootPackagesDirectory}/{package.Id}.{package.Version}"));
             }
 
             return packages;

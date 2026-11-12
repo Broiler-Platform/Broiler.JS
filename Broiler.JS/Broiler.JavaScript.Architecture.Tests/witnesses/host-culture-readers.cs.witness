@@ -1,0 +1,156 @@
+// The host-culture readers' witness (milestone SJL-9's clause 8, on the owner's ruling of 2026-11-12, "Follow-up arch
+// test"). HostCultureTests compiles it in memory and reads it as it reads a product project: every line marked
+// "refused: <kind>" must be found as that kind, every line marked "kept: <kind>" must be found as that kind and marked
+// kept, and no other line may be found. Class Refused holds one instance of each form the reading refuses; class
+// Accepted holds the forms that name a provider, a culture, CultureInvariant or an invariant format. Every line marked
+// "silences: RS0030" must be found as a suppression of RS0030 outside the kept-path form, and no other line.
+using System;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace Witness;
+
+public static partial class Refused
+{
+    private static readonly RegexOptions FoldedOnly = RegexOptions.IgnoreCase;
+
+    public static void Parses(string s)
+    {
+        _ = int.TryParse(s, out _); // refused: Parse
+        _ = double.Parse(s, NumberStyles.Float); // refused: Parse
+        _ = DateTime.TryParse(s, out _); // refused: Parse
+        _ = long.TryParse(s, NumberStyles.Integer, null, out _); // refused: Parse
+        _ = decimal.Parse(s.AsSpan(), NumberStyles.Number, provider: null); // refused: Parse
+        _ = TimeSpan.Parse(s); // refused: Parse
+        _ = DateTime.ParseExact(s, "yyyy", null); // refused: Parse
+        _ = s.Split(',').Select(int.Parse); // refused: Parse
+        Func<string, double> group = double.Parse; // refused: Parse
+        _ = group;
+    }
+
+    public static void Regexes(string s, RegexOptions given)
+    {
+        _ = new Regex("a", RegexOptions.IgnoreCase); // refused: Regex
+        _ = Regex.IsMatch(s, "a", RegexOptions.IgnoreCase | RegexOptions.Compiled); // refused: Regex
+        _ = new Regex("(?i)a"); // refused: Regex
+        _ = Regex.Replace(s, "(?i:a)b", "c"); // refused: Regex
+        _ = new Regex("a", given); // refused: Regex
+        Regex target = new("a", RegexOptions.IgnoreCase); // refused: Regex
+        _ = target;
+        _ = Regex.Matches(s, "a", given); // refused: Regex
+        _ = new Regex("a", FoldedOnly); // refused: Regex
+    }
+
+    [GeneratedRegex("a", RegexOptions.IgnoreCase)] // refused: Regex
+    private static partial Regex Folded();
+
+    private static partial Regex Folded() => new("a", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+    public static string Formats(int i, double d, DateTime t, decimal m, long? n, TimeSpan span, DateOnly day, StringBuilder sb)
+    {
+        var text = $"{i}"; // refused: Format
+        text += $"{d:F2}"; // refused: Format
+        text += $"{t}"; // refused: Format
+        text += $"{t:yyyy-MM-dd}"; // refused: Format
+        text += string.Format("{0}", m); // refused: Format
+        text += string.Format((IFormatProvider?)null, "{0:N0}", 5u); // refused: Format
+        text += $"{n}"; // refused: Format
+        text += $"{span:g}"; // refused: Format
+        sb.Append($"{d}"); // refused: Format
+        sb.AppendFormat("{0}", i); // refused: Format
+        FormattableString later = $"{d}"; // refused: Format
+        text += later.ToString();
+        text += string.Create(null, $"{i}"); // refused: Format
+        text += string.Format("{0}{1}{2}{3}", d, d, d, d); // refused: Format
+        text += $"{i}" + $"{d}"; // refused: Format
+        text += string.Format("{{{0}}}", d); // refused: Format
+        text += $"{day}"; // refused: Format
+        return text;
+    }
+
+    public static string Generic<T>(T value) where T : IFormattable => $"{value}"; // refused: Format
+}
+
+public static partial class Accepted
+{
+    private static readonly RegexOptions FoldedInvariant = RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
+
+    public static void Parses(string s)
+    {
+        _ = int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
+        _ = double.Parse(s, CultureInfo.InvariantCulture);
+        _ = DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
+        _ = Guid.Parse(s);
+        _ = Enum.Parse<DayOfWeek>(s);
+        _ = bool.Parse(s);
+        _ = DateTime.ParseExact(s, "yyyy", CultureInfo.InvariantCulture);
+        Func<string, IFormatProvider?, int> group = int.Parse;
+        _ = group;
+    }
+
+    public static void Regexes(string s, RegexOptions given)
+    {
+        _ = new Regex("a", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        _ = new Regex("a", given | RegexOptions.CultureInvariant);
+        _ = new Regex("a");
+        _ = Regex.IsMatch(s, "a", RegexOptions.Multiline);
+        _ = new Regex("(?i)a", RegexOptions.CultureInvariant);
+        _ = new Regex("a", FoldedInvariant);
+    }
+
+    [GeneratedRegex("a", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex Named();
+
+    private static partial Regex Named() => new("a", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+    [GeneratedRegex("a", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex Invariant();
+
+    private static partial Regex Invariant() => new("a", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+    public static string Formats(int i, uint u, double d, DateTime t, Guid g, DayOfWeek w, TimeSpan span, string s, char c, DateOnly day, TimeOnly time, StringBuilder sb)
+    {
+        var text = string.Create(CultureInfo.InvariantCulture, $"{i} {d} {t}");
+        text += FormattableString.Invariant($"{d}");
+        text += $"{i:X4}{u}{t:O}{g}{w}{span}{s}{c}{3}";
+        text += string.Format(CultureInfo.InvariantCulture, "{0}", d);
+        text += $"{i.ToString(CultureInfo.InvariantCulture)}";
+        sb.Append(CultureInfo.InvariantCulture, $"{d}");
+        sb.AppendFormat(CultureInfo.InvariantCulture, "{0}", i);
+        text += string.Create(CultureInfo.InvariantCulture, $"{i}" + $"{d}");
+        text += $"{day:O}{time:R}";
+        text += string.Format("{{0}}", d);
+        return text;
+    }
+}
+
+public static class KeptPaths
+{
+    public static string Kept(double d)
+    {
+#pragma warning disable RS0030 // Kept: the witness's kept path.
+        var text = $"{d}"; // kept: Format
+        _ = int.TryParse(text, out _); // kept: Parse
+#pragma warning restore RS0030
+        return text;
+    }
+
+    public static string NotKept(double d)
+    {
+#pragma warning disable RS0030 // a suppression without the Kept: form keeps nothing
+        var text = $"{d}"; // refused: Format
+#pragma warning restore RS0030
+        return text;
+    }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs")] // silences: RS0030
+    public static string Silenced(double d)
+    {
+#pragma warning disable // silences: RS0030
+        var text = d.ToString(CultureInfo.InvariantCulture);
+#pragma warning restore
+        return text;
+    }
+}
