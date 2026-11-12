@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
@@ -526,7 +527,7 @@ public static class DeferredTreeCompilation
                 continue;
 
             divergence =
-                $"site {i} of {a.Count}/{b.Count}: eager {a[i]} ({(newA ? "new" : "repeat of " + seenA[a[i]])}), "
+                string.Create(CultureInfo.InvariantCulture, $"site {i} of {a.Count}/{b.Count}: eager {a[i]} ({(newA ? "new" : "repeat of " + seenA[a[i]])}), ")
                 + $"re-entered {b[i]} ({(newB ? "new" : "repeat of " + seenB[b[i]])})";
 
             if (a[i] == "-1" || b[i] == "-1")
@@ -537,7 +538,7 @@ public static class DeferredTreeCompilation
 
         if (a.Count != b.Count)
         {
-            divergence = $"different site COUNT: {a.Count} vs {b.Count}";
+            divergence = string.Create(CultureInfo.InvariantCulture, $"different site COUNT: {a.Count} vs {b.Count}");
             return SiteDivergence.Other;
         }
 
@@ -575,10 +576,10 @@ public static class DeferredTreeCompilation
             var left = i < a.Length ? a[i].Trim() : "<end>";
             var right = i < b.Length ? b[i].Trim() : "<end>";
             if (!string.Equals(left, right, StringComparison.Ordinal))
-                return $"line {i}:\n  eager: {Cap(left)}\n  re-entered: {Cap(right)}";
+                return string.Create(CultureInfo.InvariantCulture, $"line {i}:\n  eager: {Cap(left)}\n  re-entered: {Cap(right)}");
         }
 
-        return $"identical line by line; lengths {eager.Length} vs {actual.Length}";
+        return string.Create(CultureInfo.InvariantCulture, $"identical line by line; lengths {eager.Length} vs {actual.Length}");
     }
 
     /// <summary>

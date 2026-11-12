@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.Runtime;
@@ -24,10 +25,10 @@ public class SparseList<T> : IList<T>
         get
         {
             if (index >= Count)
-                throw new ArgumentOutOfRangeException($"Item does not exist at {index}");
+                throw new ArgumentOutOfRangeException(string.Create(CultureInfo.InvariantCulture, $"Item does not exist at {index}"));
 
             if (!TryGetValue(index, out var item))
-                throw new ArgumentOutOfRangeException($"Item does not exist at {index}");
+                throw new ArgumentOutOfRangeException(string.Create(CultureInfo.InvariantCulture, $"Item does not exist at {index}"));
 
             return item;
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -15,7 +16,7 @@ public static class ExpressionCompiler
 
     private static int id = 1;
 
-    internal static string GetUniqueName(in FunctionName name) => $"<Broiler.JavaScriptHidden>{name}<ID>{System.Threading.Interlocked.Increment(ref id)}";
+    internal static string GetUniqueName(in FunctionName name) => string.Create(CultureInfo.InvariantCulture, $"<Broiler.JavaScriptHidden>{name}<ID>{System.Threading.Interlocked.Increment(ref id)}");
 
     private static ConstructorInfo locationConstructor = typeof(LocationAttribute).GetConstructor([
         typeof(string),

@@ -5,6 +5,7 @@ using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using System;
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Threading;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Symbol;
@@ -42,7 +43,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
             var iteratorPrototype = GetIteratorPrototype();
             BasePrototypeObject = iteratorPrototype == null
                 ? IteratorPrototypes.GetOrAdd(name, CreateIteratorPrototype)
-                : IteratorPrototypes.GetOrAdd($"{name}:{iteratorPrototype.UniqueID}", _ => CreateIteratorPrototype(name, iteratorPrototype));
+                : IteratorPrototypes.GetOrAdd(string.Create(CultureInfo.InvariantCulture, $"{name}:{iteratorPrototype.UniqueID}"), _ => CreateIteratorPrototype(name, iteratorPrototype));
         }
     }
 

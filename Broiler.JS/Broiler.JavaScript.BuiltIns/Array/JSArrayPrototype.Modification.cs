@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.BuiltIns.Null;
 using Broiler.JavaScript.BuiltIns.Number;
@@ -79,7 +80,7 @@ public partial class JSArray
         if (index < uint.MaxValue)
             DeleteIndexedValueOrThrow(@object, (uint)index);
         else if (!@object.Delete(CreateNumber(index)).BooleanValue)
-            throw JSEngine.NewTypeError($"Cannot delete property {index}");
+            throw JSEngine.NewTypeError(string.Create(CultureInfo.InvariantCulture, $"Cannot delete property {index}"));
     }
 
     // Broiler-AI:           Origin=AI; IP=None; Security=Medium; Resources=1; Fingerprint=TBF
@@ -141,7 +142,7 @@ public partial class JSArray
             }
             else if (!@this.Delete(CreateNumber((double)target)).BooleanValue)
             {
-                throw JSEngine.NewTypeError($"Cannot delete property {target}");
+                throw JSEngine.NewTypeError(string.Create(CultureInfo.InvariantCulture, $"Cannot delete property {target}"));
             }
 
             // Progress to the next element.

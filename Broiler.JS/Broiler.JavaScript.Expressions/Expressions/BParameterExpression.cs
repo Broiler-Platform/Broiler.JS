@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.CodeDom.Compiler;
+using System.Globalization;
 using System.Threading;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -14,7 +15,7 @@ public class BParameterExpression: BExpression
     public BParameterExpression(Type type, string? name)
         :base(BExpressionType.Parameter, type)
     {
-        name ??= $"{type.Name}_{Interlocked.Increment(ref id)}";
+        name ??= string.Create(CultureInfo.InvariantCulture, $"{type.Name}_{Interlocked.Increment(ref id)}");
         Name = name;
     }
 

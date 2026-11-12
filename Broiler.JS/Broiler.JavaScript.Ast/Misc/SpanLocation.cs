@@ -1,4 +1,6 @@
-﻿namespace Broiler.JavaScript.Ast.Misc;
+﻿using System.Globalization;
+
+namespace Broiler.JavaScript.Ast.Misc;
 
 /// <summary>
 /// A position in source text. Both coordinates are 1-based: the first line is line 1, and the
@@ -14,5 +16,5 @@ public readonly struct SpanLocation(int line, int column)
 
     // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
     // Broiler-Human:        PENDING
-    public override string ToString() => $"{Line}, {Column}";
+    public override string ToString() => string.Create(CultureInfo.InvariantCulture, $"{Line}, {Column}");
 }

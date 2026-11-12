@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -42,7 +43,7 @@ public abstract class V8InspectorProtocol : JSDebugger, IDisposable
 
     public V8InspectorProtocol()
     {
-        ID = $"D-{Interlocked.Increment(ref id)}";
+        ID = string.Create(CultureInfo.InvariantCulture, $"D-{Interlocked.Increment(ref id)}");
 
         var runtime = new V8Runtime(this);
         var debugger = new V8Debugger(this);
@@ -53,14 +54,14 @@ public abstract class V8InspectorProtocol : JSDebugger, IDisposable
 
     internal void AddContext(JSContext a)
     {
-        var cid = $"C-{a.ID}";
+        var cid = string.Create(CultureInfo.InvariantCulture, $"C-{a.ID}");
         Contexts[a.ID] = a;
         a.ConsoleEvent += OnConsoleEvent;
     }
 
     private void OnConsoleEvent(JSContext context, string type, in Arguments a)
     {
-        var id = $"C-{context.ID}";
+        var id = string.Create(CultureInfo.InvariantCulture, $"C-{context.ID}");
         Send(new V8Runtime.ConsoleApiCalled(id, context, type, in a));
     }
 
@@ -160,7 +161,7 @@ public abstract class V8InspectorProtocol : JSDebugger, IDisposable
 
     public override void ScriptParsed(long contextId, string code, string codeFilePath) => Task.Run(() =>
                                                                                                     {
-                                                                                                        var id = codeFilePath ?? $"S-{Interlocked.Increment(ref nextScriptId)}";
+                                                                                                        var id = codeFilePath ?? string.Create(CultureInfo.InvariantCulture, $"S-{Interlocked.Increment(ref nextScriptId)}");
                                                                                                         Scripts[id] = code;
                                                                                                         Send(new V8Debugger.ScriptParsed
                                                                                                         {

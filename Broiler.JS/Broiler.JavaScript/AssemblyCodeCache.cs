@@ -414,7 +414,7 @@ public sealed class AssemblyCodeCache : ICodeCache, IDisposable
 
     private static void WriteAtomically(string destination, byte[] bytes)
     {
-        var temporary = $"{destination}.{Environment.ProcessId}.{Guid.NewGuid():N}.tmp";
+        var temporary = string.Create(CultureInfo.InvariantCulture, $"{destination}.{Environment.ProcessId}.{Guid.NewGuid():N}.tmp");
         try
         {
             using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))

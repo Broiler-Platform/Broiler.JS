@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Globalization;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
@@ -65,7 +66,7 @@ public sealed class CallStackItem
         DirectEvalBindings[KeyStrings.GetOrCreate(variable.Name).Key] = variable;
     }
 
-    public override string ToString() => $"{Function} at {FileName} - {Line},{Column}";
+    public override string ToString() => string.Create(CultureInfo.InvariantCulture, $"{Function} at {FileName} - {Line},{Column}");
 }
 
 /// <summary>

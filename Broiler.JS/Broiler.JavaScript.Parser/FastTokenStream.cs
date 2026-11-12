@@ -1,6 +1,7 @@
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Runtime;
 using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.Parser;
@@ -147,7 +148,7 @@ public class FastTokenStream
         
         var c = Current;
         if (c.Type != type)
-            throw new FastParseException(c, $"Expecting {type} at {c.Start.Line}, {c.Start.Column}");
+            throw new FastParseException(c, string.Create(CultureInfo.InvariantCulture, $"Expecting {type} at {c.Start.Line}, {c.Start.Column}"));
 
         Consume();
         return c;
@@ -160,7 +161,7 @@ public class FastTokenStream
         
         var c = Current;
         if (c.Keyword != type)
-            throw new FastParseException(c, $"Expecting keyword {type} at {c.Start.Line}, {c.Start.Column}");
+            throw new FastParseException(c, string.Create(CultureInfo.InvariantCulture, $"Expecting keyword {type} at {c.Start.Line}, {c.Start.Column}"));
         
         Consume();
         return c;
@@ -173,7 +174,7 @@ public class FastTokenStream
         
         var c = Current;
         if (c.ContextualKeyword != type)
-            throw new FastParseException(c, $"Expecting keyword {type} at {c.Start.Line}, {c.Start.Column}");
+            throw new FastParseException(c, string.Create(CultureInfo.InvariantCulture, $"Expecting keyword {type} at {c.Start.Line}, {c.Start.Column}"));
         
         Consume();
         return c;

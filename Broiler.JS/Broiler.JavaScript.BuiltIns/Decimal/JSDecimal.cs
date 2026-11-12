@@ -232,7 +232,7 @@ public partial class JSDecimal : JSPrimitive
             if (nv > 999999999999999.0m && i <= 15)
                 return new JSString(nv.ToString("g21", Invariant));
 
-            return new JSString(nv.ToString($"F{i}", Invariant));
+            return new JSString(nv.ToString(string.Create(CultureInfo.InvariantCulture, $"F{i}"), Invariant));
         }
 
         if (nv > 999999999999999.0m)

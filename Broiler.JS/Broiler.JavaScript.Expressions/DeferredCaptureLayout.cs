@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -324,8 +325,8 @@ public static class DeferredCaptureLayout
                     lock (orderSamples)
                         if (orderSamples.Count < 20)
                             orderSamples.Add(
-                                $"slot {i}: predicted {predictedReal[i].Name}, actual {actual[i].Name} "
-                                + $"(of {predictedReal.Count})");
+                                string.Create(CultureInfo.InvariantCulture, $"slot {i}: predicted {predictedReal[i].Name}, actual {actual[i].Name} ")
+                                + string.Create(CultureInfo.InvariantCulture, $"(of {predictedReal.Count})"));
                 }
 
                 return;

@@ -4,6 +4,7 @@ using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using System.Collections.Generic;
 using System;
+using System.Globalization;
 using System.Linq;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
@@ -295,7 +296,7 @@ partial class FastCompiler
             // ordinary sequencing, which makes a non-last `default:` clause fall
             // through into the following clause for free.
             BLabelTarget defLabel = defBody != null
-                ? BExpression.Label($"default-start-{lastLine}")
+                ? BExpression.Label(string.Create(CultureInfo.InvariantCulture, $"default-start-{lastLine}"))
                 : null;
 
             BExpression NoMatch() => BExpression.Goto(defLabel ?? @break);

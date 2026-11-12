@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
@@ -118,7 +119,7 @@ public readonly struct TypedArrayParameters
             // ToIndex(length), so a misaligned offset is refused before the length's valueOf runs.
             var offset = IndexArgument(a2, "Invalid typed array offset");
             if (offset % bytesPerElements != 0)
-                throw JSEngine.NewRangeError($"Start offset {offset} is outside the bounds of the buffer");
+                throw JSEngine.NewRangeError(string.Create(CultureInfo.InvariantCulture, $"Start offset {offset} is outside the bounds of the buffer"));
 
             byteOffset = offset > int.MaxValue ? int.MaxValue : (int)offset;
             length = a3.IsUndefined ? -1 : LengthArgument(a3);
