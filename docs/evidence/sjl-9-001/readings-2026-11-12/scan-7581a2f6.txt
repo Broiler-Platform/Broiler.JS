@@ -1,0 +1,167 @@
+# The globalization analyzer scan at 7581a2f6: Broiler.JS.slnx, Broiler.JavaScript.Network and Broiler.JavaScript.NodePollyfill
+# built from a clean git archive tree (docs/evidence left out), Release, --disable-build-servers, SDK 10.0.404, with
+# -p:AnalysisModeGlobalization=All -p:TreatWarningsAsErrors=false. The distinct sites of CA1304, CA1305, CA1309, CA1310
+# and CA1311, warnings and errors alike, by project kind. Network and NodePollyfill do not compile at either commit
+# (CS0234, a namespace the engine no longer has), so no analyzer reads them; they are in no solution.
+
+## Counts
+all: 143
+      2 CA1304
+    112 CA1305
+      5 CA1309
+     22 CA1310
+      2 CA1311
+outside tests, benchmarks, samples and tools: 85
+      1 CA1304
+     63 CA1305
+      4 CA1309
+     16 CA1310
+      1 CA1311
+of which under Broiler.JS/: 85
+
+## The engine's product projects, each with its line and its fix at 2509c343
+Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs:197: CA1305: public static StringSpan operator +(double left, in StringSpan right) => new(left.ToString() + right.Value);  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Array/JSArrayPrototype.Iteration.cs:629: CA1305: if (!@this.HasProperty(CreateString(i.ToString())).BooleanValue)  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Error/JSError.cs:34: CA1305: sb.AppendLine($"{ToString(Arguments.Empty)}");  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Error/JSError.cs:47: CA1305: sb.AppendLine($"    at {fx}:{file}:{line},{column}");  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:856: CA1305: if (!localesObject.HasProperty(JSValue.CreateString(i.ToString())).BooleanValue)  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Json/JSJSON.cs:160: CA1305: var jsValue = ToJson(array[index], CreateString(index.ToString()));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Json/JSJSON.cs:164: CA1305: jsValue = replacer((array, CreateString(index.ToString()), jsValue));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Json/JSJSON.cs:363: CA1305: var key = index.ToString();  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Json/JSJsonParser.cs:121: CA1305: value = sources((j, j.Length.ToString(), value, source!));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Json/JSJsonParser.cs:35: CA1305: if (uint.TryParse(name, out var index) && index != uint.MaxValue && index.ToString() == name)  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumber.cs:372: CA1305: public override string ToDetailString() => value.ToString();  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Proxy/JSProxy.cs:123: CA1305: KeyType.UInt => CreateString(propertyKey.Index.ToString()),  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Proxy/JSProxy.cs:573: CA1305: public override JSValue DefineProperty(uint key, JSObject pd) => DefineProperty(CreateString(key.ToString()), pd);  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Proxy/JSProxy.cs:582: CA1305: public override void CreateDataProperty(uint index, JSValue value) => CreateDataPropertyOrThrow(CreateString(index.ToString()), value);  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Proxy/JSProxy.cs:614: CA1305: public override JSValue Delete(uint key) => Delete(CreateString(key.ToString()));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Proxy/JSProxy.cs:718: CA1305: var result = fx.InvokeFunction(new Arguments(handler, target, CreateString(key.ToString()), receiver));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Proxy/JSProxy.cs:765: CA1305: var setResult = fx.InvokeFunction(new Arguments(handler, target, CreateString(name.ToString()), value, receiver));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1536: CA1310: if (name.StartsWith("bjsg") && int.TryParse(name.Substring(4), out var n))  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:155: CA1305: sb.Append(((int)c).ToString("x2"));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:167: CA1305: sb.Append(((int)c).ToString("x4"));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:2464: CA1305: private static string Unit(int codeUnit) => "\\u" + codeUnit.ToString("X4");  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3172: CA1305: sb.Append("\\u").Append(codePoint.ToString("X4"));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3177: CA1305: sb.Append("\\u").Append((0xD800 + (v >> 10)).ToString("X4"));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3178: CA1305: sb.Append("\\u").Append((0xDC00 + (v & 0x3FF)).ToString("X4"));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4245: CA1305: sb.Append("\\u").Append(((int)(after % 32)).ToString("x4"));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExpStringIterator.cs:39: CA1305: var key = iteratorPrototype == null ? string.Empty : iteratorPrototype.UniqueID.ToString();  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSString.cs:384: CA1309: public override bool EqualsLiteral(string value) => this.value.Equals(value);  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSString.cs:386: CA1309: public override bool StrictEqualsLiteral(string value) => this.value.Equals(value);  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSString.cs:475: CA1309: if (s.value.Equals(this.value))  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateClass.cs:211: CA1310: return n.StartsWith("#") ? n[1..] : n;  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateClass.cs:451: CA1310: var isPrivateName = property.Key is AstIdentifier propertyIdentifier && propertyIdentifier.Name.Value.StartsWith("#");  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTaggedTemplateExpression.cs:71: CA1310: if (r.StartsWith("`"))  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTaggedTemplateExpression.cs:74: CA1310: if (r.StartsWith("}"))  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTaggedTemplateExpression.cs:77: CA1310: if (r.EndsWith("${"))  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTaggedTemplateExpression.cs:79: CA1310: else if (r.EndsWith("`"))  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.Compiler/FastCompiler.cs:174: CA1305: location = location ?? "vm" + Interlocked.Increment(ref anonymousProgramSequence).ToString() + ".js";  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Compiler/ListOfExpressionsExtensions.cs:123: CA1305: result.Add(Expression.Constant(Convert.ToDouble(ce.Value)));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Compiler/ListOfExpressionsExtensions.cs:144: CA1305: result.Add(Expression.Constant(Convert.ToDouble(ce.Value)));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Compiler/ListOfExpressionsExtensions.cs:42: CA1305: result.Add(Expression.Constant(Convert.ToInt32(ce.Value)));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Compiler/ListOfExpressionsExtensions.cs:74: CA1305: result.Add(Expression.Constant(Convert.ToInt32(ce.Value)));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Debugger/HashExtensions.cs:12: CA1305: sb.Append(b.ToString("x2"));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Debugger/V8RemoteObject.cs:104: CA1305: var idStr = GCHandle.ToIntPtr(GCHandle.Alloc(v, GCHandleType.Normal)).ToInt64().ToString();  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Debugger/V8RemoteObject.cs:36: CA1305: IntPtr v = new(long.Parse(id));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Debugger/V8RemoteObject.cs:87: CA1305: Description = t.ToString();  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Debugger/V8Runtime.cs:27: CA1305: Name = cid.ToString(),  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Debugger/V8Runtime.cs:28: CA1305: UniqueId = cid.ToString()  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Debugger/V8Runtime.cs:55: CA1305: list.Add(new V8PropertyDescriptor(i.ToString(), v, p, true));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Engine/EngineAssemblyInitializer.cs:87: CA1305: sb.AppendLine($"    at {fx}:{file}:{line},{column}");  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Engine/Internal/CoreInternalHelpers.cs:146: CA1305: list.Add(Convert.ChangeType(key.ToString(), keyType), value.ForceConvert(valueType));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Core/ILWriter.cs:67: CA1305: writer.Write(il.ILOffset.ToString("X4"));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Expressions/Expressions/BExpression.cs:206: CA1305: public static BInt32ConstantExpression Constant(Enum value) => new(System.Convert.ToInt32(value));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Extensions/MarshalExtensions.cs:102: CA1305: list.Add(Convert.ChangeType(key.ToString(), keyType), value.ForceConvert(valueType));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.LinqExpressions/LinqExpressions/StringBuilder.cs:8: CA1309: public static Expression Equal(Expression left, Expression right) => left.CallExpression<string, bool>(() => (x) => x.Equals(""), right);  -> calls string's equality operator, the ordinal comparison x.Equals(string) made
+Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:143: CA1310: if (!file.StartsWith("."))  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:190: CA1310: if (relativePath.StartsWith("."))  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:266: CA1310: var filePath = Resolve(folder, relativeFile.StartsWith(".") ? relativeFile : ("./" + relativeFile)) ?? throw new FileNotFoundException($"{relativeFile  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:317: CA1310: var filePath = m.Resolve(folder, relativeFile.StartsWith(".") ? relativeFile : ("./" + relativeFile));  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.Runtime/IntKeyEnumerator.cs:109: CA1305: return JSValue.CreateString(((uint)index).ToString());  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/IntKeyEnumerator.cs:74: CA1305: value = JSValue.CreateString(index.ToString());  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/IntKeyEnumerator.cs:87: CA1305: value = JSValue.CreateString(((uint)index).ToString());  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/IntKeyEnumerator.cs:98: CA1305: value = JSValue.CreateString(((uint)index).ToString());  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/JSException.cs:150: CA1305: sb.AppendLine($"    at {target}:{file}:{line},{column}");  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/JSException.cs:158: CA1305: sb.AppendLine($"    at {f.target}:{f.file}:{f.line},{f.column}");  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/JSObject.DynamicDispatch.cs:66: CA1305: sb.Append($"{Key}: {Value?.ToDetailString()}");  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/JSObject.cs:637: CA1305: yield return (index.ToString(), value);  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/JSObjectStatic.Introspection.cs:42: CA1305: keys.Add(CreateString(key.ToString()));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/JSObjectStatic.Introspection.cs:82: CA1305: keys.Add(CreateString(index.ToString()));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/JSPrimitiveObject.cs:249: CA1305: keys.Add(CreateString(index.ToString()));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/JSPrimitiveObject.cs:279: CA1305: keys.Add(CreateString(index.ToString()));  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:53: CA1305: value.HasValue() ? (value.ConvertTo(typeof(DateTime), out var dt) ? (DateTime)dt : DateTime.Parse(value.ToString())) : throw new ArgumentException($"{  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:56: CA1305: value.HasValue() ? (value.ConvertTo(typeof(DateTime), out var dt) ? (DateTime)dt : DateTime.Parse(value.ToString())) : null;  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:59: CA1305: value.HasValue() ? (value.ConvertTo(typeof(DateTimeOffset), out var dto) ? (DateTimeOffset)dto : DateTime.Parse(value.ToString())) : throw new Argumen  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:62: CA1305: value.HasValue() ? (value.ConvertTo(typeof(DateTimeOffset), out var dto) ? (DateTimeOffset)dto : DateTime.Parse(value.ToString())) : null;  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:72: CA1310: if (!method.Name.StartsWith("To"))  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript.Runtime/KeyEnumerator.cs:148: CA1305: ownIndexNamesAtStart.Add(ui.ToString());  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/KeyEnumerator.cs:181: CA1305: var name = ui.ToString();  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.Runtime/KeyEnumerator.cs:243: CA1305: var name = ui.ToString();  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript/BroilerJSContext.cs:170: CA1310: if (!filePath.EndsWith(".csx"))  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript/BroilerJSContext.cs:256: CA1310: if(l.StartsWith("#r \"nuget: "))  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript/ILPack/Metadata/MetadataHelper.cs:147: CA1305: sb.Append($"\"{member}\"");  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript/ILPack/Metadata/MetadataHelper.cs:156: CA1305: sb.Append($"\"{entity}\"");  -> names the invariant culture (CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript/Program.cs:86: CA1310: var scriptPath = positionalArgs.FirstOrDefault(arg => !arg.StartsWith("-"));  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript/Utils/PackageManager.cs:31: CA1310: if (name.StartsWith("nuget:"))  -> names StringComparison.Ordinal
+Broiler.JS/Broiler.JavaScript/Utils/PackageManager.cs:37: CA1304: Version = tokens[1].Trim().ToLower();  -> ToLowerInvariant
+Broiler.JS/Broiler.JavaScript/Utils/PackageManager.cs:37: CA1311: Version = tokens[1].Trim().ToLower();  -> ToLowerInvariant
+
+## The test, benchmark and sample projects (not held to the rules; listed, not fixed)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/J/JSNumberPrototype.cs(397,76): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/J/NumberParser.cs(85,23): warning CA1309
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/JSBigInt.cs(229,58): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/JSBigInt.cs(308,20): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSJsonText.cs(128,77): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSJsonText.cs(235,47): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSJsonText.cs(242,39): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSJsonText.cs(420,42): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSJsonText.cs(436,42): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/UriHelper.cs(286,31): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/UriHelper.cs(334,31): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/UriHelper.cs(339,27): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/DurationCorrespondenceTests.cs(681,42): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/DurationCorrespondenceTests.cs(683,42): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/TemporalLimitsTests.cs(102,22): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/TemporalLimitsTests.cs(130,26): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/TemporalLimitsTests.cs(291,22): warning CA1305
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/BuiltInsTests.cs(14708,28): warning CA1305
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/BuiltInsTests.cs(14744,22): warning CA1305
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/BuiltInsTests.cs(14750,28): warning CA1305
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedBigIntTests.cs(68,37): warning CA1305
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedIntlDataTests.cs(99,26): warning CA1305
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedTimeZoneTests.cs(74,26): warning CA1305
+Broiler.JS/Broiler.JavaScript.Integration.Tests/ClrBindingCultureTests.cs(39,47): warning CA1304
+Broiler.JS/Broiler.JavaScript.Integration.Tests/ClrBindingCultureTests.cs(39,52): warning CA1311
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue761Tests.cs(231,44): warning CA1305
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue761Tests.cs(231,78): warning CA1305
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue794Tests.cs(172,25): warning CA1305
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue887Tests2.cs(109,22): warning CA1305
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue971Tests.cs(159,51): warning CA1305
+Broiler.JS/Broiler.JavaScript.Integration.Tests/M6ValidationTests.cs(157,42): warning CA1310
+Broiler.JS/Broiler.JavaScript.Integration.Tests/M6ValidationTests.cs(171,36): warning CA1310
+Broiler.JS/Broiler.JavaScript.Integration.Tests/M7ValidationTests.cs(290,25): warning CA1310
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Phase2ValidationTests.cs(270,38): warning CA1310
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Phase2ValidationTests.cs(286,42): warning CA1310
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Phase2ValidationTests.cs(309,36): warning CA1310
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(179,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(211,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(227,26): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(240,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(270,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(284,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(306,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(318,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(369,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(374,26): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/CompileScalingMetrics.cs(120,22): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(100,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(107,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(108,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(115,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(116,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(172,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(18,49): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(181,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(99,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/PropertyMapDistributionMetrics.cs(323,19): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/SpecializingTierMetrics.cs(230,61): warning CA1305

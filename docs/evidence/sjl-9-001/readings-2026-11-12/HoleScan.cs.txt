@@ -1,0 +1,131 @@
+// Stage js-c78c's scratch analyzer, kept here as text so that holescan-*.txt can be taken again; it is no part of the
+// build. Built as a netstandard2.0 analyzer (Microsoft.CodeAnalysis.CSharp 4.14.0) and added to every project below
+// Broiler.JS/ of a scratch tree by an <Analyzer> item in that tree's Broiler.JS/Directory.Build.props.
+
+using System.Collections.Immutable;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
+
+[DiagnosticAnalyzer(LanguageNames.CSharp)]
+public sealed class HoleScan : DiagnosticAnalyzer
+{
+    private static readonly DiagnosticDescriptor D = new("HCS001", "implicit culture text", "HCS {0} | {1} | {2}", "Scan", DiagnosticSeverity.Warning, true);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(D);
+
+    public override void Initialize(AnalysisContext c)
+    {
+        c.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+        c.EnableConcurrentExecution();
+        c.RegisterOperationAction(Interpolated, OperationKind.InterpolatedString);
+        c.RegisterOperationAction(Binary, OperationKind.Binary);
+        c.RegisterOperationAction(Invocation, OperationKind.Invocation);
+    }
+
+    private static IOperation Unwrap(IOperation o)
+    {
+        while (o is IConversionOperation conv && conv.IsImplicit) o = conv.Operand;
+        return o;
+    }
+
+    // separator: the culture's decimal point, group separator, digits of a date; sign: only the minus sign; unknown: object,
+    // a type parameter or an interface, whose ToString may or may not read the culture.
+    private static string Kind(ITypeSymbol t)
+    {
+        if (t == null) return null;
+        if (t is INamedTypeSymbol n && n.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T) return Kind(n.TypeArguments[0]);
+        switch (t.SpecialType)
+        {
+            case SpecialType.System_Double: case SpecialType.System_Single: case SpecialType.System_Decimal: case SpecialType.System_DateTime:
+                return "separator";
+            case SpecialType.System_SByte: case SpecialType.System_Int16: case SpecialType.System_Int32: case SpecialType.System_Int64: case SpecialType.System_IntPtr:
+                return "sign";
+            case SpecialType.System_Object: case SpecialType.System_ValueType:
+                return "unknown";
+        }
+        var name = t.ToDisplayString();
+        if (name == "System.DateTimeOffset" || name == "System.Half") return "separator";
+        if (name == "System.Numerics.BigInteger" || name == "System.Int128") return "sign";
+        if (t is ITypeParameterSymbol || name == "System.IFormattable") return "unknown";
+        return null;
+    }
+
+    private static void Report(OperationAnalysisContext c, IOperation at, string kind, ITypeSymbol t, string where)
+        => c.ReportDiagnostic(Diagnostic.Create(D, at.Syntax.GetLocation(), kind, t?.ToDisplayString() ?? "?", where));
+
+    private static void Interpolated(OperationAnalysisContext c)
+    {
+        var op = (IInterpolatedStringOperation)c.Operation;
+        var parent = op.Parent;
+        if (parent is IInterpolatedStringHandlerCreationOperation) return; // CA1305's: a builder's handler
+        if (parent is IConversionOperation conv && conv.Type != null && conv.Type.SpecialType != SpecialType.System_String) return; // FormattableString, IFormattable
+        foreach (var part in op.Parts.OfType<IInterpolationOperation>())
+        {
+            var e = Unwrap(part.Expression);
+            var k = Kind(e.Type);
+            if (k == null) continue;
+            var fmt = part.FormatString is ILiteralOperation l ? ":" + l.ConstantValue.Value : "";
+            Report(c, part, k, e.Type, "interpolation" + fmt);
+        }
+    }
+
+    private static void Binary(OperationAnalysisContext c)
+    {
+        var op = (IBinaryOperation)c.Operation;
+        if (op.OperatorKind != BinaryOperatorKind.Add || op.Type?.SpecialType != SpecialType.System_String) return;
+        foreach (var side in new[] { op.LeftOperand, op.RightOperand })
+        {
+            var e = Unwrap(side);
+            if (e is IBinaryOperation b && b.Type?.SpecialType == SpecialType.System_String) continue;
+            var k = Kind(e.Type);
+            if (k != null) Report(c, side, k, e.Type, "concatenation");
+        }
+    }
+
+    private static void Invocation(OperationAnalysisContext c)
+    {
+        var op = (IInvocationOperation)c.Operation;
+        var m = op.TargetMethod;
+        var type = m.ContainingType?.ToDisplayString();
+        string where = null;
+        if (type == "System.Text.StringBuilder" && (m.Name == "Append" || m.Name == "Insert" || m.Name == "AppendLine" || m.Name == "AppendJoin")) where = "StringBuilder." + m.Name;
+        else if ((type == "System.IO.TextWriter" || type == "System.Console" || type == "System.IO.StringWriter" || type == "System.CodeDom.Compiler.IndentedTextWriter") && (m.Name == "Write" || m.Name == "WriteLine")) where = type + "." + m.Name;
+        else if (type == "string" && (m.Name == "Join" || m.Name == "Concat")) where = "string." + m.Name;
+        if (where == null) return;
+        if (m.Parameters.Any(p => p.Type.ToDisplayString() == "System.IFormatProvider")) return;
+        var ps = m.Parameters;
+        bool Considered(IArgumentOperation a)
+        {
+            if (a.Parameter == null) return false;
+            var i = a.Parameter.Ordinal;
+            if (where.StartsWith("string.")) return !(m.Name == "Join" && i == 0);
+            if (m.Name == "AppendJoin") return i > 0;
+            if (ps.Length == 1) return true;
+            if (m.Name == "Insert" && ps.Length == 2) return i == 1;
+            if (ps[0].Type.SpecialType == SpecialType.System_String && ps[0].Name == "format") return i > 0;
+            return false;
+        }
+        foreach (var a in op.Arguments)
+        {
+            if (!Considered(a)) continue;
+            var e = Unwrap(a.Value);
+            ITypeSymbol t = e.Type;
+            if (a.ArgumentKind == ArgumentKind.ParamArray && e is IArrayCreationOperation arr && arr.Initializer != null)
+            {
+                foreach (var el in arr.Initializer.ElementValues)
+                {
+                    var ee = Unwrap(el);
+                    var kk = Kind(ee.Type);
+                    if (kk != null) Report(c, el, kk, ee.Type, where);
+                }
+                continue;
+            }
+            if (t is IArrayTypeSymbol at) t = at.ElementType;
+            else if (t is INamedTypeSymbol nt && nt.IsGenericType && nt.Name == "IEnumerable") t = nt.TypeArguments[0];
+            else if (t is INamedTypeSymbol nt2 && nt2.AllInterfaces.FirstOrDefault(i => i.OriginalDefinition.ToDisplayString() == "System.Collections.Generic.IEnumerable<T>") is { } ie && t.SpecialType != SpecialType.System_String) t = ie.TypeArguments[0];
+            var k = Kind(t);
+            if (k != null) Report(c, a, k, t, where);
+        }
+    }
+}

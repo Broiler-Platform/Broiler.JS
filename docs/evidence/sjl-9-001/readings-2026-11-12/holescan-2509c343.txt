@@ -1,0 +1,159 @@
+# The scratch scan HoleScan (HoleScan.cs.txt) at 2509c343: in the engine's product projects (tests, benchmarks, samples
+# and the source generator left out), every place where a value becomes text by the current culture through a call the
+# globalization rules do not see: an interpolation into a string, a concatenation, StringBuilder.Append or Insert, a
+# TextWriter's or Console's Write, string.Join or Concat. Kind: separator, a double, float, decimal or date, whose
+# decimal point, digits or calendar a culture decides; sign, a signed integer, whose text a culture changes only when
+# it is negative (sv-SE's minus sign in .NET is U+2212); unknown, an object, a type parameter or IFormattable. Built
+# as hole-scan.sh says: Broiler.JS.slnx from a clean git archive tree, Release, --disable-build-servers.
+
+## Counts
+all: 507; product: 138
+     83 sign interpolation
+     25 sign concatenation
+     11 unknown interpolation
+     10 sign StringBuilder.Append
+      4 unknown StringBuilder.Append
+      3 sign System.CodeDom.Compiler.IndentedTextWriter.Write
+      2 sign string.Join
+
+## Each place: file:line:column: kind | type | how | the line
+# (The two string.Join rows, at JSIntl.cs, are the scan's own error: they are Join(separator, parts, start, count)'s start
+# and count, which are not made text.)
+Broiler.JS/Broiler.JavaScript.Ast/Misc/ArraySpan.cs:46:23: unknown | T? | StringBuilder.Append | sb.Append(item);
+Broiler.JS/Broiler.JavaScript.Ast/Misc/SpanLocation.cs:17:44: sign | int | interpolation | public override string ToString() => $"{Line}, {Column}";
+Broiler.JS/Broiler.JavaScript.Ast/Misc/SpanLocation.cs:17:52: sign | int | interpolation | public override string ToString() => $"{Line}, {Column}";
+Broiler.JS/Broiler.JavaScript.BuiltIns/Array/JSArrayPrototype.Modification.cs:144:70: sign | long | interpolation | throw JSEngine.NewTypeError($"Cannot delete property {target}");
+Broiler.JS/Broiler.JavaScript.BuiltIns/Array/JSArrayPrototype.Modification.cs:82:66: sign | long | interpolation | throw JSEngine.NewTypeError($"Cannot delete property {index}");
+Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/JSTypedArray.cs:238:108: sign | int | interpolation | throw JSEngine.NewRangeError($"byte length of TypedArray should be multiple of {bytesPerElement}");
+Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/TypedArrayParameters.cs:121:61: sign | long | interpolation | throw JSEngine.NewRangeError($"Start offset {offset} is outside the bounds of the buffer");
+Broiler.JS/Broiler.JavaScript.BuiltIns/BuiltInsAssemblyInitializer.cs:2010:54: sign | int | interpolation | PatchLegacyRegExpAccessor(regExpCtor, $"${i}", (in Arguments _) => LegacyRegExpValue(s => s.Paren(n)));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:235:48: sign | int | interpolation | return new JSString(nv.ToString($"F{i}", Invariant));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Generator/JSGenerator.cs:45:56: sign | long | interpolation | : IteratorPrototypes.GetOrAdd($"{name}:{iteratorPrototype.UniqueID}", _ => CreateIteratorPrototype(name, iteratorPrototype));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCultureLocaleData.cs:314:46: sign | int | concatenation | Add("months.stand-alone.wide." + month, format.MonthNames[month - 1]);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCultureLocaleData.cs:315:53: sign | int | concatenation | Add("months.stand-alone.abbreviated." + month, format.AbbreviatedMonthNames[month - 1]);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCultureLocaleData.cs:316:41: sign | int | concatenation | Add("months.format.wide." + month, format.MonthGenitiveNames[month - 1]);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCultureLocaleData.cs:317:48: sign | int | concatenation | Add("months.format.abbreviated." + month, format.AbbreviatedMonthGenitiveNames[month - 1]);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2762:48: sign | int | string.Join | return string.Join("-", parts, 0, i);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2762:51: sign | int | string.Join | return string.Join("-", parts, 0, i);
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1373:50: sign | int | StringBuilder.Append | sb.Append("\\k<bjsg").Append(refNum).Append('>');
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1404:49: sign | int | StringBuilder.Append | sb.Append("(?<bjsg").Append(groupIndex).Append('>');
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1419:45: sign | int | StringBuilder.Append | sb.Append("(?<bjsg").Append(groupIndex).Append('>');
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1572:56: sign | int | StringBuilder.Append | reset.Append("(?(bjsg").Append(n).Append(")(?<-bjsg").Append(n).Append(">))");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1572:86: sign | int | StringBuilder.Append | reset.Append("(?(bjsg").Append(n).Append(")(?<-bjsg").Append(n).Append(">))");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1851:29: sign | int | interpolation | return $"(?(bjsg{indices[0]})\\k<bjsg{indices[0]}>)";
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1851:50: sign | int | interpolation | return $"(?(bjsg{indices[0]})\\k<bjsg{indices[0]}>)";
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1853:28: sign | int | interpolation | var acc = $"(?(bjsg{indices[^1]})\\k<bjsg{indices[^1]}>)";
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1853:50: sign | int | interpolation | var acc = $"(?(bjsg{indices[^1]})\\k<bjsg{indices[^1]}>)";
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1855:28: sign | int | interpolation | acc = $"(?(bjsg{indices[k]})\\k<bjsg{indices[k]}>|{acc})";
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1855:49: sign | int | interpolation | acc = $"(?(bjsg{indices[k]})\\k<bjsg{indices[k]}>|{acc})";
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3801:33: sign | int | interpolation:X4 | => lo == hi ? $"[\\u{lo:X4}]" : $"[\\u{lo:X4}-\\u{hi:X4}]";
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3801:51: sign | int | interpolation:X4 | => lo == hi ? $"[\\u{lo:X4}]" : $"[\\u{lo:X4}-\\u{hi:X4}]";
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3801:62: sign | int | interpolation:X4 | => lo == hi ? $"[\\u{lo:X4}]" : $"[\\u{lo:X4}-\\u{hi:X4}]";
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3945:68: sign | int | interpolation:X2 | static string EncodeBmpScalar(int cp) => cp <= 0xFF ? $"\\x{cp:X2}" : $"\\u{cp:X4}";
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3945:84: sign | int | interpolation:X4 | static string EncodeBmpScalar(int cp) => cp <= 0xFF ? $"\\x{cp:X2}" : $"\\u{cp:X4}";
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateClass.cs:386:68: sign | int | interpolation | var fnVar = BExpression.Parameter(fx.Type, $"{label}$pf{privateKeyVarCounter++}");
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateClass.cs:431:58: sign | int | interpolation | typeof(KeyString), $"{privateName}$pk{privateKeyVarCounter++}");
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateClass.cs:467:90: sign | int | interpolation | var computedNameVar = BExpression.Parameter(typeof(JSValue), $"#className{computedMemberNames.Count}");
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateClass.cs:506:111: sign | int | interpolation | autoAccessorBackingKey = BExpression.Parameter(typeof(KeyString), $"{backingLabel}$acc{privateKeyVarCounter++}");
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.DeferredBody.cs:529:24: sign | int | interpolation | $"site {i} of {a.Count}/{b.Count}: eager {a[i]} ({(newA ? "new" : "repeat of " + seenA[a[i]])}), "
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.DeferredBody.cs:529:31: sign | int | interpolation | $"site {i} of {a.Count}/{b.Count}: eager {a[i]} ({(newA ? "new" : "repeat of " + seenA[a[i]])}), "
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.DeferredBody.cs:529:41: sign | int | interpolation | $"site {i} of {a.Count}/{b.Count}: eager {a[i]} ({(newA ? "new" : "repeat of " + seenA[a[i]])}), "
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.DeferredBody.cs:529:98: sign | int | concatenation | $"site {i} of {a.Count}/{b.Count}: eager {a[i]} ({(newA ? "new" : "repeat of " + seenA[a[i]])}), "
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.DeferredBody.cs:530:72: sign | int | concatenation | + $"re-entered {b[i]} ({(newB ? "new" : "repeat of " + seenB[b[i]])})";
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.DeferredBody.cs:540:50: sign | int | interpolation | divergence = $"different site COUNT: {a.Count} vs {b.Count}";
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.DeferredBody.cs:540:63: sign | int | interpolation | divergence = $"different site COUNT: {a.Count} vs {b.Count}";
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.DeferredBody.cs:578:31: sign | int | interpolation | return $"line {i}:\n  eager: {Cap(left)}\n  re-entered: {Cap(right)}";
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.DeferredBody.cs:581:50: sign | int | interpolation | return $"identical line by line; lengths {eager.Length} vs {actual.Length}";
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.DeferredBody.cs:581:68: sign | int | interpolation | return $"identical line by line; lengths {eager.Length} vs {actual.Length}";
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.DeferredBody.cs:600:38: sign | int | concatenation | canonical = prefix + seen.Count;
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.NumericSpeculation.cs:276:74: sign | int | concatenation | var local = BExpression.Parameter(typeof(JSValue), "#spec" + guarded);
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.NumericSpeculation.cs:512:66: sign | int | concatenation | var ok = BExpression.Parameter(typeof(bool), "#ok" + index);
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.NumericSpeculation.cs:513:72: sign | int | concatenation | var value = BExpression.Parameter(typeof(double), "#num" + index);
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.NumericSpeculation.cs:514:73: sign | int | concatenation | var boxed = BExpression.Parameter(typeof(JSValue), "#gen" + index);
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.NumericSpeculation.cs:568:78: sign | int | concatenation | var rawCopy = BExpression.Parameter(typeof(double), "#specnum" + guarded);
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.NumericSpeculation.cs:569:76: sign | int | concatenation | var flagCopy = BExpression.Parameter(typeof(bool), "#specok" + guarded);
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.NumericSpeculation.cs:570:80: sign | int | concatenation | var slotCopy = BExpression.Parameter(typeof(JSValue), "#specval" + guarded);
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.NumericSpeculation.cs:599:69: sign | int | concatenation | var temp = BExpression.Parameter(typeof(JSValue), "#spec" + guarded);
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitObjectLiteral.cs:312:91: sign | int | concatenation | var homeObjectVar = usesSuper ? BExpression.Parameter(typeof(JSObject), "#home" + tempHomeId++) : null;
+Broiler.JS/Broiler.JavaScript.Compiler/Scope/FastFunctionScope.cs:587:164: sign | int | interpolation | Arguments = (fx?.Generator ?? false) ? BExpression.Parameter(typeof(Arguments), $"a-{sID}") : BExpression.Parameter(typeof(Arguments).MakeBy
+Broiler.JS/Broiler.JavaScript.Compiler/Scope/FastFunctionScope.cs:587:93: sign | int | interpolation | Arguments = (fx?.Generator ?? false) ? BExpression.Parameter(typeof(Arguments), $"a-{sID}") : BExpression.Parameter(typeof(Arguments).MakeBy
+Broiler.JS/Broiler.JavaScript.Compiler/Scope/FastFunctionScope.cs:622:79: sign | int | interpolation | Context = BExpression.Parameter(typeof(JSContext), $"{nameof(Context)}{sID}");
+Broiler.JS/Broiler.JavaScript.Compiler/Scope/FastFunctionScope.cs:623:84: sign | int | interpolation | StackItem = BExpression.Parameter(typeof(FrameToken), $"{nameof(StackItem)}{sID}");
+Broiler.JS/Broiler.JavaScript.Compiler/Scope/FastFunctionScope.cs:850:34: sign | long | concatenation | variableScopeList[name + DateTime.UtcNow.Ticks] = v;
+Broiler.JS/Broiler.JavaScript.Compiler/Scope/FastFunctionScope.cs:874:67: sign | int | concatenation | var tp = BExpression.Variable(type, "#Temp" + type.Name + id++);
+Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitSwitchStatement.cs:298:53: sign | int | interpolation | ? BExpression.Label($"default-start-{lastLine}")
+Broiler.JS/Broiler.JavaScript.Debugger/V8ExceptionDetails.cs:31:38: sign | long | interpolation | ExecutionContextId = $"C-{context.ID}";
+Broiler.JS/Broiler.JavaScript.Debugger/V8InspectorProtocol.cs:163:134: sign | long | interpolation | var id = codeFilePath ?? $"S-{Interlocked.Increment(ref nextScriptId)}";
+Broiler.JS/Broiler.JavaScript.Debugger/V8InspectorProtocol.cs:45:18: sign | long | interpolation | ID = $"D-{Interlocked.Increment(ref id)}";
+Broiler.JS/Broiler.JavaScript.Debugger/V8InspectorProtocol.cs:56:23: sign | long | interpolation | var cid = $"C-{a.ID}";
+Broiler.JS/Broiler.JavaScript.Debugger/V8InspectorProtocol.cs:63:22: sign | long | interpolation | var id = $"C-{context.ID}";
+Broiler.JS/Broiler.JavaScript.Debugger/V8Runtime.cs:133:34: sign | long | interpolation | var injectedId = $"I-{Interlocked.Increment(ref nextInjectedId)}";
+Broiler.JS/Broiler.JavaScript.Debugger/V8Runtime.cs:158:54: sign | long | interpolation | return new ArgumentOutOfRangeException($"{a.ContextId} context not found");
+Broiler.JS/Broiler.JavaScript.Engine/CallStackItem.cs:68:71: sign | int | interpolation | public override string ToString() => $"{Function} at {FileName} - {Line},{Column}";
+Broiler.JS/Broiler.JavaScript.Engine/CallStackItem.cs:68:78: sign | int | interpolation | public override string ToString() => $"{Function} at {FileName} - {Line},{Column}";
+Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Core/ILTryBlock.cs:120:63: sign | int | interpolation | var next = il.DefineLabel($"finally jump next {state}");
+Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Core/ILWriter.cs:109:41: sign | short | interpolation | writer?.WriteLine($"{code.Name} {value}");
+Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Core/ILWriter.cs:120:41: sign | int | interpolation | writer?.WriteLine($"{code.Name} {value}");
+Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Core/ILWriter.cs:127:41: sign | long | interpolation | writer?.WriteLine($"{code.Name} {value}");
+Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Core/ILWriterLabel.cs:10:54: sign | int | interpolation | public readonly string ID = $"{label ?? "LABEL"}_{Interlocked.Increment(ref nextID)}";
+Broiler.JS/Broiler.JavaScript.ExpressionCompiler/ExpressionCompiler.cs:18:105: sign | int | interpolation | internal static string GetUniqueName(in FunctionName name) => $"<Broiler.JavaScriptHidden>{name}<ID>{System.Threading.Interlocked.Increment(
+Broiler.JS/Broiler.JavaScript.ExpressionCompiler/LambdaMethodBuilder.cs:20:71: sign | int | concatenation | ExpressionCompiler.GetUniqueName(innerLambda.Name + ":" + innerLambda.Name.Line),
+Broiler.JS/Broiler.JavaScript.Expressions/Converters/LabelMap.cs:18:48: sign | int | concatenation | r = BExpression.Label(label.Name + labels.Count, label.Type);
+Broiler.JS/Broiler.JavaScript.Expressions/Core/FastEnumerableExtensions.cs:35:23: unknown | T | StringBuilder.Append | sb.Append(item);
+Broiler.JS/Broiler.JavaScript.Expressions/Core/Sequence.cs:148:23: unknown | T | StringBuilder.Append | sb.Append(item);
+Broiler.JS/Broiler.JavaScript.Expressions/Core/Sequence.cs:81:27: unknown | T | StringBuilder.Append | sb.Append(item);
+Broiler.JS/Broiler.JavaScript.Expressions/DeferredCaptureLayout.cs:327:40: sign | int | interpolation | $"slot {i}: predicted {predictedReal[i].Name}, actual {actual[i].Name} "
+Broiler.JS/Broiler.JavaScript.Expressions/DeferredCaptureLayout.cs:328:41: sign | int | interpolation | + $"(of {predictedReal.Count})");
+Broiler.JS/Broiler.JavaScript.Expressions/Expressions/BInt32ConstantExpression.cs:13:75: sign | int | System.CodeDom.Compiler.IndentedTextWriter.Write | public override void Print(IndentedTextWriter writer) => writer.Write(Value);
+Broiler.JS/Broiler.JavaScript.Expressions/Expressions/BInt32ConstantExpression.cs:142:75: sign | long | System.CodeDom.Compiler.IndentedTextWriter.Write | public override void Print(IndentedTextWriter writer) => writer.Write(Value);
+Broiler.JS/Broiler.JavaScript.Expressions/Expressions/BJumpSwitchExpression.cs:22:26: sign | int | System.CodeDom.Compiler.IndentedTextWriter.Write | writer.Write(i++);
+Broiler.JS/Broiler.JavaScript.Expressions/Expressions/BLabelTarget.cs:16:26: sign | int | interpolation | name ??= $"LABEL_{Interlocked.Increment(ref id)}";
+Broiler.JS/Broiler.JavaScript.Expressions/Expressions/BParameterExpression.cs:17:32: sign | int | interpolation | name ??= $"{type.Name}_{Interlocked.Increment(ref id)}";
+Broiler.JS/Broiler.JavaScript.Expressions/Expressions/FunctionName.cs:13:29: sign | int | interpolation | $"{Name}-{Location}:{Line},{Column}";
+Broiler.JS/Broiler.JavaScript.Expressions/Expressions/FunctionName.cs:13:36: sign | int | interpolation | $"{Name}-{Location}:{Line},{Column}";
+Broiler.JS/Broiler.JavaScript.Expressions/Expressions/Position.cs:10:44: sign | int | interpolation | public override string ToString() => $"{Line}, {Column}";
+Broiler.JS/Broiler.JavaScript.Expressions/Expressions/Position.cs:10:52: sign | int | interpolation | public override string ToString() => $"{Line}, {Column}";
+Broiler.JS/Broiler.JavaScript.LinqExpressions/LambdaGen/NewLambdaExpression.cs:82:100: sign | int | interpolation | throw new InvalidOperationException($"No constructor found on {type.FullName} matching {args.Length} parameters");
+Broiler.JS/Broiler.JavaScript.LinqExpressions/LinqExpressions/GeneratorsV2/GeneratorRewriter.cs:265:61: sign | int | concatenation | var label = Expression.Label(typeof(void), "next" + id);
+Broiler.JS/Broiler.JavaScript.Parser/ErrorHandler.cs:41:29: sign | int | concatenation | var msg = "Line " + line + ": " + description;
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:127:75: sign | int | interpolation:X4 | $"Unexpected character '{char.ConvertFromUtf32(pair)}' (U+{pair:X4}) at {Location}");
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:136:23: sign | int | interpolation:X4 | ? $"U+{(int)c:X4} (a control character)"
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:138:27: sign | int | interpolation:X4 | ? $"U+{(int)c:X4} (an unpaired surrogate)"
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:139:34: sign | int | interpolation:X4 | : $"'{c}' (U+{(int)c:X4})";
+Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:150:67: sign | int | interpolation | throw new FastParseException(c, $"Expecting {type} at {c.Start.Line}, {c.Start.Column}");
+Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:150:83: sign | int | interpolation | throw new FastParseException(c, $"Expecting {type} at {c.Start.Line}, {c.Start.Column}");
+Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:163:75: sign | int | interpolation | throw new FastParseException(c, $"Expecting keyword {type} at {c.Start.Line}, {c.Start.Column}");
+Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:163:91: sign | int | interpolation | throw new FastParseException(c, $"Expecting keyword {type} at {c.Start.Line}, {c.Start.Column}");
+Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:176:75: sign | int | interpolation | throw new FastParseException(c, $"Expecting keyword {type} at {c.Start.Line}, {c.Start.Column}");
+Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:176:91: sign | int | interpolation | throw new FastParseException(c, $"Expecting keyword {type} at {c.Start.Line}, {c.Start.Column}");
+Broiler.JS/Broiler.JavaScript.Parser/RegExpValidator.cs:591:38: sign | int | concatenation | map[name] = "bjsv" + counter++;
+Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs:108:44: sign | int | StringBuilder.Append | output.Append(", ").Append(instruction.Operand);
+Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs:95:42: sign | int | StringBuilder.Append | output.Append("        ").Append(program.ParameterCount).AppendLine(",");
+Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs:96:42: sign | int | StringBuilder.Append | output.Append("        ").Append(program.LocalCount).AppendLine(",");
+Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs:97:42: sign | int | StringBuilder.Append | output.Append("        ").Append(program.MaximumStack).AppendLine(",");
+Broiler.JS/Broiler.JavaScript.Portable/PortableProgram.cs:101:86: sign | int | interpolation | throw new ArgumentException($"Operand-stack underflow at instruction {index}.", nameof(instructions));
+Broiler.JS/Broiler.JavaScript.Portable/PortableProgram.cs:105:88: sign | int | interpolation | throw new ArgumentException($"MaximumStack is too small at instruction {index}.", nameof(MaximumStack));
+Broiler.JS/Broiler.JavaScript.Portable/PortableProgram.cs:117:99: sign | int | interpolation | throw new ArgumentException($"Reachable path falls off the program at instruction {index}.", nameof(instructions));
+Broiler.JS/Broiler.JavaScript.Portable/PortableProgram.cs:126:95: sign | int | interpolation | throw new ArgumentException($"Inconsistent operand-stack depth at instruction {successor}.", nameof(instructions));
+Broiler.JS/Broiler.JavaScript.Portable/PortableProgram.cs:76:97: sign | int | interpolation | throw new ArgumentOutOfRangeException(nameof(instructions), $"Invalid opcode at {index}.");
+Broiler.JS/Broiler.JavaScript.Portable/PortableProgram.cs:80:109: sign | int | interpolation | throw new ArgumentOutOfRangeException(nameof(instructions), $"Invalid argument index at {index}.");
+Broiler.JS/Broiler.JavaScript.Portable/PortableProgram.cs:83:106: sign | int | interpolation | throw new ArgumentOutOfRangeException(nameof(instructions), $"Invalid local index at {index}.");
+Broiler.JS/Broiler.JavaScript.Portable/PortableProgram.cs:86:106: sign | int | interpolation | throw new ArgumentOutOfRangeException(nameof(instructions), $"Invalid jump target at {index}.");
+Broiler.JS/Broiler.JavaScript.Runtime/JSException.cs:301:27: sign | int | StringBuilder.Append | sb.Append(line);
+Broiler.JS/Broiler.JavaScript.Runtime/JSException.cs:33:56: unknown | object | interpolation | public static string NotIterable(object name) => $"{name} is not iterable";
+Broiler.JS/Broiler.JavaScript.Runtime/JSException.cs:34:68: unknown | object | interpolation | public static string NotEntry(object name) => $"Iterator value {name} is an entry object";
+Broiler.JS/Broiler.JavaScript.Runtime/JSObject.PropertyStorage.cs:109:67: sign | int | concatenation | PrivateNameMarker + name + PrivateNameEvalSeparator + Interlocked.Increment(ref privateNameCounter));
+Broiler.JS/Broiler.JavaScript.Runtime/JSObject.PropertyStorage.cs:1449:60: unknown | object | interpolation | throw NewTypeError($"Cannot assign to property {name} of {target} whose receiver has an accessor");
+Broiler.JS/Broiler.JavaScript.Runtime/JSObject.cs:48:58: unknown | object | interpolation | internal static string NotIterable(object name) => $"{name} is not iterable";
+Broiler.JS/Broiler.JavaScript.Runtime/JSObject.cs:49:70: unknown | object | interpolation | internal static string NotEntry(object name) => $"Iterator value {name} is an entry object";
+Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs:1256:97: unknown | object | interpolation | => key is JSValue value ? DescribeKeyForDiagnostic(value, setting: true) : $" (setting '{key}')";
+Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs:1493:65: unknown | object | interpolation | throw NewTypeError?.Invoke($"Cannot create property {key} on {this}")
+Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs:1719:48: unknown | object | interpolation | throw NewTypeError($"Cannot invoke {name} of object as it is undefined");
+Broiler.JS/Broiler.JavaScript.Runtime/SparseList.cs:27:80: sign | int | interpolation | throw new ArgumentOutOfRangeException($"Item does not exist at {index}");
+Broiler.JS/Broiler.JavaScript.Runtime/SparseList.cs:30:80: sign | int | interpolation | throw new ArgumentOutOfRangeException($"Item does not exist at {index}");
+Broiler.JS/Broiler.JavaScript.Storage/ConcurrentTypeCache.cs:11:88: sign | int | concatenation | public static uint GetOrCreate(Type name, string suffix = "") => cache.GetOrCreate(name.GetHashCode() + ":" + name.FullName + suffix, (_) =>
+Broiler.JS/Broiler.JavaScript/AssemblyCodeCache.cs:254:54: sign | int | interpolation | AppendText(hash, $"broiler-persistent-cache-v{ManifestSchema}\n");
+Broiler.JS/Broiler.JavaScript/AssemblyCodeCache.cs:417:41: sign | int | interpolation | var temporary = $"{destination}.{Environment.ProcessId}.{Guid.NewGuid():N}.tmp";
+Broiler.JS/Broiler.JavaScript/ILPack/IL/MethodBodyWriter.cs:121:95: unknown | object | interpolation | throw new NotSupportedException($"Unsupported inline operand: {il[i].Operand}");
+Broiler.JS/Broiler.JavaScript/ILPack/IL/MethodBodyWriter.cs:140:98: unknown | object | interpolation | throw new NotSupportedException($"Unsupported short inline variable: {il[i].Operand}");
+Broiler.JS/Broiler.JavaScript/ILPack/IL/MethodBodyWriter.cs:159:92: unknown | object | interpolation | throw new NotSupportedException($"Unsupported inline variable: {il[i].Operand}");

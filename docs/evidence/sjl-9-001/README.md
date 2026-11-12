@@ -1119,7 +1119,12 @@ invariant globalization with and without `LANG=de_DE.UTF-8`, no probe line moves
 writes its digits with the invariant culture under every host, and is not met as written, for the sites outside the `m`
 literal that the search at review names, which read the host's culture for a sign or a linguistic comparison. *(Noted
 2026-11-11, at review: and for the CLR converters' `DateTime.Parse`, which reads the host's date format, as the row's
-note names it.)*
+note names it.)* *(Noted 2026-11-12, on the owner's ruling of 2026-11-11 on clause 8's remaining host-culture readers,
+"Fix all + enforce": "and is not met as written, for the sites outside the `m` literal that the search at review names,
+which read the host's culture for a sign or a linguistic comparison" held until branch `js-c78`'s `0705e80b`, which names
+the invariant culture or an ordinal comparison at those sites, the CLR converters' among them; the subsection "Clause 8
+read again after every host-culture reader is fixed and the rules are enforced, 2026-11-12" below reads the clause at
+`2509c343`.)*
 
 **What would meet clause 8 now.** Those sites taking the invariant culture or an ordinal comparison, or a dated decision
 that keeps them and says why, as SJL-D-17 does for the .NET format string; then the clause read again at the commit that
@@ -1127,9 +1132,15 @@ carries it. Neither is this reading's to take; choosing is the owner's. *(Noted 
 include `JSValueToClrConverter.cs`'s four `DateTime.Parse` calls, lines 53, 56, 59 and 62, which would take the invariant
 culture, or a culture the embedder names, or the same decision would say why they stay; and the search would first cover
 what `searches-75695cdd.txt`'s closing note says is still not searched, since meeting only the sites named so far would
-not show the clause met.)*
+not show the clause met.)* *(Noted 2026-11-12, on the owner's ruling of 2026-11-11, "Fix all + enforce", which chose
+the first of these: "Those sites taking the invariant culture or an ordinal comparison" is done at `0705e80b` for every
+site the .NET globalization analyzers find in the engine's product projects and for the readers outside their reach that
+the searches below find, and `490826e3` makes the build hold the five rules; the subsection below covers what the
+closing note of `searches-75695cdd.txt` says was not searched, by the analyzers and by a scratch scan of values made text
+by interpolation, and reads the clause again.)*
 
-**Open items** this reading leaves, none done here: clause 8's sites above; the open items of the reading above but
+**Open items** this reading leaves, none done here: clause 8's sites above *(noted 2026-11-12: "clause 8's sites above" are done by
+`0705e80b`, on the owner's ruling "Fix all + enforce"; the subsection below lists what it leaves)*; the open items of the reading above but
 clause 8's `m` literal, which stand as it lists them, `Intl.NumberFormat.prototype.format` given a `Decimal` among them
 (the change leaves it reading the value as a Number); and `JSON.stringify` of a `Decimal`, which at `ef3c4445` with no
 `LANG` throws a .NET `InvalidCastException` (`JSJSON.Stringify` casts the value to an object), in code this change does
@@ -1145,6 +1156,156 @@ not touch and for which no `Decimal` path of test262 or of the vectors asks an a
   `TypeError`s under every host, and the tests' pinned answers move with it.
 - *Added 2026-11-11, at review:* `new (aDecimal)(text)` with a String that is not an integer throws an `Error` carrying
   .NET's `FormatException`, not a `TypeError`, as before the change; under `sv-SE` a String with U+2212 now does too.
+
+### Clause 8 read again after every host-culture reader is fixed and the rules are enforced, 2026-11-12
+
+*Added 2026-11-12, after the owner's ruling of 2026-11-11 on clause 8's remaining host-culture readers, asked with the
+analyzer scan of `7581a2f6` and answered: "Fix all + enforce", the alternatives not taken being "Fix all, no
+enforcement" and "Scope clause 8 to Intl". For clause 8 it replaces the reading of the subsection above, "**Not met as
+written** at `75695cdd`, now for the sites outside the `m` literal alone; **met for `Decimal.prototype.toLocaleString`
+and for the `m` literal.**", and its "So:" paragraph's "and is not met as written, for the sites outside the `m` literal
+that the search at review names, which read the host's culture for a sign or a linguistic comparison", both left as
+written above. It reads clause 7 no further, changes no rule and declares nothing of SJL-9 met: the gate waits as the
+exit reading says.*
+
+**The change** is branch `js-c78`'s commits `0705e80b` (the fixes and their tests), `490826e3` (the rules the build
+holds, and the kept paths' comments; no code) and `2509c343` (the changelog) on `7581a2f6`. The commit that adds this
+subsection changes no code, so the reading is of the code at `2509c343`, which is `490826e3`'s.
+- **What was searched.** At `7581a2f6`, `Broiler.JS.slnx` built with every globalization rule on
+  (`-p:AnalysisModeGlobalization=All`) finds 143 distinct sites of the five rules the ruling names, 85 of them in the
+  engine's product projects (CA1305 63, CA1310 16, CA1309 4, CA1304 1, CA1311 1) and 58 in the test, benchmark and
+  sample projects of both trees; the two engine projects outside every solution, `Broiler.JavaScript.Network` and
+  `Broiler.JavaScript.NodePollyfill`, do not compile at that commit or at `2509c343` (CS0234), so no analyzer reads
+  them. The rules do not see three kinds of host-culture reader, which this stage searched for apart: a numeric parse
+  through `TryParse` with no format provider (`searches-*.txt`, section 4); a .NET `Regex` that ignores case, which
+  folds case by the culture current when it is built (section 7, and the probe `probe-sites.js`, which found it); and a
+  value made text by string interpolation into a string, by concatenation, by `StringBuilder.Append` or by a writer's
+  `Write`, none of which names a culture (`holescan-*.txt`, a scratch analyzer's list, whose source is
+  `HoleScan.cs.txt`).
+- **Fixed.** Every one of the 85 sites names the invariant culture (`CultureInfo.InvariantCulture`), an ordinal
+  comparison (`StringComparison.Ordinal`, or string's equality operator where the compiler emitted `x.Equals("")`) or
+  the invariant casing (`ToLowerInvariant`); `scan-7581a2f6.txt` lists each with its fix. Of the readers the rules do
+  not see: `JSString`'s `BigIntValue` reads its text with `NumberStyles.Integer` and the invariant culture, the styles
+  it read before, and the other `TryParse` calls on the engine's names, its environment variables and JSON's index test
+  name the invariant culture, with `NumberStyles.None` where the text is digits the code has checked;
+  `JSValueToClrConverter`'s four date conversions read `DateTime.Parse(text, CultureInfo.InvariantCulture)`, where the
+  engine's records say only that the conversion parses a string "by the platform for a host method" (bundle
+  `sjl-6-001`) and name no format; a RegExp's .NET `Regex`, the validator's and the shell's history search are built
+  with `RegexOptions.CultureInvariant`; and the interpolations and writes the scratch scan lists whose decimal point,
+  date or minus sign a culture decided take the invariant culture: a Number called as a function, `String.fromCodePoint`,
+  the `assert` module's message, the typed arrays' and `DataView`'s offset messages, the persistent cache's quarantine
+  name, the IL writer and the expression printer.
+- **Kept on the host's culture**, on the ruling: the default-locale provider (`JSIntlLocaleProviders.DefaultLocale`,
+  decision D7), the host-culture provider (`HostCultureLocaleData.Culture`, decision D6), `Intl.Collator`'s comparison
+  (`ResolveCompareInfo`, the host's until milestone SJL-17, decision SJL-D-24 (c)), and SJL-D-17's paths: the .NET
+  format-string extension of `Number.prototype.toLocaleString` and of `Date.prototype.toLocaleString`
+  (`FormatWithNetCulture`) and the legacy `Date.parse`'s culture-dependent fallback (`DateParser`). Each names the
+  culture it reads (`CultureInfo.CurrentCulture`, `DateTimeFormatInfo.CurrentInfo` or `GetCultureInfo` of a locale),
+  which the five rules accept, so none raises a diagnostic and none carries a suppression: a `SuppressMessage` there
+  would suppress nothing. Each now says, in a dated comment where it reads the host's culture, that it is kept and why.
+- **Left, each with its reason.** The source generator's prefix tests, `TryParse` calls and name ordering
+  (`Broiler.JavaScript.JSClassGenerator`, sections 4 and 5, and its `OrderBy` of names): a netstandard2.0 compiler
+  plug-in, outside the rules' scope, whose strings are C# symbol names and digits its own regular expressions matched,
+  and which runs on the build machine, not on the engine's host. The holes the scratch scan still lists at `2509c343`:
+  integers that are never negative (indexes, lines and columns, counters, ids, a hexadecimal digit), whose text no
+  culture changes, and an `object` hole whose value is a script value, a key or an IL operand, whose own text reads no
+  culture, or a debug `ToString` of a generic sequence. The test projects, which are not held to the rules: each test
+  that reads a culture sets it, and the new tests' controls read the host's culture on purpose. `Network` and
+  `NodePollyfill`, which do not compile. And the CLR bridge's unmarshalling of an object into a `Dictionary<,>`, whose
+  key conversion now names the invariant culture but which reads the generic definition's type parameters
+  (`gt.GetGenericArguments()`) and so fails for every key under every culture, a fault that is not the host's culture
+  and that this change leaves as found.
+- **The rules the build holds.** `Broiler.JS/host-culture.globalconfig` sets CA1304, CA1305, CA1309, CA1310 and CA1311
+  to `error`, and `Broiler.JS/Directory.Build.props` hands it to every project below `Broiler.JS/` but the test projects
+  (a name ending in `Tests`), the benchmarks, the samples (the `samples` folder and a name ending in `Sample`), the perf
+  tools under `OtherTests` and the source generator. That scope holds every project that ships engine code and none
+  that only tests or measures it; the shared libraries below `Broiler.ECMAScript/` have their own build, whose
+  conventions this change does not touch, and the scan finds no site in them. `control-490826e3.txt` is the control:
+  from a clean tree of `490826e3`, each of three fixes reverted in turn (the CLR bridge's `DateTime.Parse`, the module
+  loader's `StartsWith(".")` and the shell's `ToLower()`) makes the owning project's ordinary Release build fail with
+  CA1305, CA1310, and CA1304 with CA1311, as errors; nothing of the control is committed.
+- **Tests**, each case under the invariant culture and under `de-DE`, `sv-SE` and `tr-TR`, applied as
+  `DecimalToLocaleStringTests` applies a culture: `Broiler.JavaScript.Integration.Tests`' `ClrBridgeHostCultureTests`
+  (a String read as a `long` with a sign, as a `DateTime` and as a `DateTimeOffset`, and an object's detail text),
+  `Broiler.JavaScript.Debugger.Tests`' `DebuggerHostCultureTests` (a number's description),
+  `Broiler.JavaScript.Compiler.Tests`' `ShellPackageVersionCultureTests` (the shell's package version) and
+  `Broiler.JavaScript.BuiltIns.Tests`' `HostCultureScriptPathTests` (a case-insensitive RegExp, and the String, RegExp
+  and JSON paths of the fixed comparisons and texts: group names and flags with `I` and `i`, JSON's keys and indexes,
+  array and proxy keys, templates, private names and BigInt from a String with a sign). Run against the code at
+  `7581a2f6`, every invariant-culture case passes and these fail: the date under `de-DE` and `tr-TR`, the `long` under
+  `sv-SE`, the detail text and the debugger's description under `de-DE`, `sv-SE` and `tr-TR`, the package version under
+  `tr-TR`, and the RegExp's case folding under `de-DE`, `sv-SE` and `tr-TR`. Not observable at `7581a2f6`, and so
+  passing there too: the date under `sv-SE`, which read `"11/12/2026"` as 12 November already; the `long` under `de-DE`
+  and `tr-TR`, whose signs are the invariant culture's; and every case of the String, RegExp and JSON paths but the case
+  folding, whose fixed sites no culture decided: an index, a key or a line is written alike under every culture, and an
+  ordinal test of an ASCII prefix or suffix answers as the linguistic one did.
+
+**What it is read from**, in [`readings-2026-11-12/`](readings-2026-11-12/answers-2509c343.txt):
+- `scan-7581a2f6.txt` and `scan-2509c343.txt`: the analyzer scan at both commits, every site with its line, and at the
+  base its fix;
+- `searches-7581a2f6.txt` and `searches-2509c343.txt`: the searches of the subsection above (`searches.sh`, copied),
+  with a section 7 for .NET regular expressions that ignore case;
+- `holescan-7581a2f6.txt` and `holescan-2509c343.txt`, with `HoleScan.cs.txt`: the scratch scan of values made text
+  with no culture named;
+- `answers-2509c343.txt`: the answers at `7581a2f6` and at `2509c343`, each from a scratch tree `git archive` wrote
+  from the commit, built and run as the subsection above's were: the engine vectors of corpus revision 38 in UTC and
+  `America/New_York`, test262's `supportedValuesOf` directory in both variants and both zones, part C's and part D's
+  programs, `probe.js` in its four environments, `probe-culture.js` in its four, `probe-sites.js` in five (with no
+  `LANG`, under `de_DE`, `sv_SE` and `tr_TR`, and under invariant globalization), and test262 over the paths the fixed
+  sites reach (`t262c-paths.txt`) in both variants, in UTC and `America/New_York` with no `LANG` and in UTC under
+  `LANG=tr_TR.UTF-8` and `LANG=de_DE.UTF-8`. As above, these are not the rule's parts;
+- `probe-sites.js`, `probe-sites-7581a2f6.txt` and `probe-sites-2509c343.txt`; `probe-2509c343.txt` and
+  `probe-culture-2509c343.txt`, `7581a2f6`'s being `75695cdd`'s committed answers, as `answers-2509c343.txt` checks;
+  `t262c-7581a2f6.tsv` and `t262c-2509c343.tsv`, every case's status in each environment;
+- `control-490826e3.txt`: the control above.
+
+**What moved between `7581a2f6` and `2509c343`.** Only answers that a host culture other than the invariant one had made
+wrong, each to the invariant culture's answer, and each by the fix (`0705e80b`); with no `LANG` and under invariant
+globalization, with and without `LANG=de_DE.UTF-8`, nothing moved. The engine vectors' reports are the same bytes at
+both commits in each zone, and the same as at every commit the subsections above read. Every test262 case of the
+`supportedValuesOf` directory passes at both. Every part C and part D program answers the same bytes, and
+`default-locale-is-supported.js` passes in both variants. `probe.js` and `probe-culture.js` answer alike at both commits
+in every environment, `7581a2f6`'s answers being `75695cdd`'s committed ones. Over the paths the fixed sites reach, no
+test262 case's status moves in any of the four environments; at both commits the runs in `America/New_York` and under
+`LANG=de_DE.UTF-8` answer as the run in UTC with no `LANG`, and the run under `LANG=tr_TR.UTF-8` differs from it in the
+same ten cases, the `Infinity` and `undefined` texts of `String.prototype.toLocaleLowerCase`'s and `toLocaleUpperCase`'s
+tests (`ınfinity`, `INFİNİTY`), which lower and upper by the default locale, Turkish, as the default-locale provider
+decides; no RegExp case of those paths answered otherwise under the Turkish host before the change, so the case
+folding's fix moves none of them.
+- `probe-sites.js`, the RegExp lines alone: under `LANG=tr_TR.UTF-8` `/I/i.test('i'), /i/i.test('I')` is `true,true`,
+  where it was `false,false`, `/I/i.test('\u0131'), /i/i.test('\u0130')` is `false,false`, where it was `true,true`, and
+  `/(?i:I)b/.test('ib')` is `true`, where it was `false`; under `LANG=de_DE.UTF-8` and `LANG=sv_SE.UTF-8`
+  `/i/i.test('\u0130')` is `false`, where it was `true`. At `2509c343` every line of the probe under the three cultures
+  answers as with no `LANG` but `'I'.toLocaleLowerCase(), 'i'.toLocaleUpperCase()` under `tr_TR`, which the
+  default-locale provider decides (Turkish, `ı,İ`), as at the base.
+- Outside the committed answers, the tests' and the changelog's cases move as the tests above say: the CLR bridge's
+  `long` from `"\u22125"` under `sv-SE` (-5, now 0), its date from `"11/12/2026 13:45:00"` under `de-DE` and `tr-TR`
+  (11 December, now 12 November), a value's detail text and the debugger's description of a number under `de-DE`,
+  `sv-SE` and `tr-TR` (`1,5`, now `1.5`; under `sv-SE` `−2`, now `-2`), the error messages of `String.fromCodePoint(1.5)`
+  and of a Number called as a function under the three cultures (`1,5`, now `1.5`), and the shell's package version
+  under `tr-TR` (`1.0.0-prevıew`, now `1.0.0-preview`).
+
+| Clause | Its words | Read from, at `2509c343` | Reading, and what it rests on |
+|---|---|---|---|
+| 8 | "Host globalization remains only behind the optional providers." | `scan-2509c343.txt`; `searches-2509c343.txt`; `holescan-2509c343.txt`; `control-490826e3.txt`; part D's programs and `default-locale-is-supported.js` under invariant globalization, locally; the probes under their environments and the culture test262 paths under their four; the new tests | **Met as written** at `2509c343`. The analyzer build finds no site of the five rules in the engine's product projects, where the build now holds them as errors, and no site is suppressed: the paths that keep the host's culture name the culture they read, which the rules accept, and they are the kept paths the ruling names, the default-locale and host-culture providers (decisions D7 and D6), SJL-D-17's .NET format strings of `toLocaleString` and its legacy `Date.parse`, and `Intl.Collator`'s comparison, SJL-17's. The exit reading's search for named host-culture calls finds the host's culture read there and, outside the engine's code, only in a benchmark's probe of the host (section 3). The readers outside the rules' reach are fixed: every numeric parse names a format provider but the source generator's (section 4; `LambdaRewriter`'s spans lines and names it on the next), no .NET regular expression ignores case by the host's culture (section 7), and the scratch scan lists no value made text whose decimal point, date or sign a culture decides. Under invariant globalization every program answers as at the base, and under `de_DE`, `sv_SE` and `tr_TR` the probes and the culture test262 paths answer as with no `LANG` but where the default-locale provider decides. The evidence that keeps it is the enforcement: the build fails on a reintroduced reader of the five rules' kinds, as the control shows. What the rules cannot see, a `TryParse` with no format provider, a .NET `Regex` that ignores case, and a value made text by interpolation, concatenation or a writer, is held by this reading's searches at `2509c343` and by nothing after it. |
+
+**So:** clause 8 is met as written at `2509c343`: the host's globalization is read only behind the optional providers
+and on the paths the owner's ruling keeps, each of which names the culture it reads and says why it stays, and the
+engine's build holds CA1304, CA1305, CA1309, CA1310 and CA1311 as errors in its product projects, which is the evidence
+that keeps it so. This reads the clause; it declares nothing of SJL-9 met.
+
+**Open items** this reading leaves, none done here:
+- the readers the five rules cannot see, which no build check holds after this reading: a numeric `TryParse` with no
+  format provider, a .NET `Regex` built with `RegexOptions.IgnoreCase` and no `RegexOptions.CultureInvariant`, and a
+  value made text by interpolation, concatenation, `StringBuilder.Append` or a writer. A rule of the engine's
+  architecture tests over the source, or a project analyzer like the scratch scan's, could hold them; choosing is the
+  owner's;
+- the source generator's own prefix tests, `TryParse` calls and name ordering, which read the build machine's culture,
+  not the engine host's;
+- the CLR bridge's unmarshalling of an object into a `Dictionary<,>`, which fails for every key under every culture
+  (above);
+- the open items of the subsections above but clause 8's sites, which stand as they list them, the owner's question on
+  the `Decimal` function's styles and `JSON.stringify` of a `Decimal` among them.
 
 ## State
 
@@ -1222,6 +1383,20 @@ date format. The sentence "No answer moved but the `m` literal's under a host cu
 the `toLocaleString` lines that follow from them." is left as written above and held until this note.)* The paragraphs above
 are left as written. That is no verdict on SJL-9, whose gate waits as the exit reading's paragraph says; nothing is
 accepted.
+
+*2026-11-12, after the owner's ruling of 2026-11-11 on clause 8's remaining host-culture readers, "Fix all + enforce":*
+the paragraph above reads clause 8 at `75695cdd` "not met as written, for the sites outside the `m` literal that the
+search at review names, which read the host's culture for a sign or a linguistic comparison and which neither the ruling
+nor any decision covers"; that held until branch `js-c78`'s `0705e80b`, which names the invariant culture or an ordinal
+comparison at every site the .NET globalization analyzers find in the engine's product projects and at the readers
+outside their reach that this stage's searches find, and `490826e3`, which makes the engine's build hold CA1304, CA1305,
+CA1309, CA1310 and CA1311 as errors there. The subsection "Clause 8 read again after every host-culture reader is fixed
+and the rules are enforced, 2026-11-12" reads clause 8 at `2509c343`: met as written, the host's culture being read only
+behind the providers and on the paths the ruling keeps, SJL-D-17's and the Collator's, and the rules the build holds
+being the evidence that keeps it so. No answer moved but answers a host culture other than the invariant one had made
+wrong, each to the invariant culture's; with no `LANG` and under invariant globalization nothing moved. The paragraphs
+above are left as written. That is no verdict on SJL-9, whose gate waits as the exit reading's paragraph says; nothing
+is accepted.
 
 **What the bundle will hold:**
 - `base/`: parts A and B's base runs, each imported unchanged with the digest of its zip;

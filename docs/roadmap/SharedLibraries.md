@@ -2052,7 +2052,22 @@ reads both clauses at the change's code:
   linguistic comparison: the ruling names", before the search at review of date and time parses found the CLR
   converters' `DateTime.Parse`; and "No answer moved but the `m` literal's under a host culture other than the invariant
   one, with the `toLocaleString` answers that follow from them.", where two of the answers that moved are not the
-  literal's own but a `Decimal`'s text and the `Decimal` function's parse of a String.)*
+  literal's own but a `Decimal`'s text and the `Decimal` function's parse of a String.)* *(Noted 2026-11-12, on the
+  owner's ruling of 2026-11-11 on clause 8's remaining host-culture readers, "Fix all + enforce", the alternatives not
+  taken being "Fix all, no enforcement" and "Scope clause 8 to Intl": the note above reads clause 8 "still not met as
+  written, for the sites outside the `m` literal that the search at review names, which read the host's culture for a
+  sign or a linguistic comparison, and for the CLR converters' `DateTime.Parse`, which reads the host's date format".
+  Branch `js-c78` now names the invariant culture or an ordinal comparison at every site the .NET globalization
+  analyzers find in the engine's product projects, and at the readers outside their reach that the change's searches
+  find: numeric parses that name no format provider, a case-insensitive RegExp's .NET regular expression, and values
+  made text by interpolation whose decimal point, date or minus sign a culture decided; it has tests under host
+  cultures. The engine's build holds the rules CA1304, CA1305, CA1309, CA1310 and CA1311 as errors in its product
+  projects, and the paths that keep the host's culture, the providers (decisions D6 and D7), SJL-D-17's .NET format
+  strings and legacy `Date.parse`, and `Intl.Collator`'s comparison until SJL-17, name the culture they read and say
+  why they stay. The bundle's subsection "Clause 8 read again after every host-culture reader is fixed and the rules
+  are enforced, 2026-11-12" reads clause 8 met as written, the rules the build holds being the evidence that keeps it.
+  No answer moved but answers a host culture other than the invariant one had made wrong, each to the invariant
+  culture's.)*
 - **Nothing else moved**: the engine vectors, test262's `supportedValuesOf` directory and part C's and part D's programs
   answer at the change as at its base, the currency and unit lists among them, and `toLocaleString`'s answers move as
   the changelog lists them.
