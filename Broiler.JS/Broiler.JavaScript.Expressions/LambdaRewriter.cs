@@ -151,6 +151,8 @@ public class LambdaRewriter: BExpressionMapVisitor
         private static readonly int IndexThreshold =
             int.TryParse(
                 Environment.GetEnvironmentVariable(IndexThresholdEnvironmentVariable),
+                System.Globalization.NumberStyles.Integer,
+                System.Globalization.CultureInfo.InvariantCulture,
                 out var configured) && configured > 0
                 ? configured
                 : DefaultIndexThreshold;

@@ -1,0 +1,162 @@
+# SJL-9 clauses 7 and 8: the answers at the base 6758d47e (origin/main) and at the head 556eba43 (branch js-c78), each
+# from a scratch tree git archive wrote from the commit (docs/evidence left out), built in Release with
+# --disable-build-servers by the .NET SDK 10.0.404, one run at a time on an idle machine, TZ as named, LANG unset.
+# Shell BroilerJS.dll: base e4f288bc8466128f3400a4c6962e73f42f5a9967012a88c7fe66fbfdb854f426,
+# head 3851cf73be165eb785d12edd500009b1ce324b3bf989261948ec56b45c892fdb.
+
+## The engine vectors, corpus revision 38 (Broiler.JavaScript.Vectors.Tests, Every_difference_from_the_corpus_is_classified, 3 workers)
+base UTC: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+head UTC: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+  rows that differ between base and head in UTC: 0
+base America/New_York: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+head America/New_York: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+  rows that differ between base and head in America/New_York: 0
+
+## test262 ccaac100, test/intl402/Intl/supportedValuesOf/ (25 paths), original and terser, --include-negative
+# The Decimal proposal has no path and no feature at ccaac100, so no Decimal path is scored.
+UTC: base 50 cases, head 50 cases; statuses seen: passed; cases whose status differs: 0
+  test/intl402/Intl/supportedValuesOf/builtin.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/builtin.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars-accepted-by-DateTimeFormat.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars-accepted-by-DateTimeFormat.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars-accepted-by-DisplayNames.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars-accepted-by-DisplayNames.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars-required-by-intl-era-monthcode.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars-required-by-intl-era-monthcode.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/coerced-to-string.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/coerced-to-string.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/collations-accepted-by-Collator.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/collations-accepted-by-Collator.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/collations.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/collations.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/currencies-accepted-by-DisplayNames.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/currencies-accepted-by-DisplayNames.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/currencies-accepted-by-NumberFormat.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/currencies-accepted-by-NumberFormat.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/currencies.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/currencies.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/invalid-key.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/invalid-key.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/length.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/length.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/name.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/name.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-accepted-by-DateTimeFormat.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-accepted-by-DateTimeFormat.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-accepted-by-NumberFormat.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-accepted-by-NumberFormat.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-accepted-by-RelativeTimeFormat.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-accepted-by-RelativeTimeFormat.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-with-simple-digit-mappings.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-with-simple-digit-mappings.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/prop-desc.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/prop-desc.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/timeZones-accepted-by-DateTimeFormat.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/timeZones-accepted-by-DateTimeFormat.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/timeZones-include-non-continental.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/timeZones-include-non-continental.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/timeZones.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/timeZones.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/units-accepted-by-NumberFormat.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/units-accepted-by-NumberFormat.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/units.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/units.js [terser] base passed head passed
+America/New_York: base 50 cases, head 50 cases; statuses seen: passed; cases whose status differs: 0
+  test/intl402/Intl/supportedValuesOf/builtin.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/builtin.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars-accepted-by-DateTimeFormat.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars-accepted-by-DateTimeFormat.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars-accepted-by-DisplayNames.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars-accepted-by-DisplayNames.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars-required-by-intl-era-monthcode.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars-required-by-intl-era-monthcode.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/calendars.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/coerced-to-string.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/coerced-to-string.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/collations-accepted-by-Collator.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/collations-accepted-by-Collator.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/collations.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/collations.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/currencies-accepted-by-DisplayNames.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/currencies-accepted-by-DisplayNames.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/currencies-accepted-by-NumberFormat.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/currencies-accepted-by-NumberFormat.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/currencies.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/currencies.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/invalid-key.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/invalid-key.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/length.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/length.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/name.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/name.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-accepted-by-DateTimeFormat.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-accepted-by-DateTimeFormat.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-accepted-by-NumberFormat.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-accepted-by-NumberFormat.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-accepted-by-RelativeTimeFormat.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-accepted-by-RelativeTimeFormat.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-with-simple-digit-mappings.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems-with-simple-digit-mappings.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/numberingSystems.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/prop-desc.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/prop-desc.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/timeZones-accepted-by-DateTimeFormat.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/timeZones-accepted-by-DateTimeFormat.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/timeZones-include-non-continental.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/timeZones-include-non-continental.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/timeZones.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/timeZones.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/units-accepted-by-NumberFormat.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/units-accepted-by-NumberFormat.js [terser] base passed head passed
+  test/intl402/Intl/supportedValuesOf/units.js [original] base passed head passed
+  test/intl402/Intl/supportedValuesOf/units.js [terser] base passed head passed
+
+## Part C's programs (collect.py's datasets step, TZ=UTC): each program's answer file, base against head
+  calendar-formats.answer.txt: the same bytes (sha256 c42d426580fbf34d)
+  dates.answer.txt: the same bytes (sha256 4be2e7911b606753)
+  displaynames.answer.txt: the same bytes (sha256 953de9d2361b489f)
+  durations.answer.txt: the same bytes (sha256 02d91f45f339c59f)
+  lists.answer.txt: the same bytes (sha256 9be5af7b91712da7)
+  locales.answer.txt: the same bytes (sha256 543506bbeff0d2d3)
+  numbers.answer.txt: the same bytes (sha256 277c4e7a6eddb905)
+  plurals.answer.txt: the same bytes (sha256 93ab3d0fb965f43e)
+  relativetimes.answer.txt: the same bytes (sha256 b538032589ffb60d)
+  segments.answer.txt: the same bytes (sha256 376c0e0beb9baa03)
+  temporal-intl.answer.txt: the same bytes (sha256 84192332fbd60b9e)
+  timezones.answer.txt: the same bytes (sha256 d85ba74b668506cd)
+  zone-names.answer.txt: the same bytes (sha256 1c5581ceb5abf95c)
+  base summary: shellSha256 e4f288bc8466128f3400a4c6962e73f42f5a9967012a88c7fe66fbfdb854f426, invariantGlobalization False
+  head summary: shellSha256 3851cf73be165eb785d12edd500009b1ce324b3bf989261948ec56b45c892fdb, invariantGlobalization False
+## Part D's programs (collect.py's invariant step, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1, TZ=UTC): each program's answer file, base against head
+  calendar-formats.answer.txt: the same bytes (sha256 1ab9c55c3ed79365)
+  dates.answer.txt: the same bytes (sha256 b605b4e8c92a57e2)
+  displaynames.answer.txt: the same bytes (sha256 25303ab111ef0f6b)
+  durations.answer.txt: the same bytes (sha256 3883bd179849fc36)
+  lists.answer.txt: the same bytes (sha256 ef1ab43aaa49743e)
+  locales.answer.txt: the same bytes (sha256 5b802932ce8b7045)
+  numbers.answer.txt: the same bytes (sha256 f3ccde014c4370b1)
+  plurals.answer.txt: the same bytes (sha256 a3e4badf25d684d3)
+  relativetimes.answer.txt: the same bytes (sha256 e190e30d022be693)
+  segments.answer.txt: the same bytes (sha256 edd11c4c19ddc3b2)
+  temporal-intl.answer.txt: the same bytes (sha256 780d73f8836771d1)
+  timezones.answer.txt: the same bytes (sha256 d85ba74b668506cd)
+  zone-names.answer.txt: the same bytes (sha256 ad3be1dd3438a63e)
+  base summary: shellSha256 e4f288bc8466128f3400a4c6962e73f42f5a9967012a88c7fe66fbfdb854f426, invariantGlobalization True
+  head summary: shellSha256 3851cf73be165eb785d12edd500009b1ce324b3bf989261948ec56b45c892fdb, invariantGlobalization True
+## Part D's default-locale-is-supported.js (run_test262.py, invariant globalization, TZ=UTC)
+  base: test/intl402/default-locale-is-supported.js [original] passed
+  base: test/intl402/default-locale-is-supported.js [terser] passed
+  head: test/intl402/default-locale-is-supported.js [original] passed
+  head: test/intl402/default-locale-is-supported.js [terser] passed
+
+## The probe (probe.js): lines whose answer differs between base and head, per environment
+nolang: 17 of 28 lines differ: d.toLocaleString(), d.toLocaleString(undefined), d.toLocaleString('en'), d.toLocaleString('en-US'), d.toLocaleString('de'), d.toLocaleString('de-DE'), d.toLocaleString('fr'), d.toLocaleString('hi-u-nu-deva'), d.toLocaleString('en',{maximumFractionDigits:1}), d.toLocaleString('de',{style:'currency',currency:'EUR'}), d.toLocaleString('en',{notation:'compact'}), d.toLocaleString(undefined,{minimumFractionDigits:4}), n.toLocaleString('en',{maximumFractionDigits:0}), big.toLocaleString('en',{maximumFractionDigits:20}), big.toLocaleString('en',{maximumSignificantDigits:21}), d.toLocaleString('xx-invalid-'), d.toLocaleString('en',{style:'currency'})
+de: 16 of 28 lines differ: d.toLocaleString(), d.toLocaleString(undefined), d.toLocaleString('en'), d.toLocaleString('en-US'), d.toLocaleString('de'), d.toLocaleString('de-DE'), d.toLocaleString('fr'), d.toLocaleString('hi-u-nu-deva'), d.toLocaleString('en',{maximumFractionDigits:1}), d.toLocaleString('de',{style:'currency',currency:'EUR'}), d.toLocaleString('en',{notation:'compact'}), d.toLocaleString(undefined,{minimumFractionDigits:4}), big.toLocaleString('en',{maximumFractionDigits:20}), big.toLocaleString('en',{maximumSignificantDigits:21}), d.toLocaleString('xx-invalid-'), d.toLocaleString('en',{style:'currency'})
+invariant: 17 of 28 lines differ: d.toLocaleString(), d.toLocaleString(undefined), d.toLocaleString('en'), d.toLocaleString('en-US'), d.toLocaleString('de'), d.toLocaleString('de-DE'), d.toLocaleString('fr'), d.toLocaleString('hi-u-nu-deva'), d.toLocaleString('en',{maximumFractionDigits:1}), d.toLocaleString('de',{style:'currency',currency:'EUR'}), d.toLocaleString('en',{notation:'compact'}), d.toLocaleString(undefined,{minimumFractionDigits:4}), n.toLocaleString('en',{maximumFractionDigits:0}), big.toLocaleString('en',{maximumFractionDigits:20}), big.toLocaleString('en',{maximumSignificantDigits:21}), d.toLocaleString('xx-invalid-'), d.toLocaleString('en',{style:'currency'})
+de-invariant: 17 of 28 lines differ: d.toLocaleString(), d.toLocaleString(undefined), d.toLocaleString('en'), d.toLocaleString('en-US'), d.toLocaleString('de'), d.toLocaleString('de-DE'), d.toLocaleString('fr'), d.toLocaleString('hi-u-nu-deva'), d.toLocaleString('en',{maximumFractionDigits:1}), d.toLocaleString('de',{style:'currency',currency:'EUR'}), d.toLocaleString('en',{notation:'compact'}), d.toLocaleString(undefined,{minimumFractionDigits:4}), n.toLocaleString('en',{maximumFractionDigits:0}), big.toLocaleString('en',{maximumFractionDigits:20}), big.toLocaleString('en',{maximumSignificantDigits:21}), d.toLocaleString('xx-invalid-'), d.toLocaleString('en',{style:'currency'})

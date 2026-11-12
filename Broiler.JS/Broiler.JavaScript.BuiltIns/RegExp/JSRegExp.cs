@@ -152,7 +152,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     private static void AppendHexEscape(StringBuilder sb, char c)
     {
         sb.Append(@"\x");
-        sb.Append(((int)c).ToString("x2"));
+        sb.Append(((int)c).ToString("x2", CultureInfo.InvariantCulture));
     }
 
     private static void AppendUnicodeEscape(StringBuilder sb, char c)
@@ -164,7 +164,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
 
         sb.Append(@"\u");
-        sb.Append(((int)c).ToString("x4"));
+        sb.Append(((int)c).ToString("x4", CultureInfo.InvariantCulture));
     }
 
     private static string EscapePatternSource(string pattern)
@@ -1010,7 +1010,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // (the earlier transforms only add non-capturing groups / lookarounds).
             pattern = RewriteCaptureGroups(pattern, unicode || unicodeSets, out captureMap);
 
-            var compiled = new System.Text.RegularExpressions.Regex(pattern, options);
+            // RegexOptions.CultureInvariant: a case-insensitive pattern folds case by the invariant culture's equivalences
+            // under every host (milestone SJL-9's clause 8, on the owner's ruling of 2026-11-11, "Fix all + enforce"); until
+            // then `new Regex(pattern, options)` folded by the host culture's, so that under tr-TR /I/i did not match "i".
+            var compiled = new System.Text.RegularExpressions.Regex(pattern, options | RegexOptions.CultureInvariant);
             RegexTieringDiagnostics.RecordPatternBuilt();
 
             // For a Broiler-routed pattern the capture layout that drives exec result
@@ -1533,7 +1536,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                         var close = pattern.IndexOf('>', i + 3);
                         headerEnd = close + 1;
                         var name = pattern.Substring(i + 3, close - (i + 3));
-                        if (name.StartsWith("bjsg") && int.TryParse(name.Substring(4), out var n))
+                        if (name.StartsWith("bjsg", StringComparison.Ordinal) && int.TryParse(name.Substring(4), NumberStyles.None, CultureInfo.InvariantCulture, out var n))
                             declaredNum = n;
                     }
                     else
@@ -1676,7 +1679,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             while (j < pattern.Length && pattern[j] >= '0' && pattern[j] <= '9') j++;
             if (j == digitsStart)
                 return false; // no minimum digits → a literal brace, not a quantifier
-            var minIsZero = long.TryParse(pattern.Substring(digitsStart, j - digitsStart), out var mv) && mv == 0;
+            var minIsZero = long.TryParse(pattern.Substring(digitsStart, j - digitsStart), NumberStyles.None, CultureInfo.InvariantCulture, out var mv) && mv == 0;
             if (j < pattern.Length && pattern[j] == '}')
             {
                 if (!minIsZero) return false; // {n} with n>0
@@ -2461,7 +2464,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
          : -1;
 
     // A single UTF-16 code unit as a fixed-width \uHHHH escape (safe inside a .NET class).
-    private static string Unit(int codeUnit) => "\\u" + codeUnit.ToString("X4");
+    private static string Unit(int codeUnit) => "\\u" + codeUnit.ToString("X4", CultureInfo.InvariantCulture);
 
     private static int HighSurrogateOf(int cp) => 0xD800 + ((cp - 0x10000) >> 10);
     private static int LowSurrogateOf(int cp) => 0xDC00 + ((cp - 0x10000) & 0x3FF);
@@ -3169,13 +3172,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
     {
         if (codePoint <= 0xFFFF)
         {
-            sb.Append("\\u").Append(codePoint.ToString("X4"));
+            sb.Append("\\u").Append(codePoint.ToString("X4", CultureInfo.InvariantCulture));
             return;
         }
 
         int v = codePoint - 0x10000;
-        sb.Append("\\u").Append((0xD800 + (v >> 10)).ToString("X4"));
-        sb.Append("\\u").Append((0xDC00 + (v & 0x3FF)).ToString("X4"));
+        sb.Append("\\u").Append((0xD800 + (v >> 10)).ToString("X4", CultureInfo.InvariantCulture));
+        sb.Append("\\u").Append((0xDC00 + (v & 0x3FF)).ToString("X4", CultureInfo.InvariantCulture));
     }
 
     private static bool IsHex(char c) =>
@@ -4242,7 +4245,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     {
                         if (inClass && ((after >= '0' && after <= '9') || after == '_'))
                         {
-                            sb.Append("\\u").Append(((int)(after % 32)).ToString("x4"));
+                            sb.Append("\\u").Append(((int)(after % 32)).ToString("x4", CultureInfo.InvariantCulture));
                             i += 2; // consumed '\', 'c', and the control letter
                             continue;
                         }

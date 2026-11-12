@@ -203,7 +203,7 @@ public abstract class BExpression(BExpressionType nodeType, Type type)
 
     public static BMethodConstantExpression Constant(MethodInfo value) => new(value);
 
-    public static BInt32ConstantExpression Constant(Enum value) => new(System.Convert.ToInt32(value));
+    public static BInt32ConstantExpression Constant(Enum value) => new(System.Convert.ToInt32(value, System.Globalization.CultureInfo.InvariantCulture));
 
     public static BExpression Constant(object value, Type? type = null)
     {

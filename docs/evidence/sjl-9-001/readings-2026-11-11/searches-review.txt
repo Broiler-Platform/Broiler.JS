@@ -1,0 +1,54 @@
+# Clause 8 of SJL-9, the search at review for culture-sensitive calls that name no culture, at 39a56e1ba9a59578352b6631f892a256963160f1
+# Taken 2026-11-11 by git grep over the commit's tracked .cs files under Broiler.JS/ and Broiler.ECMAScript/, tests and
+# benchmarks left out; lines that are // comments are left out, and so are lines that name CultureInfo, NumberFormatInfo,
+# an invariant culture or a StringComparison.
+
+## Numeric parses
+$ git grep -nE '\b(decimal|double|float|int|uint|long|ulong|short|ushort|byte|sbyte|BigInteger|Int32|Int64|UInt32|UInt64|Double|Decimal)\.(Try)?Parse\(' 39a56e1ba9a59578352b6631f892a256963160f1 -- 'Broiler.JS/*.cs' 'Broiler.ECMAScript/*.cs' ':!*Tests*' ':!*benchmarks*'
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:53:        if (!decimal.TryParse(text, out var v))
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:64:        if (!decimal.TryParse(v, out var n))
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:95:        var v = long.Parse(value.ToString());
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Json/JSJsonParser.cs:35:        if (uint.TryParse(name, out var index) && index != uint.MaxValue && index.ToString() == name)
+  Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1536:                        if (name.StartsWith("bjsg") && int.TryParse(name.Substring(4), out var n))
+  Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1679:            var minIsZero = long.TryParse(pattern.Substring(digitsStart, j - digitsStart), out var mv) && mv == 0;
+  Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSString.cs:143:    public override long BigIntValue => long.TryParse(ToString(), out var n) ? n : 0;
+  Broiler.JS/Broiler.JavaScript.Compiler/Scope/FastFunctionScope.cs:899:        if (underscore > 0 && int.TryParse(name[(underscore + 1)..], out _))
+  Broiler.JS/Broiler.JavaScript.Debugger/V8RemoteObject.cs:36:            IntPtr v = new(long.Parse(id));
+  Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/ILCodeGenerator.VisitParameter.cs:208:        if (underscore > 0 && int.TryParse(name[(underscore + 1)..], out _))
+  Broiler.JS/Broiler.JavaScript.Expressions/CompilationStack.cs:91:        return int.TryParse(configured, out var value) && value >= 0
+  Broiler.JS/Broiler.JavaScript.Expressions/LambdaRewriter.cs:152:            int.TryParse(
+  Broiler.JS/Broiler.JavaScript.Expressions/StackSegment.cs:71:        return configured != null && long.TryParse(configured, out var bytes) && bytes >= 0
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs:93:            if (int.TryParse(match.Groups["count"].Value, out var count))
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs:99:            if (int.TryParse(match.Groups["index"].Value, out var index))
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs:105:            if (int.TryParse(match.Groups["index"].Value, out var index))
+
+## Case mappings and string comparisons
+$ git grep -nE '\.(ToLower|ToUpper)\(\)|\.(StartsWith|EndsWith|IndexOf|LastIndexOf)\("[^"]+"\)|(string|String)\.Compare\(' 39a56e1ba9a59578352b6631f892a256963160f1 -- 'Broiler.JS/*.cs' 'Broiler.ECMAScript/*.cs' ':!*Tests*' ':!*benchmarks*'
+  Broiler.ECMAScript/Broiler.ECMAScript.Generation/Intl/CldrUcd.cs:233:        var letter = Categories.IndexOf("Lo");
+  Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1536:                        if (name.StartsWith("bjsg") && int.TryParse(name.Substring(4), out var n))
+  Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateClass.cs:211:            return n.StartsWith("#") ? n[1..] : n;
+  Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateClass.cs:451:            var isPrivateName = property.Key is AstIdentifier propertyIdentifier && propertyIdentifier.Name.Value.
+  Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTaggedTemplateExpression.cs:71:                    if (r.StartsWith("`"))
+  Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTaggedTemplateExpression.cs:74:                    if (r.StartsWith("}"))
+  Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTaggedTemplateExpression.cs:77:                    if (r.EndsWith("${"))
+  Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTaggedTemplateExpression.cs:79:                    else if (r.EndsWith("`"))
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs:37:            if(a.AttributeClass?.Name?.StartsWith("Symbol") ?? false)
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs:42:            if(a.AttributeClass?.Name?.StartsWith("JSPrototypeMethod") ?? false)
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs:46:            if(a.AttributeClass?.Name?.StartsWith("JSExport") ?? false)
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs:52:                if (a.AttributeClass?.Name?.StartsWith("JSExportSameName") ?? false)
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ListExtensions.cs:136:        return name.StartsWith("@") ? name.Substring(1) : name;
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/SyntaxNodeExtensions.cs:11:    public static bool IsGeneratorAttributeName(this string name) => name.StartsWith("JSClassGenerator")
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/SyntaxNodeExtensions.cs:12:            || name.StartsWith("JSRegistration")
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/SyntaxNodeExtensions.cs:13:            || name.StartsWith("JSFunctionG");
+  Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:143:            if (!file.StartsWith("."))
+  Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:190:            if (relativePath.StartsWith("."))
+  Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:266:        var filePath = Resolve(folder, relativeFile.StartsWith(".") ? relativeFile : ("./" + relativeFile)) ?? throw new FileNotFoundExce
+  Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:317:        var filePath = m.Resolve(folder, relativeFile.StartsWith(".") ? relativeFile : ("./" + relativeFile));
+  Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:72:            if (!method.Name.StartsWith("To"))
+  Broiler.JS/Broiler.JavaScript/BroilerJSContext.cs:170:            if (!filePath.EndsWith(".csx"))
+  Broiler.JS/Broiler.JavaScript/Program.cs:86:            var scriptPath = positionalArgs.FirstOrDefault(arg => !arg.StartsWith("-"));
+  Broiler.JS/Broiler.JavaScript/Utils/PackageManager.cs:31:                if (name.StartsWith("nuget:"))
+  Broiler.JS/Broiler.JavaScript/Utils/PackageManager.cs:37:                Version = tokens[1].Trim().ToLower();
+
+# Not searched: numeric ToString calls that name no culture (they cannot be told from JSValue's own ToString by a search).
+# CldrUcd.cs is in Broiler.ECMAScript.Generation, the data home's generator.

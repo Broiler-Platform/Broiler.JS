@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CodeDom.Compiler;
 using System.Reflection;
+using System.Globalization;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Expressions;
 
@@ -152,14 +153,14 @@ public class BDoubleConstantExpression(double value) : BExpression(BExpressionTy
 {
     public readonly double Value = value;
 
-    public override void Print(IndentedTextWriter writer) => writer.Write(Value);
+    public override void Print(IndentedTextWriter writer) => writer.Write(Value.ToString(CultureInfo.InvariantCulture));
 }
 
 public class BFloatConstantExpression(float value) : BExpression(BExpressionType.FloatConstant, typeof(float))
 {
     public readonly float Value = value;
 
-    public override void Print(IndentedTextWriter writer) => writer.Write(Value);
+    public override void Print(IndentedTextWriter writer) => writer.Write(Value.ToString(CultureInfo.InvariantCulture));
 }
 
 public class BBooleanConstantExpression : BExpression

@@ -29,8 +29,11 @@ SHARED_PREFIX = "Broiler.ECMAScript."
 # named Broiler.DateTime and Broiler.Unicode.Properties until 2026-10-12, which BuiltIns no longer
 # references; it now names what the project does (repaired at milestone SJL-2.13). Milestone SJL-7.5
 # added Broiler.Unicode.Segmentation, and the Runtime's Broiler.Unicode.Algorithms (Ast's since
-# milestone SJL-12.5) below.
-BUILT_INS_DEPENDENCIES = {"Broiler.Regex", "Broiler.Unicode.Cldr.LocaleData", "Broiler.Unicode.Segmentation"}
+# milestone SJL-12.5) below. On 2026-11-11, on the owner's ruling of that day on milestone SJL-9's clause 7,
+# BuiltIns dropped Broiler.Unicode.Cldr.LocaleData, whose last use, Intl.supportedValuesOf's currency and
+# unit lists, is the shared Intl library's; until then the set read
+# {"Broiler.Regex", "Broiler.Unicode.Cldr.LocaleData", "Broiler.Unicode.Segmentation"}.
+BUILT_INS_DEPENDENCIES = {"Broiler.Regex", "Broiler.Unicode.Segmentation"}
 
 # The Unicode area's code package, whose tables Broiler.JavaScript.Ast embeds, which Ast's package declares.
 # No package that carries tables is among them. Until 2026-10-21 the Runtime package was checked for it

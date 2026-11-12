@@ -1,0 +1,89 @@
+# shell sha256 e5cb29a098b96956ddcfaea52c295e1860bf839d7de0d28449d069bf2713f76e; probe sha256 297b1d50e0879a74713de88580670032fb3a8cfdaea3e3b10cf9e4271be7f264; 2026-11-11T19:23:52Z
+## TZ=UTC, LANG unset
+defaultLocale => en-US
+exact = Decimal('1234567891') / 1000m; exact.toString() => 1234567.891
+exact.toLocaleString() => 1,234,567.891
+exact.toLocaleString('en') => 1,234,567.891
+(Decimal('12345678901234567890123456789') / 1000000000m).toLocaleString('en') => 12,345,678,901,234,567,890.123
+(-0m).toLocaleString('en') => -0
+(0m * -1m).toLocaleString('en') => -0
+(-0m).toLocaleString() => -0
+(-0).toLocaleString('en') => -0
+(1234567.891m).toString() => 1234567.891
+(1.5m).toFixed(1) => 1.5
+(-0.5m).toString() => -0.5
+Decimal('\u22125').toString() => throws TypeError: −5 is not a valid big integer
+(-5).toString() => -5
+String(-1.5) => -1.5
+(-5n).toString() => -5
+'I'.toLowerCase() => i
+Object.keys(JSON.parse('{"1":1,"-1":2,"01":3}')) => ["1","-1","01"]
+/a{0,2}/.exec('aa') => aa
+[object Object]
+# exit 0
+## TZ=UTC, LANG=de_DE.UTF-8
+defaultLocale => de-DE
+exact = Decimal('1234567891') / 1000m; exact.toString() => 1234567.891
+exact.toLocaleString() => 1.234.567,891
+exact.toLocaleString('en') => 1,234,567.891
+(Decimal('12345678901234567890123456789') / 1000000000m).toLocaleString('en') => 12,345,678,901,234,567,890.123
+(-0m).toLocaleString('en') => -0
+(0m * -1m).toLocaleString('en') => -0
+(-0m).toLocaleString() => -0
+(-0).toLocaleString('en') => -0
+(1234567.891m).toString() => 1234567.891
+(1.5m).toFixed(1) => 1.5
+(-0.5m).toString() => -0.5
+Decimal('\u22125').toString() => throws TypeError: −5 is not a valid big integer
+(-5).toString() => -5
+String(-1.5) => -1.5
+(-5n).toString() => -5
+'I'.toLowerCase() => i
+Object.keys(JSON.parse('{"1":1,"-1":2,"01":3}')) => ["1","-1","01"]
+/a{0,2}/.exec('aa') => aa
+[object Object]
+# exit 0
+## TZ=UTC, LANG=sv_SE.UTF-8
+defaultLocale => sv-SE
+exact = Decimal('1234567891') / 1000m; exact.toString() => 1234567.891
+exact.toLocaleString() => 1 234 567,891
+exact.toLocaleString('en') => 1,234,567.891
+(Decimal('12345678901234567890123456789') / 1000000000m).toLocaleString('en') => 12,345,678,901,234,567,890.123
+(-0m).toLocaleString('en') => -0
+(0m * -1m).toLocaleString('en') => -0
+(-0m).toLocaleString() => −0
+(-0).toLocaleString('en') => -0
+(1234567.891m).toString() => 1234567.891
+(1.5m).toFixed(1) => 1.5
+(-0.5m).toString() => -0.5
+Decimal('\u22125').toString() => throws TypeError: −5 is not a valid big integer
+(-5).toString() => -5
+String(-1.5) => -1.5
+(-5n).toString() => -5
+'I'.toLowerCase() => i
+Object.keys(JSON.parse('{"1":1,"-1":2,"01":3}')) => ["1","-1","01"]
+/a{0,2}/.exec('aa') => aa
+[object Object]
+# exit 0
+## TZ=UTC, LANG=tr_TR.UTF-8
+defaultLocale => tr-TR
+exact = Decimal('1234567891') / 1000m; exact.toString() => 1234567.891
+exact.toLocaleString() => 1.234.567,891
+exact.toLocaleString('en') => 1,234,567.891
+(Decimal('12345678901234567890123456789') / 1000000000m).toLocaleString('en') => 12,345,678,901,234,567,890.123
+(-0m).toLocaleString('en') => -0
+(0m * -1m).toLocaleString('en') => -0
+(-0m).toLocaleString() => -0
+(-0).toLocaleString('en') => -0
+(1234567.891m).toString() => 1234567.891
+(1.5m).toFixed(1) => 1.5
+(-0.5m).toString() => -0.5
+Decimal('\u22125').toString() => throws TypeError: −5 is not a valid big integer
+(-5).toString() => -5
+String(-1.5) => -1.5
+(-5n).toString() => -5
+'I'.toLowerCase() => i
+Object.keys(JSON.parse('{"1":1,"-1":2,"01":3}')) => ["1","-1","01"]
+/a{0,2}/.exec('aa') => aa
+[object Object]
+# exit 0

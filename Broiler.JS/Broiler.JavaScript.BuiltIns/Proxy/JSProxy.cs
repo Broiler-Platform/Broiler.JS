@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Globalization;
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine;
@@ -120,7 +121,7 @@ public partial class JSProxy : JSObject
         var propertyKey = key.ToKey(false);
         return propertyKey.Type switch
         {
-            KeyType.UInt => CreateString(propertyKey.Index.ToString()),
+            KeyType.UInt => CreateString(propertyKey.Index.ToString(CultureInfo.InvariantCulture)),
             KeyType.String => CreateString(propertyKey.KeyString.ToString()),
             KeyType.Symbol => (JSValue)(JSSymbol)propertyKey.Symbol,
             _ => key
@@ -570,7 +571,7 @@ public partial class JSProxy : JSObject
 
     public override JSValue DefineProperty(in KeyString name, JSObject pd) => DefineProperty(name.ToJSValue(), pd);
 
-    public override JSValue DefineProperty(uint key, JSObject pd) => DefineProperty(CreateString(key.ToString()), pd);
+    public override JSValue DefineProperty(uint key, JSObject pd) => DefineProperty(CreateString(key.ToString(CultureInfo.InvariantCulture)), pd);
 
     public override JSValue DefineProperty(IJSSymbol name, JSObject pd) => DefineProperty((JSValue)(JSSymbol)name, pd);
 
@@ -579,7 +580,7 @@ public partial class JSProxy : JSObject
     // it must fire the defineProperty trap and throw if the define is rejected.
     public override void CreateDataProperty(KeyString key, JSValue value) => CreateDataPropertyOrThrow(key.ToJSValue(), value);
 
-    public override void CreateDataProperty(uint index, JSValue value) => CreateDataPropertyOrThrow(CreateString(index.ToString()), value);
+    public override void CreateDataProperty(uint index, JSValue value) => CreateDataPropertyOrThrow(CreateString(index.ToString(CultureInfo.InvariantCulture)), value);
 
     public override void CreateDataProperty(JSValue key, JSValue value) => CreateDataPropertyOrThrow(key, value);
 
@@ -611,7 +612,7 @@ public partial class JSProxy : JSObject
 
     public override JSValue Delete(in KeyString key) => Delete(key.ToJSValue());
 
-    public override JSValue Delete(uint key) => Delete(CreateString(key.ToString()));
+    public override JSValue Delete(uint key) => Delete(CreateString(key.ToString(CultureInfo.InvariantCulture)));
 
     public override JSValue Delete(IJSSymbol symbol) => Delete((JSValue)(JSSymbol)symbol);
 
@@ -715,7 +716,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.get);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(handler, target, CreateString(key.ToString()), receiver));
+            var result = fx.InvokeFunction(new Arguments(handler, target, CreateString(key.ToString(CultureInfo.InvariantCulture)), receiver));
             ValidateGetInvariant(target, key, result);
             return result;
         }
@@ -762,7 +763,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.set);
         if (!fx.IsUndefined)
         {
-            var setResult = fx.InvokeFunction(new Arguments(handler, target, CreateString(name.ToString()), value, receiver));
+            var setResult = fx.InvokeFunction(new Arguments(handler, target, CreateString(name.ToString(CultureInfo.InvariantCulture)), value, receiver));
             if (!setResult.BooleanValue)
                 return false;
 

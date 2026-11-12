@@ -1,0 +1,97 @@
+# Clauses 7 and 8 of SJL-9, the searches at 6758d47eaa24347b1c7192ce486e5411aa8039a4 (Merge pull request #1113 from Broiler-Platform/claude/busy-lamport-m3yprr)
+# Taken 2026-11-11 by git grep over the commit's tracked files; paths of local trees are written <tree>.
+
+## Clause 7: this engine's uses of Broiler.Unicode.Cldr.LocaleData for Intl data (the package, its namespace and types)
+$ git grep -nE 'UnicodeCldr|IntlEnumerationData|CldrLocaleData|CldrChineseCalendar|CldrUmmAlQura' 6758d47eaa24347b1c7192ce486e5411aa8039a4 -- '*.cs' '*.csproj' '*.props' '*.targets' '*.json' ':!docs/evidence'
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedCalendarTableTests.cs:19:            "TemporalLunisolarCalendar", "TemporalSolarHijriCalendar", "CldrChineseCalendar", "CldrUmmAlQura",
+  [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:22:// IntlEnumerationData (Intl.supportedValuesOf's currencies and units, sub-area (a)) is the last reader of this namespace
+  [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:23:// here since SJL-9.5's task 8.5, which ends DateTimeFormat's use of CldrLocaleData (noted 2026-11-09).
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:24:using UnicodeCldr.LocaleData;
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:132:                    foreach (var c in IntlEnumerationData.Currencies)
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:150:                    foreach (var u in IntlEnumerationData.Units)
+  [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2955:// the dayPeriod branches and their CLDR day-period reads through CldrLocaleData, SupportsDayPeriod, UsesHourFormatting,
+  [comment] Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue727Tests.cs:11:// table, surfaced via CldrLocaleData.GetRelativeTimePattern/GetRelativeTimeExact),
+$ git grep -n 'Broiler.Unicode.Cldr.LocaleData' 6758d47eaa24347b1c7192ce486e5411aa8039a4 -- '*.csproj' '*.props' '*.targets'
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj:33:    <PackageReference Include="Broiler.Unicode.Cldr.LocaleData" />
+  Directory.Packages.props:17:    <PackageVersion Include="Broiler.Unicode.Cldr.LocaleData" Version="0.1.0-preview.6" />
+# A hit inside an XML comment (<!-- ... -->) is a dated record of the removed line, no reference.
+
+## Clause 7: the list's other entries, the deleted files and row T42's members
+  JSIntlDateTimeFormatEngine: 0 line(s) outside // comments
+  JSIntlDefaultNumberingSystems: 0 line(s) outside // comments
+  generate_default_numbering_systems: 0 line(s) outside // comments
+  NumberingSystemDecimalData: 0 line(s) outside // comments
+  JSIntlNumberFormatResolved: 0 line(s) outside // comments
+  JSIntlResolvedOptionsExtensions: 0 line(s) outside // comments
+  ExactRational: 0 line(s) outside // comments
+  FormatEnglishHour: 0 line(s) outside // comments
+  FormatDayPeriod: 0 line(s) outside // comments
+# FormatEnglishHour(int) stays by the list's own words (the dayPeriod paths call it); the other members of row T42 are
+# FormatEnglishHour(DateTimeOffset), FormatDayPeriod(DateTimeOffset, string), Format(DateTimeOffset, JSObject), the
+# constructor from a CultureInfo and the locale field.
+
+## Clause 7: the Collator's hand resolution, which the owner's ruling of 2026-11-11 moves to SJL-17's list (SJL-17.5)
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1212:    internal static readonly string[] CollatorRelevantKeys = ["co", "kf", "kn"];
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1271:    internal static string ReflectExtensionKeyword(string localeTag, string key, string optionValue, string extValue)
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1277:            : RemoveUnicodeExtensionKeyword(localeTag, key);
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1284:    internal static string RemoveUnicodeExtensionKeyword(string tag, string removeKey)
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1349:    internal static string GetUnicodeExtensionType(string tag, string key)
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2605:        locale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.CollatorRelevantKeys);
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2643:            var knExt = JSIntl.GetUnicodeExtensionType(locale, "kn");
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2645:            locale = JSIntl.ReflectExtensionKeyword(locale, "kn", numeric ? "true" : "false", knExtValue);
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2648:            locale = JSIntl.ReflectExtensionKeyword(locale, "kf", caseFirst, JSIntl.GetUnicodeExtensionType(locale, "kf"));
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2654:        var bareLocale = StripUnicodeExtension(locale);
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2668:            locale = JSIntl.RemoveUnicodeExtensionKeyword(locale, "co");
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2682:        var bareLocale = StripUnicodeExtension(localeTag);
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2734:    private static string StripUnicodeExtension(string tag)
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2759:            var bareLocale = StripUnicodeExtension(locale);
+
+## Code changed under Broiler.JS/ and Broiler.ECMAScript/ since the after commit a5f2692e
+$ git diff --name-only a5f2692e 6758d47eaa24347b1c7192ce486e5411aa8039a4 -- Broiler.JS Broiler.ECMAScript Directory.Packages.props scripts
+  scripts/conformance/generate_collation_vectors.py
+  scripts/conformance/generate_date_vectors.py
+  scripts/conformance/generate_intl_vectors.py
+  scripts/conformance/generate_number_vectors.py
+  scripts/conformance/generate_numerics_vectors.py
+  scripts/conformance/generate_regexp_vectors.py
+  scripts/conformance/generate_syntax_vectors.py
+  scripts/conformance/generate_temporal_vectors.py
+  scripts/conformance/generate_text_vectors.py
+  scripts/conformance/generate_time_zone_vectors.py
+  scripts/conformance/generate_unicode_vectors.py
+  scripts/conformance/intl-divergences.txt
+  scripts/conformance/tests/test_time_zone_vectors.py
+
+## Clause 8: the host's culture, by the exit reading's search
+$ git grep -nE "CultureInfo\.(CurrentCulture|CurrentUICulture|GetCultureInfo|CreateSpecificCulture)|new CultureInfo\(|DateTimeFormatInfo\.CurrentInfo|NumberFormatInfo\.CurrentInfo|RegionInfo" 6758d47eaa24347b1c7192ce486e5411aa8039a4 -- "Broiler.JS/*.cs" ":!*Tests*"
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDatePrototype.Formatters.cs:167:            ? DateTimeFormatInfo.CurrentInfo
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDatePrototype.Formatters.cs:168:            : (IFormatProvider)CultureInfo.GetCultureInfo(locale.ToString());
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:217:    public JSValue ToLocaleString(in Arguments a) => new JSString(value.ToString(CultureInfo.CurrentCulture));
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCultureLocaleData.cs:235:            return CultureInfo.GetCultureInfo(name);
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2693:                return CultureInfo.GetCultureInfo(bareLocale + "-u-co-search").CompareInfo;
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2703:                return CultureInfo.GetCultureInfo(bareLocale + "-u-co-" + collation).CompareInfo;
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2707:        try { return CultureInfo.GetCultureInfo(bareLocale).CompareInfo; }
+  [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlLocaleProviders.cs:16:/// <b>The policies stand</b>: the default locale is the host's <see cref="CultureInfo.CurrentCulture"/>, <c>en-US</c>
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlLocaleProviders.cs:65:            var name = CultureInfo.CurrentCulture.Name;
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumberPrototype.cs:275:                ? CultureInfo.CurrentCulture
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumberPrototype.cs:276:                : CultureInfo.GetCultureInfo(locale.ToString());
+  [code] Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:250:        if (TryParse(text, CultureInfo.CurrentCulture, out result))
+  [code] Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/UnicodeBenchmarks.cs:245:            ["currentCulture"] = CultureInfo.CurrentCulture.Name is { Length: > 0 } culture ? culture : "i
+  [code] Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/UnicodeBenchmarks.cs:246:            ["hostTurkicUpperOfI"] = HostProbe(() => ((int)CultureInfo.GetCultureInfo("tr").TextInfo.ToUpp
+
+## Clause 8: Decimal's own calls that read the current culture without naming it (Decimal/JSDecimal.cs)
+$ git grep -nE 'TryParse\(|\.Parse\(|ToString\(\)|ToString\("|ToString\(\$' 6758d47eaa24347b1c7192ce486e5411aa8039a4 -- Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:47:        var text = f.ToString();
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:50:        if (!decimal.TryParse(text, out var v))
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:61:        if (!decimal.TryParse(v, out var n))
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:76:    public override string ToString() => value.ToString() + "n";
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:92:        var v = long.Parse(value.ToString());
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:104:    public override bool EqualsLiteral(string value) => this.value.ToString() == value;
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:177:            return new JSString(this.value.ToString() + "n" + @string.ToString());
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:186:    public JSValue JSToString() => new JSString(value.ToString());
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:201:                return new JSString(nv.ToString("g21"));
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:203:            return new JSString(nv.ToString($"F{i}"));
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:207:            return new JSString(nv.ToString("g21"));
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:209:        return new JSString(nv.ToString("F0"));
+# Lines 53 and 64's decimal.TryParse and every decimal ToString with no provider read CultureInfo.CurrentCulture;
+# f.ToString() and @string.ToString() are JSValue's, not .NET's culture-sensitive conversions.

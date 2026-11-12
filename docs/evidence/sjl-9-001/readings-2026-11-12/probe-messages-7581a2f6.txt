@@ -1,0 +1,41 @@
+# probe-messages.js at 7581a2f6a3a4586dbcae7de1cb5aba7fc25974ee; shell sha256 868678977582656e81034fbe28aff5c063202bee21d47f1439251b489f4a7edf; probe sha256 1f39b2f2b0276562190672a72990376c0314145efdb8cc0fb5a02dda20ce48f3; 2026-11-12T03:30:53Z
+## TZ=UTC, LANG unset
+String.fromCodePoint(1.5) => throws RangeError: Invalid code point 1.5
+var n = 1.5; n() => throws TypeError: 1.5 is not a function
+new Uint16Array(new ArrayBuffer(8), 3) => throws RangeError: Start offset 3 is outside the bounds of the buffer
+new DataView(new ArrayBuffer(2)).getInt32(0) => throws RangeError: Offset 0 is outside the bounds of DataView
+/I/i.test('i'), /i/i.test('\u0130'), /I/iu.test('i') => true,false,true
+[object Object]
+# exit 0
+## TZ=UTC, LANG=de_DE.UTF-8
+String.fromCodePoint(1.5) => throws RangeError: Invalid code point 1,5
+var n = 1.5; n() => throws TypeError: 1,5 is not a function
+new Uint16Array(new ArrayBuffer(8), 3) => throws RangeError: Start offset 3 is outside the bounds of the buffer
+new DataView(new ArrayBuffer(2)).getInt32(0) => throws RangeError: Offset 0 is outside the bounds of DataView
+/I/i.test('i'), /i/i.test('\u0130'), /I/iu.test('i') => true,true,true
+[object Object]
+# exit 0
+## TZ=UTC, LANG=sv_SE.UTF-8
+String.fromCodePoint(1.5) => throws RangeError: Invalid code point 1,5
+var n = 1.5; n() => throws TypeError: 1,5 is not a function
+new Uint16Array(new ArrayBuffer(8), 3) => throws RangeError: Start offset 3 is outside the bounds of the buffer
+new DataView(new ArrayBuffer(2)).getInt32(0) => throws RangeError: Offset 0 is outside the bounds of DataView
+/I/i.test('i'), /i/i.test('\u0130'), /I/iu.test('i') => true,true,true
+[object Object]
+# exit 0
+## TZ=UTC, LANG=tr_TR.UTF-8
+String.fromCodePoint(1.5) => throws RangeError: Invalid code point 1,5
+var n = 1.5; n() => throws TypeError: 1,5 is not a function
+new Uint16Array(new ArrayBuffer(8), 3) => throws RangeError: Start offset 3 is outside the bounds of the buffer
+new DataView(new ArrayBuffer(2)).getInt32(0) => throws RangeError: Offset 0 is outside the bounds of DataView
+/I/i.test('i'), /i/i.test('\u0130'), /I/iu.test('i') => false,true,true
+[object Object]
+# exit 0
+## TZ=UTC, LANG unset, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+String.fromCodePoint(1.5) => throws RangeError: Invalid code point 1.5
+var n = 1.5; n() => throws TypeError: 1.5 is not a function
+new Uint16Array(new ArrayBuffer(8), 3) => throws RangeError: Start offset 3 is outside the bounds of the buffer
+new DataView(new ArrayBuffer(2)).getInt32(0) => throws RangeError: Offset 0 is outside the bounds of DataView
+/I/i.test('i'), /i/i.test('\u0130'), /I/iu.test('i') => true,false,true
+[object Object]
+# exit 0

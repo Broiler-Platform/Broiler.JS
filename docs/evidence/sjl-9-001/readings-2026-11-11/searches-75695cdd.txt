@@ -1,0 +1,170 @@
+# Clause 8 of SJL-9, the searches at 75695cdd33dff446e7ccee9b99bfd29500c2ee19 (SJL-9: the changelog lists the m literal's invariant-culture digits)
+# Taken 2026-11-11 by git grep over the commit's tracked .cs files under Broiler.JS/ and Broiler.ECMAScript/, tests and
+# benchmarks left out; lines that are // comments are left out.
+
+## 1. The m literal's paths: the scanner's and the shared tokenizer's suffix, the parser and the bridge, the compiler,
+##    the factory, JSValue's factories, the CLR conversions of a .NET decimal and SameValueZero
+$ git grep -nE 'TokenTypes\.Decimal|DecimalSuffix|JSDecimalBuilder|CreateDecimal(FromString)?(Factory)?\b|new JSDecimal\(|is JSDecimal|JSDecimal [a-z]|IsDecimal|DecimalValue|TypeCode\.Decimal|\(decimal\)|decimal [a-z0-9]+ =>|EmitConstant\(\(decimal\)' 75695cdd33dff446e7ccee9b99bfd29500c2ee19 -- 'Broiler.JS/*.cs' 'Broiler.ECMAScript/*.cs' ':!*Tests*' ':!*benchmarks*' ':!*Benchmark*'
+  Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs:163:            if ((value & ~LexerExtensions.DecimalSuffix) != 0)
+  Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Parser.Expressions.cs:1134:        if ((token.Flags & TokenFlags.DecimalSuffix) != 0)
+  Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Parser.Expressions.cs:1135:            flags |= NumericLiteralFlags.DecimalSuffix;
+  Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ProposalFlags.cs:81:    DecimalSuffix = 1,
+  Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SyntaxTree.Expressions.cs:216:    DecimalSuffix = 8,
+  Broiler.ECMAScript/Broiler.ECMAScript.Frontend/TokenKind.cs:325:    DecimalSuffix = 256,
+  Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Tokenizer.cs:96:        decimalSuffix = (extensions & LexerExtensions.DecimalSuffix) != 0;
+  Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Tokenizer.cs:524:            flags |= TokenFlags.DecimalSuffix;
+  Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Tokenizer.cs:546:            if ((flags & TokenFlags.DecimalSuffix) == 0)
+  Broiler.ECMAScript/Broiler.ECMAScript.Intl/PluralEngine.cs:144:        if (!IsDecimalString(formatted))
+  Broiler.ECMAScript/Broiler.ECMAScript.Intl/PluralEngine.cs:181:    private static bool IsDecimalString(string text)
+  Broiler.ECMAScript/Broiler.ECMAScript.Probe/ParseCorpus.cs:145:            Extensions = j ? LexerExtensions.DecimalSuffix : LexerExtensions.None,
+  Broiler.JS/Broiler.JavaScript.BuiltIns/BuiltInsAssemblyInitializer.cs:110:        JSValue.CreateDecimalFactory = static v => new JSDecimal(v);
+  Broiler.JS/Broiler.JavaScript.BuiltIns/BuiltInsAssemblyInitializer.cs:111:        JSValue.CreateDecimalFromStringFactory = static s => new JSDecimal(s);
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Collections/SameValueZeroComparer.cs:45:            (JSDecimal left, JSDecimal right) => left.value == right.value,
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Collections/SameValueZeroComparer.cs:65:            JSDecimal decimalValue => decimalValue.value.GetHashCode(),
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:62:        if (first.IsDecimal)
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:63:            return CreateDecimal(Math.Floor(first.DecimalValue + 0.5m));
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:80:        if (first.IsDecimal)
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:81:            return CreateDecimal(Math.Floor(first.DecimalValue));
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:102:        if (first.IsDecimal)
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:103:            return CreateDecimal(Math.Abs(first.DecimalValue));
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:195:        if (first.IsDecimal)
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:196:            return CreateDecimal(Math.Ceiling(first.DecimalValue));
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:396:        if (first.IsDecimal)
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:397:            return CreateDecimal(Math.Sign(first.DecimalValue));
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:467:        if (first.IsDecimal)
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:468:            return CreateDecimal(Math.Truncate(first.DecimalValue));
+  Broiler.JS/Broiler.JavaScript.Clr/ClrProxy.cs:116:            TypeCode.Decimal => CreateNumber((double)(decimal)value),
+  Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitLiteral.cs:27:            case TokenTypes.Decimal:
+  Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitLiteral.cs:28:                return JSDecimalBuilder.New(literal.StringValue);
+  Broiler.JS/Broiler.JavaScript.Engine/JSDynamicMetaData.cs:38:                decimal ds => JSValue.CreateNumber((double)ds),
+  Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/ILCodeGenerator.AssignArrayIndex.cs:34:            case TypeCode.Decimal:
+  Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/ILCodeGenerator.AssignParameter.cs:92:            case TypeCode.Decimal:
+  Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/ILGeneratorExtensions.cs:39:            case TypeCode.Decimal:
+  Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/ILGeneratorExtensions.cs:40:                il.EmitConstant((decimal)value);
+  Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/ILGeneratorExtensions.cs:121:        Type type = typeof(decimal);
+  Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/ILGeneratorExtensions.cs:137:                            il.Emit(OpCodes.Initobj, typeof(decimal));
+  Broiler.JS/Broiler.JavaScript.LinqExpressions/LinqExpressions/JSBigIntBuilder.cs:13:public class JSDecimalBuilder
+  Broiler.JS/Broiler.JavaScript.LinqExpressions/LinqExpressions/JSBigIntBuilder.cs:16:        () => () => JSValue.CreateDecimalFromString(""), BExpression.Constant(value));
+  Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:190:        if ((number.Flags & NumericLiteralFlags.DecimalSuffix) != 0)
+  Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:191:            return new AstLiteral(TokenTypes.Decimal, tokens.Make(TokenTypes.Decimal, offset, length));
+  Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs:136:            Extensions = LexerExtensions.DecimalSuffix,
+  Broiler.JS/Broiler.JavaScript.Parser/FastParser.Expression.cs:36:            or TokenTypes.Decimal
+  Broiler.JS/Broiler.JavaScript.Parser/FastParser.Literal.cs:23:            case TokenTypes.Decimal:
+  Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1259:            case TokenTypes.Decimal:
+  Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1963:            return state.Commit(TokenTypes.Decimal);
+  Broiler.JS/Broiler.JavaScript.Runtime/FallbackClrInterop.cs:32:            TypeCode.Decimal => JSValue.CreateNumber((double)(decimal)value),
+  Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs:71:    internal static Func<decimal, JSValue> CreateDecimalFactory;
+  Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs:78:    public static Func<string, JSValue> CreateDecimalFromStringFactory;
+  Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs:83:    public static JSValue CreateDecimal(decimal value) => CreateDecimalFactory(value);
+  Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs:89:    public static JSValue CreateDecimalFromString(string value) => CreateDecimalFromStringFactory(value);
+  Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs:311:    public virtual bool IsDecimal => false;
+  Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs:314:    public virtual decimal DecimalValue => throw new InvalidOperationException("Not a decimal value");
+  Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:49:    public static decimal ToDecimal(JSValue value, string name) => value.HasValue() ? (decimal)value.DoubleValue : throw new JSExcep
+  Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:50:    public static decimal? ToNullableDecimal(JSValue value, string name) => value.IsNullOrUndefined ? null : (decimal)value.DoubleVa
+  Broiler.JS/Broiler.JavaScript.Runtime/TypeConverter.cs:16:        decimal d2 => JSValue.CreateNumber((double)d2),
+
+## 2. JSDecimal.cs's parses and text conversions, and whether each names the invariant culture
+$ git grep -nE 'TryParse\(|\.Parse\(|ToString\(|this\.value \+|value \+ ' 75695cdd33dff446e7ccee9b99bfd29500c2ee19 -- Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs
+  [JSValue-text] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:72:        var text = f.ToString();
+  [invariant] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:75:        if (!decimal.TryParse(text, FunctionStyles, Invariant, out var v))
+  [invariant] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:86:        if (!decimal.TryParse(v, LiteralStyles, Invariant, out var n))
+  [invariant] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:101:    public override string ToString() => value.ToString(Invariant) + "n";
+  [invariant] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:117:        var v = long.Parse(value.ToString(), NumberStyles.Integer, Invariant);
+  [invariant] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:129:    public override bool EqualsLiteral(string value) => this.value.ToString(Invariant) == value;
+  [invariant] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:186:    public override JSValue AddValue(string value) => new JSString(this.value.ToString(Invariant) + value);
+  [arithmetic] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:196:            return new JSDecimal(this.value + b.value);
+  [invariant] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:202:            return new JSString(this.value.ToString(Invariant) + "n" + @string.ToString());
+  [invariant] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:205:            return new JSString(this.value.ToString(Invariant) + @object.StringValue);
+  [arithmetic] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:207:        return new JSDecimal(this.value + value.BigIntValue);
+  [invariant] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:211:    public JSValue JSToString() => new JSString(value.ToString(Invariant));
+  [invariant] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:226:                return new JSString(nv.ToString("g21", Invariant));
+  [invariant] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:228:            return new JSString(nv.ToString($"F{i}", Invariant));
+  [invariant] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:232:            return new JSString(nv.ToString("g21", Invariant));
+  [invariant] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:234:        return new JSString(nv.ToString("F0", Invariant));
+  [invariant] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:264:        var text = value.ToString(CultureInfo.InvariantCulture);
+# [invariant]: names the invariant culture. [arithmetic]: a decimal sum, no text. [JSValue-text]: f.ToString() is JSValue's,
+# a String's own text or the shared library's BigInt text, which reads no culture (a Number is converted by a cast above it);
+# so are @string.ToString() and CreateInstance's value.ToString(). [NAMES-NONE]: a .NET parse or text conversion that names no
+# culture and so reads the host's current one.
+
+## 3. The host's culture, by the exit reading's search for named calls
+$ git grep -nE "CultureInfo\.(CurrentCulture|CurrentUICulture|GetCultureInfo|CreateSpecificCulture)|new CultureInfo\(|DateTimeFormatInfo\.CurrentInfo|NumberFormatInfo\.CurrentInfo|RegionInfo" 75695cdd33dff446e7ccee9b99bfd29500c2ee19 -- "Broiler.JS/*.cs" ":!*Tests*"
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDatePrototype.Formatters.cs:167:            ? DateTimeFormatInfo.CurrentInfo
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDatePrototype.Formatters.cs:168:            : (IFormatProvider)CultureInfo.GetCultureInfo(locale.ToString());
+  [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:245:    // `public JSValue ToLocaleString(in Arguments a) => new JSString(value.ToString(CultureInfo.CurrentCulture));`,
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCultureLocaleData.cs:235:            return CultureInfo.GetCultureInfo(name);
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2710:                return CultureInfo.GetCultureInfo(bareLocale + "-u-co-search").CompareInfo;
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2720:                return CultureInfo.GetCultureInfo(bareLocale + "-u-co-" + collation).CompareInfo;
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2724:        try { return CultureInfo.GetCultureInfo(bareLocale).CompareInfo; }
+  [comment] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlLocaleProviders.cs:16:/// <b>The policies stand</b>: the default locale is the host's <see cref="CultureInfo.CurrentCulture"/>, <c>en-US</c>
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlLocaleProviders.cs:65:            var name = CultureInfo.CurrentCulture.Name;
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumberPrototype.cs:275:                ? CultureInfo.CurrentCulture
+  [code] Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumberPrototype.cs:276:                : CultureInfo.GetCultureInfo(locale.ToString());
+  [code] Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:250:        if (TryParse(text, CultureInfo.CurrentCulture, out result))
+  [code] Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/UnicodeBenchmarks.cs:245:            ["currentCulture"] = CultureInfo.CurrentCulture.Name is { Length: > 0 } culture ? culture : "i
+  [code] Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/UnicodeBenchmarks.cs:246:            ["hostTurkicUpperOfI"] = HostProbe(() => ((int)CultureInfo.GetCultureInfo("tr").TextInfo.ToUpp
+
+## 4. The review's search: numeric parses that name no culture
+$ git grep -nE '\b(decimal|double|float|int|uint|long|ulong|short|ushort|byte|sbyte|BigInteger|Int32|Int64|UInt32|UInt64|Double|Decimal)\.(Try)?Parse\(' 75695cdd33dff446e7ccee9b99bfd29500c2ee19 -- 'Broiler.JS/*.cs' 'Broiler.ECMAScript/*.cs' ':!*Tests*' ':!*benchmarks*'
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Json/JSJsonParser.cs:35:        if (uint.TryParse(name, out var index) && index != uint.MaxValue && index.ToString() == name)
+  Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1536:                        if (name.StartsWith("bjsg") && int.TryParse(name.Substring(4), out var n))
+  Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1679:            var minIsZero = long.TryParse(pattern.Substring(digitsStart, j - digitsStart), out var mv) && mv == 0;
+  Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSString.cs:143:    public override long BigIntValue => long.TryParse(ToString(), out var n) ? n : 0;
+  Broiler.JS/Broiler.JavaScript.Compiler/Scope/FastFunctionScope.cs:899:        if (underscore > 0 && int.TryParse(name[(underscore + 1)..], out _))
+  Broiler.JS/Broiler.JavaScript.Debugger/V8RemoteObject.cs:36:            IntPtr v = new(long.Parse(id));
+  Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/ILCodeGenerator.VisitParameter.cs:208:        if (underscore > 0 && int.TryParse(name[(underscore + 1)..], out _))
+  Broiler.JS/Broiler.JavaScript.Expressions/CompilationStack.cs:91:        return int.TryParse(configured, out var value) && value >= 0
+  Broiler.JS/Broiler.JavaScript.Expressions/LambdaRewriter.cs:152:            int.TryParse(
+  Broiler.JS/Broiler.JavaScript.Expressions/StackSegment.cs:71:        return configured != null && long.TryParse(configured, out var bytes) && bytes >= 0
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs:93:            if (int.TryParse(match.Groups["count"].Value, out var count))
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs:99:            if (int.TryParse(match.Groups["index"].Value, out var index))
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs:105:            if (int.TryParse(match.Groups["index"].Value, out var index))
+
+## 5. The review's search: case mappings and string comparisons that name no culture
+$ git grep -nE '\.(ToLower|ToUpper)\(\)|\.(StartsWith|EndsWith|IndexOf|LastIndexOf)\("[^"]+"\)|(string|String)\.Compare\(' 75695cdd33dff446e7ccee9b99bfd29500c2ee19 -- 'Broiler.JS/*.cs' 'Broiler.ECMAScript/*.cs' ':!*Tests*' ':!*benchmarks*'
+  Broiler.ECMAScript/Broiler.ECMAScript.Generation/Intl/CldrUcd.cs:233:        var letter = Categories.IndexOf("Lo");
+  Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1536:                        if (name.StartsWith("bjsg") && int.TryParse(name.Substring(4), out var n))
+  Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateClass.cs:211:            return n.StartsWith("#") ? n[1..] : n;
+  Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateClass.cs:451:            var isPrivateName = property.Key is AstIdentifier propertyIdentifier && propertyIdentifier.Name.Value.
+  Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTaggedTemplateExpression.cs:71:                    if (r.StartsWith("`"))
+  Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTaggedTemplateExpression.cs:74:                    if (r.StartsWith("}"))
+  Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTaggedTemplateExpression.cs:77:                    if (r.EndsWith("${"))
+  Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitTaggedTemplateExpression.cs:79:                    else if (r.EndsWith("`"))
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs:37:            if(a.AttributeClass?.Name?.StartsWith("Symbol") ?? false)
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs:42:            if(a.AttributeClass?.Name?.StartsWith("JSPrototypeMethod") ?? false)
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs:46:            if(a.AttributeClass?.Name?.StartsWith("JSExport") ?? false)
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs:52:                if (a.AttributeClass?.Name?.StartsWith("JSExportSameName") ?? false)
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/ListExtensions.cs:136:        return name.StartsWith("@") ? name.Substring(1) : name;
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/SyntaxNodeExtensions.cs:11:    public static bool IsGeneratorAttributeName(this string name) => name.StartsWith("JSClassGenerator")
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/SyntaxNodeExtensions.cs:12:            || name.StartsWith("JSRegistration")
+  Broiler.JS/Broiler.JavaScript.JSClassGenerator/SyntaxNodeExtensions.cs:13:            || name.StartsWith("JSFunctionG");
+  Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:143:            if (!file.StartsWith("."))
+  Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:190:            if (relativePath.StartsWith("."))
+  Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:266:        var filePath = Resolve(folder, relativeFile.StartsWith(".") ? relativeFile : ("./" + relativeFile)) ?? throw new FileNotFoundExce
+  Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:317:        var filePath = m.Resolve(folder, relativeFile.StartsWith(".") ? relativeFile : ("./" + relativeFile));
+  Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:72:            if (!method.Name.StartsWith("To"))
+  Broiler.JS/Broiler.JavaScript/BroilerJSContext.cs:170:            if (!filePath.EndsWith(".csx"))
+  Broiler.JS/Broiler.JavaScript/Program.cs:86:            var scriptPath = positionalArgs.FirstOrDefault(arg => !arg.StartsWith("-"));
+  Broiler.JS/Broiler.JavaScript/Utils/PackageManager.cs:31:                if (name.StartsWith("nuget:"))
+  Broiler.JS/Broiler.JavaScript/Utils/PackageManager.cs:37:                Version = tokens[1].Trim().ToLower();
+
+## 6. Added 2026-11-11, at review of this stage: date and time parses that name no culture
+$ git grep -nE '\b(DateTime|DateTimeOffset|TimeSpan)\.(Try)?Parse(Exact)?\(' 75695cdd33dff446e7ccee9b99bfd29500c2ee19 -- 'Broiler.JS/*.cs' 'Broiler.ECMAScript/*.cs' ':!*Tests*' ':!*benchmarks*'
+  [names-a-culture] Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:198:        if (!DateTimeOffset.TryParseExact(text, formats, CultureInfo.InvariantCulture, assume, out var instant))
+  [names-a-culture] Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:201:        var marked = DateTime.TryParseExact(text, formats, CultureInfo.InvariantCulture, Marked(assume), out var clock);
+  [names-a-culture] Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:209:        if (!DateTimeOffset.TryParse(text, culture, DateTimeStyles.AssumeLocal, out var instant))
+  [names-a-culture] Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:212:        var marked = DateTime.TryParse(text, culture, Marked(DateTimeStyles.AssumeLocal), out var clock);
+  [NAMES-NONE] Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:53:        value.HasValue() ? (value.ConvertTo(typeof(DateTime), out var dt) ? (DateTime)dt : DateTime.Parse(value.ToString()))
+  [NAMES-NONE] Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:56:        value.HasValue() ? (value.ConvertTo(typeof(DateTime), out var dt) ? (DateTime)dt : DateTime.Parse(value.ToString()))
+  [NAMES-NONE] Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:59:        value.HasValue() ? (value.ConvertTo(typeof(DateTimeOffset), out var dto) ? (DateTimeOffset)dto : DateTime.Parse(valu
+  [NAMES-NONE] Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:62:        value.HasValue() ? (value.ConvertTo(typeof(DateTimeOffset), out var dto) ? (DateTimeOffset)dto : DateTime.Parse(valu
+# [names-a-culture]: passes the invariant culture or the culture its caller passes (DateParser's, SJL-D-17's Date.parse,
+# whose culture-dependent fallback is passed CultureInfo.CurrentCulture in section 3). [NAMES-NONE]: names no culture and
+# so reads the host's current one.
+
+# Not searched (revised 2026-11-11, at review of this stage; it read "Not searched, as at review: numeric ToString calls
+# and interpolations that name no culture outside JSDecimal.cs (they cannot be told from JSValue's own ToString by a
+# search)."): numeric and date ToString calls, interpolations and composite formatting (string.Format, StringBuilder's
+# AppendFormat) that name no culture outside JSDecimal.cs, which cannot be told from JSValue's own ToString by a search;
+# Convert.To* conversions; char.ToLower and char.ToUpper; and comparisons and searches whose argument is not a string
+# literal (StartsWith, EndsWith, IndexOf, LastIndexOf and CompareTo given a variable, string.Compare is section 5's).

@@ -57,7 +57,7 @@ namespace Broiler.JavaScript.BuiltIns.Intl;
 /// </para>
 /// <para>
 /// <b>It never throws for want of host data.</b> A locale the host has no culture for, or every locale under invariant
-/// globalization (where <see cref="CultureInfo.GetCultures"/> lists the invariant culture alone), is reported unavailable:
+/// globalization (where <c>CultureInfo.GetCultures</c> lists the invariant culture alone), is reported unavailable:
 /// <see cref="HoldsLocale"/> answers <see langword="false"/> and every question <see langword="null"/>. The host's
 /// culture list is read once, and a culture is looked up only when a locale names one in that list: by .NET's name, by its
 /// canonical tag, or by one of the shorter tags .NET resolves to it (<see cref="Tags"/>; <c>zh-TW</c> for <c>zh-Hant-TW</c>),
@@ -232,7 +232,14 @@ internal sealed class HostCultureLocaleData : ILocaleData
 
         try
         {
+            // Kept on the host's culture: the host-culture provider, decision D6, which reads the host's data for a
+            // locale it lists (milestone SJL-9's clause 8, on the owner's ruling of 2026-11-11, "Fix all + enforce").
+            // It names the culture it reads, which the five globalization rules accept; the banned-API rule
+            // (Broiler.JS/BannedSymbols.HostCulture.txt) bans a culture built from the host's data everywhere but the
+            // kept paths, and is suppressed here for that reason.
+#pragma warning disable RS0030 // Kept: the host-culture provider reads the host's data for a locale it lists (decision D6).
             return CultureInfo.GetCultureInfo(name);
+#pragma warning restore RS0030
         }
         catch (CultureNotFoundException)
         {
@@ -364,12 +371,18 @@ internal sealed class HostCultureLocaleData : ILocaleData
     }
 
     // The host's named cultures, by name, case-insensitively: none but the invariant culture under invariant globalization.
+    // Kept on the host's culture: the host-culture provider's list of the host's cultures, decision D6 (milestone SJL-9's
+    // clause 8, on the owner's ruling of 2026-11-11, "Fix all + enforce"); the banned-API rule
+    // (Broiler.JS/BannedSymbols.HostCulture.txt) bans the list everywhere but the kept paths, and is suppressed here for
+    // that reason.
     private static Dictionary<string, string> ReadCultures()
     {
         var names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         try
         {
+#pragma warning disable RS0030 // Kept: the host-culture provider lists the host's cultures (decision D6).
             foreach (var culture in CultureInfo.GetCultures(CultureTypes.AllCultures))
+#pragma warning restore RS0030
             {
                 if (!string.IsNullOrEmpty(culture.Name))
                     names.TryAdd(culture.Name, culture.Name);

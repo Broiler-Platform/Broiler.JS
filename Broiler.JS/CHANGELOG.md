@@ -10,6 +10,151 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### Every host-culture reader outside the providers, SJL-D-17's paths and the Collator's comparison names the invariant culture or an ordinal comparison, and the build holds the globalization rules (2026-11-12, milestone SJL-9's clause 8)
+
+On the owner's ruling of 2026-11-11 on clause 8's remaining host-culture readers, "Fix all + enforce" (the alternatives
+not taken being "Fix all, no enforcement" and "Scope clause 8 to Intl"):
+
+- **Every site that formatted or parsed a value, mapped case or compared strings without naming a culture or a
+  comparison** now names the invariant culture or an ordinal comparison, in the engine's product projects: every site
+  the .NET globalization analyzers find (CA1304, CA1305, CA1309, CA1310 and CA1311), the numeric parses they do not
+  flag (`TryParse` with no format provider), a case-insensitive RegExp, and the error messages and printers that
+  interpolated a double, a date or a possibly negative offset. Until this change each read the host's current culture,
+  so the answers below move under a host culture other than the invariant one, to the invariant culture's; with no
+  `LANG`, whose culture is the invariant one, and under invariant globalization, **no answer moves**:
+  - a RegExp with the `i` flag outside Unicode mode, a .NET `Regex` with `RegexOptions.IgnoreCase`, folds case by the
+    invariant culture's equivalences, as ECMAScript's Canonicalize does: under `tr-TR` `/I/i.test("i")` and
+    `/(?i:I)b/.test("ib")` are `true`, where they were `false`, and under `de-DE`, `sv-SE` and `tr-TR`
+    `/i/i.test("İ")` is `false`, where it was `true`;
+  - the CLR bridge reads a String it turns into a .NET `long` with the invariant culture's signs (`JSString`'s
+    `BigIntValue`): under `sv-SE`, whose minus sign in .NET is U+2212, `"−5"` is 0, as under the invariant culture,
+    where it was -5;
+  - the CLR bridge reads a String it turns into a .NET `DateTime` or `DateTimeOffset` with the invariant culture's
+    format (`JSValueToClrConverter`'s four date conversions): under `de-DE` and `tr-TR` `"11/12/2026 13:45:00"` is
+    12 November 2026, where it was 11 December. The engine's records say only that this conversion parses a string "by
+    the platform for a host method", and name no format;
+  - a number in a value's detail text (`JSValue.ToDetailString`) and in the debugger's description of it is the
+    invariant culture's: under `de-DE` an object `{ a: 1.5 }` reads `{a: 1.5}`, where it read `{a: 1,5}`, and under
+    `sv-SE` -2 is written `-2`, where it was `−2`;
+  - an error message that writes a number is the invariant culture's: `String.fromCodePoint(1.5)` throws "Invalid code
+    point 1.5" and a Number called as a function "1.5 is not a function", where under `de-DE`, `sv-SE` and `tr-TR` they
+    wrote `1,5`;
+  - the shell lowers a `#r "nuget: Name, Version"` reference's version by the invariant culture's casing: under
+    `tr-TR` `1.0.0-PREVIEW` is `1.0.0-preview`, where it was `1.0.0-prevıew`.
+
+  The other fixed sites write array and property indexes, JSON's keys and source text, RegExp's escapes and its own
+  group names, template delimiters, private names, module specifiers, stack trace lines, ids and IL dumps, whose text no
+  culture decided (an index, a line or a hexadecimal digit is written alike under every culture, and an ordinal test of
+  an ASCII prefix answers as the linguistic one did); they are fixed so that no call reads the host's culture. The
+  cases are `Broiler.JavaScript.Integration.Tests`' `ClrBridgeHostCultureTests`, `Broiler.JavaScript.Debugger.Tests`'
+  `DebuggerHostCultureTests`, `Broiler.JavaScript.Compiler.Tests`' `ShellPackageVersionCultureTests` and
+  `Broiler.JavaScript.BuiltIns.Tests`' `HostCultureScriptPathTests`, each under the invariant culture and under
+  `de-DE`, `sv-SE` and `tr-TR`.
+- **The build holds the rules.** CA1304, CA1305, CA1309, CA1310 and CA1311 are errors in the engine's product projects
+  (`Broiler.JS/host-culture.globalconfig`, which `Broiler.JS/Directory.Build.props` hands to every project below
+  `Broiler.JS/` but the test projects, the benchmarks, the samples, the perf tools and the source generator), so a call
+  that formats, parses, maps case or compares strings without naming a culture or a comparison no longer builds there.
+  Those rules accept a call that names the host's culture, so the same projects also hold the banned-API rule RS0030
+  as an error, over `Broiler.JS/BannedSymbols.HostCulture.txt`: a direct read of the host's culture
+  (`CultureInfo.CurrentCulture`, `DateTimeFormatInfo.CurrentInfo`, `StringComparison.CurrentCulture`,
+  `StringComparer.CurrentCulture` and the like) or a .NET culture built from the host's data
+  (`CultureInfo.GetCultureInfo` and the like) builds only on the paths below, each of which suppresses the rule in
+  place with its reason. An environment variable `BroilerHostCultureRules` does not turn the rules off; the build says
+  it is ignored. What the rules do not see is a numeric `TryParse` with no format provider, a .NET `Regex` that ignores
+  case without `RegexOptions.CultureInvariant`, and a value made text by interpolation, concatenation or a writer.
+- **What keeps the host's culture**, each naming the culture it reads and suppressing RS0030 in place: the default-locale
+  provider (decision D7), the host-culture provider (decision D6), `Intl.Collator`'s comparison until milestone SJL-17,
+  and the .NET format-string extension of `Number.prototype.toLocaleString` and `Date.prototype.toLocaleString` and the
+  culture-dependent legacy `Date.parse`, which decision SJL-D-17 keeps. Under `tr-TR`, `String.prototype.toLocaleLowerCase`
+  with no locale lowers by the default locale, Turkish, as before.
+
+Bundle [`sjl-9-001`](../docs/evidence/sjl-9-001/README.md), "Clause 8 read again after every host-culture reader is
+fixed and the rules are enforced, 2026-11-12", reads clause 8 again at this change.
+
+### The `m` literal's `Decimal` reads and writes its digits with the invariant culture (2026-11-11, milestone SJL-9's clause 8)
+
+On the owner's ruling of 2026-11-11 on the `m` literal's host-culture parse and text, "Fix in this PR" (the alternatives
+not taken being "Fix in a follow-up PR" and "Record as SJL-D-17 path"):
+
+- **The `m` literal's `Decimal`** (a non-standard extension that decision SJL-D-17 keeps here) parses and writes its
+  digits with the invariant culture under every host: the literal's own parse, the `Decimal` function's parse of a
+  String, `toString`, `toFixed`, string concatenation and the equality with a string literal. Until this change each
+  read the host's current culture, through .NET calls that named none, so the answers under a host culture other than
+  the invariant one move to the invariant culture's; with no `LANG`, whose culture is the invariant one, **no answer
+  moves**:
+  - under `de-DE`, whose group separator is `.`, `1234567.891m` is the value 1234567.891, where it was 1234567891, so
+    `(1234567.891m).toString()` gives `"1234567.891"` and `(1234567.891m).toLocaleString()` `"1.234.567,891"`, where
+    they gave `"1234567891"` and `"1.234.567.891"`; `(1.5m).toFixed(1)` gives `"1.5"`, where it gave `"15,0"`; and
+    `1.5m == "1.5"` is `true`, where it was `false`; `tr-TR` answers as `de-DE` did and now does;
+  - under `sv-SE`, whose decimal point is `,`, an `m` literal with a fraction is its value, where it was a `TypeError`
+    (`1.5m` threw "1.5m is not a valid big integer"), and `Decimal("\u22125")`, that culture's minus sign in .NET, is a
+    `TypeError`, as under the invariant culture, where it was -5;
+  - a `Decimal`'s text under such a host is the invariant culture's: `(Decimal("1234567891") / 1000m).toString()` gives
+    `"1234567.891"`, where it gave `"1234567,891"`;
+  - a String in the host's own number format, which the `Decimal` function read under that host, is a `TypeError`, as
+    under the invariant culture: `Decimal("1.234,5")` under `de-DE` or `tr-TR`, which was 1234.5, and `Decimal("1 5")`
+    under `sv-SE`, which was 15; and under `sv-SE` a `Decimal`'s own constructor given U+2212, `new (1m)("\u22125")`,
+    throws an `Error` carrying .NET's `FormatException`, as under the invariant culture, where it was -5. *(Added
+    2026-11-11, at review; the bullet before it ended "where it gave `"1234567,891"`." with a full stop.)*
+
+  The cases are `Broiler.JavaScript.BuiltIns.Tests`' `DecimalCultureTests`, each under the invariant culture and under
+  `de-DE`, `sv-SE` and `tr-TR`; test262 at `ccaac100` holds no `Decimal` path. Bundle
+  [`sjl-9-001`](../docs/evidence/sjl-9-001/README.md), "Clauses 7 and 8 read again, 2026-11-11 (after the owner's
+  rulings)", reads clause 8 again at this change.
+
+### `Intl.supportedValuesOf`'s currencies and units, and `Decimal.prototype.toLocaleString`, on the shared Intl library (2026-11-11, milestone SJL-9's clauses 7 and 8)
+
+On the owner's rulings of 2026-11-11 on milestone SJL-9's exit clauses 7 ("Fix (1); move (2) to SJL-17") and 8 ("Fix in
+code"):
+
+- **`Intl.supportedValuesOf("currency")` and `Intl.supportedValuesOf("unit")`** are the shared library's
+  `SupportedValues.Of` (Broiler.VM's JSD-0082, sub-area (a), rows L39 to L41): every currency code of the embedded CLDR
+  48.2.0 currency table, and ECMA-402's sanctioned single units, each sorted by code unit and each once. Until this change
+  both read the `Broiler.Unicode.Cldr.LocaleData` package's `IntlEnumerationData`. **No answer moves**: the table's list is
+  the package's, code for code, and the units are the same 45. `Broiler.JavaScript.BuiltIns` no longer references the
+  package, and `Directory.Packages.props` no longer names its version, so a `BuiltIns` package packed from this change
+  does not depend on it. This removes the last of "this engine's uses of `Broiler.Unicode.Cldr.LocaleData` for Intl
+  data" (the entry "Intl moves to the shared Intl library" below, "Where they were", last item, and its "What stays this
+  engine's").
+- **`Decimal.prototype.toLocaleString(locales, options)`** (the `m` literal's `Decimal`, a non-standard extension that
+  decision SJL-D-17 keeps here) reads its two arguments as ECMA-402's `Number.prototype.toLocaleString` does: a new
+  `Intl.NumberFormat` over `locales` and `options` formats the value's exact decimal digits through the shared number
+  formatting. With no `locales` the locale is the default-locale provider's (decision D7, row L35), as every Intl
+  service's is. Until this change it answered `value.ToString(CultureInfo.CurrentCulture)` and ignored both arguments,
+  reading the host's culture behind no provider. Its answers move:
+  - every locale's answer is that locale's CLDR 48.2.0 number format, with grouping: `(1234567.891m).toLocaleString("en")`
+    is `"1,234,567.891"`, and `"de"` gives `"1.234.567,891"`, where both answered `"1234567.891"`, the host culture's
+    .NET general format (the invariant culture's, with no `LANG`);
+  - the options apply (`style`, `currency`, `notation`, the digit options and the others), and they are refused as
+    `Intl.NumberFormat` refuses them: `{ style: "currency" }` with no currency is a `TypeError`, and a malformed tag a
+    `RangeError`, where both were ignored;
+  - the digits are formatted exactly, as a String's are by `Intl.NumberFormat`, and the default digit options round them
+    to three fraction digits, as for a Number, where every digit was written:
+    `(Decimal("12345678901234567890123456789") / 1000000000m).toLocaleString("en")` gives
+    `"12,345,678,901,234,567,890.123"`, where it gave `"12345678901234567890.123456789"`;
+  - a negative zero keeps its sign, as a Number's does: `(-0m).toLocaleString("en")` and `(0m * -1m).toLocaleString("en")`
+    give `"-0"`, as `(-0).toLocaleString("en")` does, where both gave `"0"`;
+  - with no `locales`, under a host culture such as `de-DE`, the answer is that locale's CLDR format through the
+    default-locale provider: `(Decimal("1234567891") / 1000m).toLocaleString()` gives `"1.234.567,891"`, where it gave
+    the culture's .NET general format (`"1234567,891"`); under invariant globalization it is `en-US`'s. An `m` literal's
+    own digits are still read and written with the host's culture, which this change leaves as it was (bundle
+    `sjl-9-001`'s clause 8 reading, below, leaves it open for the owner): under `de-DE` the literal `1234567.891m` is the
+    value 1234567891, `.` being that culture's group separator, so `(1234567.891m).toLocaleString()` gives
+    `"1.234.567.891"`, where it gave `"1234567891"`. *(Noted 2026-11-11, on the owner's ruling of that day on the `m`
+    literal, "Fix in this PR": the sentences from "An `m` literal's own digits are still read and written with the host's
+    culture, which this change leaves as it was" held until the entry above, "The `m` literal's `Decimal` reads and
+    writes its digits with the invariant culture"; from it `(1234567.891m).toLocaleString()` under `de-DE` gives
+    `"1.234.567,891"`.)*
+
+  The cases are `Broiler.JavaScript.BuiltIns.Tests`' `DecimalToLocaleStringTests`; test262 at `ccaac100` holds no
+  `Decimal` path. Bundle [`sjl-9-001`](../docs/evidence/sjl-9-001/README.md), "Clauses 7 and 8 read again, 2026-11-11
+  (after the owner's rulings)", reads both clauses at this change.
+- **The Collator's hand resolution of its `co`, `kf` and `kn` keys** (`GetUnicodeExtensionType`,
+  `RemoveUnicodeExtensionKeyword`, `ReflectExtensionKeyword`, `ResolveLocaleFromCanonical`'s keyword filter over
+  `CollatorRelevantKeys`, and `JSIntlCollator`'s `StripUnicodeExtension`) moves from SJL-9's deletion list to SJL-17's,
+  at SJL-17.5 ([`docs/roadmap/SharedLibraries.md`](../docs/roadmap/SharedLibraries.md), the dated notes on both lists).
+  No code changes for it, and nothing moves.
+
 ### Intl moves to the shared Intl library (2026-11-10, milestone SJL-9.5)
 
 `Broiler.JavaScript.BuiltIns` takes `Broiler.ECMAScript.Intl` by project reference and embeds the data home's tables,
@@ -32,7 +177,8 @@ only what .NET exposes exactly, for a locale the shared data lacks (decision D6)
 comparison are SJL-17's (milestone SJL-17.5); and `Intl.supportedValuesOf`, whose currency and unit lists still come from
 the `Broiler.Unicode.Cldr.LocaleData` package's `IntlEnumerationData`, which this engine keeps for them alone: the
 shared library's `SupportedValues` is not wired for those two keys, so `BuiltIns` and `Directory.Packages.props` keep
-the package.
+the package. *(Noted 2026-11-11: from "and `Intl.supportedValuesOf`" this held until the entry of that day above, which
+wires both lists to the shared library and removes the package; the sentence is left as written.)*
 
 **Where they were**, each deleted (the commits of branch `sjl-9-5-cutover` name every member; the search for them is
 bundle `sjl-9-001`'s [`cutover/deletion-search.txt`](../docs/evidence/sjl-9-001/cutover/deletion-search.txt)):
@@ -49,7 +195,8 @@ bundle `sjl-9-001`'s [`cutover/deletion-search.txt`](../docs/evidence/sjl-9-001/
   numbering map with its hand `"٫"` separator, and the members no caller reached (row T42);
 - `NumberingSystemDecimalData`, the engine's interim adapter of a numbering system's decimal symbol, and its
   per-system data, once the library wrote that symbol itself (below);
-- this engine's uses of `Broiler.Unicode.Cldr.LocaleData` for Intl data, but `supportedValuesOf`'s.
+- this engine's uses of `Broiler.Unicode.Cldr.LocaleData` for Intl data, but `supportedValuesOf`'s. *(Noted 2026-11-11:
+  `supportedValuesOf`'s went too, with the package reference, in the entry of that day above.)*
 
 **The public types stay** with every public member (decision SJL-D-25; [`docs/public-api.md`](../docs/public-api.md),
 "Public API changes, 2026-11-10"): three constructors and one static member behave differently, as that section says.

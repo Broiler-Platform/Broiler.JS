@@ -1,0 +1,29 @@
+# The control of the rules the build holds (stage js-c78c's control.sh, scratch, never committed): from a clean git archive
+# tree of 490826e3, one fix reverted at a time, the owning project built as the engine's build builds it (Release,
+# --disable-build-servers, no analyzer property on the command line). Each build fails with the reverted call's rule as an
+# error. The tree's paths are shortened to the repository's.
+
+## ca1305-clr-date
+# reverted in JSValueToClrConverter.cs, ToDateTime: `DateTime.Parse(value.ToString(), CultureInfo.InvariantCulture)` read `DateTime.Parse(value.ToString())` again
+$ dotnet build Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj -c Release --disable-build-servers
+    0 Warning(s)
+    1 Error(s)
+Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs(59,92): error CA1305: The behavior of 'DateTime.Parse(string)' could vary based on the current user's locale settings. Replace this call in 'JSValueToClrConverter.ToDateTime(JSValue, string)' with a call to 'DateTime.Parse(string, IFormatProvider)'. (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1305)
+exit 1
+
+## ca1310-module-specifier
+# reverted in JSModuleContext.cs, Resolve: `if (!file.StartsWith(".", StringComparison.Ordinal))` read `if (!file.StartsWith("."))` again
+$ dotnet build Broiler.JS/Broiler.JavaScript.Modules/Broiler.JavaScript.Modules.csproj -c Release --disable-build-servers
+    0 Warning(s)
+    1 Error(s)
+Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs(143,18): error CA1310: The behavior of 'string.StartsWith(string)' could vary based on the current user's locale settings. Replace this call in 'Broiler.JavaScript.Modules.JSModuleContext.Resolve(string, string)' with a call to 'string.StartsWith(string, System.StringComparison)'. (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1310)
+exit 1
+
+## ca1304-shell-version
+# reverted in PackageManager.cs, ExtensionConfiguration: `Version = tokens[1].Trim().ToLowerInvariant();` read `Version = tokens[1].Trim().ToLower();` again
+$ dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release --disable-build-servers
+    0 Warning(s)
+    2 Error(s)
+Broiler.JS/Broiler.JavaScript/Utils/PackageManager.cs(39,27): error CA1304: The behavior of 'string.ToLower()' could vary based on the current user's locale settings. Replace this call in 'Loader.ExtensionConfiguration.ExtensionConfiguration(string)' with a call to 'string.ToLower(CultureInfo)'. (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1304)
+Broiler.JS/Broiler.JavaScript/Utils/PackageManager.cs(39,44): error CA1311: Specify a culture or use an invariant version to avoid implicit dependency on current culture (https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1311)
+exit 1

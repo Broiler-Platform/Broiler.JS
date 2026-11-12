@@ -1,0 +1,28 @@
+# Milestone SJL-9's clause 8, "Host globalization remains only behind the optional providers", held by the build on the
+# owner's ruling of 2026-11-11, "Fix all + enforce" (the alternatives not taken being "Fix all, no enforcement" and "Scope
+# clause 8 to Intl"). Broiler.JS/Directory.Build.props hands this file to the compiler for the engine's product projects;
+# the test, benchmark, sample and tool projects are not held to it.
+#
+# A call that formats or parses a value, maps case or compares strings without naming a culture or a comparison reads the
+# host's current culture. Each rule below makes such a call an error, so it does not build: the engine names the invariant
+# culture (or NumberFormatInfo.InvariantInfo) or an ordinal comparison instead. The paths that keep the host's culture,
+# the default-locale and host-culture providers (decisions D7 and D6), SJL-D-17's .NET format strings of toLocaleString
+# and its legacy Date.parse, and Intl.Collator's comparison until milestone SJL-17, name the culture they read, which
+# these rules accept. RS0030 below closes that gap: BannedSymbols.HostCulture.txt bans every direct read of the host's
+# culture and every .NET culture built from the host's data, and each kept path suppresses RS0030 in place, with its
+# reason.
+is_global = true
+
+# CA1304: a case mapping that names no culture (ToLower, ToUpper).
+dotnet_diagnostic.CA1304.severity = error
+# CA1305: a format or parse that names no format provider (ToString, Parse, Convert.To*, an interpolation into a builder).
+dotnet_diagnostic.CA1305.severity = error
+# CA1309: a string comparison that names no comparison, or a linguistic one, where the comparison is not linguistic.
+dotnet_diagnostic.CA1309.severity = error
+# CA1310: StartsWith, EndsWith, IndexOf, Compare or CompareTo that names no comparison.
+dotnet_diagnostic.CA1310.severity = error
+# CA1311: ToLower or ToUpper that names no culture, which is to be ToLowerInvariant or ToUpperInvariant.
+dotnet_diagnostic.CA1311.severity = error
+# RS0030: a use of a symbol BannedSymbols.HostCulture.txt bans (the banned-API analyzer): a read of the host's culture by
+# name, or a .NET culture built from the host's data, outside the kept paths.
+dotnet_diagnostic.RS0030.severity = error

@@ -30,7 +30,9 @@
 
   <ItemGroup>
     <PackageReference Include="Broiler.Regex" />
-    <PackageReference Include="Broiler.Unicode.Cldr.LocaleData" />
+    <!-- Removed 2026-11-11, on the owner's ruling of that day on SJL-9's clause 7: the line
+         <PackageReference Include="Broiler.Unicode.Cldr.LocaleData" />, whose last reader, Intl.supportedValuesOf's
+         currency and unit lists, is the shared library's SupportedValues now. -->
     <!-- Intl.Segmenter's boundaries and word statuses (milestone SJL-7.5), over the tables Ast embeds
          (Runtime's until milestone SJL-12.5). -->
     <PackageReference Include="Broiler.Unicode.Segmentation" />

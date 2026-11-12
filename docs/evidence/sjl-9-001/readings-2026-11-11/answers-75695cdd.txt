@@ -1,0 +1,233 @@
+# SJL-9 clause 8 after the owner's ruling on the m literal ("Fix in this PR"): the answers at this stage's base ef3c4445
+# (branch js-c78's head before the fix) and head 75695cdd (the fix 93b9f55e and its changelog entry; its code is
+# 93b9f55e's), beside the stage before's base 6758d47e (origin/main) and head 556eba43. Each from a scratch tree git
+# archive wrote from the commit (docs/evidence left out), built in Release with --disable-build-servers by the .NET SDK
+# 10.0.404, one run at a time on an idle machine, TZ as named, LANG unset unless named.
+# Shell BroilerJS.dll at 6758d47e: e4f288bc8466128f3400a4c6962e73f42f5a9967012a88c7fe66fbfdb854f426
+# Shell BroilerJS.dll at 556eba43: 3851cf73be165eb785d12edd500009b1ce324b3bf989261948ec56b45c892fdb
+# Shell BroilerJS.dll at ef3c4445: 8f2aac1194a5086fd202aa2ac6be71c6a07cc8950ea3e33dd2eea9548c533eb5
+# Shell BroilerJS.dll at 75695cdd: e5cb29a098b96956ddcfaea52c295e1860bf839d7de0d28449d069bf2713f76e
+
+## The engine vectors, corpus revision 38 (Broiler.JavaScript.Vectors.Tests, Every_difference_from_the_corpus_is_classified, 3 workers)
+6758d47e UTC: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+556eba43 UTC: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+ef3c4445 UTC: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+75695cdd UTC: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+  rows that differ between ef3c4445 and 75695cdd in UTC: 0
+  rows that differ between 6758d47e and 75695cdd in UTC: 0
+  rows that differ between 556eba43 and 75695cdd in UTC: 0
+6758d47e America/New_York: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+556eba43 America/New_York: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+ef3c4445 America/New_York: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+75695cdd America/New_York: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+  rows that differ between ef3c4445 and 75695cdd in America/New_York: 0
+  rows that differ between 6758d47e and 75695cdd in America/New_York: 0
+  rows that differ between 556eba43 and 75695cdd in America/New_York: 0
+
+## test262 ccaac100, test/intl402/Intl/supportedValuesOf/ (25 paths), original and terser, --include-negative
+# The Decimal proposal has no path and no feature at ccaac100, so no Decimal path is scored.
+UTC 6758d47e: 50 cases; statuses seen: passed
+UTC 556eba43: 50 cases; statuses seen: passed
+UTC ef3c4445: 50 cases; statuses seen: passed
+UTC 75695cdd: 50 cases; statuses seen: passed
+  cases whose status differs between ef3c4445 and 75695cdd: 0
+  cases whose status differs between 6758d47e and 75695cdd: 0
+  cases whose status differs between 556eba43 and 75695cdd: 0
+America/New_York 6758d47e: 50 cases; statuses seen: passed
+America/New_York 556eba43: 50 cases; statuses seen: passed
+America/New_York ef3c4445: 50 cases; statuses seen: passed
+America/New_York 75695cdd: 50 cases; statuses seen: passed
+  cases whose status differs between ef3c4445 and 75695cdd: 0
+  cases whose status differs between 6758d47e and 75695cdd: 0
+  cases whose status differs between 556eba43 and 75695cdd: 0
+
+## Part C's programs (collect.py's datasets step, TZ=UTC): each program's answer file at 75695cdd against the other three commits
+  calendar-formats.answer.txt: sha256 c42d426580fbf34d; the same bytes at 6758d47e, 556eba43, ef3c4445
+  dates.answer.txt: sha256 4be2e7911b606753; the same bytes at 6758d47e, 556eba43, ef3c4445
+  displaynames.answer.txt: sha256 953de9d2361b489f; the same bytes at 6758d47e, 556eba43, ef3c4445
+  durations.answer.txt: sha256 02d91f45f339c59f; the same bytes at 6758d47e, 556eba43, ef3c4445
+  lists.answer.txt: sha256 9be5af7b91712da7; the same bytes at 6758d47e, 556eba43, ef3c4445
+  locales.answer.txt: sha256 543506bbeff0d2d3; the same bytes at 6758d47e, 556eba43, ef3c4445
+  numbers.answer.txt: sha256 277c4e7a6eddb905; the same bytes at 6758d47e, 556eba43, ef3c4445
+  plurals.answer.txt: sha256 93ab3d0fb965f43e; the same bytes at 6758d47e, 556eba43, ef3c4445
+  relativetimes.answer.txt: sha256 b538032589ffb60d; the same bytes at 6758d47e, 556eba43, ef3c4445
+  segments.answer.txt: sha256 376c0e0beb9baa03; the same bytes at 6758d47e, 556eba43, ef3c4445
+  temporal-intl.answer.txt: sha256 84192332fbd60b9e; the same bytes at 6758d47e, 556eba43, ef3c4445
+  timezones.answer.txt: sha256 d85ba74b668506cd; the same bytes at 6758d47e, 556eba43, ef3c4445
+  zone-names.answer.txt: sha256 1c5581ceb5abf95c; the same bytes at 6758d47e, 556eba43, ef3c4445
+## Part D's programs (collect.py's invariant step, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1, TZ=UTC): each program's answer file at 75695cdd against the other three commits
+  calendar-formats.answer.txt: sha256 1ab9c55c3ed79365; the same bytes at 6758d47e, 556eba43, ef3c4445
+  dates.answer.txt: sha256 b605b4e8c92a57e2; the same bytes at 6758d47e, 556eba43, ef3c4445
+  displaynames.answer.txt: sha256 25303ab111ef0f6b; the same bytes at 6758d47e, 556eba43, ef3c4445
+  durations.answer.txt: sha256 3883bd179849fc36; the same bytes at 6758d47e, 556eba43, ef3c4445
+  lists.answer.txt: sha256 ef1ab43aaa49743e; the same bytes at 6758d47e, 556eba43, ef3c4445
+  locales.answer.txt: sha256 5b802932ce8b7045; the same bytes at 6758d47e, 556eba43, ef3c4445
+  numbers.answer.txt: sha256 f3ccde014c4370b1; the same bytes at 6758d47e, 556eba43, ef3c4445
+  plurals.answer.txt: sha256 a3e4badf25d684d3; the same bytes at 6758d47e, 556eba43, ef3c4445
+  relativetimes.answer.txt: sha256 e190e30d022be693; the same bytes at 6758d47e, 556eba43, ef3c4445
+  segments.answer.txt: sha256 edd11c4c19ddc3b2; the same bytes at 6758d47e, 556eba43, ef3c4445
+  temporal-intl.answer.txt: sha256 780d73f8836771d1; the same bytes at 6758d47e, 556eba43, ef3c4445
+  timezones.answer.txt: sha256 d85ba74b668506cd; the same bytes at 6758d47e, 556eba43, ef3c4445
+  zone-names.answer.txt: sha256 ad3be1dd3438a63e; the same bytes at 6758d47e, 556eba43, ef3c4445
+## Part D's default-locale-is-supported.js (run_test262.py, invariant globalization, TZ=UTC)
+  6758d47e: test/intl402/default-locale-is-supported.js [original] passed
+  6758d47e: test/intl402/default-locale-is-supported.js [terser] passed
+  556eba43: test/intl402/default-locale-is-supported.js [original] passed
+  556eba43: test/intl402/default-locale-is-supported.js [terser] passed
+  ef3c4445: test/intl402/default-locale-is-supported.js [original] passed
+  ef3c4445: test/intl402/default-locale-is-supported.js [terser] passed
+  75695cdd: test/intl402/default-locale-is-supported.js [original] passed
+  75695cdd: test/intl402/default-locale-is-supported.js [terser] passed
+
+## probe.js: per environment, the lines whose answer differs between ef3c4445 and 75695cdd, each with both answers
+nolang: ef3c4445's answers equal 556eba43 of the stage before's; 0 of 28 lines differ at 75695cdd
+de: ef3c4445's answers equal 556eba43 of the stage before's; 16 of 28 lines differ at 75695cdd
+  d.toString
+    ef3c4445: 1234567891
+    75695cdd: 1234567.891
+  d.toLocaleString()
+    ef3c4445: 1.234.567.891
+    75695cdd: 1.234.567,891
+  d.toLocaleString(undefined)
+    ef3c4445: 1.234.567.891
+    75695cdd: 1.234.567,891
+  d.toLocaleString('en')
+    ef3c4445: 1,234,567,891
+    75695cdd: 1,234,567.891
+  d.toLocaleString('en-US')
+    ef3c4445: 1,234,567,891
+    75695cdd: 1,234,567.891
+  d.toLocaleString('de')
+    ef3c4445: 1.234.567.891
+    75695cdd: 1.234.567,891
+  d.toLocaleString('de-DE')
+    ef3c4445: 1.234.567.891
+    75695cdd: 1.234.567,891
+  d.toLocaleString('fr')
+    ef3c4445: 1 234 567 891
+    75695cdd: 1 234 567,891
+  d.toLocaleString('hi-u-nu-deva')
+    ef3c4445: १,२३,४५,६७,८९१
+    75695cdd: १२,३४,५६७.८९१
+  d.toLocaleString('en',{maximumFractionDigits:1})
+    ef3c4445: 1,234,567,891
+    75695cdd: 1,234,567.9
+  d.toLocaleString('de',{style:'currency',currency:'EUR'})
+    ef3c4445: 1.234.567.891,00 €
+    75695cdd: 1.234.567,89 €
+  d.toLocaleString('en',{notation:'compact'})
+    ef3c4445: 1.2B
+    75695cdd: 1.2M
+  d.toLocaleString(undefined,{minimumFractionDigits:4})
+    ef3c4445: 1.234.567.891,0000
+    75695cdd: 1.234.567,8910
+  n.toLocaleString('en',{maximumFractionDigits:0})
+    ef3c4445: -5
+    75695cdd: -1
+  big.toLocaleString('en',{maximumFractionDigits:20})
+    ef3c4445: 12,345,678,901,234,567,890,123,456,789
+    75695cdd: 12,345,678,901,234,567,890.123456789
+  big.toLocaleString('en',{maximumSignificantDigits:21})
+    ef3c4445: 12,345,678,901,234,567,890,100,000,000
+    75695cdd: 12,345,678,901,234,567,890.1
+invariant: ef3c4445's answers equal 556eba43 of the stage before's; 0 of 28 lines differ at 75695cdd
+de-invariant: ef3c4445's answers equal 556eba43 of the stage before's; 0 of 28 lines differ at 75695cdd
+75695cdd, de: lines whose answer differs from 75695cdd's with LANG unset: defaultLocale, d.toLocaleString(), d.toLocaleString(undefined), d.toLocaleString(undefined,{minimumFractionDigits:4})
+75695cdd, invariant: lines whose answer differs from 75695cdd's with LANG unset: d.toLocaleString('de'), d.toLocaleString('de-DE'), d.toLocaleString('fr'), d.toLocaleString('hi-u-nu-deva'), d.toLocaleString('de',{style:'currency',currency:'EUR'})
+75695cdd, de-invariant: lines whose answer differs from 75695cdd's with LANG unset: d.toLocaleString('de'), d.toLocaleString('de-DE'), d.toLocaleString('fr'), d.toLocaleString('hi-u-nu-deva'), d.toLocaleString('de',{style:'currency',currency:'EUR'})
+
+## probe-culture.js: per environment, the lines whose answer differs between ef3c4445 and 75695cdd, each with both answers
+TZ=UTC, LANG unset: ef3c4445's answers equal 39a56e1b's (the committed probe-culture-39a56e1b.txt); 0 of 19 lines differ at 75695cdd
+TZ=UTC, LANG=de_DE.UTF-8: ef3c4445's answers equal 39a56e1b's (the committed probe-culture-39a56e1b.txt); 4 of 19 lines differ at 75695cdd
+  exact = Decimal('1234567891') / 1000m; exact.toString()
+    ef3c4445: 1234567,891
+    75695cdd: 1234567.891
+  (1234567.891m).toString()
+    ef3c4445: 1234567891
+    75695cdd: 1234567.891
+  (1.5m).toFixed(1)
+    ef3c4445: 15,0
+    75695cdd: 1.5
+  (-0.5m).toString()
+    ef3c4445: -5
+    75695cdd: -0.5
+TZ=UTC, LANG=sv_SE.UTF-8: ef3c4445's answers equal 39a56e1b's (the committed probe-culture-39a56e1b.txt); 5 of 19 lines differ at 75695cdd
+  exact = Decimal('1234567891') / 1000m; exact.toString()
+    ef3c4445: 1234567,891
+    75695cdd: 1234567.891
+  (1234567.891m).toString()
+    ef3c4445: throws TypeError: 1234567.891m is not a valid big integer
+    75695cdd: 1234567.891
+  (1.5m).toFixed(1)
+    ef3c4445: throws TypeError: 1.5m is not a valid big integer
+    75695cdd: 1.5
+  (-0.5m).toString()
+    ef3c4445: throws TypeError: 0.5m is not a valid big integer
+    75695cdd: -0.5
+  Decimal('\u22125').toString()
+    ef3c4445: −5
+    75695cdd: throws TypeError: −5 is not a valid big integer
+TZ=UTC, LANG=tr_TR.UTF-8: ef3c4445's answers equal 39a56e1b's (the committed probe-culture-39a56e1b.txt); 4 of 19 lines differ at 75695cdd
+  exact = Decimal('1234567891') / 1000m; exact.toString()
+    ef3c4445: 1234567,891
+    75695cdd: 1234567.891
+  (1234567.891m).toString()
+    ef3c4445: 1234567891
+    75695cdd: 1234567.891
+  (1.5m).toFixed(1)
+    ef3c4445: 15,0
+    75695cdd: 1.5
+  (-0.5m).toString()
+    ef3c4445: -5
+    75695cdd: -0.5
+75695cdd, TZ=UTC, LANG unset: lines whose answer differs from 75695cdd's with LANG unset: none
+75695cdd, TZ=UTC, LANG=de_DE.UTF-8: lines whose answer differs from 75695cdd's with LANG unset: defaultLocale, exact.toLocaleString()
+75695cdd, TZ=UTC, LANG=sv_SE.UTF-8: lines whose answer differs from 75695cdd's with LANG unset: defaultLocale, exact.toLocaleString(), (-0m).toLocaleString()
+75695cdd, TZ=UTC, LANG=tr_TR.UTF-8: lines whose answer differs from 75695cdd's with LANG unset: defaultLocale, exact.toLocaleString()
+
+# Added 2026-11-11, at review of this stage: the comparison above is made against ef3c4445 and, for probe-culture.js, against
+# 39a56e1b; the two below compare 75695cdd with the stage before's base 6758d47e directly, from the committed probe files,
+# by compare6758.py, and attribute each line that differs to the commits between.
+
+## probe.js: per environment, the lines whose answer differs between 6758d47e (the committed probe-6758d47e.txt) and 75695cdd
+TZ=UTC, LANG LC_ALL LANGUAGE unset: 17 of 28 lines differ; ef3c4445's answers equal 556eba43's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): d.toLocaleString(), d.toLocaleString(undefined), d.toLocaleString('en'), d.toLocaleString('en-US'), d.toLocaleString('de'), d.toLocaleString('de-DE'), d.toLocaleString('fr'), d.toLocaleString('hi-u-nu-deva'), d.toLocaleString('en',{maximumFractionDigits:1}), d.toLocaleString('de',{style:'currency',currency:'EUR'}), d.toLocaleString('en',{notation:'compact'}), d.toLocaleString(undefined,{minimumFractionDigits:4}), n.toLocaleString('en',{maximumFractionDigits:0}), big.toLocaleString('en',{maximumFractionDigits:20}), big.toLocaleString('en',{maximumSignificantDigits:21}), d.toLocaleString('xx-invalid-'), d.toLocaleString('en',{style:'currency'})
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): none
+  moved at both: none
+  any other line: none
+TZ=UTC, LANG=de_DE.UTF-8: 18 of 28 lines differ; ef3c4445's answers equal 556eba43's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): d.toLocaleString('xx-invalid-'), d.toLocaleString('en',{style:'currency'})
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): d.toString, n.toLocaleString('en',{maximumFractionDigits:0})
+  moved at both: d.toLocaleString(), d.toLocaleString(undefined), d.toLocaleString('en'), d.toLocaleString('en-US'), d.toLocaleString('de'), d.toLocaleString('de-DE'), d.toLocaleString('fr'), d.toLocaleString('hi-u-nu-deva'), d.toLocaleString('en',{maximumFractionDigits:1}), d.toLocaleString('de',{style:'currency',currency:'EUR'}), d.toLocaleString('en',{notation:'compact'}), d.toLocaleString(undefined,{minimumFractionDigits:4}), big.toLocaleString('en',{maximumFractionDigits:20}), big.toLocaleString('en',{maximumSignificantDigits:21})
+  any other line: none
+TZ=UTC, LANG unset, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1: 17 of 28 lines differ; ef3c4445's answers equal 556eba43's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): d.toLocaleString(), d.toLocaleString(undefined), d.toLocaleString('en'), d.toLocaleString('en-US'), d.toLocaleString('de'), d.toLocaleString('de-DE'), d.toLocaleString('fr'), d.toLocaleString('hi-u-nu-deva'), d.toLocaleString('en',{maximumFractionDigits:1}), d.toLocaleString('de',{style:'currency',currency:'EUR'}), d.toLocaleString('en',{notation:'compact'}), d.toLocaleString(undefined,{minimumFractionDigits:4}), n.toLocaleString('en',{maximumFractionDigits:0}), big.toLocaleString('en',{maximumFractionDigits:20}), big.toLocaleString('en',{maximumSignificantDigits:21}), d.toLocaleString('xx-invalid-'), d.toLocaleString('en',{style:'currency'})
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): none
+  moved at both: none
+  any other line: none
+TZ=UTC, LANG=de_DE.UTF-8, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1: 17 of 28 lines differ; ef3c4445's answers equal 556eba43's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): d.toLocaleString(), d.toLocaleString(undefined), d.toLocaleString('en'), d.toLocaleString('en-US'), d.toLocaleString('de'), d.toLocaleString('de-DE'), d.toLocaleString('fr'), d.toLocaleString('hi-u-nu-deva'), d.toLocaleString('en',{maximumFractionDigits:1}), d.toLocaleString('de',{style:'currency',currency:'EUR'}), d.toLocaleString('en',{notation:'compact'}), d.toLocaleString(undefined,{minimumFractionDigits:4}), n.toLocaleString('en',{maximumFractionDigits:0}), big.toLocaleString('en',{maximumFractionDigits:20}), big.toLocaleString('en',{maximumSignificantDigits:21}), d.toLocaleString('xx-invalid-'), d.toLocaleString('en',{style:'currency'})
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): none
+  moved at both: none
+  any other line: none
+## probe-culture.js: per environment, the lines whose answer differs between 6758d47e (the committed probe-culture-6758d47e.txt) and 75695cdd
+TZ=UTC, LANG unset: 6 of 19 lines differ; ef3c4445's answers equal 39a56e1b's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): exact.toLocaleString(), exact.toLocaleString('en'), (Decimal('12345678901234567890123456789') / 1000000000m).toLocaleString('en'), (-0m).toLocaleString('en'), (0m * -1m).toLocaleString('en'), (-0m).toLocaleString()
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): none
+  moved at both: none
+  any other line: none
+TZ=UTC, LANG=de_DE.UTF-8: 10 of 19 lines differ; ef3c4445's answers equal 39a56e1b's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): exact.toLocaleString(), exact.toLocaleString('en'), (Decimal('12345678901234567890123456789') / 1000000000m).toLocaleString('en'), (-0m).toLocaleString('en'), (0m * -1m).toLocaleString('en'), (-0m).toLocaleString()
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): exact = Decimal('1234567891') / 1000m; exact.toString(), (1234567.891m).toString(), (1.5m).toFixed(1), (-0.5m).toString()
+  moved at both: none
+  any other line: none
+TZ=UTC, LANG=sv_SE.UTF-8: 11 of 19 lines differ; ef3c4445's answers equal 39a56e1b's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): exact.toLocaleString(), exact.toLocaleString('en'), (Decimal('12345678901234567890123456789') / 1000000000m).toLocaleString('en'), (-0m).toLocaleString('en'), (0m * -1m).toLocaleString('en'), (-0m).toLocaleString()
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): exact = Decimal('1234567891') / 1000m; exact.toString(), (1234567.891m).toString(), (1.5m).toFixed(1), (-0.5m).toString(), Decimal('\u22125').toString()
+  moved at both: none
+  any other line: none
+TZ=UTC, LANG=tr_TR.UTF-8: 10 of 19 lines differ; ef3c4445's answers equal 39a56e1b's
+  moved from 6758d47e to ef3c4445 only (the stage before's toLocaleString change): exact.toLocaleString(), exact.toLocaleString('en'), (Decimal('12345678901234567890123456789') / 1000000000m).toLocaleString('en'), (-0m).toLocaleString('en'), (0m * -1m).toLocaleString('en'), (-0m).toLocaleString()
+  moved from ef3c4445 to 75695cdd only (the fix's, as listed above): exact = Decimal('1234567891') / 1000m; exact.toString(), (1234567.891m).toString(), (1.5m).toFixed(1), (-0.5m).toString()
+  moved at both: none
+  any other line: none

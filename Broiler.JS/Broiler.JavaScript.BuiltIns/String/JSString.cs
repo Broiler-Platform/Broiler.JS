@@ -140,7 +140,10 @@ public partial class JSString : JSPrimitive
     }
 
     public override bool BooleanValue => Length > 0;
-    public override long BigIntValue => long.TryParse(ToString(), out var n) ? n : 0;
+    // The text's integer, read with the invariant culture's signs under every host (milestone SJL-9's clause 8, on the
+    // owner's ruling of 2026-11-11, "Fix all + enforce"); the CLR bridge reads it for a .NET long. Until then it read
+    // `long.TryParse(ToString(), out var n)`, the host's culture, which under sv-SE also took U+2212 as a minus sign.
+    public override long BigIntValue => long.TryParse(ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var n) ? n : 0;
     public override bool IsString => true;
 
     // The three concatenation entry points all defer through Concat, so `s = s + x` in a
@@ -381,9 +384,9 @@ public partial class JSString : JSPrimitive
 
     public override bool EqualsLiteral(double value) => DoubleValue == value;
 
-    public override bool EqualsLiteral(string value) => this.value.Equals(value);
+    public override bool EqualsLiteral(string value) => this.value.Equals(value, StringComparison.Ordinal);
 
-    public override bool StrictEqualsLiteral(string value) => this.value.Equals(value);
+    public override bool StrictEqualsLiteral(string value) => this.value.Equals(value, StringComparison.Ordinal);
 
     // Abstract Relational Comparison (ECMA-262): the other operand is first coerced to a
     // primitive with the Number hint (valueOf-then-toString), not the String hint. Only when
@@ -472,7 +475,7 @@ public partial class JSString : JSPrimitive
             return true;
 
         if (value is JSString s)
-            if (s.value.Equals(this.value))
+            if (s.value.Equals(this.value, StringComparison.Ordinal))
                 return true;
 
         return false;

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Globalization;
 using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.ExpressionCompiler;
 
@@ -194,7 +195,7 @@ public readonly struct StringSpan : IEquatable<StringSpan>, IEquatable<string>, 
 
     public static StringSpan operator +(in StringSpan left, in StringSpan right) => new(left.Value + right.Value);
 
-    public static StringSpan operator +(double left, in StringSpan right) => new(left.ToString() + right.Value);
+    public static StringSpan operator +(double left, in StringSpan right) => new(left.ToString(CultureInfo.InvariantCulture) + right.Value);
 
 
     public bool Equals(StringSpan other) => Equals(in other, StringComparison.Ordinal);

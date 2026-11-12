@@ -149,6 +149,11 @@ is the owner's to approve (JSD-0082, decision D29). `eng/pack.ps1`'s expected-ve
 `Intl.supportedValuesOf`'s currency and unit lists, sub-area (a), still read its `IntlEnumerationData`, and the shared
 library's `SupportedValues` is not wired for them. The plan's task 8.7 says to remove the package; it stays until those
 two lists move.
+*(Noted 2026-11-11, on the owner's ruling of that day on milestone SJL-9's clause 7, "Fix (1); move (2) to SJL-17": the two lists move, to the shared
+library's `SupportedValues.Of` over this engine's locale data, and `BuiltIns` no longer references
+`Broiler.Unicode.Cldr.LocaleData`, whose version leaves `Directory.Packages.props`, so a `Broiler.JavaScript.BuiltIns`
+package packed from that change no longer depends on it. No public member changes. The paragraph above, from
+"`Broiler.Unicode.Cldr.LocaleData` stays a dependency of `BuiltIns`", is left as written.)*
 
 **Compatibility.** Binary-compatible: every public member is kept with its signature. Source-compatible.
 Behaviour-breaking where the rows say, and for `JSIntlListFormat`'s constructor above.
@@ -484,6 +489,8 @@ its next version, `0.1.0-preview.5`, which the shared stream has not published, 
 version or later. The engine's packages carry the embedded tables in `Broiler.JavaScript.BuiltIns.dll`; no
 package carries them separately. `Broiler.Unicode.Cldr.LocaleData` stays a dependency for its locale data;
 the engine no longer calls its `CldrChineseCalendar` or `CldrUmmAlQura`.
+*(Noted 2026-11-11: the package is no dependency of `BuiltIns` from the change of that day, on the owner's ruling of that day on milestone SJL-9's clause 7;
+the section "Public API changes, 2026-11-10" above says so in its dated note.)*
 
 **Compatibility.** Binary-compatible: every public member is kept with its signature. Source-compatible.
 

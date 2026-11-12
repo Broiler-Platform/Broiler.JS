@@ -1,6 +1,7 @@
 ﻿using Broiler.JavaScript.Storage;
 using System;
 using System.Text;
+using System.Globalization;
 namespace Broiler.JavaScript.Runtime;
 
 public partial class JSObject
@@ -63,7 +64,7 @@ public partial class JSObject
             if (!first)
                 sb.Append(", ");
             first = false;
-            sb.Append($"{Key}: {Value?.ToDetailString()}");
+            sb.Append(CultureInfo.InvariantCulture, $"{Key}: {Value?.ToDetailString()}");
         }
 
         sb.Append('}');

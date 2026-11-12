@@ -4,6 +4,7 @@ using System.Linq;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Globalization;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 
@@ -205,7 +206,7 @@ public partial class ILCodeGenerator
         if (resolvedName.EndsWith('`'))
             resolvedName = resolvedName[..^1];
         var underscore = name.LastIndexOf('_');
-        if (underscore > 0 && int.TryParse(name[(underscore + 1)..], out _))
+        if (underscore > 0 && int.TryParse(name[(underscore + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
             resolvedName = name[..underscore];
 
         if (variables.TryFindByName(resolvedName, out variable))

@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Globalization;
 
 namespace Broiler.JavaScript.ExpressionCompiler;
 
@@ -68,7 +69,7 @@ public struct StackSegment
     private static long Resolve()
     {
         var configured = Environment.GetEnvironmentVariable("BROILER_JS_VISITOR_SEGMENT_BYTES");
-        return configured != null && long.TryParse(configured, out var bytes) && bytes >= 0
+        return configured != null && long.TryParse(configured, NumberStyles.Integer, CultureInfo.InvariantCulture, out var bytes) && bytes >= 0
             ? bytes
             : DefaultSegmentAtBytes;
     }

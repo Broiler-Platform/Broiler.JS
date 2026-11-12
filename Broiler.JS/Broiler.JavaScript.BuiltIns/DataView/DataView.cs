@@ -4,6 +4,7 @@ using System;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Numerics;
+using System.Globalization;
 using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
@@ -92,7 +93,7 @@ public partial class DataView : JSObject
     // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowOffsetOutOfBounds(int offset)
-        => throw JSEngine.NewRangeError($"Offset {offset} is outside the bounds of DataView");
+        => throw JSEngine.NewRangeError(string.Create(CultureInfo.InvariantCulture, $"Offset {offset} is outside the bounds of DataView"));
 
     // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
     // Broiler-Falsified-If: a set through a view over an immutable buffer surfaces as an error other than a JS TypeError

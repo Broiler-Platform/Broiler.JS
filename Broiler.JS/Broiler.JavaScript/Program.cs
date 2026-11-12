@@ -83,7 +83,7 @@ namespace BroilerJS
             }
 
             var positionalArgs = positionalList.ToArray();
-            var scriptPath = positionalArgs.FirstOrDefault(arg => !arg.StartsWith("-"));
+            var scriptPath = positionalArgs.FirstOrDefault(arg => !arg.StartsWith("-", StringComparison.Ordinal));
 
             if (scriptPath == null)
             {

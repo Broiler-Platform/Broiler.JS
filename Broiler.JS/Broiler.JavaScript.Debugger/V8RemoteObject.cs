@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Globalization;
 using Broiler.JavaScript.BuiltIns.Error;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
@@ -33,7 +34,7 @@ public class V8RemoteObject
     {
         try
         {
-            IntPtr v = new(long.Parse(id));
+            IntPtr v = new(long.Parse(id, NumberStyles.Integer, CultureInfo.InvariantCulture));
             var h = GCHandle.FromIntPtr(v);
             if (h.IsAllocated)
             {
@@ -84,7 +85,7 @@ public class V8RemoteObject
             Type = "number";
             var t = v.DoubleValue;
             Value = t;
-            Description = t.ToString();
+            Description = t.ToString(CultureInfo.InvariantCulture);
             return;
         }
 
@@ -101,7 +102,7 @@ public class V8RemoteObject
         var id = v[systemID];
         if (id.IsUndefined)
         {
-            var idStr = GCHandle.ToIntPtr(GCHandle.Alloc(v, GCHandleType.Normal)).ToInt64().ToString();
+            var idStr = GCHandle.ToIntPtr(GCHandle.Alloc(v, GCHandleType.Normal)).ToInt64().ToString(CultureInfo.InvariantCulture);
             v[systemID] = JSValue.CreateString(idStr);
             ObjectId = idStr;
         }

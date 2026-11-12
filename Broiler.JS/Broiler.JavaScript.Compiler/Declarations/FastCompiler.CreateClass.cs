@@ -208,7 +208,7 @@ partial class FastCompiler
         if (!property.Computed && property.Key is AstIdentifier id)
         {
             var n = id.Name.Value;
-            return n.StartsWith("#") ? n[1..] : n;
+            return n.StartsWith("#", StringComparison.Ordinal) ? n[1..] : n;
         }
 
         return null;
@@ -448,7 +448,7 @@ partial class FastCompiler
         var en = body.Members.GetFastEnumerator();
         while (en.MoveNext(out var property))
         {
-            var isPrivateName = property.Key is AstIdentifier propertyIdentifier && propertyIdentifier.Name.Value.StartsWith("#");
+            var isPrivateName = property.Key is AstIdentifier propertyIdentifier && propertyIdentifier.Name.Value.StartsWith("#", StringComparison.Ordinal);
 
             // ECMA-262 ClassDefinitionEvaluation evaluates every ClassElementName
             // (the computed key) in source order, before any static field

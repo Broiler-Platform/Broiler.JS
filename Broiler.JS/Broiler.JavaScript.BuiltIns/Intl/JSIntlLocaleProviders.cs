@@ -13,7 +13,7 @@ namespace Broiler.JavaScript.BuiltIns.Intl;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>The policies stand</b>: the default locale is the host's <see cref="CultureInfo.CurrentCulture"/>, <c>en-US</c> when
+/// <b>The policies stand</b>: the default locale is the host's <c>CultureInfo.CurrentCulture</c>, <c>en-US</c> when
 /// that is the invariant culture or names no well-formed tag; the available locales are the host's cultures, each by its
 /// canonical tag and by the shorter tags .NET resolves to it (<c>zh-TW</c> for <c>zh-Hant-TW</c>), which the lookup
 /// matcher would otherwise truncate to another variety (<c>zh</c>).
@@ -62,7 +62,13 @@ internal static class JSIntlLocaleProviders
     {
         get
         {
+            // Kept on the host's culture: the default-locale provider, decision D7 (milestone SJL-9's clause 8, on the
+            // owner's ruling of 2026-11-11, "Fix all + enforce"). It names the culture it reads, which the five
+            // globalization rules accept; the banned-API rule (Broiler.JS/BannedSymbols.HostCulture.txt) bans the read
+            // everywhere but the kept paths, and is suppressed here for that reason.
+#pragma warning disable RS0030 // Kept: the default-locale provider reads the host's culture (decision D7).
             var name = CultureInfo.CurrentCulture.Name;
+#pragma warning restore RS0030
             return string.IsNullOrEmpty(name)
                 ? "en-US"
                 : DefaultByCulture.GetOrAdd(name, static culture => Canonical(culture) ?? "en-US");

@@ -247,8 +247,14 @@ public static class DateParser
         if (TryParseExact(text, SecondaryFormats, DateTimeStyles.AssumeLocal, out result))
             return result;
 
+        // Kept on the host's culture: the culture-dependent legacy Date.parse, which decision SJL-D-17 keeps (milestone
+        // SJL-9's clause 8, on the owner's ruling of 2026-11-11, "Fix all + enforce"). It names the culture it reads,
+        // which the five globalization rules accept; the banned-API rule (Broiler.JS/BannedSymbols.HostCulture.txt)
+        // bans the read everywhere but the kept paths, and is suppressed here for that reason.
+#pragma warning disable RS0030 // Kept: the legacy Date.parse's fallback reads the host's culture (SJL-D-17).
         if (TryParse(text, CultureInfo.CurrentCulture, out result))
             return result;
+#pragma warning restore RS0030
 
         // unrecognized dates should return NaN (15.9.4.2)
         return TryParse(text, CultureInfo.InvariantCulture, out result) ? result : Invalid;

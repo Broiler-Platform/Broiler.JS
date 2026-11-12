@@ -1,0 +1,83 @@
+# The globalization analyzer scan at 2509c343: Broiler.JS.slnx, Broiler.JavaScript.Network and Broiler.JavaScript.NodePollyfill
+# built from a clean git archive tree (docs/evidence left out), Release, --disable-build-servers, SDK 10.0.404, with
+# -p:AnalysisModeGlobalization=All -p:TreatWarningsAsErrors=false. The distinct sites of CA1304, CA1305, CA1309, CA1310
+# and CA1311, warnings and errors alike, by project kind. Network and NodePollyfill do not compile at either commit
+# (CS0234, a namespace the engine no longer has), so no analyzer reads them; they are in no solution.
+
+## Counts
+all: 63
+      2 CA1304
+     52 CA1305
+      1 CA1309
+      6 CA1310
+      2 CA1311
+outside tests, benchmarks, samples and tools: 0
+of which under Broiler.JS/: 0
+
+## The engine's product projects
+(none)
+
+## The test, benchmark and sample projects (not held to the rules; listed, not fixed)
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/J/JSNumberPrototype.cs(397,76): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/J/NumberParser.cs(85,23): warning CA1309
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/JSBigInt.cs(229,58): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/JSBigInt.cs(308,20): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSJsonText.cs(128,77): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSJsonText.cs(235,47): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSJsonText.cs(242,39): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSJsonText.cs(420,42): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSJsonText.cs(436,42): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/UriHelper.cs(286,31): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/UriHelper.cs(334,31): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/UriHelper.cs(339,27): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/DurationCorrespondenceTests.cs(681,42): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/DurationCorrespondenceTests.cs(683,42): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/TemporalLimitsTests.cs(102,22): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/TemporalLimitsTests.cs(130,26): warning CA1305
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Temporal/TemporalLimitsTests.cs(291,22): warning CA1305
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/BuiltInsTests.cs(14708,28): warning CA1305
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/BuiltInsTests.cs(14744,22): warning CA1305
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/BuiltInsTests.cs(14750,28): warning CA1305
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedBigIntTests.cs(68,37): warning CA1305
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedIntlDataTests.cs(99,26): warning CA1305
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedTimeZoneTests.cs(74,26): warning CA1305
+Broiler.JS/Broiler.JavaScript.Compiler.Tests/ShellPackageVersionCultureTests.cs(29,61): warning CA1304
+Broiler.JS/Broiler.JavaScript.Compiler.Tests/ShellPackageVersionCultureTests.cs(29,71): warning CA1311
+Broiler.JS/Broiler.JavaScript.Integration.Tests/ClrBindingCultureTests.cs(39,47): warning CA1304
+Broiler.JS/Broiler.JavaScript.Integration.Tests/ClrBindingCultureTests.cs(39,52): warning CA1311
+Broiler.JS/Broiler.JavaScript.Integration.Tests/ClrBridgeHostCultureTests.cs(45,55): warning CA1305
+Broiler.JS/Broiler.JavaScript.Integration.Tests/ClrBridgeHostCultureTests.cs(46,54): warning CA1305
+Broiler.JS/Broiler.JavaScript.Integration.Tests/ClrBridgeHostCultureTests.cs(47,57): warning CA1305
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue761Tests.cs(231,44): warning CA1305
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue761Tests.cs(231,78): warning CA1305
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue794Tests.cs(172,25): warning CA1305
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue887Tests2.cs(109,22): warning CA1305
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue971Tests.cs(159,51): warning CA1305
+Broiler.JS/Broiler.JavaScript.Integration.Tests/M6ValidationTests.cs(157,42): warning CA1310
+Broiler.JS/Broiler.JavaScript.Integration.Tests/M6ValidationTests.cs(171,36): warning CA1310
+Broiler.JS/Broiler.JavaScript.Integration.Tests/M7ValidationTests.cs(290,25): warning CA1310
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Phase2ValidationTests.cs(270,38): warning CA1310
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Phase2ValidationTests.cs(286,42): warning CA1310
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Phase2ValidationTests.cs(309,36): warning CA1310
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(179,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(211,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(227,26): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(240,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(270,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(284,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(306,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(318,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(369,43): warning CA1305
+Broiler.JS/Broiler.JavaScript.Storage.Tests/CompactElementStorageTests.cs(374,26): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/CompileScalingMetrics.cs(120,22): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(100,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(107,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(108,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(115,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(116,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(172,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(18,49): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(181,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs(99,36): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/PropertyMapDistributionMetrics.cs(323,19): warning CA1305
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/SpecializingTierMetrics.cs(230,61): warning CA1305

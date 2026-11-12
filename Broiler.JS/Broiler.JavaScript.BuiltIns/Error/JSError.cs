@@ -5,6 +5,7 @@ using Broiler.JavaScript.Runtime;
 using System;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Globalization;
 using Broiler.JavaScript.BuiltIns.Array;
 
 namespace Broiler.JavaScript.BuiltIns.Error;
@@ -31,7 +32,7 @@ public partial class JSError : JSObject, IJSError
     private string CreateStack()
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"{ToString(Arguments.Empty)}");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"{ToString(Arguments.Empty)}");
 
         var frames = (JSEngine.Current as IJSExecutionContext)?.Frames;
         for (var i = (frames?.Depth ?? 0) - 1; i >= 0; i--)
@@ -44,7 +45,7 @@ public partial class JSError : JSObject, IJSError
             if (string.IsNullOrWhiteSpace(file))
                 file = "file";
 
-            sb.AppendLine($"    at {fx}:{file}:{line},{column}");
+            sb.AppendLine(CultureInfo.InvariantCulture, $"    at {fx}:{file}:{line},{column}");
         }
 
         return sb.ToString();

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Globalization;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 
@@ -24,8 +25,8 @@ public partial class V8Runtime(V8InspectorProtocol inspectorContext) : V8Protoco
                 Context = new ExecutionContextDescription
                 {
                     Id = entry.Value.ID,
-                    Name = cid.ToString(),
-                    UniqueId = cid.ToString()
+                    Name = cid.ToString(CultureInfo.InvariantCulture),
+                    UniqueId = cid.ToString(CultureInfo.InvariantCulture)
                 }
             });
         }
@@ -52,7 +53,7 @@ public partial class V8Runtime(V8InspectorProtocol inspectorContext) : V8Protoco
                     var p = e.Get(i);
                     if (p.IsEmpty)
                         continue;
-                    list.Add(new V8PropertyDescriptor(i.ToString(), v, p, true));
+                    list.Add(new V8PropertyDescriptor(i.ToString(CultureInfo.InvariantCulture), v, p, true));
                 }
 
                 var en = new PropertySequence.PropertyEnumerator(c.GetOwnProperties(), false);

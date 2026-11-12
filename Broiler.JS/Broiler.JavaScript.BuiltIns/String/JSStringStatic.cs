@@ -2,6 +2,7 @@
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using System.Text;
+using System.Globalization;
 using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.String;
@@ -44,7 +45,7 @@ public partial class JSString
             int codePoint = (int)codePointDouble;
 
             if (codePoint < 0 || codePoint > 0x10FFFF || codePoint != codePointDouble)
-                throw JSEngine.NewRangeError($"Invalid code point {codePointDouble}");
+                throw JSEngine.NewRangeError(string.Create(CultureInfo.InvariantCulture, $"Invalid code point {codePointDouble}"));
 
             if (codePoint <= 65535)
                 result.Append((char)codePoint);

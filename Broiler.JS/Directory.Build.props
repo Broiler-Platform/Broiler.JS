@@ -9,6 +9,42 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+  <!-- Milestone SJL-9's clause 8, "Host globalization remains only behind the optional providers", on the owner's ruling
+       of 2026-11-11, "Fix all + enforce": the globalization rules CA1304, CA1305, CA1309, CA1310 and CA1311 are errors in
+       the engine's product projects (host-culture.globalconfig says why each holds). The scope is every project below
+       this folder but the ones that ship no engine code: the test projects (a name ending in "Tests"), the benchmarks,
+       the samples (the samples folder and a name ending in "Sample"), the perf tools under OtherTests, and the source
+       generator, a netstandard2.0 plug-in that runs in the compiler and that the .NET analyzers do not read. A test
+       project is held to nothing here: its answers are pinned by the cultures it sets.
+       The five rules accept a call that names the host's culture, so the same projects also get the banned-API analyzer
+       (RS0030, an error by the same file) with BannedSymbols.HostCulture.txt, which bans every direct read of the host's
+       culture (CultureInfo.CurrentCulture, DateTimeFormatInfo.CurrentInfo, StringComparison.CurrentCulture and the
+       like) and every .NET culture built from the host's data (CultureInfo.GetCultureInfo and the like); each kept
+       path the ruling names suppresses RS0030 in place, with its reason.
+       The scope is a property of this file, not one the environment can give: MSBuild reads an environment variable of
+       the same name as a property, and one set by accident would turn the rules off in every product project without a
+       word, so the property is set here whatever the environment holds, and a build that finds the variable set says
+       it is ignored. A property given to the build (-p:BroilerHostCultureRules=false), as a scratch scan gives one,
+       still turns the rules off. -->
+  <PropertyGroup>
+    <BroilerProjectFolder>$([MSBuild]::MakeRelative('$(MSBuildThisFileDirectory)', '$(MSBuildProjectDirectory)').Replace('\', '/'))</BroilerProjectFolder>
+    <BroilerHostCultureRulesFromEnvironment>$([System.Environment]::GetEnvironmentVariable('BroilerHostCultureRules'))</BroilerHostCultureRulesFromEnvironment>
+    <BroilerHostCultureRules>true</BroilerHostCultureRules>
+    <BroilerHostCultureRules Condition="$(MSBuildProjectName.EndsWith('Tests'))">false</BroilerHostCultureRules>
+    <BroilerHostCultureRules Condition="$(MSBuildProjectName.EndsWith('Sample'))">false</BroilerHostCultureRules>
+    <BroilerHostCultureRules Condition="'$(MSBuildProjectName)' == 'Broiler.JavaScript.JSClassGenerator'">false</BroilerHostCultureRules>
+    <BroilerHostCultureRules Condition="$(BroilerProjectFolder.StartsWith('benchmarks/')) Or $(BroilerProjectFolder.StartsWith('samples/')) Or $(BroilerProjectFolder.StartsWith('OtherTests/'))">false</BroilerHostCultureRules>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(BroilerHostCultureRules)' == 'true'">
+    <GlobalAnalyzerConfigFiles Include="$(MSBuildThisFileDirectory)host-culture.globalconfig" />
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" IncludeAssets="analyzers; build; buildtransitive" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.HostCulture.txt" />
+  </ItemGroup>
+  <Target Name="BroilerReportHostCultureRulesEnvironment" BeforeTargets="CoreCompile" Condition="'$(BroilerHostCultureRulesFromEnvironment)' != ''">
+    <Message Importance="high"
+             Text="$(MSBuildProjectName): the environment variable BroilerHostCultureRules is set and ignored; the host-culture rules stay as this project's scope sets them (BroilerHostCultureRules=$(BroilerHostCultureRules))." />
+  </Target>
+
   <!-- Milestone SJL-14.2 (decision D43): building with -p:BroilerParseThroughBridge=true turns the compiler's test-only
        switch on for every compile (JSCompilationOptions.BridgeByDefault), so that the test projects run with the
        compiler parsing through the bridge to the shared syntax library, and the bridge's library flows to every project

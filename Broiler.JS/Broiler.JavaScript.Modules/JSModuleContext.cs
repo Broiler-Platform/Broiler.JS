@@ -140,7 +140,7 @@ public class JSModuleContext : JSContext
             // The key must be canonical: it is the module's identity, and `./a.js` resolved from
             // two directories that name the same folder differently must give one module.
             string fullName = Path.GetFullPath(Path.Combine(folder, file));
-            if (!file.StartsWith("."))
+            if (!file.StartsWith(".", StringComparison.Ordinal))
             {
                 if (Directory.Exists(fullName))
                 {
@@ -187,7 +187,7 @@ public class JSModuleContext : JSContext
 
         foreach (var ext in extensions)
         {
-            if (relativePath.StartsWith("."))
+            if (relativePath.StartsWith(".", StringComparison.Ordinal))
             {
                 if (dirPath == null)
                     continue;
@@ -263,7 +263,7 @@ public class JSModuleContext : JSContext
         CurrentPath = folder;
         UpdatePaths(paths);
 
-        var filePath = Resolve(folder, relativeFile.StartsWith(".") ? relativeFile : ("./" + relativeFile)) ?? throw new FileNotFoundException($"{relativeFile} not found");
+        var filePath = Resolve(folder, relativeFile.StartsWith(".", StringComparison.Ordinal) ? relativeFile : ("./" + relativeFile)) ?? throw new FileNotFoundException($"{relativeFile} not found");
         var module = GetOrCreateModule(filePath, commonJs: IsCommonJsModule(filePath));
         var r = await LoadLinkAndEvaluateAsync(module);
         await DrainAsync();
@@ -314,7 +314,7 @@ public class JSModuleContext : JSContext
         m.CurrentPath = folder;
         m.UpdatePaths(paths);
 
-        var filePath = m.Resolve(folder, relativeFile.StartsWith(".") ? relativeFile : ("./" + relativeFile));
+        var filePath = m.Resolve(folder, relativeFile.StartsWith(".", StringComparison.Ordinal) ? relativeFile : ("./" + relativeFile));
         if (filePath == null)
             throw new FileNotFoundException($"{filePath} not found");
 

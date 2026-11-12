@@ -150,7 +150,7 @@ internal static class RegExpValidator
             // (the RegExp runtime applies the same clamp).
             pattern = ClampLargeQuantifiers(pattern);
 
-            _ = new Regex(pattern, options);
+            _ = new Regex(pattern, options | RegexOptions.CultureInvariant);
             return true;
         }
         catch

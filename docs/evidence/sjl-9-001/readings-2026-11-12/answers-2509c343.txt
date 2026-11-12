@@ -1,0 +1,165 @@
+# SJL-9 clause 8 after the owner's ruling of 2026-11-11 on its remaining host-culture readers ("Fix all + enforce"): the
+# answers at this stage's base 7581a2f6 (branch js-c78's head before the change, whose code is 75695cdd's) and head 2509c343
+# (the fixes 0705e80b, the enforcement 490826e3 and the changelog; its code is 490826e3's). Each from a scratch tree git
+# archive wrote from the commit (docs/evidence left out), built in Release with --disable-build-servers by the .NET SDK
+# 10.0.404, one run at a time on an idle machine, TZ as named, LANG unset unless named.
+# Shell BroilerJS.dll at 7581a2f6: e5bf5c8588dd3b2232ab0d4372cb6e0a91ea0dff84dc8d87f8c695c728859daf
+# Shell BroilerJS.dll at 2509c343: 56e1cc3e20437f3e7ccc590959c96e9afd5ea6fea371ec504df3f63bd5158a3e
+
+## The globalization analyzer scan (Broiler.JS.slnx, -p:AnalysisModeGlobalization=All -p:TreatWarningsAsErrors=false;
+## CA1304, CA1305, CA1309, CA1310 and CA1311, distinct sites, warnings and errors alike; scan-*.txt list them)
+7581a2f6 all: 143
+7581a2f6 2 CA1304
+7581a2f6 112 CA1305
+7581a2f6 5 CA1309
+7581a2f6 22 CA1310
+7581a2f6 2 CA1311
+7581a2f6 outside tests, benchmarks, samples and tools: 85
+7581a2f6 1 CA1304
+7581a2f6 63 CA1305
+7581a2f6 4 CA1309
+7581a2f6 16 CA1310
+7581a2f6 1 CA1311
+7581a2f6 of which under Broiler.JS/: 85
+2509c343 all: 63
+2509c343 2 CA1304
+2509c343 52 CA1305
+2509c343 1 CA1309
+2509c343 6 CA1310
+2509c343 2 CA1311
+2509c343 outside tests, benchmarks, samples and tools: 0
+2509c343 of which under Broiler.JS/: 0
+
+## The engine vectors, corpus revision 38 (Broiler.JavaScript.Vectors.Tests, Every_difference_from_the_corpus_is_classified, 3 workers)
+7581a2f6 UTC: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+2509c343 UTC: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+  rows that differ between 7581a2f6 and 2509c343 in UTC: 0
+7581a2f6 America/New_York: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+2509c343 America/New_York: sha256 ac6d8110acbb4c7064b100161cb1a9e068148c1379ee40ced38d3651b8697a3c; vectors: 111157; match: 110687; classified-divergence: 470; difference: 0; not-implemented: 0; divergence no longer holds: 86
+  rows that differ between 7581a2f6 and 2509c343 in America/New_York: 0
+
+## test262 ccaac100, test/intl402/Intl/supportedValuesOf/ (25 paths), original and terser, --include-negative
+UTC 7581a2f6: 50 cases; statuses seen: passed
+UTC 2509c343: 50 cases; statuses seen: passed
+  cases whose status differs between 7581a2f6 and 2509c343: 0
+America/New_York 7581a2f6: 50 cases; statuses seen: passed
+America/New_York 2509c343: 50 cases; statuses seen: passed
+  cases whose status differs between 7581a2f6 and 2509c343: 0
+
+## test262 ccaac100, the paths the fixed sites reach (t262c-paths.txt), original and terser, --include-negative, per environment
+nolang-UTC 7581a2f6: 3282 cases; failed 127, passed 2834, skipped 321
+nolang-UTC 2509c343: 3282 cases; failed 127, passed 2834, skipped 321
+  cases whose status differs between 7581a2f6 and 2509c343 in nolang-UTC: 0
+nolang-NY 7581a2f6: 3282 cases; failed 127, passed 2834, skipped 321
+nolang-NY 2509c343: 3282 cases; failed 127, passed 2834, skipped 321
+  cases whose status differs between 7581a2f6 and 2509c343 in nolang-NY: 0
+tr_TR-UTC 7581a2f6: 3282 cases; failed 137, passed 2824, skipped 321
+tr_TR-UTC 2509c343: 3282 cases; failed 137, passed 2824, skipped 321
+  cases whose status differs between 7581a2f6 and 2509c343 in tr_TR-UTC: 0
+de_DE-UTC 7581a2f6: 3282 cases; failed 127, passed 2834, skipped 321
+de_DE-UTC 2509c343: 3282 cases; failed 127, passed 2834, skipped 321
+  cases whose status differs between 7581a2f6 and 2509c343 in de_DE-UTC: 0
+7581a2f6, nolang-NY: cases whose status differs from nolang-UTC's: 0
+7581a2f6, tr_TR-UTC: cases whose status differs from nolang-UTC's: 10
+    test/built-ins/String/prototype/toLocaleLowerCase/S15.5.4.17_A1_T6.js original: passed -> failed
+    test/built-ins/String/prototype/toLocaleLowerCase/S15.5.4.17_A1_T6.js terser: passed -> failed
+    test/built-ins/String/prototype/toLocaleLowerCase/S15.5.4.17_A1_T8.js original: passed -> failed
+    test/built-ins/String/prototype/toLocaleLowerCase/S15.5.4.17_A1_T8.js terser: passed -> failed
+    test/built-ins/String/prototype/toLocaleUpperCase/S15.5.4.19_A1_T6.js original: passed -> failed
+    test/built-ins/String/prototype/toLocaleUpperCase/S15.5.4.19_A1_T6.js terser: passed -> failed
+    test/built-ins/String/prototype/toLocaleUpperCase/S15.5.4.19_A1_T8.js original: passed -> failed
+    test/built-ins/String/prototype/toLocaleUpperCase/S15.5.4.19_A1_T8.js terser: passed -> failed
+    test/built-ins/String/prototype/toLocaleUpperCase/S15.5.4.19_A1_T9.js original: passed -> failed
+    test/built-ins/String/prototype/toLocaleUpperCase/S15.5.4.19_A1_T9.js terser: passed -> failed
+7581a2f6, de_DE-UTC: cases whose status differs from nolang-UTC's: 0
+2509c343, nolang-NY: cases whose status differs from nolang-UTC's: 0
+2509c343, tr_TR-UTC: cases whose status differs from nolang-UTC's: 10
+    test/built-ins/String/prototype/toLocaleLowerCase/S15.5.4.17_A1_T6.js original: passed -> failed
+    test/built-ins/String/prototype/toLocaleLowerCase/S15.5.4.17_A1_T6.js terser: passed -> failed
+    test/built-ins/String/prototype/toLocaleLowerCase/S15.5.4.17_A1_T8.js original: passed -> failed
+    test/built-ins/String/prototype/toLocaleLowerCase/S15.5.4.17_A1_T8.js terser: passed -> failed
+    test/built-ins/String/prototype/toLocaleUpperCase/S15.5.4.19_A1_T6.js original: passed -> failed
+    test/built-ins/String/prototype/toLocaleUpperCase/S15.5.4.19_A1_T6.js terser: passed -> failed
+    test/built-ins/String/prototype/toLocaleUpperCase/S15.5.4.19_A1_T8.js original: passed -> failed
+    test/built-ins/String/prototype/toLocaleUpperCase/S15.5.4.19_A1_T8.js terser: passed -> failed
+    test/built-ins/String/prototype/toLocaleUpperCase/S15.5.4.19_A1_T9.js original: passed -> failed
+    test/built-ins/String/prototype/toLocaleUpperCase/S15.5.4.19_A1_T9.js terser: passed -> failed
+2509c343, de_DE-UTC: cases whose status differs from nolang-UTC's: 0
+
+## Part C's programs (collect.py's datasets step, TZ=UTC): each program's answer file at 2509c343 against 7581a2f6
+  calendar-formats.answer.txt: sha256 c42d426580fbf34d; the same bytes at 7581a2f6
+  dates.answer.txt: sha256 4be2e7911b606753; the same bytes at 7581a2f6
+  displaynames.answer.txt: sha256 953de9d2361b489f; the same bytes at 7581a2f6
+  durations.answer.txt: sha256 02d91f45f339c59f; the same bytes at 7581a2f6
+  lists.answer.txt: sha256 9be5af7b91712da7; the same bytes at 7581a2f6
+  locales.answer.txt: sha256 543506bbeff0d2d3; the same bytes at 7581a2f6
+  numbers.answer.txt: sha256 277c4e7a6eddb905; the same bytes at 7581a2f6
+  plurals.answer.txt: sha256 93ab3d0fb965f43e; the same bytes at 7581a2f6
+  relativetimes.answer.txt: sha256 b538032589ffb60d; the same bytes at 7581a2f6
+  segments.answer.txt: sha256 376c0e0beb9baa03; the same bytes at 7581a2f6
+  temporal-intl.answer.txt: sha256 84192332fbd60b9e; the same bytes at 7581a2f6
+  timezones.answer.txt: sha256 d85ba74b668506cd; the same bytes at 7581a2f6
+  zone-names.answer.txt: sha256 1c5581ceb5abf95c; the same bytes at 7581a2f6
+## Part D's programs (collect.py's invariant step, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1, TZ=UTC): each program's answer file at 2509c343 against 7581a2f6
+  calendar-formats.answer.txt: sha256 1ab9c55c3ed79365; the same bytes at 7581a2f6
+  dates.answer.txt: sha256 b605b4e8c92a57e2; the same bytes at 7581a2f6
+  displaynames.answer.txt: sha256 25303ab111ef0f6b; the same bytes at 7581a2f6
+  durations.answer.txt: sha256 3883bd179849fc36; the same bytes at 7581a2f6
+  lists.answer.txt: sha256 ef1ab43aaa49743e; the same bytes at 7581a2f6
+  locales.answer.txt: sha256 5b802932ce8b7045; the same bytes at 7581a2f6
+  numbers.answer.txt: sha256 f3ccde014c4370b1; the same bytes at 7581a2f6
+  plurals.answer.txt: sha256 a3e4badf25d684d3; the same bytes at 7581a2f6
+  relativetimes.answer.txt: sha256 e190e30d022be693; the same bytes at 7581a2f6
+  segments.answer.txt: sha256 edd11c4c19ddc3b2; the same bytes at 7581a2f6
+  temporal-intl.answer.txt: sha256 780d73f8836771d1; the same bytes at 7581a2f6
+  timezones.answer.txt: sha256 d85ba74b668506cd; the same bytes at 7581a2f6
+  zone-names.answer.txt: sha256 ad3be1dd3438a63e; the same bytes at 7581a2f6
+## Part D's default-locale-is-supported.js (run_test262.py, invariant globalization, TZ=UTC)
+  7581a2f6: test/intl402/default-locale-is-supported.js [original] passed
+  7581a2f6: test/intl402/default-locale-is-supported.js [terser] passed
+  2509c343: test/intl402/default-locale-is-supported.js [original] passed
+  2509c343: test/intl402/default-locale-is-supported.js [terser] passed
+
+## probe.js: per environment, the lines whose answer differs between 7581a2f6 and 2509c343, each with both answers
+# 7581a2f6's answers in the four environments equal the committed probe-75695cdd.txt's.
+nolang: 0 of 28 lines differ at 2509c343
+de: 0 of 28 lines differ at 2509c343
+invariant: 0 of 28 lines differ at 2509c343
+de-invariant: 0 of 28 lines differ at 2509c343
+
+## probe-culture.js: per environment, the lines whose answer differs between 7581a2f6 and 2509c343, each with both answers
+TZ=UTC, LANG unset: 7581a2f6's answers equal the committed probe-culture-75695cdd.txt's; 0 of 19 lines differ at 2509c343
+TZ=UTC, LANG=de_DE.UTF-8: 7581a2f6's answers equal the committed probe-culture-75695cdd.txt's; 0 of 19 lines differ at 2509c343
+TZ=UTC, LANG=sv_SE.UTF-8: 7581a2f6's answers equal the committed probe-culture-75695cdd.txt's; 0 of 19 lines differ at 2509c343
+TZ=UTC, LANG=tr_TR.UTF-8: 7581a2f6's answers equal the committed probe-culture-75695cdd.txt's; 0 of 19 lines differ at 2509c343
+2509c343, TZ=UTC, LANG unset: lines whose answer differs from 2509c343's with LANG unset: none
+2509c343, TZ=UTC, LANG=de_DE.UTF-8: lines whose answer differs from 2509c343's with LANG unset: defaultLocale, exact.toLocaleString()
+2509c343, TZ=UTC, LANG=sv_SE.UTF-8: lines whose answer differs from 2509c343's with LANG unset: defaultLocale, exact.toLocaleString(), (-0m).toLocaleString()
+2509c343, TZ=UTC, LANG=tr_TR.UTF-8: lines whose answer differs from 2509c343's with LANG unset: defaultLocale, exact.toLocaleString()
+
+## probe-sites.js: per environment, the lines whose answer differs between 7581a2f6 and 2509c343, each with both answers
+TZ=UTC, LANG unset: 0 of 37 lines differ at 2509c343
+TZ=UTC, LANG=de_DE.UTF-8: 1 of 37 lines differ at 2509c343
+  /I/i.test('\u0131'), /i/i.test('\u0130')
+    7581a2f6: false,true
+    2509c343: false,false
+TZ=UTC, LANG=sv_SE.UTF-8: 1 of 37 lines differ at 2509c343
+  /I/i.test('\u0131'), /i/i.test('\u0130')
+    7581a2f6: false,true
+    2509c343: false,false
+TZ=UTC, LANG=tr_TR.UTF-8: 3 of 37 lines differ at 2509c343
+  /I/i.test('i'), /i/i.test('I')
+    7581a2f6: false,false
+    2509c343: true,true
+  /I/i.test('\u0131'), /i/i.test('\u0130')
+    7581a2f6: true,true
+    2509c343: false,false
+  /(?i:I)b/.test('ib')
+    7581a2f6: false
+    2509c343: true
+TZ=UTC, LANG unset, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1: 0 of 37 lines differ at 2509c343
+2509c343, TZ=UTC, LANG unset: lines whose answer differs from 2509c343's with LANG unset: none
+2509c343, TZ=UTC, LANG=de_DE.UTF-8: lines whose answer differs from 2509c343's with LANG unset: none
+2509c343, TZ=UTC, LANG=sv_SE.UTF-8: lines whose answer differs from 2509c343's with LANG unset: none
+2509c343, TZ=UTC, LANG=tr_TR.UTF-8: lines whose answer differs from 2509c343's with LANG unset: 'I'.toLocaleLowerCase(), 'i'.toLocaleUpperCase()
+2509c343, TZ=UTC, LANG unset, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1: lines whose answer differs from 2509c343's with LANG unset: none
