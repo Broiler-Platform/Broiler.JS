@@ -547,7 +547,6 @@ in: str:"({ ...{ a } } = {});"
 out: error: SyntaxError
 class: divergence
 divergence.broiler-js: row P31: an AssignmentRestProperty whose target is an object or array literal; Broiler.JS answers P accepted, K crashed (System.NotImplementedException), not a SyntaxError, which the runner renders abort:; a correction of both (JSD-0083); answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
-divergence.broiler-vm: row P31: an AssignmentRestProperty whose target is an object or array literal, `({...{a}} = o)`, `({...[a]} = o)`; Broiler.VM answers accepted (the rest object is destructured, so with an array literal it throws a TypeError when it runs); a correction of both (JSD-0083); answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-destructuring-assignment-static-semantics-early-errors
 script: ({ ...{ a } } = {});
 note: catalogue row EE0037; correspondence row P31: refused, an AssignmentRestProperty whose target is an object literal (a correction of both engines; Broiler.VM's at step 1)
@@ -560,7 +559,6 @@ in: str:"var a; ({ ...[a] } = {});"
 out: error: SyntaxError
 class: divergence
 divergence.broiler-js: row P31: an AssignmentRestProperty whose target is an object or array literal; Broiler.JS answers P accepted, K crashed (System.NotImplementedException), not a SyntaxError, which the runner renders abort:; a correction of both (JSD-0083); answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
-divergence.broiler-vm: row P31: an AssignmentRestProperty whose target is an object or array literal, `({...{a}} = o)`, `({...[a]} = o)`; Broiler.VM answers accepted (the rest object is destructured, so with an array literal it throws a TypeError when it runs); a correction of both (JSD-0083); answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-destructuring-assignment-static-semantics-early-errors
 script: var a; ({ ...[a] } = {});
 note: catalogue row EE0037; correspondence row P31: refused, an AssignmentRestProperty whose target is an array literal (a correction of both engines; Broiler.VM's at step 1)
@@ -637,8 +635,7 @@ area: syntax
 op: ParseScript
 in: str:"var b; ({ a: (b = 7) } = {});"
 out: error: SyntaxError
-class: divergence
-divergence.broiler-vm: row P15b: a parenthesised nested target that is not a simple target, `({ a: (b = 7) } = ...)`, `({ a: ([b]) } = ...)`; Broiler.VM answers accepted: the parenthesised set is consulted only for the whole left-hand side; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
+class: normative
 prov: spec:es2026@0248456c#sec-destructuring-assignment-static-semantics-early-errors
 script: var b; ({ a: (b = 7) } = {});
 note: catalogue row EE0039; correspondence row P15b: refused, a parenthesised assignment as a destructuring target is not simple (a correction of Broiler.VM that step 1 makes)
@@ -649,8 +646,7 @@ area: syntax
 op: ParseScript
 in: str:"var b; ({ a: ([b]) } = { a: [1] });"
 out: error: SyntaxError
-class: divergence
-divergence.broiler-vm: row P15b: a parenthesised nested target that is not a simple target, `({ a: (b = 7) } = ...)`, `({ a: ([b]) } = ...)`; Broiler.VM answers accepted: the parenthesised set is consulted only for the whole left-hand side; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
+class: normative
 prov: spec:es2026@0248456c#sec-destructuring-assignment-static-semantics-early-errors
 script: var b; ({ a: ([b]) } = { a: [1] });
 note: catalogue row EE0039; correspondence row P15b: refused, a parenthesised array literal as a destructuring target is not simple (a correction of Broiler.VM that step 1 makes)

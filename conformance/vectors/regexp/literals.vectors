@@ -1176,8 +1176,7 @@ area: regexp
 op: RegularExpressionLiteral, eval code
 in: str:"/a[bc\\" str:"indirect"
 out: error: SyntaxError
-class: divergence
-divergence.broiler-vm: row S9b: a literal ending in a backslash at the end of eval code, /a[bc\, by direct and indirect eval; Broiler.VM answers an EvalError ("the artifact provider did not supply a program"): the scan moves past the end of the source (CP/SliceTokenizer.cs:2227 at aaa39fb); a correction of Broiler.VM outside SJL-11 (JSD-0081: the scanner is the front end's, SJL-12's and SJL-13's); answered by the front end's cut-over to the shared syntax library (SJL-13), not by SJL-11.4
+class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-performeval
 script: (0, eval)("/a[bc\\")
 note: correspondence row S9b: indirect: RegularExpressionLiteral's own grammar refuses the source, a SyntaxError; the expected value is read from the clauses, which regexpref does not model
@@ -1188,8 +1187,7 @@ area: regexp
 op: RegularExpressionLiteral, eval code
 in: str:"/a[bc\\" str:"direct"
 out: error: SyntaxError
-class: divergence
-divergence.broiler-vm: row S9b: a literal ending in a backslash at the end of eval code, /a[bc\, by direct and indirect eval; Broiler.VM answers an EvalError ("the artifact provider did not supply a program"): the scan moves past the end of the source (CP/SliceTokenizer.cs:2227 at aaa39fb); a correction of Broiler.VM outside SJL-11 (JSD-0081: the scanner is the front end's, SJL-12's and SJL-13's); answered by the front end's cut-over to the shared syntax library (SJL-13), not by SJL-11.4
+class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-performeval
 script: eval("/a[bc\\")
 note: correspondence row S9b: direct: RegularExpressionLiteral's own grammar refuses the source, a SyntaxError; the expected value is read from the clauses, which regexpref does not model

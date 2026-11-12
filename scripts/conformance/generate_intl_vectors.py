@@ -81,7 +81,7 @@ DEFAULT_OUT = CORPUS / "intl"
 INTLREF = SCRIPTS / "intlref.mjs"
 UNION = REPOSITORY / "docs" / "evidence" / "sjl-9-001" / "locales" / "union.tsv"
 SINCE = 27              # the corpus revision that added the area
-CORPUS_REVISION = 38    # the corpus revision this generator writes: REVISIONS.md's last row
+CORPUS_REVISION = 39    # the corpus revision this generator writes: REVISIONS.md's last row
 GENERATOR = "generate_intl_vectors.py"
 DIVERGENCES = SCRIPTS / "intl-divergences.txt"
 

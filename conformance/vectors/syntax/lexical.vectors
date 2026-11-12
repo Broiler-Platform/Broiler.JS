@@ -133,8 +133,7 @@ area: syntax
 op: ParseScript
 in: str:"\"use strict\"; ({ 010: 1 })"
 out: error: SyntaxError
-class: divergence
-divergence.broiler-vm: row T16: strict refusal of legacy octal integer literals in object keys and class element names; Broiler.VM answers strict `{ 010: 1 }` accepted, class `010(){}` accepted, function-strict key accepted: PropertyKey's numeric arm has no legacy-octal check; a correction of both (JSD-0083), Broiler.VM's for a legacy octal object key or class element name in strict code; answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
+class: normative
 prov: spec:es2026@0248456c#sec-numeric-literals-early-errors test262:test/language/literals/numeric/legacy-octal-integer-strict.js
 script: "use strict"; ({ 010: 1 })
 note: catalogue row EE0003; correspondence row T16: refused, a legacy octal numeric property key in strict code (a correction of Broiler.VM that step 1 makes)
@@ -147,7 +146,6 @@ in: str:"class C { 010() {} }"
 out: error: SyntaxError
 class: divergence
 divergence.broiler-js: row T16: strict refusal of legacy octal and non-octal decimal integer literals; Broiler.JS answers strict `08` and `08.5` accepted (K1: the strict re-scan counts a second character 0-7 only) and a class body's `010(){}` accepted (no check of a class body's strictness); a correction of both (JSD-0083), Broiler.JS's for K1's `08`, `09` and `08.5` and a class body's strictness; answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
-divergence.broiler-vm: row T16: strict refusal of legacy octal integer literals in object keys and class element names; Broiler.VM answers strict `{ 010: 1 }` accepted, class `010(){}` accepted, function-strict key accepted: PropertyKey's numeric arm has no legacy-octal check; a correction of both (JSD-0083), Broiler.VM's for a legacy octal object key or class element name in strict code; answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-numeric-literals-early-errors spec:es2026@0248456c#sec-strict-mode-code test262:test/language/literals/numeric/legacy-octal-integer-strict.js
 script: class C { 010() {} }
 note: catalogue row EE0003; correspondence row T16: refused, a legacy octal method name in a class body, which is strict code (a correction of both engines)
@@ -158,8 +156,7 @@ area: syntax
 op: ParseScript
 in: str:"function f() { \"use strict\"; return { 010: 1 }; }"
 out: error: SyntaxError
-class: divergence
-divergence.broiler-vm: row T16: strict refusal of legacy octal integer literals in object keys and class element names; Broiler.VM answers strict `{ 010: 1 }` accepted, class `010(){}` accepted, function-strict key accepted: PropertyKey's numeric arm has no legacy-octal check; a correction of both (JSD-0083), Broiler.VM's for a legacy octal object key or class element name in strict code; answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
+class: normative
 prov: spec:es2026@0248456c#sec-numeric-literals-early-errors spec:es2026@0248456c#sec-directive-prologues-and-the-use-strict-directive test262:test/language/literals/numeric/legacy-octal-integer-strict.js
 script: function f() { "use strict"; return { 010: 1 }; }
 note: catalogue row EE0003; correspondence row T16: refused, a legacy octal numeric property key in a function made strict by its own directive
@@ -463,8 +460,7 @@ area: syntax
 op: ParseScript
 in: str:"var s = \"\\x 41\";"
 out: error: SyntaxError
-class: divergence
-divergence.broiler-vm: row T13: ASCII white space inside `\x`/`\u` escapes; Broiler.VM answers accepted on the wide path: .NET's HexNumber parses allow leading and trailing white space, so `"\x 1"`, `"\x1 "`, `"\u 041"` and `"\x<LF>1"` are accepted; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
+class: normative
 prov: spec:es2026@0248456c#sec-literals-string-literals
 script: var s = "\x 41";
 note: catalogue row EX0005; correspondence row T13: refused, white space inside a \x escape's digits (a correction of Broiler.VM that step 1 makes)
@@ -475,8 +471,7 @@ area: syntax
 op: ParseScript
 in: str:"var s = \"\\x1 \";"
 out: error: SyntaxError
-class: divergence
-divergence.broiler-vm: row T13: ASCII white space inside `\x`/`\u` escapes; Broiler.VM answers accepted on the wide path: .NET's HexNumber parses allow leading and trailing white space, so `"\x 1"`, `"\x1 "`, `"\u 041"` and `"\x<LF>1"` are accepted; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
+class: normative
 prov: spec:es2026@0248456c#sec-literals-string-literals
 script: var s = "\x1 ";
 note: catalogue row EX0005; correspondence row T13: refused, white space after a \x escape's one digit (a correction of Broiler.VM that step 1 makes)
@@ -487,8 +482,7 @@ area: syntax
 op: ParseScript
 in: str:"var s = \"\\u 0041\";"
 out: error: SyntaxError
-class: divergence
-divergence.broiler-vm: row T13: ASCII white space inside `\x`/`\u` escapes; Broiler.VM answers accepted on the wide path: .NET's HexNumber parses allow leading and trailing white space, so `"\x 1"`, `"\x1 "`, `"\u 041"` and `"\x<LF>1"` are accepted; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
+class: normative
 prov: spec:es2026@0248456c#sec-literals-string-literals
 script: var s = "\u 0041";
 note: catalogue row EX0005; correspondence row T13: refused, white space inside a \u escape's digits (a correction of Broiler.VM that step 1 makes)
@@ -510,8 +504,7 @@ area: syntax
 op: PerformEval
 in: str:"var s = '\\x\u000A1';"
 out: error: SyntaxError
-class: divergence
-divergence.broiler-vm: row T13: ASCII white space inside `\x`/`\u` escapes; Broiler.VM answers accepted on the wide path: .NET's HexNumber parses allow leading and trailing white space, so `"\x 1"`, `"\x1 "`, `"\u 041"` and `"\x<LF>1"` are accepted; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
+class: normative
 prov: spec:es2026@0248456c#sec-literals-string-literals
 script: eval("var s = '\\x\u000a1';")
 note: catalogue row EX0005; correspondence row T13: refused, a line feed inside a \x escape (a correction of Broiler.VM that step 1 makes)
@@ -1361,8 +1354,7 @@ area: syntax
 op: PerformEval
 in: str:"`${#!\u000A1}`"
 out: error: SyntaxError
-class: divergence
-divergence.broiler-vm: row T6: `#!` and `-->` right after a substitution's `${`; Broiler.VM answers accepted (`${#!<LF>1}` and `${--><LF>1}` are `1`): each substitution is read by an inner tokenizer whose text starts after `${`, which treats it as a source start; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
+class: normative
 prov: spec:es2026@0248456c#sec-hashbang spec:es2026@0248456c#sec-template-literals
 script: eval("`${#!\u000a1}`")
 note: correspondence row T6: refused, a hashbang only begins a Script, so #! after a substitution's ${ is no token (a correction of Broiler.VM that step 1 makes)
@@ -1373,8 +1365,7 @@ area: syntax
 op: PerformEval
 in: str:"`${-->\u000A1}`"
 out: error: SyntaxError
-class: divergence
-divergence.broiler-vm: row T6: `#!` and `-->` right after a substitution's `${`; Broiler.VM answers accepted (`${#!<LF>1}` and `${--><LF>1}` are `1`): each substitution is read by an inner tokenizer whose text starts after `${`, which treats it as a source start; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
+class: normative
 prov: spec:es2026@0248456c#sec-html-like-comments spec:es2026@0248456c#sec-template-literals
 script: eval("`${-->\u000a1}`")
 note: correspondence row T6: refused, --> after a substitution's ${ is no SingleLineHTMLCloseComment, which a line terminator precedes, so it is -- and > (a correction of Broiler.VM that step 1 makes)
@@ -1401,7 +1392,6 @@ out: value: str:"1"
 class: impl-defined
 per-engine.broiler-js: value: str:"1"
 per-engine.broiler-vm: value: str:"1"
-divergence.broiler-vm: row T7: the template-end scan and HTML-like comments in a substitution; Broiler.VM answers `${1 <!-- }<LF>}` is `"1\n}"` (a different template, no error): the scan has no arm for `<!--` or `-->`, so a `}` inside one closes the substitution; a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-html-like-comments
 script: eval("`${1 <!-- }\u000a}`")
 note: catalogue row EG0001; correspondence row T7: accepted, <!-- inside a substitution begins a SingleLineHTMLOpenComment, so the } after it is in the comment (a correction of Broiler.VM that step 1 makes); HTML-like comments are Annex B's (B.1.1), on for scripts in both engines' requests (Broiler.VM's JSD-0083, decision D17, rows T4 and R07; Broiler.JS's docs/roadmap/SharedLibraries.md, the frontend's syntax half, the request's switches), so each engine's expectation is the comment's
@@ -1412,8 +1402,7 @@ area: syntax
 op: ParseScript
 in: str:"`${typeof /[}]/}`"
 out: value: str:"object"
-class: divergence
-divergence.broiler-vm: row T8: the template-end scan's regular-expression-or-division guess; Broiler.VM answers `${typeof /}/}` refused 2006 and `${...return /`/...}` refused 2007: after `typeof` and `return` a `/` is division, so a `}` or a backquote in the literal ends the substitution or opens a template (the vectors hold the `}` in a character class, `${typeof /[}]/}`, which needs no Annex B, and the backquote after `return`); a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
+class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-patterns spec:es2026@0248456c#sec-template-literals
 script: `${typeof /[}]/}`
 note: correspondence row T8: accepted, a regular expression holding } in a character class after typeof inside a substitution (a correction of Broiler.VM that step 1 makes)
@@ -1424,8 +1413,7 @@ area: syntax
 op: ParseScript
 in: str:"`${(function () { return /`/; })().test(\"`\")}`"
 out: value: str:"true"
-class: divergence
-divergence.broiler-vm: row T8: the template-end scan's regular-expression-or-division guess; Broiler.VM answers `${typeof /}/}` refused 2006 and `${...return /`/...}` refused 2007: after `typeof` and `return` a `/` is division, so a `}` or a backquote in the literal ends the substitution or opens a template (the vectors hold the `}` in a character class, `${typeof /[}]/}`, which needs no Annex B, and the backquote after `return`); a correction of Broiler.VM (JSD-0083); answered by step 1 of SJL-13.3, Broiler.VM's wide path on the shared syntax library
+class: normative
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-template-literals
 script: `${(function () { return /`/; })().test("`")}`
 note: correspondence row T8: accepted, a regular expression holding a backquote after return inside a substitution (a correction of Broiler.VM that step 1 makes)
@@ -2389,7 +2377,6 @@ in: str:"async function f() { for await (var x of []) /a/g; } typeof f"
 out: value: str:"function"
 class: divergence
 divergence.broiler-js: row T24d: a regular expression after a `for await (...)` head; Broiler.JS answers refused: OpensStatementHead reads division; a correction of both (JSD-0083); answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
-divergence.broiler-vm: row T24d: a regular expression after a `for await (...)` head; Broiler.VM answers refused: a head needs if, while, for or with before `(`, so after `await` a `/` is division; a correction of both (JSD-0083); answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
 script: async function f() { for await (var x of []) /a/g; } typeof f
 note: correspondence row T24d: accepted, after a for-await head a / begins a regular expression (a correction of both engines; Broiler.VM's at step 1)
@@ -2402,7 +2389,6 @@ in: str:"++/x/.lastIndex"
 out: value: f64:0x3FF0000000000000
 class: divergence
 divergence.broiler-js: row T24e: a regular expression after a prefix `++` or `--`; Broiler.JS answers refused: Increment and Decrement read division; a correction of both (JSD-0083); answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
-divergence.broiler-vm: row T24e: a regular expression after a prefix `++` or `--`; Broiler.VM answers refused: PlusPlus and MinusMinus read division; a correction of both (JSD-0083); answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
 script: ++/x/.lastIndex
 note: correspondence row T24e: accepted, after a prefix ++ a / begins a regular expression (a correction of both engines; Broiler.VM's at step 1)
@@ -2415,7 +2401,6 @@ in: str:"var await = 6, b = 2, g = 3; await /b/g"
 out: value: f64:0x3FF0000000000000
 class: divergence
 divergence.broiler-js: row T24f: a division after `await` used as an identifier in a Script; Broiler.JS answers a regular expression, which the parser takes as a binary operator (as T24b): followed by an operand, P accepted and K refused; where `;` or the end of input follows the literal, P and K accepted, and the program completes with `await`'s value (6) where the specification divides (1), the answer the row records since 2026-10-27 from a probe, which the owner's decision D-t24 of 2026-10-27 accepts; a correction of both (JSD-0083), the answer added 2026-10-27 of the same class (D-t24); answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
-divergence.broiler-vm: row T24f: a division after `await` used as an identifier in a Script; Broiler.VM answers refused: Await falls to a regular expression, and where `;` or the end of input follows the literal too, refused 2102 at the regular expression (1:36), an answer the row records since 2026-10-27 from a probe (decision D-t24); a correction of both (JSD-0083); answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
 script: var await = 6, b = 2, g = 3; await /b/g
 note: correspondence row T24f: accepted, after await used as an identifier in a Script a / is division (a correction of both engines; Broiler.VM's at step 1)
@@ -2758,7 +2743,6 @@ in: str:"--/x/.lastIndex"
 out: value: f64:0xBFF0000000000000
 class: divergence
 divergence.broiler-js: row T24e: a regular expression after a prefix `++` or `--`; Broiler.JS answers refused: Increment and Decrement read division; a correction of both (JSD-0083); answered for Broiler.JS by SJL-14, its cut-over to the shared syntax library, whose corrections.md lists it (decision D45)
-divergence.broiler-vm: row T24e: a regular expression after a prefix `++` or `--`; Broiler.VM answers refused: PlusPlus and MinusMinus read division; a correction of both (JSD-0083); answered for Broiler.VM by step 1 of SJL-13.3, its wide path on the shared syntax library
 prov: spec:es2026@0248456c#sec-literals-regular-expression-literals spec:es2026@0248456c#sec-ecmascript-language-lexical-grammar spec:es2026@0248456c#sec-lexical-and-regexp-grammars
 script: --/x/.lastIndex
 note: correspondence row T24e: accepted, after a prefix -- a / begins a regular expression (a correction of both engines; Broiler.VM's at step 1)

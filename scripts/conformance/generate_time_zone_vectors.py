@@ -65,7 +65,7 @@ from generate_number_vectors import js_string_body, string_value  # noqa: E402
 # Revision 38 makes row Z8's 157 vectors normative, each engine's per-engine expectation merged into out, the
 # identifier as given, case-normalised (decision D15 of Broiler.VM's JSD-0082), which Broiler.VM answers since its
 # SJL-9.4, and cites the clause that settles it, the pinned Temporal revision's CreateDateTimeFormat; no out changes.
-CORPUS_REVISION = 38
+CORPUS_REVISION = 39
 FIRST_REVISION = 21
 GENERATOR = T.GENERATOR
 SPEC = "spec:es2026@0248456c"
