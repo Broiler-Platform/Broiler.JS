@@ -1963,9 +1963,9 @@ def family_cases(extra: Sequence[str], two_digit_hours: Iterable[str] = ()) -> N
         note = f"{tag}, one of Broiler.JS's extra locales (decision D5): the table family's CLDR data"
 
         def family(sub: str, op: str, script: str, inputs: Iterable, rows: str, clauses: Iterable[str], what: str,
-                   **kwargs) -> Case:
-            return add(sub, "families", op, script, inputs, rows, clauses, f"{rows_note(rows)}: {what}; {note}",
-                       **kwargs)
+                   rows_label: str | None = None, **kwargs) -> Case:
+            return add(sub, "families", op, script, inputs, rows, clauses,
+                       f"{rows_label or rows_note(rows)}: {what}; {note}", **kwargs)
         family("a", "Intl.Locale.prototype.maximize", f"new Intl.Locale({t}).maximize().toString()", [tag], "L5",
             E("sec-Intl.Locale.prototype.maximize"), "likely subtags")
         family("a", "Intl.Locale.prototype.getWeekInfo",
@@ -2027,7 +2027,10 @@ def family_cases(extra: Sequence[str], two_digit_hours: Iterable[str] = ()) -> N
         if tag in two_digit_hours:
             family("e", DFMT, df(tag, 'style: "long"', "{hours: 1, minutes: 2, seconds: 3}"), [tag], "U15 U14",
                 E("sec-partitiondurationformatpattern"), "the duration's unit and list patterns, and the two-digit "
-                "hours of CLDR 48.2.0's durationUnit-type-hms, which decision D34 reads whatever style the hours resolve")
+                "hours of CLDR 48.2.0's durationUnit-type-hms, which decision D34 reads whatever style the hours resolve",
+                # U14 is labelled as the digital vectors' notes label it (corpus revision 39, at the review of the
+                # owner's answers of 2026-11-12: until then this note wrote "U14 (data, C5)").
+                rows_label="rows U15 (data, C5) and U14 (data, C5; decision D34)")
         else:
             family("e", DFMT, df(tag, 'style: "long"', "{hours: 1, minutes: 2, seconds: 3}"), [tag], "U15",
                 E("sec-partitiondurationformatpattern"), "the duration's unit and list patterns")
