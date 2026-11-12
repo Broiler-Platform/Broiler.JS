@@ -194,7 +194,7 @@ public class JSException : Exception
         {
             var st = new System.Diagnostics.StackTrace(true);
             Console.Error.WriteLine($"[JSException.Throw] {value}");
-            Console.Error.WriteLine($"  Function: {function}, File: {filePath}, Line: {line}");
+            Console.Error.WriteLine(string.Create(CultureInfo.InvariantCulture, $"  Function: {function}, File: {filePath}, Line: {line}"));
             Console.Error.WriteLine(st.ToString());
         }
 #endif
