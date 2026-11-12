@@ -1212,9 +1212,13 @@ subsection changes no code, so the reading is of the code at `2509c343`, which i
   culture, or a debug `ToString` of a generic sequence. The test projects, which are not held to the rules: each test
   that reads a culture sets it, and the new tests' controls read the host's culture on purpose. `Network` and
   `NodePollyfill`, which do not compile. And the CLR bridge's unmarshalling of an object into a `Dictionary<,>`, whose
-  key conversion now names the invariant culture but which reads the generic definition's type parameters
-  (`gt.GetGenericArguments()`) and so fails for every key under every culture, a fault that is not the host's culture
-  and that this change leaves as found.
+  key conversion now names the invariant culture but whose answer no culture decides: it reads the generic definition's
+  type parameters (`gt.GetGenericArguments()`), and a scratch probe at the commit that adds this subsection, with no
+  `LANG`, turns `{ '1': 'a' }` into an empty `Dictionary<string,string>`, `Dictionary<double,string>` and
+  `Dictionary<int,string>` alike, a fault that is not the host's culture and that this change leaves as found. *(Revised
+  2026-11-12, at this stage, before review; from "but whose answer" it read "but which reads the generic definition's
+  type parameters (`gt.GetGenericArguments()`) and so fails for every key under every culture", which the probe
+  disproved: the dictionary comes back empty, it does not fail.)*
 - **The rules the build holds.** `Broiler.JS/host-culture.globalconfig` sets CA1304, CA1305, CA1309, CA1310 and CA1311
   to `error`, and `Broiler.JS/Directory.Build.props` hands it to every project below `Broiler.JS/` but the test projects
   (a name ending in `Tests`), the benchmarks, the samples (the `samples` folder and a name ending in `Sample`), the perf
@@ -1302,8 +1306,9 @@ that keeps it so. This reads the clause; it declares nothing of SJL-9 met.
   owner's;
 - the source generator's own prefix tests, `TryParse` calls and name ordering, which read the build machine's culture,
   not the engine host's;
-- the CLR bridge's unmarshalling of an object into a `Dictionary<,>`, which fails for every key under every culture
-  (above);
+- the CLR bridge's unmarshalling of an object into a `Dictionary<,>`, which gives an empty dictionary whatever the
+  object holds (above) *(revised 2026-11-12, at this stage, before review; read "which fails for every key under every
+  culture (above)")*;
 - the open items of the subsections above but clause 8's sites, which stand as they list them, the owner's question on
   the `Decimal` function's styles and `JSON.stringify` of a `Decimal` among them.
 
