@@ -271,13 +271,15 @@ partial class JSNumber
         // task 8.7's records to name as outside that reading (listed 2026-11-04, at SJL-9.5).
         // Kept on the host's culture: the .NET format-string extension of toLocaleString, which decision SJL-D-17 keeps
         // (milestone SJL-9's clause 8, on the owner's ruling of 2026-11-11, "Fix all + enforce"). It names the culture
-        // it reads, so the globalization rules the engine's build holds (Broiler.JS/host-culture.globalconfig) accept
-        // it, and it needs no suppression.
+        // it reads, which the five globalization rules accept; the banned-API rule (Broiler.JS/BannedSymbols.
+        // HostCulture.txt) bans the read everywhere but the kept paths, and is suppressed here for that reason.
         if (format.IsString)
         {
+#pragma warning disable RS0030 // Kept: toLocaleString's .NET format-string extension reads the host's culture (SJL-D-17).
             var culture = locale.IsNullOrUndefined
                 ? CultureInfo.CurrentCulture
                 : CultureInfo.GetCultureInfo(locale.ToString());
+#pragma warning restore RS0030
             return new JSString(n.value.ToString(format.ToString(), culture));
         }
 

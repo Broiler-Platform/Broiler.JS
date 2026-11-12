@@ -2696,8 +2696,10 @@ public class JSIntlCollator : JSObject
     // CompareInfo (or the invariant one) when the tailoring isn't recognised.
     // Kept on the host's culture: Intl.Collator's comparison, which decision SJL-D-24 (c) leaves the host's until
     // milestone SJL-17 (milestone SJL-9's clause 8, on the owner's ruling of 2026-11-11, "Fix all + enforce"). It names
-    // the culture it reads, so the globalization rules the engine's build holds (Broiler.JS/host-culture.globalconfig)
-    // accept it, and it needs no suppression.
+    // the culture it reads, which the five globalization rules accept; the banned-API rule
+    // (Broiler.JS/BannedSymbols.HostCulture.txt) bans a culture built from the host's data everywhere but the kept paths,
+    // and is suppressed for this method for that reason.
+#pragma warning disable RS0030 // Kept: Intl.Collator's comparison reads the host's collation data until SJL-17 (SJL-D-24 (c)).
     private static CompareInfo ResolveCompareInfo(string localeTag, string collation, string usage)
     {
         var bareLocale = StripUnicodeExtension(localeTag);
@@ -2728,6 +2730,7 @@ public class JSIntlCollator : JSObject
         try { return CultureInfo.GetCultureInfo(bareLocale).CompareInfo; }
         catch (CultureNotFoundException) { return CultureInfo.InvariantCulture.CompareInfo; }
     }
+#pragma warning restore RS0030
 
     // .NET's CompareInfo names map the BCP-47 collation key to a string suffix in a small
     // (locale-specific) table. Only the variants .NET actually exposes are mapped here.

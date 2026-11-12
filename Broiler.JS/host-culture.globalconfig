@@ -8,7 +8,9 @@
 # culture (or NumberFormatInfo.InvariantInfo) or an ordinal comparison instead. The paths that keep the host's culture,
 # the default-locale and host-culture providers (decisions D7 and D6), SJL-D-17's .NET format strings of toLocaleString
 # and its legacy Date.parse, and Intl.Collator's comparison until milestone SJL-17, name the culture they read, which
-# these rules accept; each says so where it reads it.
+# these rules accept. RS0030 below closes that gap: BannedSymbols.HostCulture.txt bans every direct read of the host's
+# culture and every .NET culture built from the host's data, and each kept path suppresses RS0030 in place, with its
+# reason.
 is_global = true
 
 # CA1304: a case mapping that names no culture (ToLower, ToUpper).
@@ -21,3 +23,6 @@ dotnet_diagnostic.CA1309.severity = error
 dotnet_diagnostic.CA1310.severity = error
 # CA1311: ToLower or ToUpper that names no culture, which is to be ToLowerInvariant or ToUpperInvariant.
 dotnet_diagnostic.CA1311.severity = error
+# RS0030: a use of a symbol BannedSymbols.HostCulture.txt bans (the banned-API analyzer): a read of the host's culture by
+# name, or a .NET culture built from the host's data, outside the kept paths.
+dotnet_diagnostic.RS0030.severity = error

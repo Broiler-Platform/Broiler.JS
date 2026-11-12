@@ -1,0 +1,41 @@
+# Milestone SJL-9's clause 8, "Host globalization remains only behind the optional providers", held by the build on the
+# owner's ruling of 2026-11-11, "Fix all + enforce". Broiler.JS/Directory.Build.props hands this list to the banned-API
+# analyzer (RS0030, an error by host-culture.globalconfig) in the engine's product projects, beside the five globalization
+# rules. Those rules make a call that names no culture an error; they accept a call that names the host's culture. This
+# list closes that gap: each entry reads the host's culture, or builds a .NET culture from the host's data, by name, and
+# only the kept paths the ruling names may use one, each with "#pragma warning disable RS0030" and its reason in place.
+# A method is named with its parameters, overload by overload: the analyzer bans no overload a name without them gives.
+# The kept paths: the default-locale provider (decision D7), the host-culture provider (decision D6), SJL-D-17's .NET
+# format strings of toLocaleString and its legacy Date.parse, and Intl.Collator's comparison until milestone SJL-17.
+
+P:System.Globalization.CultureInfo.CurrentCulture; the host's culture: name CultureInfo.InvariantCulture, or read the culture through the Intl providers
+P:System.Globalization.CultureInfo.CurrentUICulture; the host's culture: name CultureInfo.InvariantCulture, or read the culture through the Intl providers
+P:System.Globalization.CultureInfo.DefaultThreadCurrentCulture; the host's culture: name CultureInfo.InvariantCulture, or read the culture through the Intl providers
+P:System.Globalization.CultureInfo.DefaultThreadCurrentUICulture; the host's culture: name CultureInfo.InvariantCulture, or read the culture through the Intl providers
+P:System.Globalization.CultureInfo.InstalledUICulture; the host's culture: name CultureInfo.InvariantCulture, or read the culture through the Intl providers
+P:System.Threading.Thread.CurrentCulture; the host's culture: name CultureInfo.InvariantCulture, or read the culture through the Intl providers
+P:System.Threading.Thread.CurrentUICulture; the host's culture: name CultureInfo.InvariantCulture, or read the culture through the Intl providers
+P:System.Globalization.DateTimeFormatInfo.CurrentInfo; the host's culture: name DateTimeFormatInfo.InvariantInfo, or read the culture through the Intl providers
+P:System.Globalization.NumberFormatInfo.CurrentInfo; the host's culture: name NumberFormatInfo.InvariantInfo, or read the culture through the Intl providers
+P:System.Globalization.RegionInfo.CurrentRegion; the host's region: read the region through the Intl providers
+F:System.StringComparison.CurrentCulture; a comparison by the host's culture: name StringComparison.Ordinal
+F:System.StringComparison.CurrentCultureIgnoreCase; a comparison by the host's culture: name StringComparison.Ordinal or OrdinalIgnoreCase
+P:System.StringComparer.CurrentCulture; a comparison by the host's culture: name StringComparer.Ordinal
+P:System.StringComparer.CurrentCultureIgnoreCase; a comparison by the host's culture: name StringComparer.Ordinal or OrdinalIgnoreCase
+M:System.Globalization.CultureInfo.#ctor(System.String); a culture from the host's data: read the culture through the Intl providers
+M:System.Globalization.CultureInfo.#ctor(System.String,System.Boolean); a culture from the host's data: read the culture through the Intl providers
+M:System.Globalization.CultureInfo.#ctor(System.Int32); a culture from the host's data: read the culture through the Intl providers
+M:System.Globalization.CultureInfo.#ctor(System.Int32,System.Boolean); a culture from the host's data: read the culture through the Intl providers
+M:System.Globalization.CultureInfo.GetCultureInfo(System.String); a culture from the host's data: read the culture through the Intl providers
+M:System.Globalization.CultureInfo.GetCultureInfo(System.String,System.Boolean); a culture from the host's data: read the culture through the Intl providers
+M:System.Globalization.CultureInfo.GetCultureInfo(System.String,System.String); a culture from the host's data: read the culture through the Intl providers
+M:System.Globalization.CultureInfo.GetCultureInfo(System.Int32); a culture from the host's data: read the culture through the Intl providers
+M:System.Globalization.CultureInfo.GetCultureInfoByIetfLanguageTag(System.String); a culture from the host's data: read the culture through the Intl providers
+M:System.Globalization.CultureInfo.CreateSpecificCulture(System.String); a culture from the host's data: read the culture through the Intl providers
+M:System.Globalization.CultureInfo.GetCultures(System.Globalization.CultureTypes); the host's cultures: read them through the Intl providers
+M:System.Globalization.CompareInfo.GetCompareInfo(System.String); a comparison from the host's data: name StringComparison.Ordinal, or compare through Intl.Collator
+M:System.Globalization.CompareInfo.GetCompareInfo(System.Int32); a comparison from the host's data: name StringComparison.Ordinal, or compare through Intl.Collator
+M:System.Globalization.CompareInfo.GetCompareInfo(System.String,System.Reflection.Assembly); a comparison from the host's data: name StringComparison.Ordinal, or compare through Intl.Collator
+M:System.Globalization.CompareInfo.GetCompareInfo(System.Int32,System.Reflection.Assembly); a comparison from the host's data: name StringComparison.Ordinal, or compare through Intl.Collator
+M:System.Globalization.RegionInfo.#ctor(System.String); a region from the host's data: read the region through the Intl providers
+M:System.Globalization.RegionInfo.#ctor(System.Int32); a region from the host's data: read the region through the Intl providers

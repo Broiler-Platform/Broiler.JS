@@ -157,8 +157,8 @@ public partial class JSDate
     // a date that view cannot hold, outside the years 1 to 9999, is a RangeError (correspondence row R5).
     // Kept on the host's culture: the .NET format-string extension of toLocaleString, which decision SJL-D-17 keeps
     // (milestone SJL-9's clause 8, on the owner's ruling of 2026-11-11, "Fix all + enforce"). It names the culture it
-    // reads, so the globalization rules the engine's build holds (Broiler.JS/host-culture.globalconfig) accept it, and
-    // it needs no suppression.
+    // reads, which the five globalization rules accept; the banned-API rule (Broiler.JS/BannedSymbols.HostCulture.txt)
+    // bans the read everywhere but the kept paths, and is suppressed here for that reason.
     private string FormatWithNetCulture(JSValue locale, string format, string standardFormat)
     {
         if (!locale.IsUndefined)
@@ -167,9 +167,11 @@ public partial class JSDate
         if (!InView(timeValue))
             throw JSEngine.NewRangeError("A .NET date format string formats a date from the year 1 to the year 9999 only");
 
+#pragma warning disable RS0030 // Kept: toLocaleString's .NET format-string extension reads the host's culture (SJL-D-17).
         var culture = locale.IsNullOrUndefined
             ? DateTimeFormatInfo.CurrentInfo
             : (IFormatProvider)CultureInfo.GetCultureInfo(locale.ToString());
+#pragma warning restore RS0030
         return ToView(timeValue).ToString(string.IsNullOrEmpty(format) ? standardFormat : format, culture);
     }
 
