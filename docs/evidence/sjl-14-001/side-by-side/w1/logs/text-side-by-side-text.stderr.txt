@@ -1,0 +1,12 @@
+side-by-side: 0/106963
+side-by-side: 10000/106963
+side-by-side: 20000/106963
+side-by-side: 30000/106963
+side-by-side: 40000/106963
+side-by-side: 50000/106963
+side-by-side: 60000/106963
+side-by-side: 70000/106963
+side-by-side: 80000/106963
+side-by-side: 90000/106963
+side-by-side: 100000/106963
+side-by-side: 106963 input variant(s), 213926 row(s), written to /dev/shm/js-s14b/w1text/side-by-side-p-b-only.tsv.gz

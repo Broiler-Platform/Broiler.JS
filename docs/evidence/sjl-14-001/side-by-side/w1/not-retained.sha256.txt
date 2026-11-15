@@ -1,0 +1,2 @@
+58e36bc708c4636b4e9450d821755e560c2defa92fecaf604e70986c3b879d39  /dev/shm/js-s14b/w1text/spans.tsv
+654a8bfb62913ea81f1f08a9856aea140e596313eda4c98a63fb1c6b60d7df8f  /dev/shm/js-s14b/w1text/dumps-p-b.txt.gz
