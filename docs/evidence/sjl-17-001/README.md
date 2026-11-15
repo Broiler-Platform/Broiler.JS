@@ -186,6 +186,33 @@ was written require:
   "Broiler.JS: the collation size stated in its bundle", and that statement stays open in this bundle until a later dated
   line makes it.")* No engine reads the collator before its cut-over, SJL-17.4 or SJL-17.5, so no run of this rule moves.
 
+## SJL-17.5: this engine's cut-over, on its branch
+
+*(Added 2026-11-15, at SJL-17.5. Nothing here is a run of the rule, and nothing here is a verdict.)*
+
+- **2026-11-15: the branch.** `sjl-17-5-cutover`, cut from the default branch at
+  `5669f2bd29899ac93e0d7af130b6a7adc5791d6b` (Broiler-Platform/Broiler.JS#1117), holds the cut-over, to land as one
+  merge: the after commit is that merge, and the base commit its first parent. Its changes are the changelog's entry of
+  this date, "`Intl.Collator` and `String.prototype.localeCompare` move to the shared collator", and the dated note of
+  this date in [`SharedLibraries.md`](../../roadmap/SharedLibraries.md) under "Collation (SJL-17.1)". Nothing under
+  `Broiler.ECMAScript/` changes, so the collator and the tables this rule's runs read are SJL-17.3's.
+- **2026-11-15: the base conditions, read by git at `5669f2bd`**, which is the base commit only if the branch merges
+  with it as its first parent:
+  - it descends from the rule commit: this file's rule, `decision-rule.md`, was last changed in
+    `096793ae0f3aaef7f18829c4b5efd923f3dbef94` and merged to the default branch in
+    `d1e8f5beec824438f0fc42c37bd941ad7421ce52` (Broiler-Platform/Broiler.JS#1087); both are ancestors of `5669f2bd`
+    (`git merge-base --is-ancestor`), and no commit between `d1e8f5be` and `5669f2bd` changes the file;
+  - it descends from the after commit bundle `sjl-9-001` names, `a5f2692e88a9aafeaa850bebe9c3399f6263353b`
+    (`git merge-base --is-ancestor`);
+  - the third condition, that the after commit is its only first-parent successor that changes a product path, is a
+    property of the merge, read when it lands.
+- **The rule commit**, which "State" below says is named when the change that carries it has merged: the reads above
+  take it as `096793ae`, the rule file's last change, merged in `d1e8f5be`; the rule names no other, and this item is a
+  reading for SJL-17.6's records to confirm, not a revision of the rule.
+- **The local reads before the merge** of parts B and C, at `5669f2bd` and at the branch's head, are the stage's own,
+  retained outside this bundle, and none is a run of the rule: the rule's runs are SJL-17.6's, at the after commit and
+  its first parent.
+
 ## State
 
 Rule and data only, 2026-11-01, at SJL-17.1. **Nothing here is a verdict, and no run of the rule has been taken.** *(2026-11-02, at SJL-17.2: the vector runs and the datasets run above are retained; none is a run of the rule.)* The

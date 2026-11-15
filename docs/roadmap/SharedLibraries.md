@@ -2370,6 +2370,42 @@ This repository's part of it:
   after commits, and the library merges outside SJL-9's windows (decision E14). The stream version that carries the
   collator is published with the owner's approval, a `0.1.0-preview.N` by the owner's direction of 2026-11-01.
 
+  *(Noted 2026-11-15, at SJL-17.5.)* **SJL-17.5, this engine's cut-over, is done on its branch `sjl-17-5-cutover`**, cut
+  from the default branch at `5669f2bd29899ac93e0d7af130b6a7adc5791d6b` (Broiler-Platform/Broiler.JS#1117), to land as one
+  merge; that it merged is observed when it does, and no run of the rule is taken here. What the branch does:
+  - **Deleted**, from the deletion list above and the dated note on it: `ResolveCompareInfo` for the covered locales,
+    `StripIgnorablePunctuation` and its tie-break, the `CompareOptions` mapping for the covered locales and the
+    hard-coded Thai default; and `GetUnicodeExtensionType`, `RemoveUnicodeExtensionKeyword`, `ReflectExtensionKeyword`,
+    `ResolveLocaleFromCanonical`'s keyword filter over `CollatorRelevantKeys` and `JSIntlCollator`'s
+    `StripUnicodeExtension`, the Collator resolving `co`, `kf` and `kn` through the shared ResolveLocale.
+  - **Moved**: `NetCollationSuffix` into the optional host provider, `HostCollationProvider`, with the host's comparison
+    for the locales and collations the provider serves. "The `CompareOptions` mapping" is read, as decision E11's
+    "`ResolveCompareInfo` for the covered locales" is, for the covered locales: the host provider keeps the mapping for
+    the locales and collations it compares, since the host's `CompareInfo` reads the options no other way. The
+    alternative not taken, a host comparison with no options, would drop `sensitivity` and `ignorePunctuation` for CJK
+    and every other uncovered locale.
+  - **Kept**: the host provider for CJK, every locale decision E3 does not list, and a collation the shared data does not
+    carry for a listed locale (`eor` and `emoji`, so `de` keeps `eor` and `en` keeps a collation, and
+    `getCollations/output-array-values.js` keeps its base verdict, as the rule's part A asks). Where the host has no
+    collation data, under invariant globalization, the provider answers nothing and the shared collator compares, by the
+    root or the listed tailoring, so no comparison falls back to code-unit order (decision E4). The Collator's data lists
+    `eor` and `emoji` on every host, as before; the alternative not taken, listing them only where the host has data,
+    would leave `en` without a collation under invariant globalization.
+  - **The shared collator is unchanged**: nothing under `Broiler.ECMAScript/` changes, so no stream publication is asked.
+  - **Records**: the changelog's entry of this date lists each correction (O5a, O5b, O7 and O8 with O18, O10, O12 and
+    O14) and each data change (O1, O2, O3 and O16, and O5c) with its vectors; [`docs/public-api.md`](../public-api.md)
+    records that `JSIntlCollator` keeps every public member; corpus revision 40 restates this engine's expectations that
+    the cut-over moves under rows O3 (decision E-o3h) and O16, and leaves the `divergence.broiler-js` fields the cut-over
+    answers to the revision that follows the merge, as revision 38 followed SJL-9.5's.
+  - **The base conditions, read by git at the commit the branch is cut from** (`5669f2bd`), which is the base only if the
+    branch merges with it as its first parent: it descends from the rule commit (the rule file's last change,
+    `096793ae0f3aaef7f18829c4b5efd923f3dbef94`, merged in `d1e8f5beec824438f0fc42c37bd941ad7421ce52`,
+    Broiler-Platform/Broiler.JS#1087, and unchanged since); it descends from bundle `sjl-9-001`'s after commit,
+    `a5f2692e88a9aafeaa850bebe9c3399f6263353b`; and the third condition, that the after commit is its only first-parent
+    successor changing a product path, is read when the merge lands. Bundle `sjl-17-001`'s README records the same reads.
+
+  Nothing above is met or accepted, and no clause is read.
+
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses 6 to 9 are judged in its bundle of
 the same name, and SJL-17 may not meet its gate before SJL-9 meets SJL-9's.
 
