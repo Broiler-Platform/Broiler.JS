@@ -173,6 +173,9 @@ class CommittedFileTests(unittest.TestCase):
             # expectation out; or where the answer moves with the Han order UTS #35 leaves to the implementation,
             # with Broiler.VM's expectation the second reference's and Broiler.JS's out, each engine's own data's (the
             # owner's decision of 2026-11-02). Both expectations are always stated.
+            # (Revised 2026-11-15, at corpus revision 40, with SJL-17.5: on a vector whose answer moves with the Han
+            # order, Broiler.JS's expectation is the second reference's too, the shared collator's implicit weights by
+            # block, decision E-o3h; it was out, its host's radical-stroke order, and the check below read so.)
             moves = bool(re.search(r'(Collator\(|localeCompare\("(?:[^"\\]|\\.)*",)"(es|sv|th)(-[A-Za-z0-9-]*)?"',
                                    vector["script"]))
             han_moves = generator.HAN_MOVES in vector["note"]
@@ -184,7 +187,7 @@ class CommittedFileTests(unittest.TestCase):
                 self.assertEqual(vector["out"], vector["per-engine.broiler-js"], vector_id)
                 self.assertIn("rule N28", vector["note"], vector_id)
             if han_moves:
-                self.assertEqual(vector["out"], vector["per-engine.broiler-js"], vector_id)
+                self.assertEqual(vector["per-engine.broiler-vm"], vector["per-engine.broiler-js"], vector_id)
                 self.assertNotEqual(vector["out"], vector["per-engine.broiler-vm"], vector_id)
                 self.assertIn(generator.REF_IMPLICIT, vector["prov"].split(" "), vector_id)
                 self.assertRegex(vector_id, r"^intl/collation/root/(han|scripts)/")

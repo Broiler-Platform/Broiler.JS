@@ -81,6 +81,15 @@ order, so it is out. Neither is a correction of either engine: finding F1 stays 
 stays data policy (C5). The first run of each engine shows whether its data gives that answer; a difference it shows
 is classified at the next revision. No expected value is read from either engine's run.
 
+(Revised 2026-11-15, at corpus revision 40, with SJL-17.5, Broiler.JS's cut-over to the shared collator.) The paragraph
+above reads "Broiler.JS's is its host's ICU, which orders unified ideographs by radical and stroke (row O3's Broiler.JS
+column), the reference's order, so it is out" and "finding F1 stays open for SJL-17.3". SJL-17.3 answered finding F1:
+the owner's decision E-o3h of 2026-11-02 (JSD-0084) keeps UCA 17's implicit weights by block in the shared collator, and
+"Broiler.JS's Han order moves from its host's radical-stroke order to the implicit weights at SJL-17.5" (the
+correspondence's note on row O3). From revision 40 Broiler.JS's expectation on a vector whose answer moves with the Han
+order is the second reference's, as Broiler.VM's is: the shared collator's tables, which both engines' plans now commit
+them to. Row O3's class stays data policy (C5), out stays the reference's, and the vector stays impl-defined.
+
 Each engine's first run on the revision that adds the area is classified in the next revision, in
 scripts/conformance/collation-divergences.txt, which this generator reads: revision 34 classifies the first runs on
 revision 33, each difference under a row of the correspondence (the file's header).
@@ -180,9 +189,10 @@ HAN_MOVES = ("the answer moves with the order of Han characters, which UTS #35 P
              "[Unified_Ideograph] data, or to implement the order defined by the [radical ...] lines\"), and which "
              "ECMA-402 does not fix: out is the reference's, by radical and stroke; each engine's expectation is its "
              "own collation data's answer (the owner's decision of 2026-11-02, JSD-0084): Broiler.VM's, its tables' "
-             "UCA 17 implicit weights over allkeys_CLDR.txt (ref:ucaimplicit@1), and Broiler.JS's, its host's ICU "
-             "by radical and stroke, which is out; neither is a correction, and finding F1 stays open for SJL-17.3 "
-             "(row O3, data policy, C5)")
+             "UCA 17 implicit weights over allkeys_CLDR.txt (ref:ucaimplicit@1), and Broiler.JS's the same since its "
+             "cut-over to the shared collator (SJL-17.5; the owner's decision E-o3h of 2026-11-02, JSD-0084, which "
+             "keeps the implicit weights by block; corpus revision 40), where until revision 40 it was its host's ICU "
+             "by radical and stroke, which is out; neither is a correction (row O3, data policy, C5)")
 SECOND_REFERENCE_GROUPS = ("scripts", "han")  # the root's groups ref:ucaimplicit@1 computes
 
 REFERENCE_VERSIONS = {"node": "26.12.0", "icu": "78.3", "cldr": "48.0"}
@@ -1063,7 +1073,9 @@ def render(case: Case, identifier: str, out: str, vm_out: str | None, divergence
             if case.vm_moves:
                 raise GeneratorError(f"{identifier}: a vector whose locale moves and whose Han order moves")
             cls = "impl-defined"
-            per_engine = {"broiler-js": out, "broiler-vm": case.second_out}
+            # Each engine's expectation is the shared collator's implicit weights (decision E-o3h; Broiler.JS's since
+            # SJL-17.5, corpus revision 40, where it was out, its host's radical-stroke order).
+            per_engine = {"broiler-js": case.second_out, "broiler-vm": case.second_out}
             notes.append(HAN_MOVES)
         elif case.han:
             notes.append(HAN_SAME)
@@ -1099,8 +1111,9 @@ HEADER = [
     "files, to the order the file gives them (ref:collationtest@1). The root's scripts and Han vectors are computed again",
     "by the UCA over CLDR 48.2.0's allkeys_CLDR.txt with UCA 17's implicit weights (ref:ucaimplicit@1), the other Han",
     "order UTS #35 Part 5 (CLDR 48) allows: a Han vector whose answer moves with that order is impl-defined, with that",
-    "order's answer for Broiler.VM and out for Broiler.JS, each engine's own data's. Each note names rows of bundle",
-    "sjl-17-001's correspondence (Broiler.VM's docs/evidence/sjl-17-001/correspondence.md), the rows its case carries.",
+    "order's answer for both engines, the shared collator's (for Broiler.JS since revision 40, its cut-over SJL-17.5).",
+    "Each note names rows of bundle sjl-17-001's correspondence (Broiler.VM's docs/evidence/sjl-17-001/correspondence.md),",
+    "the rows its case carries.",
     "The area field is intl: the schema has no collation area (generate_collation_vectors.py, THE AREA FIELD).",
 ]
 

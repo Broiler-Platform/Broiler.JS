@@ -151,8 +151,10 @@ class PlanTableTests(unittest.TestCase):
 
     def test_broiler_js_s_collations_are_its_collator_s(self) -> None:
         # Decision D33 (c) and row L40: emoji and eor everywhere, the language's tailorings, and the nine of
-        # Intl.supportedValuesOf("collation") (JSIntl.cs's SupportedCollationsSorted).
-        self.assertEqual(["emoji", "eor"], generator.broiler_js_collations("es-419"))
+        # Intl.supportedValuesOf("collation") (JSIntl.cs's SupportedCollationsSorted). (Revised 2026-11-15, at corpus
+        # revision 40, with SJL-17.5: es and sv gain trad, which the shared data carries; es-419 read ["emoji", "eor"].)
+        self.assertEqual(["emoji", "eor", "trad"], generator.broiler_js_collations("es-419"))
+        self.assertEqual(["emoji", "eor", "trad"], generator.broiler_js_collations("sv"))
         self.assertEqual(["emoji", "eor"], generator.broiler_js_collations("ar-EG"))
         self.assertEqual(["emoji", "eor", "phonebk"], generator.broiler_js_collations("de-DE"))
         self.assertEqual(["emoji", "eor", "phonetic", "pinyin", "stroke", "trad", "unihan", "zhuyin"],

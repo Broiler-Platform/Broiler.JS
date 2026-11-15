@@ -1851,7 +1851,7 @@ op: Intl.Locale.prototype.getCollations
 in: str:"es-419"
 out: value: str:"[\"emoji\",\"eor\",\"trad\"]"
 class: impl-defined
-per-engine.broiler-js: value: str:"[\"emoji\",\"eor\"]"
+per-engine.broiler-js: value: str:"[\"emoji\",\"eor\",\"trad\"]"
 per-engine.broiler-vm: value: str:"[]"
 prov: spec:ecma402@3d4c558#sec-collationsoflocale ref:intlref@1
 script: JSON.stringify(new Intl.Locale("es-419").getCollations())
