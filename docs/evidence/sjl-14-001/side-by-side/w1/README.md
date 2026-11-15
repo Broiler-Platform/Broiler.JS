@@ -37,27 +37,27 @@ base commit.
     `not-span`, with both texts).
 - [`hashes.txt`](hashes.txt) gives the SHA-256 of every file here.
 
-**Not run at W1:** part C's other two runs, every test project with the switch on through its internal options member,
+**Not run at W1:** part C's other runs, every test project with the switch on through its internal options member,
 and `scripts/compliance/run_test262.py` locally with the shell's hidden switch off and on. The rule takes them at W1 too,
 read and not judged; this stage took the tool's run, which is what traces a library fix to its dark merge, and leaves
-those two to the base commit, where part C judges them (the bundle's README, "The side-by-side run at W1, read on
+those to the base commit, where part C judges them (the bundle's README, "The side-by-side run at W1, read on
 2026-11-15", records the choice).
 
 ## What it finds
 
 - **Outcomes, P against B and K against K-on.** Every input variant whose outcome moves and which the corrections list
-  moves to the outcome the list expects. The moves the list does not hold are of three kinds: corpus inputs P accepts
+  moves to the outcome the list expects. The moves the list does not hold are of these kinds: corpus inputs P accepts
   and B refuses while K refuses on both sides, which is class E's form (B's messages among them a strict-mode `with`,
   `eval` or `arguments` as a binding, a duplicate parameter and a legacy octal); corpus inputs the switch-on compile
-  refuses for nesting past the library's bound, which is class C3's form; and three inputs from this engine's own parser
+  refuses for nesting past the library's bound, which is class C3's form; and inputs from this engine's own parser
   tests that the old path accepted and the text refuses (`var a = b % c ^ d | e & f ~ 0;`, `let await` in a class static block, and
-  `yield` in a class field initialiser inside a generator). Those three are corrections that no row lists, for part C
+  `yield` in a class field initialiser inside a generator). Those are corrections that no row lists, for part C
   at the base commit to classify, as W1a to W1c were added; none is a library defect.
 - **Refusals with another text** are many, at both pairs, as decision D46 expects; their tables are generated here.
 - **Trees, P against B.** Most accepted variants' dumps differ, and `spancheck.py` reads every difference as one of
   spans alone, either class S's form (P's span disagrees with the node's text and B's agrees) or both spans agreeing
-  with the text (`both-agree`, two readings of one construct's extent), but for five inputs whose trees differ outside
-  spans. Those five are exactly the inputs the corrections W1a, W1b and W1c cite (T042384, T052945, and T047171,
+  with the text (`both-agree`, two readings of one construct's extent), but for the inputs whose trees differ outside
+  spans, which are exactly the inputs the corrections W1a, W1b and W1c cite (T042384, T052945, and T047171,
   T047173 and T031800). No span difference is unclassified.
 - **Crashes.** K and K-on crash alike on the module inputs that read `import.meta`, which the tool's compile gives no
   module record; the switch-on compile refuses, with a SyntaxError, inputs the old compile crashed on, each of them

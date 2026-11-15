@@ -1,6 +1,6 @@
 # Part B's runs: the bridge's identity with the switch off (SJL-14.2's tail)
 
-**Taken:** 2026-11-15, after W1 and after the two merges to `Broiler.ECMAScript/Broiler.ECMAScript.Frontend*/` that
+**Taken:** 2026-11-15, after W1 and after the merges to `Broiler.ECMAScript/Broiler.ECMAScript.Frontend*/` that
 followed it, for [`../decision-rule.md`](../decision-rule.md)'s part B. Its reading, and the reading of "dark commit" it
 rests on, are in the bundle's [`README.md`](../README.md), "Part B, judged on 2026-11-15". Nothing here changes the
 rule, a tool or a product file.
@@ -65,7 +65,7 @@ paths, decision D42).
   id, which names the build. The switch-on outputs are compared the same way (`compare.py --same` over B's and K-on's
   rows), read and not judged.
 - **The head, read** ([`e4b6b49e/`](e4b6b49e/), [`identity/head-read-8e5519d8-e4b6b49e.txt`](identity/head-read-8e5519d8-e4b6b49e.txt)):
-  the same two runs at the default branch's head, set against W1's. It is no part of part B: the merges between W1 and
+  the same runs at the default branch's head, set against W1's. It is no part of part B: the merges between W1 and
   the head that change product paths outside `Frontend*/` are not dark commits by any reading, and part B does not cover
   them; this run reads whether any of them moved a switch-off outcome over the corpus, for part C at the base commit to
   judge.
@@ -80,5 +80,5 @@ the side-by-side text run's among them. [`hashes.txt`](hashes.txt) gives the SHA
 
 Every pair is identical in every field: at W1 against its first parent, at #1104 against its first parent and at #1105
 against its first parent, both the default-mode and the dump reports are complete, and their rows are byte for byte the
-same. The switch-on outputs are the same at all three commits where they were taken, and the same as the B and K-on rows
+same. The switch-on outputs are the same at every commit where they were taken, and the same as the B and K-on rows
 of the side-by-side run at W1. The head's switch-off rows are the same as W1's.
