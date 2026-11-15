@@ -1,4 +1,4 @@
-f04a7cbf767112a6e6856d7f6ef528c0e04fdd81ac727f99d55a7e21be3cf195  ./README.md
+4a32653461a8a091f85d7333f1b315e230fc583efd24b60d4e4519f3b5a0cd47  ./README.md
 62d3c7efae4b282d1649b90351c0ebbcc1dcce1dd32100ee447283119c6fbbae  ./counts.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/build-side-by-side.stderr.txt
 e1b784eb395e4e0a002e6fd14631d4db05494033599a708c5675a37d232f75af  ./logs/build-side-by-side.stdout.txt
@@ -6,6 +6,7 @@ e1b784eb395e4e0a002e6fd14631d4db05494033599a708c5675a37d232f75af  ./logs/build-s
 bb8c4885a3fae5b9d224c64d8d9612b2ba8339ac2795eb6b79ba6aa1b760739f  ./logs/side-by-side.stderr.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/side-by-side.stdout.txt
 37f547ec98df3c696bb037fdc93bec55ff7ffbeae25207e4a13f600410d6c112  ./logs/side-by-side.time.txt
+a0a7ca979b20de43389db6f2cd677d0fcb20acd48ea6c0d63e704fc0688fc753  ./logs/span-commands.log
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/text-build-side-by-side-text.stderr.txt
 7a172fd773e39282050109761b429866ea5a3f899d896b02a5f09dc62cbe201c  ./logs/text-build-side-by-side-text.stdout.txt
 46c406919e99733a2ae8fea8dcdff31903ad3e0a5caaeff353583ae1766acd9b  ./logs/text-build-side-by-side-text.time.txt

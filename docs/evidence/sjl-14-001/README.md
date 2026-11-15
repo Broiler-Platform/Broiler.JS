@@ -80,7 +80,8 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
       and `.Intl` with their tests, `Broiler.ECMAScript/data/` and `runners/`, and the changelog and assurance files under
       `Broiler.ECMAScript/` (and its `README.md`, #1108).
     - `a5f2692e88a9aafeaa850bebe9c3399f6263353b`, Broiler-Platform/Broiler.JS#1110 (SJL-9.5):
-      `Broiler.JS/Broiler.JavaScript.BuiltIns`, `.BuiltIns.Tests` and `.Integration.Tests`.
+      `Broiler.JS/Broiler.JavaScript.BuiltIns`, `.BuiltIns.Tests` and `.Integration.Tests` (its `Broiler.JS/CHANGELOG.md`
+      is not named, since the rule's list of the product paths leaves it out).
     - `caa3863cb0f184dfd36baa31937ae4ad281672bd`, Broiler-Platform/Broiler.JS#1114 (SJL-9's clauses 7 and 8):
       `Broiler.JS/Broiler.JavaScript` and its projects `.Ast`, `.BuiltIns`, `.BuiltIns.Tests`, `.Compiler`,
       `.Compiler.Tests`, `.Debugger`, `.Debugger.Tests`, `.Engine`, `.ExpressionCompiler`, `.Expressions`, `.Extensions`,
@@ -93,11 +94,16 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
       `.Portable` and `.Runtime`.
 
     Every other first-parent merge since W1 changes no product path (#1103, #1106, #1109, #1111, #1112, #1113, #1116).
-    Each merge's paths are in [`bridge/merges-since-w1-paths.txt`](bridge/merges-since-w1-paths.txt). A read at the
+    Each merge's paths are in [`bridge/merges-since-w1-paths.txt`](bridge/merges-since-w1-paths.txt), each marked
+    `product` or `other` by the rule's list of the product paths (decision D42) as written: that list leaves out
+    `Broiler.JS/CHANGELOG.md` and keeps all of `Broiler.ECMAScript/` outside its `docs/`, so `Broiler.ECMAScript/CHANGELOG.md`
+    is marked `product` and `Broiler.JS/CHANGELOG.md` `other`, and the lists above follow the same marks. A read at the
     default branch's head, `e4b6b49e`, outside part B and not judged, finds the switch-off rows of part B's runs the same
     as W1's ([`bridge/README.md`](bridge/README.md)).
   - **W2 and the base commit** do not exist yet: W2 is held for SJL-11.5 (decision D51's recommended order;
-    [`docs/roadmap/SharedLibraries.status.md`](../../roadmap/SharedLibraries.status.md)'s SJL-14 row).
+    [`docs/roadmap/SharedLibraries.status.md`](../../roadmap/SharedLibraries.status.md)'s SJL-14 row). The rule's dark
+    commits run to the base commit, so their set is still open, and part B's verdict below holds only at the commits
+    taken.
 
 ## Part B, judged on 2026-11-15
 
@@ -117,25 +123,41 @@ decisions and skip waiting for review."): **D52's.** Each merge that changes `Fr
 part B, whatever else it changes, and is judged by part B's identity with its own first parent; the rule's "changes
 only" names what a library merge in this window is for, and a merge that also changes other paths is held to the same
 identity, which builds and runs the whole product at both commits and so reads what those paths do to the parse and
-the compile too. "Those conditions" are read as
-the conditions the rule sets on the commits it names (W1 one merge, the only first-parent commit with the bridge, its
-base descending from the rule commit), which hold; the definition is not one of them, so neither merge voids the part.
-**Under this reading, part B is MET**: at W1 against `e2ed7fae`, at #1104 against `6f7284da` and at #1105 against
-`29061d65`, both runs are complete and identical in every field (P's and K's outcome, exception type and message, and
-P's and the for-loop pass's dump hashes), and W1's CI run of every test project of `Broiler.JS.slnx` passed, on Linux
-and on Windows ([`bridge/identity/`](bridge/identity/), [`bridge/w1-ci/`](bridge/w1-ci/commands.txt)).
+the compile too.
 
-**The alternative, not taken: the rule's words.** Neither #1104 nor #1105 is a dark commit, as each changes more than
-`Frontend*/`; part B is judged at W1 alone, and those merges are product merges outside part B, like #1107, #1108,
-#1110, #1114 and #1115, which part C at the base commit covers. **Under it, part B is MET** as well, at W1; the runs at
-#1104 and #1105 stay retained and read. A third reading, that the merges' failing the definition voids the part,
-is not taken by either: the definition says which merges are dark commits, not what W1 or its base must be.
+**With it, a second reading, of the void sentence.** On D52's reading, #1104 and #1105 are part B's commits while they
+fail the definition's "changes only", and read as written, that is a part "whose commits fail those conditions", which
+is void. The reading taken is narrow: "those conditions" are the conditions the rule sets on the commits it names (W1
+one merge, the only first-parent commit with the bridge or the switch, its base descending from the rule commit), which
+hold, and not the dark-commit definition, so neither merge voids the part. The rule's words do not settle this; it is a
+choice, taken under the same direction, and its alternative is below.
 
-**For the owner, an optional ruling:** "D52's reading" (taken: each merge to `Frontend*/` after W1 is a dark commit
-for part B, whatever else it changes) or "The rule's words" (only a merge that changes nothing but `Frontend*/`).
-Either gives the same verdict on these runs; the ruling decides what a later library merge that also touches other
-paths must carry. Nothing is accepted: no second holder exists to review it, and part B is no clause; every clause of
-this engine's, 1 to 6, is unmet.
+**Under these readings, part B is MET at the commits taken**: at W1 against `e2ed7fae`, at #1104 against `6f7284da` and
+at #1105 against `29061d65`, both runs are complete and identical in every field (P's and K's outcome, exception type
+and message, and P's and the for-loop pass's dump hashes), and W1's CI run of every test project of `Broiler.JS.slnx`
+passed, on Linux and on Windows ([`bridge/identity/`](bridge/identity/), [`bridge/w1-ci/`](bridge/w1-ci/commands.txt)).
+The verdict is limited to those commits. The rule's dark commits run to the base commit, which does not exist yet:
+under this reading, each later merge to `Frontend*/` before the base commit (a library fix that part C's reading sends
+to a dark merge, or any other) is a dark commit, part B is read again at each against its own first parent, and a
+NOT MET at any of them makes part B NOT MET.
+
+**The alternatives, not taken.**
+- **The rule's words.** Neither #1104 nor #1105 is a dark commit, as each changes more than `Frontend*/`; part B is
+  judged at W1 alone, and those merges are product merges outside part B, like #1107, #1108, #1110, #1114 and #1115,
+  which part C at the base commit covers. **Under it, part B is MET at W1**; the runs at #1104 and #1105 stay retained
+  and read. It is read again at any later merge before the base commit that changes only `Frontend*/`. This is the
+  verdict that needs no reading of the rule beyond its words: W1's conditions hold, as its first parent `e2ed7fae`
+  descends from the rule commit's merge `d8f14602` and no later first-parent merge, through `e4b6b49e`, carries any
+  part of the bridge or the switch.
+- **D52's reading with the void sentence as written.** #1104 and #1105 are part B's commits and fail the definition's
+  "changes only", so part B's commits "fail those conditions": **under it, part B is void.**
+
+**For the owner, an optional ruling** among the three: "D52's reading, the void sentence read narrowly" (taken: MET at
+W1, #1104 and #1105, and read again at each later merge to `Frontend*/` before the base commit), "The rule's words"
+(MET at W1, and read again at each later merge that changes only `Frontend*/`), or "D52's reading, the void sentence as
+written" (void). The ruling also decides what a later library merge that touches other paths must carry. Nothing is
+accepted: no second holder exists to review it, and part B is no clause; every clause of this engine's, 1 to 6, is
+unmet.
 
 **The switch-on outputs**, read and not judged (part C judges them at the base commit): the side-by-side tool's B and
 K-on rows are the same at #1104's first parent, at #1104, at #1105, and at W1. Neither library merge moved a switch-on
@@ -144,17 +166,25 @@ outcome, message or tree over the corpus.
 ## The side-by-side run at W1, read on 2026-11-15
 
 [`side-by-side/w1/`](side-by-side/w1/README.md) holds the side-by-side tool's run at W1, at P, B, K and K-on with the
-dumps, as the tool's README and the rule's part C say, read and not judged. What it finds, in words (each count is in
-the folder): every outcome move the corrections list goes to the outcome they expect; the moves they do not list take
-class E's form (P accepts, B refuses, K refuses on both sides) or class C3's (nesting past the library's bound), but for
-inputs of this engine's own parser tests that the old path accepted and the text refuses, corrections no row
-lists yet, for part C to classify at the base commit; many refusals change their text, as decision D46 expects, in the
-generated message tables; every tree difference of P and B is of spans alone, class S's form or two readings of one
-construct's extent, but for the inputs corrections W1a to W1c cite. **No library defect is found, and the run asks
-for no dark merge.** Its other runs at W1, every test project with the switch on and test262 locally with the
-switch off and on, are not taken here: the rule reads them at W1 only, and part C judges them at the base commit, where
-this stage leaves them (the choice taken, under the owner's direction of 2026-10-18; the alternative, taking them at W1
-now, is left to a later stage if the owner wants them).
+dumps, as the tool's README and the rule's part C say, read and not judged: nothing in it is classified, and it makes
+no claim about library defects. What it shows, in words (each count is in the folder): every outcome move the
+corrections list goes to the outcome they expect. The moves they do not list are each in `outcome-moves.tsv.gz`; most
+have the form of class E (P accepts, B refuses, K refuses on both sides) or of class C3 (nesting past the library's
+bound), and three inputs of this engine's own parser tests, `J000557`, `J001072` and `J001780`, which the old path
+accepted and both B and K-on refuse, are listed by no row of K10. Many refusals change their text, as decision D46
+expects, in the generated message tables. `spancheck.py` reads every tree difference of P and B as one of spans alone,
+but for the inputs corrections W1a to W1c cite, and labels each `S` or `both-agree`; a `both-agree` row is one its
+check cannot decide, for a reader to decide from its two texts, and is not class S by the rule's words.
+
+**Open items for part C at the base commit:** the outcome moves the corrections do not list, those three inputs among
+them, and the `both-agree` span differences, each to be classified or found unclassified there (`spans-not-s.tsv.gz`
+lists them with both texts).
+
+**Part C's other runs at W1**, every test project with the switch on and test262 locally with the switch off and on,
+are not taken here. The rule asks for them at W1 too, retained and read, not judged, and they are still to be taken;
+each run names its tested commit, so they can be taken at W1 at any time. The choice taken, under the owner's direction
+of 2026-10-18, is to leave them to a later stage, before or with part C's runs at the base commit; the alternative not
+taken is to take them in this stage. Part C's verdict reads only the runs at the base commit, so none waits on them.
 
 ## What it does not claim
 

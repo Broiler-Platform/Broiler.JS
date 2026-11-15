@@ -20,7 +20,10 @@ base commit.
   [`scripts/w1text.sh`](scripts/w1text.sh) (its logs are `logs/text-*`). Its rows are the first run's at P and B, byte
   for byte ([`text-run-identity.txt`](text-run-identity.txt)). The dumps' text is too large to keep here; its SHA-256,
   and that of the span listing written from it, are in [`not-retained.sha256.txt`](not-retained.sha256.txt), and both
-  are written again by the commands in the logs.
+  are written again by the commands in [`logs/span-commands.log`](logs/span-commands.log): `w1text.sh`, then
+  `spancheck.py`, then the filter that writes `spans-not-s.tsv.gz`. They were run again at W1 after the first run,
+  whose `spancheck.py` command and filter were not logged, and gave the same digests and the same
+  `spancheck-counts.txt` and `spans-not-s.tsv.gz`, byte for byte.
 - **The readings**, each by a script that classifies nothing:
   - [`counts.txt`](counts.txt): `compare.py`'s counts of input variants by the pair of outcomes, P against B, K against
     K-on, and P against K;
@@ -38,30 +41,37 @@ base commit.
 - [`hashes.txt`](hashes.txt) gives the SHA-256 of every file here.
 
 **Not run at W1:** part C's other runs, every test project with the switch on through its internal options member,
-and `scripts/compliance/run_test262.py` locally with the shell's hidden switch off and on. The rule takes them at W1 too,
-read and not judged; this stage took the tool's run, which is what traces a library fix to its dark merge, and leaves
-those to the base commit, where part C judges them (the bundle's README, "The side-by-side run at W1, read on
-2026-11-15", records the choice).
+and `scripts/compliance/run_test262.py` locally with the shell's hidden switch off and on. The rule asks for them at W1
+too, retained and read, not judged, and they are still to be taken; each run names its tested commit, so they can be
+taken at W1 at any time. This stage took the tool's run, which is what traces a library fix to its dark merge, and the
+choice taken is to leave the others to a later stage, before or with part C's runs at the base commit; the alternative
+not taken is to take them now (the bundle's README, "The side-by-side run at W1, read on 2026-11-15", records the
+choice). Part C's verdict reads only the runs at the base commit, so none waits on them.
 
-## What it finds
+## What it shows
+
+A reading, not a verdict: nothing below is classified, and the run makes no claim about library defects.
 
 - **Outcomes, P against B and K against K-on.** Every input variant whose outcome moves and which the corrections list
-  moves to the outcome the list expects. The moves the list does not hold are of these kinds: corpus inputs P accepts
-  and B refuses while K refuses on both sides, which is class E's form (B's messages among them a strict-mode `with`,
-  `eval` or `arguments` as a binding, a duplicate parameter and a legacy octal); corpus inputs the switch-on compile
-  refuses for nesting past the library's bound, which is class C3's form; and inputs from this engine's own parser
-  tests that the old path accepted and the text refuses (`var a = b % c ^ d | e & f ~ 0;`, `let await` in a class static block, and
-  `yield` in a class field initialiser inside a generator). Those are corrections that no row lists, for part C
-  at the base commit to classify, as W1a to W1c were added; none is a library defect.
+  moves to the outcome the list expects. The moves the list does not hold, each in `outcome-moves.tsv.gz`, are of these
+  kinds: corpus inputs P accepts and B refuses while K refuses on both sides, which has class E's form (B's messages
+  among them a strict-mode `with`, `eval` or `arguments` as a binding, a duplicate parameter and a legacy octal);
+  corpus inputs the switch-on compile refuses for nesting past the library's bound, which has class C3's form; and
+  three inputs from this engine's own parser tests that the old path accepted and both B and K-on refuse, `J000557`
+  (`var a = b % c ^ d | e & f ~ 0;`), `J001072` (`let await` in a class static block) and `J001780` (`yield` in a class
+  field initialiser inside a generator), which no row of K10 lists.
 - **Refusals with another text** are many, at both pairs, as decision D46 expects; their tables are generated here.
-- **Trees, P against B.** Most accepted variants' dumps differ, and `spancheck.py` reads every difference as one of
-  spans alone, either class S's form (P's span disagrees with the node's text and B's agrees) or both spans agreeing
-  with the text (`both-agree`, two readings of one construct's extent), but for the inputs whose trees differ outside
-  spans, which are exactly the inputs the corrections W1a, W1b and W1c cite (T042384, T052945, and T047171,
-  T047173 and T031800). No span difference is unclassified.
+- **Trees, P against B.** Most accepted variants' dumps differ. `spancheck.py` reads every difference as one of spans
+  alone, but for the inputs whose trees differ outside spans (`not-span`), which are exactly the inputs the corrections
+  W1a, W1b and W1c cite (T042384, T052945, and T047171, T047173 and T031800). It labels each span difference `S` (P's
+  span disagrees with the node's text and B's agrees) or `both-agree` (both spans pass its check). A `both-agree` row is
+  one the check cannot decide, for a reader to decide from its two texts, and is not class S by the rule's words; the
+  check is also loose, as `T004601`'s `BinaryExpression`, whose P span reads `() instanceof AsyncGeneratorFunction`,
+  shows by passing it.
 - **Crashes.** K and K-on crash alike on the module inputs that read `import.meta`, which the tool's compile gives no
   module record; the switch-on compile refuses, with a SyntaxError, inputs the old compile crashed on, each of them
   listed with its correction.
 
-**No library defect is found**, so no dark merge is asked for by this run. Each count is in the files above, not in this
-README.
+**Open items for part C at the base commit:** the outcome moves the corrections do not list, the three parser-test
+inputs among them, and the `both-agree` span differences ([`spans-not-s.tsv.gz`](spans-not-s.tsv.gz), with both texts),
+each to be classified there or found unclassified. Each count is in the files above, not in this README.
