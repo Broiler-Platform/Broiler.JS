@@ -1,0 +1,24 @@
+# The commands that write the dumps' text at W1 and, from it, the span listing, spancheck-counts.txt and spans-not-s.tsv.gz,
+# run again on 2026-11-15 after the first run, whose spancheck.py command and filter were not logged. <out> is
+# /dev/shm/js-s14b/w1text. w1text.sh ran through the machine's build lock behind the idle gate, as in the first run (its
+# own logs went to <out>/logs, outside the bundle). The first spancheck.py attempt, with W1's manifest copied alone, could
+# not find the corpus's own inputs, which the tool reads beside the manifest; the second ran with W1's conformance/parse/
+# and tool from a git archive (<w1tree>). Every digest below is the one the first run gave.
+2026-11-15T21:50:54Z bash side-by-side/w1/scripts/w1text.sh 8e5519d8cf81808856e32f2275fcb4d3b98a73f3 all /dev/shm/js-s14b/w1text
+2026-11-15T21:53:22Z exit 0
+2026-11-15T21:53:22Z git show 8e5519d8cf81808856e32f2275fcb4d3b98a73f3:conformance/parse/corpus.manifest > <out>/corpus.manifest
+2026-11-15T21:53:22Z cd <out> && python3 -I <worktree>/docs/evidence/sjl-14-001/tools/side-by-side/spancheck.py --manifest <out>/corpus.manifest --test262 /dev/shm/js-s14b/suite/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e dumps-p-b.txt.gz spans.tsv > spancheck-counts.txt
+2026-11-15T21:53:46Z exit 1
+2026-11-15T21:54:05Z (spancheck.py reads the corpus's own inputs beside its manifest, so it is run again with W1's conformance/parse/ and tool:)
+2026-11-15T21:54:05Z git archive 8e5519d8cf81808856e32f2275fcb4d3b98a73f3 conformance/parse docs/evidence/sjl-14-001/tools/side-by-side | tar -xf - -C <w1tree>
+2026-11-15T21:54:05Z exit 0
+2026-11-15T21:54:05Z cd <out> && python3 -I <w1tree>/docs/evidence/sjl-14-001/tools/side-by-side/spancheck.py --manifest <w1tree>/conformance/parse/corpus.manifest --test262 /dev/shm/js-s14b/suite/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e dumps-p-b.txt.gz spans.tsv > spancheck-counts.txt
+2026-11-15T21:54:30Z exit 0
+2026-11-15T21:54:41Z cd <out> && awk -F'\t' 'NR==1 || $9!="S"' spans.tsv | gzip -n -9 > spans-not-s.tsv.gz
+2026-11-15T21:54:41Z exit 0
+2026-11-15T21:54:41Z cd <out> && sha256sum spans.tsv dumps-p-b.txt.gz spancheck-counts.txt spans-not-s.tsv.gz
+  58e36bc708c4636b4e9450d821755e560c2defa92fecaf604e70986c3b879d39  spans.tsv
+  654a8bfb62913ea81f1f08a9856aea140e596313eda4c98a63fb1c6b60d7df8f  dumps-p-b.txt.gz
+  2e52f79792a5ac1cb30c79730452aee16d153c5806b1cd8ac05c1831d3823224  spancheck-counts.txt
+  073890da9a280a58dc3ccb9cd2c3d69012aae1388b5788e67cd31bba52299a5d  spans-not-s.tsv.gz
+2026-11-15T21:54:41Z the same as not-retained.sha256.txt's two digests and hashes.txt's for spancheck-counts.txt and spans-not-s.tsv.gz

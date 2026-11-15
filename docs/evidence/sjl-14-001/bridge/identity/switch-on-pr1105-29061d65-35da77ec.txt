@@ -1,0 +1,3 @@
+# 2026-11-15T21:25:12Z python3 -I tools/side-by-side/compare.py --same bridge/29061d65/switch-on-b-kon.tsv.gz bridge/35da77ec/switch-on-b-kon.tsv.gz B,K-on
+identical: 213926 row(s) at B,K-on
+exit 0

@@ -1,0 +1,22 @@
+# 2026-11-15T21:25:14Z sh -c echo '== P B'; python3 -I ../../tools/side-by-side/compare.py side-by-side.tsv.gz P B; echo '== K K-on'; python3 -I ../../tools/side-by-side/compare.py side-by-side.tsv.gz K K-on; echo '== P K'; python3 -I ../../tools/side-by-side/compare.py side-by-side.tsv.gz P K
+== P B
+85608	accepted/accepted dump-differs
+12723	accepted/accepted same-dump
+3231	accepted/refused
+5	refused/accepted
+5293	refused/refused message-differs
+103	refused/refused same-message
+== K K-on
+97369	accepted/accepted same-dump
+1077	accepted/refused
+8	crashed/crashed
+141	crashed/refused
+2	refused/accepted
+6711	refused/refused message-differs
+1655	refused/refused same-message
+== P K
+98446	accepted/accepted dump-differs
+149	accepted/crashed
+2967	accepted/refused
+5401	refused/refused type-differs
+exit 0
