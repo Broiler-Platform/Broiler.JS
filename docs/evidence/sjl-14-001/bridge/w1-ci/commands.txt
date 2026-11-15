@@ -1,0 +1,15 @@
+# W1's CI runs, read 2026-11-15 by read-only GitHub API calls (gh api, GET only); nothing dispatched or re-run.
+# Every file here is the API's answer unchanged, but test-projects.tsv and slnx-test-projects.txt, written from them.
+gh api "repos/Broiler-Platform/Broiler.JS/actions/runs?head_sha=8e5519d8cf81808856e32f2275fcb4d3b98a73f3&per_page=50"
+#   -> three runs at W1, each event push, status completed, conclusion success, attempt 1:
+#      41671534712 CI (.github/workflows/ci.yml), 41671534835 Shared libraries, 41671534922 Compliance scripts
+for r in 41671534712 41671534835 41671534922; do
+  gh api repos/Broiler-Platform/Broiler.JS/actions/runs/$r > run-$r.json
+  gh api "repos/Broiler-Platform/Broiler.JS/actions/runs/$r/jobs?per_page=100" > jobs-$r.json
+  gh api "repos/Broiler-Platform/Broiler.JS/actions/runs/$r/artifacts?per_page=100" > artifacts-$r.json
+  gh api repos/Broiler-Platform/Broiler.JS/actions/runs/$r/logs > logs-$r.zip
+done
+git show 8e5519d8:Broiler.JS.slnx | grep -o 'Path="[^"]*\.csproj"' | sed 's/Path="//;s/"//' | grep -i test | sort > slnx-test-projects.txt
+# test-projects.tsv: for each project of slnx-test-projects.txt, every "Passed!"/"Failed!" line the test jobs' logs
+# hold for its assembly (CI's "ubuntu-24.04 / Release" and "windows-latest / Release", Shared libraries' "Build and SL
+# rules" on both systems), and the engine corpus's summary from CI's two "engine vectors" jobs.

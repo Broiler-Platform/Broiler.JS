@@ -5,3 +5,6 @@ inherited-context/** -text
 corrections/** -text
 api/** -text
 dispositions.tsv -text
+# Added 2026-11-15, at SJL-14.2's tail: part B's runs and the side-by-side run at W1, each named by its hashes.txt.
+bridge/** -text
+side-by-side/** -text

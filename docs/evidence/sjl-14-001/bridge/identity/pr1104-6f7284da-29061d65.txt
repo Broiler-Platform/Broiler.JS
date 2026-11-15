@@ -1,0 +1,28 @@
+# 2026-11-15T21:25:09Z bash bridge/scripts/identity.sh bridge/6f7284da bridge/29061d65
+manifest sha256 (conformance/parse/corpus.manifest): 1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc
+6f7284da/parse-corpus-c.tsv.gz: last line [#% end	213926], manifest-sha256 1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc, rows 213926
+29061d65/parse-corpus-c.tsv.gz: last line [#% end	213926], manifest-sha256 1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc, rows 213926
+6f7284da/parse-corpus-d1.tsv.gz: last line [#% end	106963], manifest-sha256 1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc, rows 106963
+29061d65/parse-corpus-d1.tsv.gz: last line [#% end	106963], manifest-sha256 1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc, rows 106963
+--- default mode, entries P and K: compare.py --same
+identical: 213926 row(s) at K,P
+--- --dump mode, slot 1: compare.py --same
+identical: 106963 row(s) at 1
+--- every row line (headers aside), byte for byte
+parse-corpus-c.tsv.gz: rows identical
+parse-corpus-d1.tsv.gz: rows identical
+--- header lines that differ (each product assembly's module version id, which identifies its build)
+  23,27c23,27
+  < #% assembly	Broiler.JavaScript.Ast	0.1.0-preview.1	e14b703d-c0db-4ffd-95c6-7c86b0adae2a
+  < #% assembly	Broiler.JavaScript.Parser	0.1.0-preview.1	102e4e30-6492-4ee2-892f-0cab148eed07
+  < #% assembly	Broiler.JavaScript.Compiler	0.1.0-preview.1	d4987829-97d5-4cd2-98bb-8723140eb870
+  < #% assembly	Broiler.JavaScript.Engine	0.1.0-preview.1	d06bab18-643d-4aa9-b3c9-994606524cd9
+  < #% assembly	Broiler.JavaScript.Runtime	0.1.0-preview.1	93017462-87ff-4d64-95a2-8c098aa7eee4
+  ---
+  > #% assembly	Broiler.JavaScript.Ast	0.1.0-preview.1	1126ea3b-19bd-40c8-95a9-5502b2a90b08
+  > #% assembly	Broiler.JavaScript.Parser	0.1.0-preview.1	8367d97e-36dd-4002-9e92-dcda4c93d05a
+  > #% assembly	Broiler.JavaScript.Compiler	0.1.0-preview.1	2d48296e-7ae1-4e8e-8ddf-88459416f2af
+  > #% assembly	Broiler.JavaScript.Engine	0.1.0-preview.1	113f7340-9bc4-4016-ad52-a9018d542e5c
+  > #% assembly	Broiler.JavaScript.Runtime	0.1.0-preview.1	e6bcb6a6-920b-4ad7-a5fb-384bf3d31595
+identity: identical
+exit 0

@@ -1,0 +1,49 @@
+  Determining projects to restore...
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj (in 1.02 sec).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj (in 1.02 sec).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj (in 1.02 sec).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.ModuleExtensions/Broiler.JavaScript.ModuleExtensions.csproj (in 1.02 sec).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj (in 14 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj (in 6 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj (in 4 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.Modules/Broiler.JavaScript.Modules.csproj (in 21 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj (in 17 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 2 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj (in 26 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/docs/evidence/sjl-14-001/tools/side-by-side/side-by-side.csproj (in 26 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.Globals/Broiler.JavaScript.Globals.csproj (in 8 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.LinqExpressions/Broiler.JavaScript.LinqExpressions.csproj (in 26 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj (in 6 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.Extensions/Broiler.JavaScript.Extensions.csproj (in 9 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.JSClassGenerator/Broiler.JavaScript.JSClassGenerator.csproj (in 52 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj (in 10 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.Debugger/Broiler.JavaScript.Debugger.csproj (in 17 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj (in 17 ms).
+  Restored /dev/shm/js-s14b/src/29061d65/Broiler.JS/Broiler.JavaScript.Clr/Broiler.JavaScript.Clr.csproj (in 16 ms).
+  Broiler.ECMAScript.Algorithms -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.ECMAScript.Algorithms/release/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.ECMAScript.Frontend/release/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Expressions -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.Expressions/release/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Ast -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.Ast/release/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.ExpressionCompiler -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.ExpressionCompiler/release/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Storage -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.Storage/release/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.Parser -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.Parser/release/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.JSClassGenerator -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.JSClassGenerator/release/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.Runtime/release/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.Engine/release/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.LinqExpressions/release/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Compiler -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.Compiler/release/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.Extensions -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.Extensions/release/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.BuiltIns -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.BuiltIns/release/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Clr -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.Clr/release/Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.Debugger -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.Debugger/release/Broiler.JavaScript.Debugger.dll
+  Broiler.JavaScript.Modules -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.Modules/release/Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Globals -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.Globals/release/Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.ModuleExtensions -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.ModuleExtensions/release/Broiler.JavaScript.ModuleExtensions.dll
+  Broiler.JavaScript.All -> /dev/shm/js-s14b/art/29061d65/sbs/bin/Broiler.JavaScript.All/release/Broiler.JavaScript.All.dll
+  side-by-side -> /dev/shm/js-s14b/art/29061d65/sbs/bin/side-by-side/release/side-by-side.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:01:04.94

@@ -1,0 +1,8 @@
+# The test262 suite the parse corpus's test262 rows were read from, 2026-11-15
+git -C <Broiler.VM checkout> show 4f914a3f7b9c65bd6066bc9e75f723b78d410a68:src/tests/conformance/pins/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e.tar.gz > test262.tar.gz
+sha256sum test262.tar.gz
+f58ce79141529c9fa33592e22ff3ff0d83b83830ac8e372ecd32e1623db1c040  test262.tar.gz
+grep pin-test262 conformance/parse/corpus.manifest
+#% pin-test262	ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+#% pin-test262-archive	src/tests/conformance/pins/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e.tar.gz	f58ce79141529c9fa33592e22ff3ff0d83b83830ac8e372ecd32e1623db1c040
+tar -xzf test262.tar.gz -C <scratch>/suite   # the runs' --test262 is <scratch>/suite/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
