@@ -1,0 +1,14 @@
+# <trx>
+broiler.ecmascript.conformance.tests.dll: {'Passed': 153}
+   Broiler.ECMAScript.Conformance.Tests.LibraryRunTests: {'Passed': 20}
+broiler.ecmascript.architecture.tests.dll: {'Passed': 32}
+   Broiler.ECMAScript.Architecture.Tests.RuleRegisterTests: {'Passed': 4}
+   Broiler.ECMAScript.Architecture.Tests.SharedRuleTests: {'Passed': 28}
+broiler.ecmascript.algorithms.tests.dll: {'Passed': 1296}
+broiler.ecmascript.frontend.tests.dll: {'Passed': 1051}
+   Broiler.ECMAScript.Syntax.Tests.ContractTests: {'Passed': 28}
+broiler.ecmascript.generation.tests.dll: {'Passed': 52}
+broiler.ecmascript.intl.tests.dll: {'Passed': 296}
+   Broiler.ECMAScript.Intl.Tests.CollationTests: {'Passed': 17}
+   Broiler.ECMAScript.Intl.Tests.ContractTests: {'Passed': 4}
+   Broiler.ECMAScript.Intl.Tests.Differential.DifferentialCheckTests: {'Passed': 24}

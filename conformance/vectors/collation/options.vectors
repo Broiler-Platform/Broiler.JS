@@ -115,8 +115,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a" str:"\uFF41"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O5b (a correction of Broiler.JS): below the tertiary strength Broiler.JS keeps width differences and the squared katakana word U+3300 apart from their decompositions ("the host's IgnoreCase | IgnoreNonSpace keeps the width and compatibility difference"), at base and, by the dated notes of 2026-11-02 on row O5b, at accent and case too: NBSP against a space at base, U+FF21 against A and U+3300 against its katakana at base and accent, and a against U+FF41 at base, accent and case, the pairs its run differed on; the other compatibility forms the vectors hold (U+FB01, U+01C6, U+2460, U+00AA, U+00BD, U+2163, U+00B2, U+24D0) it answers as the reference does; the reference and Broiler.VM fold the width forms and U+3300, and the host's ICU 74.2 at the secondary and primary strengths answers as the reference does; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base"}).compare("a","\uFF41"))+1]
 note: a against U+FF41 under en {sensitivity:"base"}: rows O6 and O5b (O6 same; O5b a correction of Broiler.JS): sensitivity base (base folds width and compatibility differences, row O5b)
@@ -292,8 +291,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a" str:"\uFF41"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O5b (a correction of Broiler.JS): below the tertiary strength Broiler.JS keeps width differences and the squared katakana word U+3300 apart from their decompositions ("the host's IgnoreCase | IgnoreNonSpace keeps the width and compatibility difference"), at base and, by the dated notes of 2026-11-02 on row O5b, at accent and case too: NBSP against a space at base, U+FF21 against A and U+3300 against its katakana at base and accent, and a against U+FF41 at base, accent and case, the pairs its run differed on; the other compatibility forms the vectors hold (U+FB01, U+01C6, U+2460, U+00AA, U+00BD, U+2163, U+00B2, U+24D0) it answers as the reference does; the reference and Broiler.VM fold the width forms and U+3300, and the host's ICU 74.2 at the secondary and primary strengths answers as the reference does; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"base",usage:"search"}).compare("a","\uFF41"))+1]
 note: a against U+FF41 under en {sensitivity:"base",usage:"search"}: rows O6 and O5b (O6 same; O5b a correction of Broiler.JS): sensitivity base, usage search (base folds width and compatibility differences, row O5b)
@@ -458,8 +456,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a" str:"\uFF41"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O5b (a correction of Broiler.JS): below the tertiary strength Broiler.JS keeps width differences and the squared katakana word U+3300 apart from their decompositions ("the host's IgnoreCase | IgnoreNonSpace keeps the width and compatibility difference"), at base and, by the dated notes of 2026-11-02 on row O5b, at accent and case too: NBSP against a space at base, U+FF21 against A and U+3300 against its katakana at base and accent, and a against U+FF41 at base, accent and case, the pairs its run differed on; the other compatibility forms the vectors hold (U+FB01, U+01C6, U+2460, U+00AA, U+00BD, U+2163, U+00B2, U+24D0) it answers as the reference does; the reference and Broiler.VM fold the width forms and U+3300, and the host's ICU 74.2 at the secondary and primary strengths answers as the reference does; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"accent"}).compare("a","\uFF41"))+1]
 note: a against U+FF41 under en {sensitivity:"accent"}: rows O6 and O5b (O6 same; O5b a correction of Broiler.JS): sensitivity accent (accent folds width and compatibility differences, row O5b)
@@ -635,8 +632,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a" str:"\uFF41"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O5b (a correction of Broiler.JS): below the tertiary strength Broiler.JS keeps width differences and the squared katakana word U+3300 apart from their decompositions ("the host's IgnoreCase | IgnoreNonSpace keeps the width and compatibility difference"), at base and, by the dated notes of 2026-11-02 on row O5b, at accent and case too: NBSP against a space at base, U+FF21 against A and U+3300 against its katakana at base and accent, and a against U+FF41 at base, accent and case, the pairs its run differed on; the other compatibility forms the vectors hold (U+FB01, U+01C6, U+2460, U+00AA, U+00BD, U+2163, U+00B2, U+24D0) it answers as the reference does; the reference and Broiler.VM fold the width forms and U+3300, and the host's ICU 74.2 at the secondary and primary strengths answers as the reference does; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"accent",usage:"search"}).compare("a","\uFF41"))+1]
 note: a against U+FF41 under en {sensitivity:"accent",usage:"search"}: rows O6 and O5b (O6 same; O5b a correction of Broiler.JS): sensitivity accent, usage search (accent folds width and compatibility differences, row O5b)
@@ -812,8 +808,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a" str:"\uFF41"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O5b (a correction of Broiler.JS): below the tertiary strength Broiler.JS keeps width differences and the squared katakana word U+3300 apart from their decompositions ("the host's IgnoreCase | IgnoreNonSpace keeps the width and compatibility difference"), at base and, by the dated notes of 2026-11-02 on row O5b, at accent and case too: NBSP against a space at base, U+FF21 against A and U+3300 against its katakana at base and accent, and a against U+FF41 at base, accent and case, the pairs its run differed on; the other compatibility forms the vectors hold (U+FB01, U+01C6, U+2460, U+00AA, U+00BD, U+2163, U+00B2, U+24D0) it answers as the reference does; the reference and Broiler.VM fold the width forms and U+3300, and the host's ICU 74.2 at the secondary and primary strengths answers as the reference does; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"case"}).compare("a","\uFF41"))+1]
 note: a against U+FF41 under en {sensitivity:"case"}: rows O6 and O5b (O6 same; O5b a correction of Broiler.JS): sensitivity case (case folds width and compatibility differences, row O5b)
@@ -989,8 +984,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a" str:"\uFF41"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O5b (a correction of Broiler.JS): below the tertiary strength Broiler.JS keeps width differences and the squared katakana word U+3300 apart from their decompositions ("the host's IgnoreCase | IgnoreNonSpace keeps the width and compatibility difference"), at base and, by the dated notes of 2026-11-02 on row O5b, at accent and case too: NBSP against a space at base, U+FF21 against A and U+3300 against its katakana at base and accent, and a against U+FF41 at base, accent and case, the pairs its run differed on; the other compatibility forms the vectors hold (U+FB01, U+01C6, U+2460, U+00AA, U+00BD, U+2163, U+00B2, U+24D0) it answers as the reference does; the reference and Broiler.VM fold the width forms and U+3300, and the host's ICU 74.2 at the secondary and primary strengths answers as the reference does; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{sensitivity:"case",usage:"search"}).compare("a","\uFF41"))+1]
 note: a against U+FF41 under en {sensitivity:"case",usage:"search"}: rows O6 and O5b (O6 same; O5b a correction of Broiler.JS): sensitivity case, usage search (case folds width and compatibility differences, row O5b)
@@ -1452,8 +1446,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"a" str:"\u00E4"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O6 (same in both, and for this answer data policy, C5, by the dated note of 2026-11-02 on the row, the owner's decision E-o6w): sensitivity base under de with usage "search": Broiler.JS answers "the same orders" as the reference and Broiler.VM on the correspondence's host, where German search's tailoring, row O16's data, applies; on the CI host of run 41418502645's job 125188274552, engine vectors (windows-latest), Windows Server 2025 (image windows-2025-vs2026 20261021.278.1), whose ICU is the OS's icu.dll, of a version neither the job's log nor the image's software list states, the collator its CompareInfo gives for de with usage "search" applies no tailoring, so a against U+00E4 at base is = where German search has a < U+00E4, as the reference answers with usage "search" dropped; that is the host's answer, as row O16's is, whether from its icu.dll's data or from how the runtime builds the culture there, which the run does not establish (under und with usage "search" that host applies root search); the vector matches on the host revision 34's first runs were taken on (Ubuntu 24.04.5, ICU 74.2), where a run reports this divergence as no longer holding; answered at SJL-17.5, where CLDR 48.2.0's data replaces the host's for German search (JSD-0084 decision E3)
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{sensitivity:"base",usage:"search"}).compare("a","\u00E4"))+1]
 note: a against U+00E4 under de {sensitivity:"base",usage:"search"}: row O6 (same): German search at base
@@ -1706,8 +1699,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"en" str:"ab" str:"a b" str:"a-b" str:"a_b" str:"a.b" str:"a\u00A0b" str:"aB" str:"a\u2010b" str:"a$b" str:"a+b" str:"a\u20ACb" str:"" str:" " str:"-"
 out: value: str:" <   < - < a b = a\u00A0b < a_b < a-b < a\u2010b < a.b < a+b < a$b < a\u20ACb < ab = aB"
-class: divergence
-divergence.broiler-js: row O5b (a correction of Broiler.JS): below the tertiary strength Broiler.JS keeps width differences and the squared katakana word U+3300 apart from their decompositions ("the host's IgnoreCase | IgnoreNonSpace keeps the width and compatibility difference"), at base and, by the dated notes of 2026-11-02 on row O5b, at accent and case too: NBSP against a space at base, U+FF21 against A and U+3300 against its katakana at base and accent, and a against U+FF41 at base, accent and case, the pairs its run differed on; the other compatibility forms the vectors hold (U+FB01, U+01C6, U+2460, U+00AA, U+00BD, U+2163, U+00B2, U+24D0) it answers as the reference does; the reference and Broiler.VM fold the width forms and U+3300, and the host's ICU 74.2 at the secondary and primary strengths answers as the reference does; corrected at SJL-17.5
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}),["ab","a b","a-b","a_b","a.b","a\u00A0b","aB","a\u2010b","a$b","a+b","a\u20ACb",""," ","-"])
 note: 14 strings sorted under en {ignorePunctuation:false,sensitivity:"base"}, each neighbour's relation written between them: rows O5a and O5b (O5a a correction of Broiler.JS; O5b a correction of Broiler.JS): ignorePunctuation false is UTS #10's shifted alternate up to CLDR's maxVariable, punctuation: spaces and punctuation, not symbols (base folds width and compatibility differences, row O5b)
@@ -1773,8 +1765,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a b" str:"a\u00A0b"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O5b (a correction of Broiler.JS): below the tertiary strength Broiler.JS keeps width differences and the squared katakana word U+3300 apart from their decompositions ("the host's IgnoreCase | IgnoreNonSpace keeps the width and compatibility difference"), at base and, by the dated notes of 2026-11-02 on row O5b, at accent and case too: NBSP against a space at base, U+FF21 against A and U+3300 against its katakana at base and accent, and a against U+FF41 at base, accent and case, the pairs its run differed on; the other compatibility forms the vectors hold (U+FB01, U+01C6, U+2460, U+00AA, U+00BD, U+2163, U+00B2, U+24D0) it answers as the reference does; the reference and Broiler.VM fold the width forms and U+3300, and the host's ICU 74.2 at the secondary and primary strengths answers as the reference does; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:false,sensitivity:"base"}).compare("a b","a\u00A0b"))+1]
 note: aU+0020b against aU+00A0b under en {ignorePunctuation:false,sensitivity:"base"}: rows O5a and O5b (O5a a correction of Broiler.JS; O5b a correction of Broiler.JS): ignorePunctuation false at base (base folds width and compatibility differences, row O5b)
@@ -1950,8 +1941,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"en" str:"ab" str:"a b" str:"a-b" str:"a_b" str:"a.b" str:"a\u00A0b" str:"aB" str:"a\u2010b" str:"a$b" str:"a+b" str:"a\u20ACb" str:"" str:" " str:"-"
 out: value: str:" =   = - < a+b < a$b < a\u20ACb < ab = a b = a-b = a_b = a.b = a\u00A0b = a\u2010b < aB"
-class: divergence
-divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en",{ignorePunctuation:true}),["ab","a b","a-b","a_b","a.b","a\u00A0b","aB","a\u2010b","a$b","a+b","a\u20ACb",""," ","-"])
 note: 14 strings sorted under en {ignorePunctuation:true}, each neighbour's relation written between them: row O5a (a correction of Broiler.JS): ignorePunctuation true is UTS #10's shifted alternate up to CLDR's maxVariable, punctuation: spaces and punctuation, not symbols
@@ -2039,8 +2029,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"ab" str:"a$b"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("ab","a$b"))+1]
 note: ab against a$b under en {ignorePunctuation:true}: row O5a (a correction of Broiler.JS): ignorePunctuation true
@@ -2051,8 +2040,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"ab" str:"a+b"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("ab","a+b"))+1]
 note: ab against a+b under en {ignorePunctuation:true}: row O5a (a correction of Broiler.JS): ignorePunctuation true
@@ -2063,8 +2051,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"ab" str:"a\u20ACb"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("ab","a\u20ACb"))+1]
 note: ab against aU+20ACb under en {ignorePunctuation:true}: row O5a (a correction of Broiler.JS): ignorePunctuation true
@@ -2075,8 +2062,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a$b" str:"a+b"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("a$b","a+b"))+1]
 note: a$b against a+b under en {ignorePunctuation:true}: row O5a (a correction of Broiler.JS): ignorePunctuation true
@@ -2087,8 +2073,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a+b" str:"a\u20ACb"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true}).compare("a+b","a\u20ACb"))+1]
 note: a+b against aU+20ACb under en {ignorePunctuation:true}: row O5a (a correction of Broiler.JS): ignorePunctuation true
@@ -2198,8 +2183,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"en" str:"ab" str:"a b" str:"a-b" str:"a_b" str:"a.b" str:"a\u00A0b" str:"aB" str:"a\u2010b" str:"a$b" str:"a+b" str:"a\u20ACb" str:"" str:" " str:"-"
 out: value: str:" =   = - < a+b < a$b < a\u20ACb < ab = a b = a-b = a_b = a.b = a\u00A0b = aB = a\u2010b"
-class: divergence
-divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}),["ab","a b","a-b","a_b","a.b","a\u00A0b","aB","a\u2010b","a$b","a+b","a\u20ACb",""," ","-"])
 note: 14 strings sorted under en {ignorePunctuation:true,sensitivity:"base"}, each neighbour's relation written between them: rows O5a and O5b (O5a a correction of Broiler.JS; O5b a correction of Broiler.JS): ignorePunctuation true is UTS #10's shifted alternate up to CLDR's maxVariable, punctuation: spaces and punctuation, not symbols (base folds width and compatibility differences, row O5b)
@@ -2287,8 +2271,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"ab" str:"a$b"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("ab","a$b"))+1]
 note: ab against a$b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
@@ -2299,8 +2282,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"ab" str:"a+b"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("ab","a+b"))+1]
 note: ab against a+b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
@@ -2311,8 +2293,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"ab" str:"a\u20ACb"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("ab","a\u20ACb"))+1]
 note: ab against aU+20ACb under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
@@ -2323,8 +2304,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a$b" str:"a+b"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("a$b","a+b"))+1]
 note: a$b against a+b under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
@@ -2335,8 +2315,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a+b" str:"a\u20ACb"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O5a (a correction of Broiler.JS): ignorePunctuation true "is .NET's IgnoreSymbols (:6228-6229): symbols ignored too"; the reference and Broiler.VM ignore spaces and punctuation, CLDR's maxVariable punctuation, and keep symbols; for a CollationTest pair, the host's ICU 74.2 under UTS #10's shifted alternate with maxVariable punctuation answers as the reference does, so the difference is the option's mapping and not the host's data; corrected at SJL-17.5 (JSD-0084's list of Broiler.JS's corrections)
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{ignorePunctuation:true,sensitivity:"base"}).compare("a+b","a\u20ACb"))+1]
 note: a+b against aU+20ACb under en {ignorePunctuation:true,sensitivity:"base"}: row O5a (a correction of Broiler.JS): ignorePunctuation true at base
@@ -2512,8 +2491,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"en" str:"a10" str:"a2" str:"a02" str:"a1" str:"a01" str:"a001" str:"a9" str:"a\u0661\u0660" str:"a\u0662" str:"a\uFF12" str:"10" str:"9" str:"1.5" str:"1.10" str:"b1" str:"a"
 out: value: str:"1.5 < 1.10 < 9 < 10 < a < a1 = a01 = a001 < a2 = a02 = a\u0662 = a\uFF12 < a9 < a10 = a\u0661\u0660 < b1"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en",{numeric:true}),["a10","a2","a02","a1","a01","a001","a9","a\u0661\u0660","a\u0662","a\uFF12","10","9","1.5","1.10","b1","a"])
 note: 16 strings sorted under en {numeric:true}, each neighbour's relation written between them: row O7 (a correction of Broiler.JS): the option numeric true; numeric collation compares runs of decimal digits of any script by value (UTS #35's kn)
@@ -2535,8 +2513,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a2" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{numeric:true}).compare("a2","a10"))+1]
 note: a2 against a10 under en {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true
@@ -2547,8 +2524,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a01" str:"a1"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{numeric:true}).compare("a01","a1"))+1]
 note: a01 against a1 under en {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true
@@ -2559,8 +2535,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a001" str:"a01"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{numeric:true}).compare("a001","a01"))+1]
 note: a001 against a01 under en {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true
@@ -2571,8 +2546,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a02" str:"a2"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{numeric:true}).compare("a02","a2"))+1]
 note: a02 against a2 under en {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true
@@ -2583,8 +2557,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a9" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{numeric:true}).compare("a9","a10"))+1]
 note: a9 against a10 under en {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true
@@ -2595,8 +2568,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a\u0662" str:"a\u0661\u0660"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{numeric:true}).compare("a\u0662","a\u0661\u0660"))+1]
 note: aU+0662 against aU+0661U+0660 under en {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true
@@ -2607,8 +2579,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a\uFF12" str:"a\uFF11\uFF10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{numeric:true}).compare("a\uFF12","a\uFF11\uFF10"))+1]
 note: aU+FF12 against aU+FF11U+FF10 under en {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true
@@ -2619,8 +2590,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a\u0662" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{numeric:true}).compare("a\u0662","a10"))+1]
 note: aU+0662 against a10 under en {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true
@@ -2631,8 +2601,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"1.5" str:"1.10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{numeric:true}).compare("1.5","1.10"))+1]
 note: 1.5 against 1.10 under en {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true
@@ -2643,8 +2612,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"9" str:"10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{numeric:true}).compare("9","10"))+1]
 note: 9 against 10 under en {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true
@@ -2699,8 +2667,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"x100" str:"x99"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{numeric:true}).compare("x100","x99"))+1]
 note: x100 against x99 under en {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true
@@ -2711,8 +2678,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"0" str:"00"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{numeric:true}).compare("0","00"))+1]
 note: 0 against 00 under en {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true
@@ -3152,8 +3118,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"en-u-kn" str:"a10" str:"a2" str:"a02" str:"a1" str:"a01" str:"a001" str:"a9" str:"a\u0661\u0660" str:"a\u0662" str:"a\uFF12" str:"10" str:"9" str:"1.5" str:"1.10" str:"b1" str:"a"
 out: value: str:"1.5 < 1.10 < 9 < 10 < a < a1 = a01 = a001 < a2 = a02 = a\u0662 = a\uFF12 < a9 < a10 = a\u0661\u0660 < b1"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en-u-kn"),["a10","a2","a02","a1","a01","a001","a9","a\u0661\u0660","a\u0662","a\uFF12","10","9","1.5","1.10","b1","a"])
 note: 16 strings sorted under en-u-kn, each neighbour's relation written between them: row O7 (a correction of Broiler.JS): the keyword -u-kn; numeric collation compares runs of decimal digits of any script by value (UTS #35's kn)
@@ -3175,8 +3140,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn" str:"a2" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn").compare("a2","a10"))+1]
 note: a2 against a10 under en-u-kn: row O7 (a correction of Broiler.JS): the keyword -u-kn
@@ -3187,8 +3151,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn" str:"a01" str:"a1"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn").compare("a01","a1"))+1]
 note: a01 against a1 under en-u-kn: row O7 (a correction of Broiler.JS): the keyword -u-kn
@@ -3199,8 +3162,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn" str:"a001" str:"a01"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn").compare("a001","a01"))+1]
 note: a001 against a01 under en-u-kn: row O7 (a correction of Broiler.JS): the keyword -u-kn
@@ -3211,8 +3173,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn" str:"a02" str:"a2"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn").compare("a02","a2"))+1]
 note: a02 against a2 under en-u-kn: row O7 (a correction of Broiler.JS): the keyword -u-kn
@@ -3223,8 +3184,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn" str:"a9" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn").compare("a9","a10"))+1]
 note: a9 against a10 under en-u-kn: row O7 (a correction of Broiler.JS): the keyword -u-kn
@@ -3235,8 +3195,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn" str:"a\u0662" str:"a\u0661\u0660"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn").compare("a\u0662","a\u0661\u0660"))+1]
 note: aU+0662 against aU+0661U+0660 under en-u-kn: row O7 (a correction of Broiler.JS): the keyword -u-kn
@@ -3247,8 +3206,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn" str:"a\uFF12" str:"a\uFF11\uFF10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn").compare("a\uFF12","a\uFF11\uFF10"))+1]
 note: aU+FF12 against aU+FF11U+FF10 under en-u-kn: row O7 (a correction of Broiler.JS): the keyword -u-kn
@@ -3259,8 +3217,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn" str:"a\u0662" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn").compare("a\u0662","a10"))+1]
 note: aU+0662 against a10 under en-u-kn: row O7 (a correction of Broiler.JS): the keyword -u-kn
@@ -3271,8 +3228,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn" str:"1.5" str:"1.10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn").compare("1.5","1.10"))+1]
 note: 1.5 against 1.10 under en-u-kn: row O7 (a correction of Broiler.JS): the keyword -u-kn
@@ -3283,8 +3239,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn" str:"9" str:"10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn").compare("9","10"))+1]
 note: 9 against 10 under en-u-kn: row O7 (a correction of Broiler.JS): the keyword -u-kn
@@ -3339,8 +3294,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn" str:"x100" str:"x99"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn").compare("x100","x99"))+1]
 note: x100 against x99 under en-u-kn: row O7 (a correction of Broiler.JS): the keyword -u-kn
@@ -3351,8 +3305,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn" str:"0" str:"00"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn").compare("0","00"))+1]
 note: 0 against 00 under en-u-kn: row O7 (a correction of Broiler.JS): the keyword -u-kn
@@ -3374,8 +3327,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"en-u-kn-true" str:"a10" str:"a2" str:"a02" str:"a1" str:"a01" str:"a001" str:"a9" str:"a\u0661\u0660" str:"a\u0662" str:"a\uFF12" str:"10" str:"9" str:"1.5" str:"1.10" str:"b1" str:"a"
 out: value: str:"1.5 < 1.10 < 9 < 10 < a < a1 = a01 = a001 < a2 = a02 = a\u0662 = a\uFF12 < a9 < a10 = a\u0661\u0660 < b1"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en-u-kn-true"),["a10","a2","a02","a1","a01","a001","a9","a\u0661\u0660","a\u0662","a\uFF12","10","9","1.5","1.10","b1","a"])
 note: 16 strings sorted under en-u-kn-true, each neighbour's relation written between them: row O7 (a correction of Broiler.JS): the keyword -u-kn-true; numeric collation compares runs of decimal digits of any script by value (UTS #35's kn)
@@ -3397,8 +3349,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-true" str:"a2" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-true").compare("a2","a10"))+1]
 note: a2 against a10 under en-u-kn-true: row O7 (a correction of Broiler.JS): the keyword -u-kn-true
@@ -3409,8 +3360,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-true" str:"a01" str:"a1"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-true").compare("a01","a1"))+1]
 note: a01 against a1 under en-u-kn-true: row O7 (a correction of Broiler.JS): the keyword -u-kn-true
@@ -3421,8 +3371,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-true" str:"a001" str:"a01"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-true").compare("a001","a01"))+1]
 note: a001 against a01 under en-u-kn-true: row O7 (a correction of Broiler.JS): the keyword -u-kn-true
@@ -3433,8 +3382,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-true" str:"a02" str:"a2"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-true").compare("a02","a2"))+1]
 note: a02 against a2 under en-u-kn-true: row O7 (a correction of Broiler.JS): the keyword -u-kn-true
@@ -3445,8 +3393,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-true" str:"a9" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-true").compare("a9","a10"))+1]
 note: a9 against a10 under en-u-kn-true: row O7 (a correction of Broiler.JS): the keyword -u-kn-true
@@ -3457,8 +3404,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-true" str:"a\u0662" str:"a\u0661\u0660"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-true").compare("a\u0662","a\u0661\u0660"))+1]
 note: aU+0662 against aU+0661U+0660 under en-u-kn-true: row O7 (a correction of Broiler.JS): the keyword -u-kn-true
@@ -3469,8 +3415,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-true" str:"a\uFF12" str:"a\uFF11\uFF10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-true").compare("a\uFF12","a\uFF11\uFF10"))+1]
 note: aU+FF12 against aU+FF11U+FF10 under en-u-kn-true: row O7 (a correction of Broiler.JS): the keyword -u-kn-true
@@ -3481,8 +3426,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-true" str:"a\u0662" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-true").compare("a\u0662","a10"))+1]
 note: aU+0662 against a10 under en-u-kn-true: row O7 (a correction of Broiler.JS): the keyword -u-kn-true
@@ -3493,8 +3437,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-true" str:"1.5" str:"1.10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-true").compare("1.5","1.10"))+1]
 note: 1.5 against 1.10 under en-u-kn-true: row O7 (a correction of Broiler.JS): the keyword -u-kn-true
@@ -3505,8 +3448,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-true" str:"9" str:"10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-true").compare("9","10"))+1]
 note: 9 against 10 under en-u-kn-true: row O7 (a correction of Broiler.JS): the keyword -u-kn-true
@@ -3561,8 +3503,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-true" str:"x100" str:"x99"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-true").compare("x100","x99"))+1]
 note: x100 against x99 under en-u-kn-true: row O7 (a correction of Broiler.JS): the keyword -u-kn-true
@@ -3573,8 +3514,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-true" str:"0" str:"00"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-true").compare("0","00"))+1]
 note: 0 against 00 under en-u-kn-true: row O7 (a correction of Broiler.JS): the keyword -u-kn-true
@@ -4014,8 +3954,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"en-u-kn-false" str:"a10" str:"a2" str:"a02" str:"a1" str:"a01" str:"a001" str:"a9" str:"a\u0661\u0660" str:"a\u0662" str:"a\uFF12" str:"10" str:"9" str:"1.5" str:"1.10" str:"b1" str:"a"
 out: value: str:"1.5 < 1.10 < 9 < 10 < a < a1 = a01 = a001 < a2 = a02 = a\u0662 = a\uFF12 < a9 < a10 = a\u0661\u0660 < b1"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en-u-kn-false",{numeric:true}),["a10","a2","a02","a1","a01","a001","a9","a\u0661\u0660","a\u0662","a\uFF12","10","9","1.5","1.10","b1","a"])
 note: 16 strings sorted under en-u-kn-false {numeric:true}, each neighbour's relation written between them: row O7 (a correction of Broiler.JS): the option numeric true over the keyword -u-kn-false; numeric collation compares runs of decimal digits of any script by value (UTS #35's kn)
@@ -4037,8 +3976,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-false" str:"a2" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-false",{numeric:true}).compare("a2","a10"))+1]
 note: a2 against a10 under en-u-kn-false {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true over the keyword -u-kn-false
@@ -4049,8 +3987,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-false" str:"a01" str:"a1"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-false",{numeric:true}).compare("a01","a1"))+1]
 note: a01 against a1 under en-u-kn-false {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true over the keyword -u-kn-false
@@ -4061,8 +3998,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-false" str:"a001" str:"a01"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-false",{numeric:true}).compare("a001","a01"))+1]
 note: a001 against a01 under en-u-kn-false {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true over the keyword -u-kn-false
@@ -4073,8 +4009,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-false" str:"a02" str:"a2"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-false",{numeric:true}).compare("a02","a2"))+1]
 note: a02 against a2 under en-u-kn-false {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true over the keyword -u-kn-false
@@ -4085,8 +4020,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-false" str:"a9" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-false",{numeric:true}).compare("a9","a10"))+1]
 note: a9 against a10 under en-u-kn-false {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true over the keyword -u-kn-false
@@ -4097,8 +4031,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-false" str:"a\u0662" str:"a\u0661\u0660"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-false",{numeric:true}).compare("a\u0662","a\u0661\u0660"))+1]
 note: aU+0662 against aU+0661U+0660 under en-u-kn-false {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true over the keyword -u-kn-false
@@ -4109,8 +4042,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-false" str:"a\uFF12" str:"a\uFF11\uFF10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-false",{numeric:true}).compare("a\uFF12","a\uFF11\uFF10"))+1]
 note: aU+FF12 against aU+FF11U+FF10 under en-u-kn-false {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true over the keyword -u-kn-false
@@ -4121,8 +4053,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-false" str:"a\u0662" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-false",{numeric:true}).compare("a\u0662","a10"))+1]
 note: aU+0662 against a10 under en-u-kn-false {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true over the keyword -u-kn-false
@@ -4133,8 +4064,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-false" str:"1.5" str:"1.10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-false",{numeric:true}).compare("1.5","1.10"))+1]
 note: 1.5 against 1.10 under en-u-kn-false {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true over the keyword -u-kn-false
@@ -4145,8 +4075,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-false" str:"9" str:"10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-false",{numeric:true}).compare("9","10"))+1]
 note: 9 against 10 under en-u-kn-false {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true over the keyword -u-kn-false
@@ -4201,8 +4130,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-false" str:"x100" str:"x99"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-false",{numeric:true}).compare("x100","x99"))+1]
 note: x100 against x99 under en-u-kn-false {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true over the keyword -u-kn-false
@@ -4213,8 +4141,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-false" str:"0" str:"00"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-false",{numeric:true}).compare("0","00"))+1]
 note: 0 against 00 under en-u-kn-false {numeric:true}: row O7 (a correction of Broiler.JS): the option numeric true over the keyword -u-kn-false
@@ -4236,8 +4163,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"de" str:"a10" str:"a2" str:"a02" str:"a1" str:"a01" str:"a001" str:"a9" str:"a\u0661\u0660" str:"a\u0662" str:"a\uFF12" str:"10" str:"9" str:"1.5" str:"1.10" str:"b1" str:"a"
 out: value: str:"1.5 < 1.10 < 9 < 10 < a < a1 = a01 = a001 < a2 = a02 = a\u0662 = a\uFF12 < a9 < a10 = a\u0661\u0660 < b1"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("de",{numeric:true}),["a10","a2","a02","a1","a01","a001","a9","a\u0661\u0660","a\u0662","a\uFF12","10","9","1.5","1.10","b1","a"])
 note: 16 strings sorted under de {numeric:true}, each neighbour's relation written between them: row O7 (a correction of Broiler.JS): German with numeric true; numeric collation compares runs of decimal digits of any script by value (UTS #35's kn)
@@ -4259,8 +4185,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"a2" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{numeric:true}).compare("a2","a10"))+1]
 note: a2 against a10 under de {numeric:true}: row O7 (a correction of Broiler.JS): German with numeric true
@@ -4271,8 +4196,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"a01" str:"a1"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{numeric:true}).compare("a01","a1"))+1]
 note: a01 against a1 under de {numeric:true}: row O7 (a correction of Broiler.JS): German with numeric true
@@ -4283,8 +4207,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"a001" str:"a01"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{numeric:true}).compare("a001","a01"))+1]
 note: a001 against a01 under de {numeric:true}: row O7 (a correction of Broiler.JS): German with numeric true
@@ -4295,8 +4218,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"a02" str:"a2"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{numeric:true}).compare("a02","a2"))+1]
 note: a02 against a2 under de {numeric:true}: row O7 (a correction of Broiler.JS): German with numeric true
@@ -4307,8 +4229,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"a9" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{numeric:true}).compare("a9","a10"))+1]
 note: a9 against a10 under de {numeric:true}: row O7 (a correction of Broiler.JS): German with numeric true
@@ -4319,8 +4240,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"a\u0662" str:"a\u0661\u0660"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{numeric:true}).compare("a\u0662","a\u0661\u0660"))+1]
 note: aU+0662 against aU+0661U+0660 under de {numeric:true}: row O7 (a correction of Broiler.JS): German with numeric true
@@ -4331,8 +4251,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"a\uFF12" str:"a\uFF11\uFF10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{numeric:true}).compare("a\uFF12","a\uFF11\uFF10"))+1]
 note: aU+FF12 against aU+FF11U+FF10 under de {numeric:true}: row O7 (a correction of Broiler.JS): German with numeric true
@@ -4343,8 +4262,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"a\u0662" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{numeric:true}).compare("a\u0662","a10"))+1]
 note: aU+0662 against a10 under de {numeric:true}: row O7 (a correction of Broiler.JS): German with numeric true
@@ -4355,8 +4273,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"1.5" str:"1.10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{numeric:true}).compare("1.5","1.10"))+1]
 note: 1.5 against 1.10 under de {numeric:true}: row O7 (a correction of Broiler.JS): German with numeric true
@@ -4367,8 +4284,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"9" str:"10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{numeric:true}).compare("9","10"))+1]
 note: 9 against 10 under de {numeric:true}: row O7 (a correction of Broiler.JS): German with numeric true
@@ -4423,8 +4339,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"x100" str:"x99"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{numeric:true}).compare("x100","x99"))+1]
 note: x100 against x99 under de {numeric:true}: row O7 (a correction of Broiler.JS): German with numeric true
@@ -4435,8 +4350,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"0" str:"00"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{numeric:true}).compare("0","00"))+1]
 note: 0 against 00 under de {numeric:true}: row O7 (a correction of Broiler.JS): German with numeric true
@@ -4458,8 +4372,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kn" str:"a10" str:"a2" str:"a02" str:"a1" str:"a01" str:"a001" str:"a9" str:"a\u0661\u0660" str:"a\u0662" str:"a\uFF12" str:"10" str:"9" str:"1.5" str:"1.10" str:"b1" str:"a"
 out: value: str:"1.5 < 1.10 < 9 < 10 < a < a1 = a01 = a001 < a2 = a02 = a\u0662 = a\uFF12 < a9 < a10 = a\u0661\u0660 < b1"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("de-u-co-phonebk-kn"),["a10","a2","a02","a1","a01","a001","a9","a\u0661\u0660","a\u0662","a\uFF12","10","9","1.5","1.10","b1","a"])
 note: 16 strings sorted under de-u-co-phonebk-kn, each neighbour's relation written between them: row O7 (a correction of Broiler.JS): German phonebook with -u-kn; numeric collation compares runs of decimal digits of any script by value (UTS #35's kn)
@@ -4481,8 +4394,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kn" str:"a2" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kn").compare("a2","a10"))+1]
 note: a2 against a10 under de-u-co-phonebk-kn: row O7 (a correction of Broiler.JS): German phonebook with -u-kn
@@ -4493,8 +4405,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kn" str:"a01" str:"a1"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kn").compare("a01","a1"))+1]
 note: a01 against a1 under de-u-co-phonebk-kn: row O7 (a correction of Broiler.JS): German phonebook with -u-kn
@@ -4505,8 +4416,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kn" str:"a001" str:"a01"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kn").compare("a001","a01"))+1]
 note: a001 against a01 under de-u-co-phonebk-kn: row O7 (a correction of Broiler.JS): German phonebook with -u-kn
@@ -4517,8 +4427,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kn" str:"a02" str:"a2"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kn").compare("a02","a2"))+1]
 note: a02 against a2 under de-u-co-phonebk-kn: row O7 (a correction of Broiler.JS): German phonebook with -u-kn
@@ -4529,8 +4438,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kn" str:"a9" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kn").compare("a9","a10"))+1]
 note: a9 against a10 under de-u-co-phonebk-kn: row O7 (a correction of Broiler.JS): German phonebook with -u-kn
@@ -4541,8 +4449,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kn" str:"a\u0662" str:"a\u0661\u0660"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kn").compare("a\u0662","a\u0661\u0660"))+1]
 note: aU+0662 against aU+0661U+0660 under de-u-co-phonebk-kn: row O7 (a correction of Broiler.JS): German phonebook with -u-kn
@@ -4553,8 +4460,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kn" str:"a\uFF12" str:"a\uFF11\uFF10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kn").compare("a\uFF12","a\uFF11\uFF10"))+1]
 note: aU+FF12 against aU+FF11U+FF10 under de-u-co-phonebk-kn: row O7 (a correction of Broiler.JS): German phonebook with -u-kn
@@ -4565,8 +4471,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kn" str:"a\u0662" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kn").compare("a\u0662","a10"))+1]
 note: aU+0662 against a10 under de-u-co-phonebk-kn: row O7 (a correction of Broiler.JS): German phonebook with -u-kn
@@ -4577,8 +4482,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kn" str:"1.5" str:"1.10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kn").compare("1.5","1.10"))+1]
 note: 1.5 against 1.10 under de-u-co-phonebk-kn: row O7 (a correction of Broiler.JS): German phonebook with -u-kn
@@ -4589,8 +4493,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kn" str:"9" str:"10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kn").compare("9","10"))+1]
 note: 9 against 10 under de-u-co-phonebk-kn: row O7 (a correction of Broiler.JS): German phonebook with -u-kn
@@ -4645,8 +4548,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kn" str:"x100" str:"x99"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kn").compare("x100","x99"))+1]
 note: x100 against x99 under de-u-co-phonebk-kn: row O7 (a correction of Broiler.JS): German phonebook with -u-kn
@@ -4657,8 +4559,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kn" str:"0" str:"00"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kn").compare("0","00"))+1]
 note: 0 against 00 under de-u-co-phonebk-kn: row O7 (a correction of Broiler.JS): German phonebook with -u-kn
@@ -4691,8 +4592,7 @@ area: intl
 op: String.prototype.localeCompare
 in: str:"en" str:"a2" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("a2".localeCompare("a10","en",{numeric:true}))+1]
 note: a2 against a10 under en {numeric:true}: row O7 (a correction of Broiler.JS): numeric true through localeCompare
@@ -4703,8 +4603,7 @@ area: intl
 op: String.prototype.localeCompare
 in: str:"en" str:"a01" str:"a1"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("a01".localeCompare("a1","en",{numeric:true}))+1]
 note: a01 against a1 under en {numeric:true}: row O7 (a correction of Broiler.JS): numeric true through localeCompare
@@ -4715,8 +4614,7 @@ area: intl
 op: String.prototype.localeCompare
 in: str:"en" str:"a001" str:"a01"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("a001".localeCompare("a01","en",{numeric:true}))+1]
 note: a001 against a01 under en {numeric:true}: row O7 (a correction of Broiler.JS): numeric true through localeCompare
@@ -4727,8 +4625,7 @@ area: intl
 op: String.prototype.localeCompare
 in: str:"en" str:"a02" str:"a2"
 out: value: str:"="
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("a02".localeCompare("a2","en",{numeric:true}))+1]
 note: a02 against a2 under en {numeric:true}: row O7 (a correction of Broiler.JS): numeric true through localeCompare
@@ -4739,8 +4636,7 @@ area: intl
 op: String.prototype.localeCompare
 in: str:"en" str:"a9" str:"a10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("a9".localeCompare("a10","en",{numeric:true}))+1]
 note: a9 against a10 under en {numeric:true}: row O7 (a correction of Broiler.JS): numeric true through localeCompare
@@ -4751,8 +4647,7 @@ area: intl
 op: String.prototype.localeCompare
 in: str:"en" str:"a\u0662" str:"a\u0661\u0660"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("a\u0662".localeCompare("a\u0661\u0660","en",{numeric:true}))+1]
 note: aU+0662 against aU+0661U+0660 under en {numeric:true}: row O7 (a correction of Broiler.JS): numeric true through localeCompare
@@ -4763,8 +4658,7 @@ area: intl
 op: String.prototype.localeCompare
 in: str:"en" str:"a\uFF12" str:"a\uFF11\uFF10"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O7 (a correction of Broiler.JS): numeric "resolved and not applied: resolvedOptions().numeric is true, the order is the code-unit-like digit order ("a10" < "a2"): Compare passes no option for it (:6221-6229)"; the reference and Broiler.VM compare runs of decimal digits by value; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("a\uFF12".localeCompare("a\uFF11\uFF10","en",{numeric:true}))+1]
 note: aU+FF12 against aU+FF11U+FF10 under en {numeric:true}: row O7 (a correction of Broiler.JS): numeric true through localeCompare
@@ -4775,8 +4669,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"en" str:"a" str:"A" str:"b" str:"B" str:"ab" str:"Ab" str:"aB" str:"AB" str:"\u00E4" str:"\u00C4"
 out: value: str:"A < a < \u00C4 < \u00E4 < AB < Ab < aB < ab < B < b"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en",{caseFirst:"upper"}),["a","A","b","B","ab","Ab","aB","AB","\u00E4","\u00C4"])
 note: 10 strings sorted under en {caseFirst:"upper"}, each neighbour's relation written between them: row O8 (a correction of Broiler.JS): caseFirst upper; caseFirst orders case on the tertiary and case levels (UTS #35's kf)
@@ -4787,8 +4680,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a" str:"A"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper"}).compare("a","A"))+1]
 note: a against A under en {caseFirst:"upper"}: row O8 (a correction of Broiler.JS): caseFirst upper
@@ -4799,8 +4691,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"b" str:"B"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper"}).compare("b","B"))+1]
 note: b against B under en {caseFirst:"upper"}: row O8 (a correction of Broiler.JS): caseFirst upper
@@ -4811,8 +4702,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"ab" str:"Ab"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper"}).compare("ab","Ab"))+1]
 note: ab against Ab under en {caseFirst:"upper"}: row O8 (a correction of Broiler.JS): caseFirst upper
@@ -4823,8 +4713,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"aB" str:"Ab"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper"}).compare("aB","Ab"))+1]
 note: aB against Ab under en {caseFirst:"upper"}: row O8 (a correction of Broiler.JS): caseFirst upper
@@ -4835,8 +4724,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"AB" str:"Ab"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper"}).compare("AB","Ab"))+1]
 note: AB against Ab under en {caseFirst:"upper"}: row O8 (a correction of Broiler.JS): caseFirst upper
@@ -4847,8 +4735,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u00E4" str:"\u00C4"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper"}).compare("\u00E4","\u00C4"))+1]
 note: U+00E4 against U+00C4 under en {caseFirst:"upper"}: row O8 (a correction of Broiler.JS): caseFirst upper
@@ -4881,8 +4768,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"Ab" str:"ab"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper"}).compare("Ab","ab"))+1]
 note: Ab against ab under en {caseFirst:"upper"}: row O8 (a correction of Broiler.JS): caseFirst upper
@@ -4893,8 +4779,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"aa" str:"aA"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper"}).compare("aa","aA"))+1]
 note: aa against aA under en {caseFirst:"upper"}: row O8 (a correction of Broiler.JS): caseFirst upper
@@ -5147,8 +5032,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"en" str:"a" str:"A" str:"b" str:"B" str:"ab" str:"Ab" str:"aB" str:"AB" str:"\u00E4" str:"\u00C4"
 out: value: str:"A = \u00C4 < a = \u00E4 < AB < Ab < aB < ab < B < b"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en",{caseFirst:"upper",sensitivity:"case"}),["a","A","b","B","ab","Ab","aB","AB","\u00E4","\u00C4"])
 note: 10 strings sorted under en {caseFirst:"upper",sensitivity:"case"}, each neighbour's relation written between them: row O8 (a correction of Broiler.JS): caseFirst upper with sensitivity case; caseFirst orders case on the tertiary and case levels (UTS #35's kf)
@@ -5159,8 +5043,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"a" str:"A"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper",sensitivity:"case"}).compare("a","A"))+1]
 note: a against A under en {caseFirst:"upper",sensitivity:"case"}: row O8 (a correction of Broiler.JS): caseFirst upper with sensitivity case
@@ -5171,8 +5054,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"b" str:"B"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper",sensitivity:"case"}).compare("b","B"))+1]
 note: b against B under en {caseFirst:"upper",sensitivity:"case"}: row O8 (a correction of Broiler.JS): caseFirst upper with sensitivity case
@@ -5183,8 +5065,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"ab" str:"Ab"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper",sensitivity:"case"}).compare("ab","Ab"))+1]
 note: ab against Ab under en {caseFirst:"upper",sensitivity:"case"}: row O8 (a correction of Broiler.JS): caseFirst upper with sensitivity case
@@ -5195,8 +5076,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"aB" str:"Ab"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper",sensitivity:"case"}).compare("aB","Ab"))+1]
 note: aB against Ab under en {caseFirst:"upper",sensitivity:"case"}: row O8 (a correction of Broiler.JS): caseFirst upper with sensitivity case
@@ -5207,8 +5087,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"AB" str:"Ab"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper",sensitivity:"case"}).compare("AB","Ab"))+1]
 note: AB against Ab under en {caseFirst:"upper",sensitivity:"case"}: row O8 (a correction of Broiler.JS): caseFirst upper with sensitivity case
@@ -5219,8 +5098,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"\u00E4" str:"\u00C4"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper",sensitivity:"case"}).compare("\u00E4","\u00C4"))+1]
 note: U+00E4 against U+00C4 under en {caseFirst:"upper",sensitivity:"case"}: row O8 (a correction of Broiler.JS): caseFirst upper with sensitivity case
@@ -5253,8 +5131,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"Ab" str:"ab"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper",sensitivity:"case"}).compare("Ab","ab"))+1]
 note: Ab against ab under en {caseFirst:"upper",sensitivity:"case"}: row O8 (a correction of Broiler.JS): caseFirst upper with sensitivity case
@@ -5265,8 +5142,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en" str:"aa" str:"aA"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en",{caseFirst:"upper",sensitivity:"case"}).compare("aa","aA"))+1]
 note: aa against aA under en {caseFirst:"upper",sensitivity:"case"}: row O8 (a correction of Broiler.JS): caseFirst upper with sensitivity case
@@ -5640,8 +5516,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"en-u-kf-upper" str:"a" str:"A" str:"b" str:"B" str:"ab" str:"Ab" str:"aB" str:"AB" str:"\u00E4" str:"\u00C4"
 out: value: str:"A < a < \u00C4 < \u00E4 < AB < Ab < aB < ab < B < b"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en-u-kf-upper"),["a","A","b","B","ab","Ab","aB","AB","\u00E4","\u00C4"])
 note: 10 strings sorted under en-u-kf-upper, each neighbour's relation written between them: row O8 (a correction of Broiler.JS): the keyword -u-kf-upper; caseFirst orders case on the tertiary and case levels (UTS #35's kf)
@@ -5652,8 +5527,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kf-upper" str:"a" str:"A"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kf-upper").compare("a","A"))+1]
 note: a against A under en-u-kf-upper: row O8 (a correction of Broiler.JS): the keyword -u-kf-upper
@@ -5664,8 +5538,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kf-upper" str:"b" str:"B"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kf-upper").compare("b","B"))+1]
 note: b against B under en-u-kf-upper: row O8 (a correction of Broiler.JS): the keyword -u-kf-upper
@@ -5676,8 +5549,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kf-upper" str:"ab" str:"Ab"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kf-upper").compare("ab","Ab"))+1]
 note: ab against Ab under en-u-kf-upper: row O8 (a correction of Broiler.JS): the keyword -u-kf-upper
@@ -5688,8 +5560,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kf-upper" str:"aB" str:"Ab"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kf-upper").compare("aB","Ab"))+1]
 note: aB against Ab under en-u-kf-upper: row O8 (a correction of Broiler.JS): the keyword -u-kf-upper
@@ -5700,8 +5571,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kf-upper" str:"AB" str:"Ab"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kf-upper").compare("AB","Ab"))+1]
 note: AB against Ab under en-u-kf-upper: row O8 (a correction of Broiler.JS): the keyword -u-kf-upper
@@ -5712,8 +5582,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kf-upper" str:"\u00E4" str:"\u00C4"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kf-upper").compare("\u00E4","\u00C4"))+1]
 note: U+00E4 against U+00C4 under en-u-kf-upper: row O8 (a correction of Broiler.JS): the keyword -u-kf-upper
@@ -5746,8 +5615,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kf-upper" str:"Ab" str:"ab"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kf-upper").compare("Ab","ab"))+1]
 note: Ab against ab under en-u-kf-upper: row O8 (a correction of Broiler.JS): the keyword -u-kf-upper
@@ -5758,8 +5626,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kf-upper" str:"aa" str:"aA"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kf-upper").compare("aa","aA"))+1]
 note: aa against aA under en-u-kf-upper: row O8 (a correction of Broiler.JS): the keyword -u-kf-upper
@@ -6133,8 +6000,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kf-upper" str:"a" str:"A" str:"b" str:"B" str:"ab" str:"Ab" str:"aB" str:"AB" str:"\u00E4" str:"\u00C4" str:"ae" str:"Ae" str:"AE" str:"af"
 out: value: str:"A < a < AB < Ab < aB < ab < AE < Ae < ae < \u00C4 < \u00E4 < af < B < b"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("de-u-co-phonebk-kf-upper"),["a","A","b","B","ab","Ab","aB","AB","\u00E4","\u00C4","ae","Ae","AE","af"])
 note: 14 strings sorted under de-u-co-phonebk-kf-upper, each neighbour's relation written between them: row O8 (a correction of Broiler.JS): German phonebook with -u-kf-upper; caseFirst orders case on the tertiary and case levels (UTS #35's kf)
@@ -6145,8 +6011,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kf-upper" str:"a" str:"A"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kf-upper").compare("a","A"))+1]
 note: a against A under de-u-co-phonebk-kf-upper: row O8 (a correction of Broiler.JS): German phonebook with -u-kf-upper
@@ -6157,8 +6022,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kf-upper" str:"b" str:"B"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kf-upper").compare("b","B"))+1]
 note: b against B under de-u-co-phonebk-kf-upper: row O8 (a correction of Broiler.JS): German phonebook with -u-kf-upper
@@ -6169,8 +6033,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kf-upper" str:"ab" str:"Ab"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kf-upper").compare("ab","Ab"))+1]
 note: ab against Ab under de-u-co-phonebk-kf-upper: row O8 (a correction of Broiler.JS): German phonebook with -u-kf-upper
@@ -6181,8 +6044,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kf-upper" str:"aB" str:"Ab"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kf-upper").compare("aB","Ab"))+1]
 note: aB against Ab under de-u-co-phonebk-kf-upper: row O8 (a correction of Broiler.JS): German phonebook with -u-kf-upper
@@ -6193,8 +6055,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kf-upper" str:"AB" str:"Ab"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kf-upper").compare("AB","Ab"))+1]
 note: AB against Ab under de-u-co-phonebk-kf-upper: row O8 (a correction of Broiler.JS): German phonebook with -u-kf-upper
@@ -6205,8 +6066,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kf-upper" str:"\u00E4" str:"\u00C4"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kf-upper").compare("\u00E4","\u00C4"))+1]
 note: U+00E4 against U+00C4 under de-u-co-phonebk-kf-upper: row O8 (a correction of Broiler.JS): German phonebook with -u-kf-upper
@@ -6239,8 +6099,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kf-upper" str:"Ab" str:"ab"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kf-upper").compare("Ab","ab"))+1]
 note: Ab against ab under de-u-co-phonebk-kf-upper: row O8 (a correction of Broiler.JS): German phonebook with -u-kf-upper
@@ -6251,8 +6110,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de-u-co-phonebk-kf-upper" str:"aa" str:"aA"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de-u-co-phonebk-kf-upper").compare("aa","aA"))+1]
 note: aa against aA under de-u-co-phonebk-kf-upper: row O8 (a correction of Broiler.JS): German phonebook with -u-kf-upper
@@ -6263,8 +6121,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"de" str:"a" str:"A" str:"b" str:"B" str:"ab" str:"Ab" str:"aB" str:"AB" str:"\u00E4" str:"\u00C4"
 out: value: str:"A < a < AB < Ab < aB < ab < \u00C4 < \u00E4 < B < b"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("de",{caseFirst:"upper",usage:"search"}),["a","A","b","B","ab","Ab","aB","AB","\u00E4","\u00C4"])
 note: 10 strings sorted under de {caseFirst:"upper",usage:"search"}, each neighbour's relation written between them: row O8 (a correction of Broiler.JS): German search with caseFirst upper; caseFirst orders case on the tertiary and case levels (UTS #35's kf)
@@ -6275,8 +6132,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"a" str:"A"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{caseFirst:"upper",usage:"search"}).compare("a","A"))+1]
 note: a against A under de {caseFirst:"upper",usage:"search"}: row O8 (a correction of Broiler.JS): German search with caseFirst upper
@@ -6287,8 +6143,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"b" str:"B"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{caseFirst:"upper",usage:"search"}).compare("b","B"))+1]
 note: b against B under de {caseFirst:"upper",usage:"search"}: row O8 (a correction of Broiler.JS): German search with caseFirst upper
@@ -6299,8 +6154,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"ab" str:"Ab"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{caseFirst:"upper",usage:"search"}).compare("ab","Ab"))+1]
 note: ab against Ab under de {caseFirst:"upper",usage:"search"}: row O8 (a correction of Broiler.JS): German search with caseFirst upper
@@ -6311,8 +6165,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"aB" str:"Ab"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{caseFirst:"upper",usage:"search"}).compare("aB","Ab"))+1]
 note: aB against Ab under de {caseFirst:"upper",usage:"search"}: row O8 (a correction of Broiler.JS): German search with caseFirst upper
@@ -6323,8 +6176,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"AB" str:"Ab"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{caseFirst:"upper",usage:"search"}).compare("AB","Ab"))+1]
 note: AB against Ab under de {caseFirst:"upper",usage:"search"}: row O8 (a correction of Broiler.JS): German search with caseFirst upper
@@ -6335,8 +6187,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"\u00E4" str:"\u00C4"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{caseFirst:"upper",usage:"search"}).compare("\u00E4","\u00C4"))+1]
 note: U+00E4 against U+00C4 under de {caseFirst:"upper",usage:"search"}: row O8 (a correction of Broiler.JS): German search with caseFirst upper
@@ -6369,8 +6220,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"Ab" str:"ab"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{caseFirst:"upper",usage:"search"}).compare("Ab","ab"))+1]
 note: Ab against ab under de {caseFirst:"upper",usage:"search"}: row O8 (a correction of Broiler.JS): German search with caseFirst upper
@@ -6381,8 +6231,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"de" str:"aa" str:"aA"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("de",{caseFirst:"upper",usage:"search"}).compare("aa","aA"))+1]
 note: aa against aA under de {caseFirst:"upper",usage:"search"}: row O8 (a correction of Broiler.JS): German search with caseFirst upper
@@ -6393,8 +6242,7 @@ area: intl
 op: Array.prototype.sort with Intl.Collator.prototype.compare
 in: str:"en-u-kn-kf-upper" str:"a" str:"A" str:"b" str:"B" str:"ab" str:"Ab" str:"aB" str:"AB" str:"\u00E4" str:"\u00C4" str:"a2" str:"A10" str:"a10"
 out: value: str:"A < a < \u00C4 < \u00E4 < a2 < A10 < a10 < AB < Ab < aB < ab < B < b"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:es2026@0248456c#sec-array.prototype.sort spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: (function(c,w){w.sort(c.compare);var s=w[0];for(var i=1;i<w.length;i++)s+=" "+["<","=",">"][Math.sign(c.compare(w[i-1],w[i]))+1]+" "+w[i];return s})(new Intl.Collator("en-u-kn-kf-upper"),["a","A","b","B","ab","Ab","aB","AB","\u00E4","\u00C4","a2","A10","a10"])
 note: 13 strings sorted under en-u-kn-kf-upper, each neighbour's relation written between them: row O8 (a correction of Broiler.JS): the keywords -u-kn and -u-kf-upper together; caseFirst orders case on the tertiary and case levels (UTS #35's kf)
@@ -6405,8 +6253,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-kf-upper" str:"a" str:"A"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-kf-upper").compare("a","A"))+1]
 note: a against A under en-u-kn-kf-upper: row O8 (a correction of Broiler.JS): the keywords -u-kn and -u-kf-upper together
@@ -6417,8 +6264,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-kf-upper" str:"b" str:"B"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-kf-upper").compare("b","B"))+1]
 note: b against B under en-u-kn-kf-upper: row O8 (a correction of Broiler.JS): the keywords -u-kn and -u-kf-upper together
@@ -6429,8 +6275,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-kf-upper" str:"ab" str:"Ab"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-kf-upper").compare("ab","Ab"))+1]
 note: ab against Ab under en-u-kn-kf-upper: row O8 (a correction of Broiler.JS): the keywords -u-kn and -u-kf-upper together
@@ -6441,8 +6286,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-kf-upper" str:"aB" str:"Ab"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-kf-upper").compare("aB","Ab"))+1]
 note: aB against Ab under en-u-kn-kf-upper: row O8 (a correction of Broiler.JS): the keywords -u-kn and -u-kf-upper together
@@ -6453,8 +6297,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-kf-upper" str:"AB" str:"Ab"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-kf-upper").compare("AB","Ab"))+1]
 note: AB against Ab under en-u-kn-kf-upper: row O8 (a correction of Broiler.JS): the keywords -u-kn and -u-kf-upper together
@@ -6465,8 +6308,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-kf-upper" str:"\u00E4" str:"\u00C4"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-kf-upper").compare("\u00E4","\u00C4"))+1]
 note: U+00E4 against U+00C4 under en-u-kn-kf-upper: row O8 (a correction of Broiler.JS): the keywords -u-kn and -u-kf-upper together
@@ -6499,8 +6341,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-kf-upper" str:"Ab" str:"ab"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-kf-upper").compare("Ab","ab"))+1]
 note: Ab against ab under en-u-kn-kf-upper: row O8 (a correction of Broiler.JS): the keywords -u-kn and -u-kf-upper together
@@ -6511,8 +6352,7 @@ area: intl
 op: Intl.Collator.prototype.compare
 in: str:"en-u-kn-kf-upper" str:"aa" str:"aA"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sec-intl.collator.prototype.compare spec:ecma402@3d4c558#sec-collator-comparestrings spec:ecma402@3d4c558#sec-intl-collator-internal-slots ref:intlref@1
 script: ["<","=",">"][Math.sign(new Intl.Collator("en-u-kn-kf-upper").compare("aa","aA"))+1]
 note: aa against aA under en-u-kn-kf-upper: row O8 (a correction of Broiler.JS): the keywords -u-kn and -u-kf-upper together
@@ -6523,8 +6363,7 @@ area: intl
 op: String.prototype.localeCompare
 in: str:"en" str:"a" str:"A"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("a".localeCompare("A","en",{caseFirst:"upper"}))+1]
 note: a against A under en {caseFirst:"upper"}: row O8 (a correction of Broiler.JS): caseFirst upper through localeCompare
@@ -6535,8 +6374,7 @@ area: intl
 op: String.prototype.localeCompare
 in: str:"en" str:"b" str:"B"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("b".localeCompare("B","en",{caseFirst:"upper"}))+1]
 note: b against B under en {caseFirst:"upper"}: row O8 (a correction of Broiler.JS): caseFirst upper through localeCompare
@@ -6547,8 +6385,7 @@ area: intl
 op: String.prototype.localeCompare
 in: str:"en" str:"ab" str:"Ab"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("ab".localeCompare("Ab","en",{caseFirst:"upper"}))+1]
 note: ab against Ab under en {caseFirst:"upper"}: row O8 (a correction of Broiler.JS): caseFirst upper through localeCompare
@@ -6559,8 +6396,7 @@ area: intl
 op: String.prototype.localeCompare
 in: str:"en" str:"aB" str:"Ab"
 out: value: str:">"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("aB".localeCompare("Ab","en",{caseFirst:"upper"}))+1]
 note: aB against Ab under en {caseFirst:"upper"}: row O8 (a correction of Broiler.JS): caseFirst upper through localeCompare
@@ -6571,8 +6407,7 @@ area: intl
 op: String.prototype.localeCompare
 in: str:"en" str:"AB" str:"Ab"
 out: value: str:"<"
-class: divergence
-divergence.broiler-js: row O8 (a correction of Broiler.JS): caseFirst "resolved and not applied: "a" < "A" whatever the option"; the reference and Broiler.VM apply it on the tertiary and case levels; corrected at SJL-17.5
+class: normative
 prov: spec:ecma402@3d4c558#sup-String.prototype.localeCompare spec:ecma402@3d4c558#sec-collator-comparestrings ref:intlref@1
 script: ["<","=",">"][Math.sign("AB".localeCompare("Ab","en",{caseFirst:"upper"}))+1]
 note: AB against Ab under en {caseFirst:"upper"}: row O8 (a correction of Broiler.JS): caseFirst upper through localeCompare

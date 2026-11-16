@@ -227,9 +227,461 @@ was written require:
   retained outside this bundle, and none is a run of the rule: the rule's runs are SJL-17.6's, at the after commit and
   its first parent.
 
+## SJL-17.6: the run of the rule
+
+*(Added 2026-11-16, at SJL-17.6, on the branch `sjl-17-6-evidence`, cut from the default branch at the after commit
+below.)*
+
+**The commits.** The after commit is `2f012739cfc4d99e91b22d28a09941c49d8bd646`, the default-branch merge of
+Broiler-Platform/Broiler.JS#1118, which lands SJL-17.5's cut-over in one merge. The base commit is its first parent,
+`5669f2bd29899ac93e0d7af130b6a7adc5791d6b`, the merge of Broiler-Platform/Broiler.JS#1117. The rule commit is named by
+reading 1 below.
+
+### Readings taken before any run is read (2026-11-16, at SJL-17.6)
+
+These readings are filed before this stage reads any output of a run the rule judges. When they were filed:
+- **Part A.** No `test262-evidence.yml` run had tested either commit; the workflow's last runs, of 2026-11-10, are
+  bundle `sjl-9-001`'s. This stage dispatched the base run, 43813306518, at 05:55:03Z on 2026-11-16, and had read
+  only its status.
+- **Parts B and C.** This stage had taken the base's local answers, before changing anything, into its scratch
+  directory, and had not read them.
+- **The pre-merge reads.** SJL-17.5's stage read parts B and C locally at `5669f2bd` and on its branch, before the
+  merge (section "SJL-17.5" above, its last item). Its records give the results, so they were known when these
+  readings were filed. None of them is a run of the rule.
+
+Each reading is recorded as the owner's dated decision under the owner's standing direction of 2026-10-18 ("Please do
+all recommended decisions and skip waiting for review"), taken as the recommended choice. Each gives the alternative
+not taken and what it would do to each verdict. None is the owner's own dated answer, asked and answered, and the
+owner may rule otherwise. They change no part, class or condition of the rule, and the rule file is not edited.
+
+1. **The rule commit.** "The rule commit carries this file." Section "SJL-17.5" above leaves two candidates:
+   - `59380ef98e6a4b91655f04dc832786aaea3c2aaa` added the file, with blob `8fa34de8`;
+   - `096793ae0f3aaef7f18829c4b5efd923f3dbef94`, its child, changed part B's population sentence, in the
+     parenthetical on where Broiler.VM's `83290f9` was read. Its blob, `89228040`, is the file at
+     `d1e8f5beec824438f0fc42c37bd941ad7421ce52` (Broiler-Platform/Broiler.JS#1087, the merge that brought both to the
+     default branch), at the base and at the after commit.
+
+   *Taken:* `096793ae`, the commit that carries the rule as it is run here, the text the base and the after commit
+   hold. *Not taken:* `59380ef9`, the file's first commit, which part C's section implies by naming `61cb15b5` "the
+   rule commit's parent".
+
+   No verdict turns on the choice:
+   - base condition 1 holds under either (`git merge-base --is-ancestor` exits 0 for each, and for `d1e8f5be`);
+   - no commit after `096793ae` changes the file;
+   - the two texts differ only in that parenthetical, which names no file of the population.
+
+   Bundles `sjl-9-001` here and Broiler.VM's `sjl-17-001` name the default-branch merge instead, which here is
+   `d1e8f5be`. It is not one of the two candidates, and it reads the same as each.
+2. **The machine for parts B and C.** The rule names no machine: parts B and C run "in the shell built in Release",
+   with no `LANG` and `TZ=UTC`, and part C under invariant globalization.
+
+   *Taken:* this cloud machine, as bundle `sjl-9-001` took its parts C and D and as Broiler.VM's `sjl-17-001` took its
+   local parts (its reading 1):
+   - four logical processors, Ubuntu 24.04.5 LTS, the .NET SDK 10.0.404, and the host's ICU 74.2;
+   - each shell built from a clean `git archive` of its commit, with no `.git`, so the harness reads the shell's
+     commit as unknown, as in bundle `sjl-9-001`;
+   - each run's record states its SDK, machine and shell digest.
+
+   Neither part measures, so no verdict reads the machine's speed. Part B with ICU loaded does read the host's ICU,
+   for the lines the host provider answers; the record names it.
+
+   *Not taken:* hold parts B and C for another machine, as a bundle whose rule names one would. No part could then be
+   taken here, and parts B and C would wait unjudged.
+3. **The hosted runs' SDK and images** (part A). The shard action asks `actions/setup-dotnet` for `10.0.x`, and the
+   repository pins no SDK, so the runner image's SDK may be newer: Broiler.VM's bundle `sjl-13-002` built with 11.0.100
+   on 2026-11-14. The rule's configuration names the workflow and its inputs, not an SDK or an image, and
+   `compare_test262_paths.py` does not compare `dotnetVersion`.
+
+   *Taken:* a run is as configured whatever SDK and image the workflow resolves. Each run's `imported.txt` records
+   them, and the README states whether the two runs' SDKs and images agree. Broiler.VM's `sjl-17-001` took the same
+   reading (its reading 2), as did `sjl-13-002` (its reading 3).
+
+   *Not taken:* require one SDK, either the local machine's or the same in both runs. The workflow is frozen by the
+   rule's configuration and cannot pin one. Part A would then be NOT MET if the two runs' SDKs differed, and
+   unaffected if they agree.
+4. **Base condition 3:** "the after commit is its only first-parent successor that changes" a named path.
+
+   *Taken:* the first-parent successors from the base up to the after commit, `git rev-list --first-parent
+   5669f2bd..2f012739`. That is the after commit alone, which changes paths under `Broiler.JS/Broiler.JavaScript.*/`
+   and one test under `Broiler.ECMAScript/`. The owner ruled the same on the same words in Broiler.VM's bundle
+   `sjl-9-001`, reading 1, on 2026-11-11 ("Up to after commit"), and Broiler.VM's `sjl-17-001` read it so (its
+   reading 4).
+
+   *Not taken:* every first-parent descendant of the base on the default branch when the condition is read. Today
+   that is the same list, since the default branch is at the after commit; once a later merge changes a named path,
+   the condition would fail and every part would be void.
+
+   Conditions 1 and 2 need no reading:
+   - the base descends from both rule-commit candidates (reading 1);
+   - it strictly descends from bundle `sjl-9-001`'s after commit, `a5f2692e88a9aafeaa850bebe9c3399f6263353b`.
+5. **Part A's classes C1 and C5, by JSD-0084's columns.** C1 admits "each row JSD-0084 puts in its column 'Correction
+   of Broiler.JS'", and its parenthetical names three examples. C5 admits the root and the tailorings of decision E3's
+   list replacing the host's ICU, "each listed with its row and the decision".
+
+   *Taken:*
+   - C1 is every row of that column of JSD-0084's table "Every row, classified": O5a, O5b, O7, O8, O10, O12, O14
+     and O18. The parenthetical is read as examples.
+   - C5 is the rows of its column "Data policy (C5)": O1, O2, O3, O5c, O11b and O16, each with the decision it
+     follows (E3, E5, E-o3h).
+   - A changed verdict is admitted only if it goes from failing at the base to passing after, and only under such a
+     row.
+   - A row's verdict is its `status`, as `compare_test262_paths.py` reads it. A row failing at both commits with
+     another message is unchanged.
+
+   *Not taken:* C1 as the parenthetical's three alone. A path that moves under O5a, O5b, O10 or O14 would then be
+   unadmitted, and part A NOT MET if any such path moved. A path that moves under O11a (implementation-defined, which
+   the rule does not admit) is a regression under either reading.
+6. **Part A's "and in the changelog"** (class C1).
+
+   *Taken:* the row's correction is listed in `Broiler.JS/CHANGELOG.md` at the after commit, under decision SJL-D-16
+   (a), and the README lists each test262 path with its variant and its row. This is how bundle `sjl-9-001` read its
+   own C1.
+
+   *Not taken:* each C1 path named in the changelog. A C1 path the changelog does not name would be unlisted, and part
+   A NOT MET, since the after commit's changelog cannot be edited.
+7. **Part B's reference program, "once, at the after commit's time".**
+
+   *Taken:* one run of the `orderings` program, after the after commit exists, in Node.js v26.12.0. Its tarball is
+   retrieved again and checked against the digest bundle `sjl-9-001`'s `reference.txt` records, with `TZ=UTC` and no
+   `LANG`, by the command bundle `sjl-9-001`'s collector uses for the ICU programs. The reference does not change
+   with the time it runs.
+
+   *Not taken:* a run at the merge's own minute, which no record could show. Part B's classes V and R hold no line
+   (`divergence-groups.tsv` holds no group), so the reference decides no verdict under either reading.
+8. **"Completes" in parts B and C.**
+
+   *Taken:*
+   - Part B completes when the harness's `summary.json` reports the program completed, with as many lines as the
+     retained answer.
+   - Part C completes when the shell exits 0 and prints as many lines as `invariant-probe.expected.txt`.
+   - Each line is compared byte for byte, after the line ending.
+
+   *Not taken:* a shell's exit status alone, which could hide a missing line. Neither reading moves a verdict when
+   every line is printed.
+9. **The home clauses' commit.** "The home clauses (1 and 2) are judged by the tests SJL-17.3 commits", and "Tests
+   SJL-17.3 commits hold them". The rule names the tests, not a commit to run them at. SJL-17.5 revised one of them,
+   `LibraryRunTests` (section "SJL-17.5", its item "For the owner").
+
+   *Taken:* the rule names SJL-17.3's tests as SJL-17.3 committed them. The reading is taken at SJL-17.3's merge,
+   `c884f87bae3b369347d1bf59b5b202d429bc7efb` (Broiler-Platform/Broiler.JS#1094), and again at the after commit with
+   `LibraryRunTests` as revised, and the README says where the two differ. The collator's code and the collation
+   tables carry no change between the two commits but the assurance comments' new names
+   (`git diff -I '^\s*//' c884f87b 2f012739 -- Broiler.ECMAScript/Broiler.ECMAScript.Intl/Collation` is empty, and so
+   is a plain `git diff` of `Broiler.ECMAScript/data/intl/generated/collation*`).
+
+   *Not taken:* the after commit alone. The clauses would then rest on a test whose expectations follow this engine's
+   corpus revision 40, which is the owner's open item from Broiler-Platform/Broiler.JS#1118.
+
+   This reads clauses only. It judges no part.
+
+*(Noted 2026-11-16, later, at SJL-17.6, after the runs were read; the readings above are left as filed.)* Reading 4's alternative says the default branch "is at the after commit". That held when the readings were filed, at 06:01Z. At 08:28Z the default branch moved to `cdf5559d5b69113c536f734e9a6ab305a3c71430`, "Update dependencies", a commit whose only parent is the after commit. It changes `Directory.Packages.props` and the project files under `Broiler.JS/Broiler.JavaScript.*/`, which are named paths. Under the reading taken, the condition is read up to the after commit and still holds: `git rev-list --first-parent 5669f2bd..2f012739` names the after commit alone. Under the alternative, `cdf5559d` is a second first-parent successor that changes a named path, so the condition would fail and every part would be void. Reading 4 is therefore one a verdict turns on: all three parts rest on it.
+
+*(Noted 2026-11-16, later still, at SJL-17.6, after review.)* Under the reading taken, condition 3 cannot fail for this
+merge: the after commit's first parent is the base, so `git rev-list --first-parent 5669f2bd..2f012739` is the after
+commit alone by construction, whatever the after commit changes. Only the alternative tests anything once the default
+branch moves on. Whether the parts stand therefore turns on the owner's choice between the two readings, not on any
+run. The reading taken follows the owner's ruling on the same words in Broiler.VM's bundle `sjl-9-001` (its reading
+1, 2026-11-11, "Up to after commit"), which is its precedent.
+
+*(Noted 2026-11-16, later, when this branch merged the default branch at `cdf5559d`.)* The branch now holds `cdf5559d`,
+the dependency update on the default branch, which moves Broiler.Regex to `0.1.0-preview.6`, and adds after it a product
+change of its own: the regular-expression adapter, `Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.Broiler.cs`,
+ported onto that version's public surface by the owner's ruling of 2026-11-16, "Adapt to preview.6 now", since the
+default branch does not build without it ([`SharedLibraries.md`](../../roadmap/SharedLibraries.md), SJL-11's note of the
+same day). Reading 4 as taken reads condition 3 only up to the after commit, `git rev-list --first-parent
+5669f2bd..2f012739`, which still names the after commit alone, so the change adds nothing new under it: the base, the
+after commit and every run stay as filed, and no part is taken again. Under the alternative every part was already void
+at `cdf5559d`, and this branch's own merge into the default branch (Broiler-Platform/Broiler.JS#1119), a further
+first-parent successor that changes named paths, leaves that answer as it was.
+
+### The commits, the files and the machine
+
+[`identity.txt`](identity.txt), written by [`collect.py`](collect.py), records:
+- the after commit's parents, and the base as its first parent;
+- the rule's three conditions on the base under each rule-commit candidate (reading 1) and under reading 4: all hold;
+- every file the rule fixes, by blob at the rule commit, the base and the after commit.
+
+*(Noted 2026-11-16, later, at SJL-17.6, after review.)* `identity.txt`'s second line names `collect.py` "at
+`4484d15c…`". That is the worktree's `HEAD` when the collector ran (the line prints `git rev-parse HEAD`), not a commit
+that holds the script: `collect.py` was then an uncommitted file of the worktree, and was first committed in
+`e70b85fbf68b8aaa7f2581457e429d64d41a06f8`, with the outputs. Parts B and C were written earlier, from 06:03Z to
+06:07Z, by its `datasets` and `invariant` steps as the file stood then, and the file was changed again before it was
+committed, so no record ties those outputs to the committed file byte for byte. No retained output records the
+script's own digest. `identity.txt` is a retained output and is left as written.
+
+At the base and the after commit, these are the same blobs:
+- the rule;
+- `compare_test262_paths.py`;
+- the workflow, its shard action, and the two scripts it runs and merges with;
+- part B's harness, its driver, the `orderings` copy and its `datasets.pin`;
+- `divergence-groups.tsv`;
+- part C's probe and its expected answers;
+- bundle `sjl-9-001`'s `reference.txt`.
+
+`run_test262.py`, the harness and `datasets.pin` changed after the rule commit and before the base, as the rule's
+configuration allows: the workflow runs "as the base commit carries it and unchanged at the after commit".
+
+**Part B's copy** is the population. Every copy equals its `datasets.pin` (the harness's `verify`, in each run's
+`harness.log`). The pin's git blobs for `orderings.js` (`df6b6910`) and `orderings.icu-77.1.txt` (`dad23be8`) are
+the blobs Broiler.VM holds at `4e6a41e9`, the commit that carries its own bundle `sjl-17-001` rule, and at `c71b4a88`
+and `83290f9` (read with `git rev-parse` in a clean Broiler.VM checkout). None of the three holds a divergences file
+for the program.
+
+**The local runs**, parts B and C, ran on this machine:
+- Ubuntu 24.04.5 LTS, four logical processors, the .NET SDK 10.0.404 with `Microsoft.NETCore.App` 10.0.15, and the
+  host's ICU 74 (`libicuuc.so.74`, 74.2);
+- each from a clean `git archive` of its commit on `/dev/shm`, with the shell built in Release with
+  `--disable-build-servers`;
+- behind the lock that the stages working on this machine share, and an idle gate.
+
+Each run's `harness.log` or `probe.log` names the archive's SHA-256 and the shell's digest. The shells are
+`09d1dabc…` at the base and `120f6e16…` after.
+
+**The hashes.** [`hashes.txt`](hashes.txt) records the SHA-256 of every file the bundle retains, except this README and itself, and `sha256sum -c hashes.txt` in this directory verifies it. The bundle has no `manifest.json`: the rule asks for none, and decision D56, which asks one of every bundle of SJL-14 and SJL-15, does not reach SJL-17.
+
+### Part A - test262 per path, in UTC
+
+**MET.**
+
+**The hosted runs.** Each was run by `.github/workflows/test262-evidence.yml` and dispatched from `main` at the after
+commit, one at a time, the second after the first completed. The inputs are the rule's:
+- the tested commit's forty digits;
+- `suite_ref` `ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e`;
+- `max_workers` 4, `test_timeout_seconds` 30, `rerun_timeouts` true, `time_zone` empty, `include_negative` true.
+
+Each concluded success. [`collect.py`](collect.py)'s `test262` step imported each run's artifact `test262-evidence`
+unchanged. Its `imported.txt` names the run, the artifact, the runner images its jobs' logs name, and the SHA-256 of
+the zip as downloaded, which is the digest GitHub records for the artifact:
+
+| Side | Run | Tested commit (`run.txt`) | Dispatched, completed | SDK (`run.txt`) | Zip SHA-256 | Folder |
+|---|---|---|---|---|---|---|
+| base | [43813306518](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/43813306518) | `5669f2bd` | 05:55:03Z, 07:01:02Z | 11.0.100 | `2e7d1f4f3bfe4928293b9d38b249e7185eaebf724338ac511350bd16086eb62e` | [`test262/base/`](test262/base/) |
+| after | [43821044505](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/43821044505) | `2f012739` | 07:03:10Z, 08:10:12Z | 11.0.100 | `3a941249fc81fb2547131271fdaffe9fcffec42e6453c5493a0861db3a4670fc` | [`test262/after/`](test262/after/) |
+
+**SDK and images** (reading 3):
+- Both runs built with the .NET SDK 11.0.100, the runner image's, not the `10.0.x` the shard action asks for.
+- Each ran its jobs on `ubuntu-24.04` images of two versions, 20261111.127.1 and 20261111.370.1, mixed across its
+  shards in both runs (each `imported.txt` says which).
+- The SDKs agree. Neither SDK nor image is a condition of the rule, and the shell's binaries are one list in each run.
+
+| Part A's condition | This run |
+|---|---|
+| Both runs complete | Each run reports eight of eight shards, none incomplete or retried, every status file of phase `full`. There is no configuration failure, one suite revision (`ccaac100`), and `includeNegative` true in `run.txt`, the merged results and the re-run ([`test262/comparison-utc/completeness.log`](test262/comparison-utc/completeness.log)) |
+| One shell, every shard in the zone | Each run has one distinct list of the shell's binaries across its shards and its re-run. All eight shards ran with `TZ` unset, UTC +0000 at both instants, tzdata 2026e |
+| The host-zone records alike | Yes, line for line; the two `host-zone.log` files are byte for byte the same ([`test262/comparison-utc/zone-records.log`](test262/comparison-utc/zone-records.log)), so the part is judged |
+| The script finds them comparable | Yes, exit 0 ([`comparison.log`](test262/comparison-utc/comparison.log), [`comparison.json`](test262/comparison-utc/comparison.json)). The rule's classification file is beside it, [`classifications.json`](test262/comparison-utc/classifications.json), `{}`. The script's checks: the after run against itself changes nothing, and a copy with one passing row turned to failed is one regression, exit 1 ([`compare-checks.log`](test262/comparison-utc/compare-checks.log)) |
+| Timeouts | One path timed out in both variants in both runs, `test/staging/sm/regress/regress-1507322-deep-weakmap.js`. Each run's re-run, alone with one worker, timed out again, and the script replaced the rows with the re-runs on both sides |
+| No row passing at the base fails, times out or is skipped after | None: the script reports no changed verdict and no regression |
+| Every changed verdict in C1 or C5 and listed | No verdict changed, so classes C1 and C5 list no row |
+| `getCollations/output-array-values.js` keeps its base verdict | Yes: passed at both commits, in both variants |
+
+**Clause 4's directories** (`test/intl402/Collator/`, `test/intl402/String/prototype/localeCompare/` and
+`test/built-ins/String/prototype/localeCompare/`), with the getCollations file, are listed row by row in
+[`test262/comparison-utc/collation-rows.tsv`](test262/comparison-utc/collation-rows.tsv). Every row has the same
+verdict at both commits. Only `test/intl402/Collator/proto-from-ctor-realm.js` fails, in both variants and at both
+commits, as it did at the correspondence's `61cb15b5`.
+
+**No row moves in these hosted runs.** The runs load the host's ICU, under which the corrections reach no test262
+verdict:
+- the correspondence's test262 rows that move with them (O14, under invariant globalization) are part C's to show;
+- the vectors (corpus revision 41's row) hold the corrections at engine level.
+
+So reading 5 (the C1 column) and reading 6 (the changelog) decide nothing here: under either reading, and their
+alternatives, the part is MET.
+
+### Part B - the `orderings` dataset
+
+**MET.**
+
+| Part B's condition | This run |
+|---|---|
+| The program completes after with every line | yes: completed, exit 0, 27 lines answered of the retained answer's 27 ([`datasets/after/summary.json`](datasets/after/summary.json)) |
+| Every line that differs from its expected answer is in V or R and listed | no line differs: all 27 equal Broiler.VM's retained answer, which is the expected answer since no divergences file exists. The answer's SHA-256 is the retained answer's, `c21e6ef4…` ([`datasets/after/orderings.lines.tsv`](datasets/after/orderings.lines.tsv)) |
+| Classes V and R | hold no line, since [`divergence-groups.tsv`](divergence-groups.tsv) holds no group |
+
+**The base**, retained and read ([`datasets/base/`](datasets/base/)), completes with 19 of 27 lines equal. The 8 that
+differ are lines 7, 8, 10, 16, 17, 20, 26 and 27, the lines the correspondence's row O18 lists (corrections O7 and
+O8), which ask for `numeric` or `caseFirst`. Not every such line differs: lines 9 and 22, which ask for `caseFirst`
+`"lower"`, agree at the base *(revised 2026-11-16, later; read "These are exactly the lines that ask for `numeric` or
+`caseFirst`, which the correspondence's row O18 names (corrections O7 and O8).")*. The harness's join
+([`datasets/after/compare-with-base/compare.txt`](datasets/after/compare-with-base/compare.txt)) reads: 8 lines that
+differ at the base and are equal after, and no line equal at the base and differing after.
+
+The answers at the base are the same, byte for byte, as the base answers this stage took into its scratch directory
+before changing anything, and as SJL-17.5's stage's pre-merge read at `5669f2bd`.
+
+**The reference**, once, after the after commit ([`datasets/reference/`](datasets/reference/reference.log)):
+- Node.js v26.12.0, its tarball retrieved again on 2026-11-16 and equal to `reference.txt`'s digest
+  (`fd47865e…`), with `process.versions` ICU 78.3 and CLDR 48.0;
+- `TZ=UTC`, no `LANG`, and the command of reading 7;
+- its answer is byte for byte the retained answer (`c21e6ef4…`, 27 lines).
+
+So no line needs class R under either reading of "at the after commit's time".
+
+### Part C - collation under invariant globalization
+
+**MET.**
+
+| Part C's condition | This run ([`invariant/after/`](invariant/after/compare.txt)) |
+|---|---|
+| The probe completes after with every line | yes: exit 0, 46 lines printed of the expected file's 46 |
+| No line is an `abort:` line | none |
+| Every line equals its expected answer | all 46 |
+
+The shell's environment is in [`invariant/after/probe.log`](invariant/after/probe.log):
+- `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1` and `TZ=UTC`;
+- no `LANG`, `LANGUAGE` or `LC_` variable.
+
+**The base**, retained and read ([`invariant/base/`](invariant/base/compare.txt)), also exits 0 with 46 lines and no
+`abort:` line, but only 16 of its lines equal the expected answer. The 30 that differ are lines 1 to 26, 33, 34, 43
+and 44. Each request resolves as the policy resolves it and as the expected file says, `en` for the `en` requests (one
+with its `kf` and `kn` keywords) and `en-US` for every other: the resolved field agrees on all 46 lines. The 30 differ
+only in their order, because the comparison falls back to code units. That is row O14 and decision E4, the correction
+part C is there to show. The correspondence's run `invariant-probe` found the comparison by code unit at `61cb15b5`,
+the rule commit's parent, where it also found every request resolved to `en-US`; that resolution is `61cb15b5`'s, not
+the base's *(revised 2026-11-16, later; read "The 30 that differ are lines 1 to 26, 33, 34, 43 and 44: every request
+resolves to `en-US`, and the comparison falls back to code units. That is row O14 and decision E4, the correction part
+C is there to show, as the correspondence's run `invariant-probe` found at `61cb15b5`.")*.
+
+The base's output is the same, byte for byte, as the base answer this stage took first, and as SJL-17.5's pre-merge
+read.
+
+### The verdicts
+
+| Part | Verdict | Readings it rests on | Under the alternatives |
+|---|---|---|---|
+| A, test262 per path in UTC | **MET** | 1 (the rule commit), 3 (SDK and images: both runs built with 11.0.100), 4 (base condition 3) | Reading 1's alternative: MET. Reading 3's alternative: MET, since both runs' SDKs agree (11.0.100); held to the local machine's SDK, no hosted run could meet it, NOT MET. Reading 4's alternative: void, since the default branch's `cdf5559d` changes named paths (the note after the readings) *(revised 2026-11-16, later; read "Reading 4's alternative: MET today, since the default branch is at the after commit.")*. Readings 5 and 6, either way: MET, since no verdict changed |
+| B, the `orderings` dataset | **MET** | 1, 2 (this machine), 4, 7 (the reference), 8 ("completes") | Every alternative: MET, except reading 2's, under which the part waits for another machine, unjudged, and reading 4's, under which it is void *(revised 2026-11-16, later; read "Every alternative: MET, except reading 2's, under which the part waits for another machine, unjudged.")*. Reading 7's alternative: MET, since classes V and R hold no line |
+| C, invariant globalization | **MET** | 1, 2, 4, 8 | Every alternative: MET, except reading 2's, under which the part waits, unjudged, and reading 4's, under which it is void *(revised 2026-11-16, later; read "Every alternative: MET, except reading 2's, under which the part waits, unjudged")* |
+
+None of the three rests on a revision of the rule, and no ruling of the owner's own is needed for any.
+
+**What would change a verdict.** Each part is MET as the rule is written, on the readings above. Should the owner rule
+otherwise on reading 2, parts B and C would be taken again on the machine the owner names. Should the owner rule
+otherwise on reading 3 in the strict form, no hosted run could meet part A. Should the owner rule otherwise on reading 4,
+every part would be void, whatever runs were taken, since `cdf5559d` changes named paths
+*(this sentence added 2026-11-16, later)*.
+
+### The home clauses, by the tests SJL-17.3 committed (reading 9)
+
+The runs are retained in [`home/`](home/): the script as run ([`home/home.sh`](home/home.sh)), and for each commit
+its progress, build log, test summaries (by project and by class), and the Native AOT probe's publication and run.
+Each took a clean `git archive` of its commit, built `Broiler.ECMAScript.slnf` in Release with no warning and no
+error, and ran every shared test project under `TZ=UTC` with no `LANG`. It then published the probe for `linux-x64`
+with Native AOT and without, and ran both over the commit's corpus.
+
+| | At SJL-17.3's merge, `c884f87b` ([`home/sjl-17-3/`](home/sjl-17-3/)) | At the after commit, `2f012739` ([`home/after/`](home/after/)) |
+|---|---|---|
+| `CollationTests` (the collator, the CollationTest files at library level, the tailorings, the settings) | 17 of 17 pass | 17 of 17 pass |
+| `LibraryRunTests` (the vectors at library level, the collation vectors among them) | 20 of 20 pass; the collation check, as SJL-17.3 wrote it, holds 34 Han vectors to Broiler.VM's expectation | 20 of 20 pass; the collation check, as SJL-17.5 revised it, asserts that every collation vector matches, the 34 now matching because corpus revision 40 moved this engine's expectation |
+| `DifferentialCheckTests` (the differential check against Broiler.VM's code; its collation sections C1 and C2 take the collation vectors' inputs and every pair of the `orderings` dataset's words, under every tailoring and eight settings) | 24 of 24 pass | 24 of 24 pass |
+| `ContractTests` of the Intl library | 4 of 4 pass | 4 of 4 pass |
+| `SharedRuleTests` and `RuleRegisterTests` (rules SL1 to SL10) | 28 and 4 pass | 28 and 4 pass |
+| Every other shared test project | all pass, none skipped | all pass, none skipped |
+| The Native AOT probe | published with no warning and no managed assembly; corpus revision 34, 111,175 vectors, no failure; its report byte for byte the JIT publication's | published with no warning and no managed assembly; corpus revision 40, 111,175 vectors, no failure; its report byte for byte the JIT publication's |
+| SL8's assurance half (the `assurance check` of Broiler.Code's review CLI at `c884f87b`, and of Hairs.Cli 0.1.0-preview.2 at `2f012739`, the tool since 2026-11-08; `Architecture.Tests` holds neither) *(revised 2026-11-16, later; read "SL8's assurance half (Hairs.Cli's `assurance check`, which `Architecture.Tests` does not hold)")* | the `Shared libraries` push run 41471982792 at `c884f87b`, every job successful, `Assurance check (SL8)` among them (observed, not retained) | the `Shared libraries` push run 43812679561 at `2f012739`, every job successful, `Assurance check (SL8)` among them (observed, not retained) |
+
+**Clause 1**, "The collator is implemented under the conventions. Its vectors, the UCA test files and the reference
+dataset pass at library level":
+- read through `CollationTests`, `LibraryRunTests`'s collation check, `ContractTests` and `DifferentialCheckTests`;
+- the reference dataset at library level is the differential check's section over the `orderings` program's words,
+  which is how SJL-17.3's tests hold it.
+
+**Read met at `c884f87b`, the commit reading 9 takes the rule to name**, by the tests as SJL-17.3 wrote them. It is
+also read met at `2f012739`, where one of those tests is SJL-17.5's revision: `LibraryRunTests`' collation check
+holds the 34 Han vectors to this engine's corpus expectations as revision 40 restated them. That revision is the
+owner's open item from Broiler-Platform/Broiler.JS#1118. The collator's code and tables are the same at both commits
+(reading 9).
+
+*(Added 2026-11-16, later, at SJL-17.6, after review. Reading 9 says "the README says where the two differ", and the
+paragraph above names only `LibraryRunTests`.)* Of the files SJL-17.3's merge changed for these tests and the probe,
+these also differ between `c884f87b` and `2f012739`, each by a commit already in the base, and none in a collation
+check:
+- `SharedRuleTests`, by `ee45d885` (SJL-2, 2026-11-08): rule SL8's test reads `hairs.config.json` in place of
+  `assurance.config.json`, and checks the retired name;
+- the Intl library's `ContractTests`, by `17b87d55` (SJL-9): its list of appended values adds the calendar
+  preferences;
+- `DifferentialCheckTests`, by `68559e54` (SJL-9): it admits row L19;
+- the Native AOT probe's project and `Program.cs`, by `41891511` (SJL-13.2e, merged with SJL-17.3's change in
+  `d0fbf6ec`): four frontend modes, each chosen by the first argument, which leave its corpus run as it was.
+
+Each test class passes the same count at both commits (the table above). `LibraryRunTests` is the one test revised in
+the after commit (`6f1105ec` and `93932ab8`, SJL-17.5).
+
+**Clause 2**, "The `SL` rules pass, and the Native AOT probe runs": **read met at `c884f87b`**, and at `2f012739`:
+- rules SL1 to SL10 pass;
+- the probe publishes with no warning and runs the corpus with no failure;
+- SL8's assurance half rests on the observed `Shared libraries` runs above, as in SJL-9's exit reading (bundle
+  `sjl-9-001`, clauses 4 and 6).
+
+### Broiler.JS's clauses 3 to 5, read from the tree and the changelog at the after commit
+
+| Clause | Read from, at `2f012739` | Reading |
+|---|---|---|
+| 3. "The deletion list is absent, and host collation remains only behind the optional provider" (read against decision E3, per locale and collation, by JSD-0084's note on the clause) | the tree, searched by the three commands of [`home/after/deletion-search.txt`](home/after/deletion-search.txt), against the list as JSD-0084's decision E11 and the owner's ruling of 2026-11-11 ("Fix (1); move (2) to SJL-17") give it; `Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs`; part C above; and the changelog's "What stays this engine's" and "Where they were" | **Read met** at `2f012739`, on one reading the SJL-17.5 records took. Under the owner's direction of 2026-10-18 that reading is the owner's dated decision, not the owner's own answer. The facts: (a) every entry of the list is absent from the code, and its names survive only in comments: `ResolveCompareInfo` for the covered locales, `StripIgnorablePunctuation` and its tie-break, the hard-coded Thai default, `GetUnicodeExtensionType`, `RemoveUnicodeExtensionKeyword`, `ReflectExtensionKeyword`, the keyword filter over `CollatorRelevantKeys`, and `StripUnicodeExtension`; (b) `NetCollationSuffix` is in the host provider, as the list moves it; (c) the host's `CompareInfo` is reached from `JSIntlCollator` only through `HostCollationProvider.CompareInfoFor`, and only when `IsShared` finds that decision E3's list does not cover the locale and collation; (d) under invariant globalization no comparison falls back to code units, as part C shows. Under reading 4's alternative part C is void, and fact (d) would rest on the probe's retained run at the after commit as an observation, not on a judged part *(this sentence added 2026-11-16, later; (d) read "under invariant globalization no comparison falls back to code units, as part C shows.")*. The reading is that "the `CompareOptions` mapping" is read, as E11 reads "`ResolveCompareInfo` for the covered locales", for the covered locales: the mapping stays inside the host provider for the locales and collations it compares (SharedLibraries.md, the note of 2026-11-15, "Moved"). *Not taken:* the mapping gone everywhere, which no code at `2f012739` meets, so the clause would be not met until the host provider compares with no options, dropping `sensitivity` and `ignorePunctuation` for CJK and every uncovered locale. The header of `Broiler.JS/BannedSymbols.HostCulture.txt` still names the kept path as "`Intl.Collator`'s comparison until milestone SJL-17". It is a rule file, which this stage does not edit, and it decides nothing here; it is left to the owner, as #1118's records left it |
+| 4. "test262 `intl402/Collator` and `localeCompare` per path meet the area rule" | part A above | **Read met** at the commits the rule names, by part A, MET as the rule is written. Every row of the two directories, and of the getCollations file the rule names, has its base verdict after. The reading rests on readings 1, 3 and 4. Under reading 3's strict alternative, which no hosted run could meet, it would be not met. Under reading 4's alternative part A is void, since the default branch's `cdf5559d` changes named paths, and the clause would not be read met *(this sentence added 2026-11-16, later; the cell ended "Under reading 3's strict alternative, which no hosted run could meet, it would be not met")* |
+| 5. "Every correction is listed" | `Broiler.JS/CHANGELOG.md` at `2f012739`, "`Intl.Collator` and `String.prototype.localeCompare` move to the shared collator" | **Read met** at `2f012739`. The entry lists every row of JSD-0084's column "Correction of Broiler.JS", each with vectors, examples or test262 paths: O5a, O5b, O7 and O8 with O18, O10, O12 and O14. It also lists the data changes (O1, O2, O3 and O16, and O5c, with Thai under search put to the owner) and O11a's implementation-defined change. Part A adds no C1 row, so test262 adds nothing to list. The corrections O5a, O5b, O7 and O8 are scoped to the locales and collations the shared collator compares, as the review of SJL-17.5 narrowed them. It rests on reading 6 only in that C1 lists no path |
+
+**Nothing is declared met at the gate.** SJL-17 may not meet its gate before:
+- SJL-9 meets SJL-9's, which waits on SJL-7's and SJL-8's, and through them on SJL-3's;
+- SJL-3's and SJL-4's measurement clauses are met, which needs a controlled lane or the owner's dated choice;
+- Broiler.VM's clauses 6 to 9 are read, in its own bundle and SJL-17's exit reading over both repositories;
+- review takes place, which is deferred (EX-30).
+
+Nothing here is accepted.
+
+### Corpus revision 41
+
+Revision 40 kept the collation area's 240 `divergence.broiler-js` fields. It said the revision after the merge would
+retire them "once CI's `windows-latest` job has read them". CI run 43812679557 at the after commit has read them: in
+both its `engine vectors` jobs, on `ubuntu-24.04` and on `windows-latest`, the 240 are exactly the area's vectors
+whose verdict is "match (divergence no longer holds)", and no vector of the area differs.
+
+Revision 41, on this branch, retires them all:
+- `conformance/vectors/REVISIONS.md`, row 41;
+- [`docs/evidence/corpus-revision-41/`](../corpus-revision-41/retired-divergences-revision-41.tsv).
+
+Its run from a clean archive shows no difference. No part above reads the corpus, so the revision moves no verdict.
+
+### Open items for the owner
+
+None of these is done here.
+- **`LibraryRunTests`, revised at SJL-17.5**, which the home clauses are judged by (section "SJL-17.5", "For the
+  owner"). That item asked for the owner's acknowledgement before SJL-17.6 read the home clauses. This stage read them
+  anyway, under its brief, and read clause 1 at both commits (reading 9). At SJL-17.3's merge the clause rests on the
+  tests as SJL-17.3 wrote them. At the after commit it rests on this engine's corpus expectations as revision 40
+  restated them. The acknowledgement stays open.
+- **The readings above**, each the recommended choice under the owner's direction of 2026-10-18. The owner may rule
+  otherwise on any. The ones a verdict could turn on are reading 2 (the machine), reading 3 (the hosted SDK) and reading 4
+  (base condition 3, since the default branch moved to `cdf5559d`) *("and reading 4 ..." added 2026-11-16, later; it
+  read "and reading 2 (the machine) and reading 3 (the hosted SDK) are the ones a verdict could turn on.")*.
+- **From Broiler-Platform/Broiler.JS#1118, still open:**
+  - Thai under `usage: "search"` reports `ignorePunctuation` `false`, a move row O5c does not name;
+  - the header of `Broiler.JS/BannedSymbols.HostCulture.txt`, a rule file, still names the kept path as
+    "`Intl.Collator`'s comparison until milestone SJL-17";
+  - the host provider applies neither `numeric` nor `caseFirst`, which the records scope rather than fix.
+- **The hosted runs build with the .NET SDK 11.0.100**, since the repository pins no SDK. Every later hosted base and
+  after run does the same until the owner pins one, which the workflow's freeze leaves to the owner.
+
 ## State
 
 Rule and data only, 2026-11-01, at SJL-17.1. **Nothing here is a verdict, and no run of the rule has been taken.** *(2026-11-02, at SJL-17.2: the vector runs and the datasets run above are retained; none is a run of the rule.)* The
 base commit is the first parent of the merge that lands SJL-17.5's cut-over, and the after commit is that merge; this
 README names each, by all forty digits, when it lands. The rule commit is named here when the change that carries it
 has merged.
+
+*(2026-11-16, at SJL-17.6.)* **The rule is run and judged.** Section "SJL-17.6" names the commits:
+- the after commit, `2f012739cfc4d99e91b22d28a09941c49d8bd646`;
+- the base, `5669f2bd29899ac93e0d7af130b6a7adc5791d6b`;
+- the rule commit as reading 1 takes it, `096793ae0f3aaef7f18829c4b5efd923f3dbef94`.
+
+That section files its readings before any run was read and judges parts A, B and C: **each is MET**, on the readings
+it names, none the owner's own answer. It reads the home clauses 1 and 2 at SJL-17.3's merge and at the after commit,
+and Broiler.JS's clauses 3 to 5 at the after commit. It meets no gate, and nothing is accepted. *(Added 2026-11-16, later, at
+SJL-17.6.)* The default branch has since moved past the after commit, to `cdf5559d`, which changes named paths. Each
+part stands under reading 4 as taken and would be void under its alternative, so whether the parts stand is the
+owner's choice between the two (the notes after the readings).
+
+The paragraph above reads "**Nothing here is a verdict, and no run of the rule has been taken.**" and "this README names
+each, by all forty digits, when it lands. The rule commit is named here when the change that carries it has merged".
+Each reads as of the day it was written, and is left as written.

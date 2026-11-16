@@ -1,0 +1,62 @@
+# SJL-17's deletion list and the host's collation, searched in the tree at the after commit (SJL-17.6, 2026-11-16)
+# command 1 (every line, comments included):
+# git grep -n -w -E 'ResolveCompareInfo|StripIgnorablePunctuation|LocaleDefaultIgnorePunctuation|GetUnicodeExtensionType|RemoveUnicodeExtensionKeyword|ReflectExtensionKeyword|CollatorRelevantKeys|StripUnicodeExtension|NetCollationSuffix' 2f012739 -- 'Broiler.JS/*.cs' ':!*Tests*' ':!Broiler.JS/benchmarks'
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:26:/// <b>What moved here at SJL-17.5</b> (decision E11, X6): <c>NetCollationSuffix</c>, from <c>JSIntlCollator</c>, as the
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:28:/// that was <c>JSIntlCollator</c>'s <c>ResolveCompareInfo</c> and its <c>CompareOptions</c> mapping in <c>Compare</c>.
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:29:/// For the covered locales both are deleted: the shared <c>UcaCollator</c> compares them. <c>StripIgnorablePunctuation</c>'s
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:34:/// every locale, and the tailorings .NET exposes by name (<see cref="NetCollationSuffix"/>). As before, <c>emoji</c> and
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:41:    // The collation types this provider resolves for some locale: emoji and eor everywhere, and NetCollationSuffix's.
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:54:        => collation is "emoji" or "eor" || NetCollationSuffix(language, collation) != null;
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:60:    // ResolveCompareInfo, for every locale.
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:89:        if (NetCollationSuffix(Language(locale), collation) != null)
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:132:    private static string? NetCollationSuffix(string language, string collation)
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:752:    // tailorings exposed by NetCollationSuffix (de phonebk; zh pinyin/stroke/phonetic/
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:755:    // (#912 Problem 11), so this list is kept in sync with NetCollationSuffix.
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:757:    // (phonebk, trad) and the host collation provider's (emoji and eor everywhere, and NetCollationSuffix's, which moved
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:759:    // collations emoji and eor and NetCollationSuffix's tailorings, kept in sync with NetCollationSuffix; it is left as
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1124:    // Revised 2026-11-15, at SJL-17.5, which deletes the keyword filter over CollatorRelevantKeys (the owner's ruling of
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1139:    //   decision D13); the Collator's co, kf and kn (in JSIntlCollator's constructor, with its StripUnicodeExtension), over
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1145:    // - with the last of their readers: GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword.
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1159:    // GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword keep the Collator as a reader.
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1163:    // ResolveLocaleFromCanonical stays for the Segmenter (SJL-7's, NoRelevantKeys) and the Collator (CollatorRelevantKeys);
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1164:    // GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword stay for the Collator alone, whose
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1198:    // on SJL-17's deletion list now, not SJL-9's, and SJL-17.5 deletes them: GetUnicodeExtensionType,
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1199:    // RemoveUnicodeExtensionKeyword, ReflectExtensionKeyword, ResolveLocaleFromCanonical's keyword filter over
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1200:    // CollatorRelevantKeys, and JSIntlCollator's StripUnicodeExtension (docs/roadmap/SharedLibraries.md, the dated notes on
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1203:    // GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword go with their last reader, the
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1206:    // the Segmenter, which has no relevant key; CollatorRelevantKeys goes, and with it NoRelevantKeys, the empty list the
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1207:    // Segmenter passed; and JSIntlCollator's StripUnicodeExtension goes with its comparison's host path for the covered
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2472:// SJL-17"): ResolveCompareInfo for the covered locales, StripIgnorablePunctuation and its tie-break (row O19), the
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2473:// CompareOptions mapping for the covered locales, the hard-coded Thai default (LocaleDefaultIgnorePunctuation),
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2474:// StripUnicodeExtension, TryGetUnicodeExtension, IsCollationAvailableForLocale and TryGetOwnOption, with JSIntl's
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2475:// GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword, ReflectExtensionKeyword, CanonicalizeCollation,
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2476:// CollatorRelevantKeys and ResolveLocaleFromCanonical's keyword filter; NetCollationSuffix moved into the host provider,
+
+# command 2 (code lines only: the lines of command 1's names, CompareOptions, CompareInfo and GetCultureInfo that are not // comments):
+# git grep -n -w -E 'ResolveCompareInfo|StripIgnorablePunctuation|LocaleDefaultIgnorePunctuation|GetUnicodeExtensionType|RemoveUnicodeExtensionKeyword|ReflectExtensionKeyword|CollatorRelevantKeys|StripUnicodeExtension|NetCollationSuffix|CompareOptions|CompareInfo|GetCultureInfo' 2f012739 -- 'Broiler.JS/*.cs' ':!*Tests*' ':!Broiler.JS/benchmarks' | grep -v -E ':[0-9]+:\s*//'
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDatePrototype.Formatters.cs:173:            : (IFormatProvider)CultureInfo.GetCultureInfo(locale.ToString());
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:54:        => collation is "emoji" or "eor" || NetCollationSuffix(language, collation) != null;
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:69:    internal static CompareInfo? CompareInfoFor(string locale, string collation, string usage)
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:81:                return CultureInfo.GetCultureInfo(locale + "-u-co-search").CompareInfo;
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:89:        if (NetCollationSuffix(Language(locale), collation) != null)
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:93:                return CultureInfo.GetCultureInfo(locale + "-u-co-" + collation).CompareInfo;
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:100:            return CultureInfo.GetCultureInfo(locale).CompareInfo;
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:114:    internal static int Compare(CompareInfo compareInfo, string left, string right, string sensitivity, bool ignorePunctuation)
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:116:        var options = CompareOptions.None;
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:118:            options |= CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace;
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:120:            options |= CompareOptions.IgnoreCase;
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:122:            options |= CompareOptions.IgnoreNonSpace;
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:124:            options |= CompareOptions.IgnoreSymbols;
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:132:    private static string? NetCollationSuffix(string language, string collation)
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCultureLocaleData.cs:241:            return CultureInfo.GetCultureInfo(name);
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2506:    private readonly CompareInfo? hostCompareInfo;
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumberPrototype.cs:281:                : CultureInfo.GetCultureInfo(locale.ToString());
+
+# command 3 (where JSIntlCollator reaches the host's CompareInfo):
+# git grep -n -E 'HostCollationProvider\.|IsShared\(' 2f012739 -- Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs | grep -v -E ':[0-9]+:\s*//'
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2562:        if (!IsShared(language, resolved.DataLocale, usage, collation, data))
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2563:            hostCompareInfo = HostCollationProvider.CompareInfoFor(resolved.DataLocale, collation, usage);
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2573:    private static bool IsShared(string language, string dataLocale, string usage, string collation, UcaCollationData data)
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2626:        foreach (var type in HostCollationProvider.TypesFor(language))
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2643:        var set = new SortedSet<string>(HostCollationProvider.Types, StringComparer.Ordinal);
+2f012739:Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2693:        return HostCollationProvider.Compare(

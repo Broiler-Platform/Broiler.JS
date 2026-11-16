@@ -1,0 +1,6 @@
+# shell tree: <tree>, written by git archive of 2f012739cfc4d99e91b22d28a09941c49d8bd646; archive sha256 83ac8f3612818d50e517d1ed36dd424b663686850e967f71a0fd32059dc542bf; shell built in Release with --disable-build-servers (SDK 10.0.404), build exit 0
+# shell: Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll, sha256 120f6e168e955ca024af6348e27287f07dfbf52a95fb6557f6f6c181ff154ac2
+# the shell's environment: this collector's, less LANG, LANGUAGE, TZ, DOTNET_SYSTEM_GLOBALIZATION_INVARIANT and every LC_ variable, with {"DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_NOLOGO": "1", "DOTNET_ROOT": "/root/.dotnet", "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT": "1", "TZ": "UTC"}
+# probe: docs/evidence/sjl-17-001/invariant-probe.js, sha256 9716334cb886b5d81247571554b908e57f603b6f14fe5efeb1fee35adb299066; expected: docs/evidence/sjl-17-001/invariant-probe.expected.txt, sha256 67eb5585b61df7572d4077356cfe894523e855b15fe242d07a1f3c92ef4e7cd2
+$ dotnet Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll --script-host docs/evidence/sjl-17-001/invariant-probe.js
+# started 2026-11-16T06:07:21Z; exit 0; stdout 8,374 bytes; stderr 0 bytes
