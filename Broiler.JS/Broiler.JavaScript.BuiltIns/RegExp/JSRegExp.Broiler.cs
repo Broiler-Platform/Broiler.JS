@@ -78,9 +78,12 @@ public partial class JSRegExp
         if (!unicodeMode && !GapScan.HasGap(pattern))
             return null;
 
-        // The constructor parses the pattern as the routing's parse did before 0.1.0-preview.6,
-        // and refuses (throws) where that parse refused, so a pattern Broiler cannot own
-        // still falls back to the .NET translator.
+        // The constructor parses the pattern and refuses (throws) where the routing's own parse
+        // refused before 0.1.0-preview.6, so a pattern Broiler cannot own still falls back to the
+        // .NET translator. The one exception is a `\k` inside a class, outside Unicode mode, in a
+        // pattern that declares a group name (`(?<n>a)[\k]`): preview.6 reads it as the letter k
+        // (Broiler.Regex's decision D-s5) where the old parse refused it. CreateRegex never gets
+        // here with one, since RegExpGroupNames.FirstError refuses it first.
         try
         {
             return new BroilerRegex(pattern, brFlags, JSUnicode.Tables);
