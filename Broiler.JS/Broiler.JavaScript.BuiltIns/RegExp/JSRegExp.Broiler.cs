@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Broiler.Regex;
-using Broiler.Regex.Ast;
+using Broiler.Regex.Text;
 using Broiler.JavaScript.Runtime.Unicode;
 using NetMatch = System.Text.RegularExpressions.Match;
 using Broiler.ECMAScript.Text;
@@ -65,30 +65,22 @@ public partial class JSRegExp
     {
         pattern ??= "";
 
-        RegexFlags brFlags;
-        RegexNode ast;
-        try
-        {
-            brFlags = RegexFlagsParser.Parse(flags);
-            // Re-parse with Broiler so the routing decision sees the real grammar
-            // (not a textual heuristic). A parse failure here means Broiler can't own
-            // the pattern, so fall back to the .NET translator.
-            ast = Broiler.Regex.Parsing.RegexParser.Parse(pattern, brFlags, JSUnicode.Tables, out _);
-        }
-        catch
-        {
+        // Broiler.Regex 0.1.0-preview.6's flags reader answers a refusal as a status, where
+        // RegexFlagsParser.Parse, internal since that version, threw it; the flags it accepts
+        // are the same.
+        if (RegexFlagsText.Parse(flags, out var brFlags, out _) != RegexStatus.Success)
             return null;
-        }
 
-        // Outside Unicode mode, keep the .NET default and route only the gap shapes.
-        if (!unicodeMode)
-        {
-            var scan = new GapScan(unicodeMode);
-            scan.Walk(ast, insideLookbehind: false);
-            if (!scan.HasGap)
-                return null;
-        }
+        // Outside Unicode mode, keep the .NET default and route only the gap shapes. The scan
+        // reads the pattern as Broiler.Regex's parser does (GapScan), since the parser and its
+        // tree are internal from 0.1.0-preview.6; a pattern it cannot read is one Broiler
+        // refuses, so the .NET translator, or a SyntaxError, takes over as before.
+        if (!unicodeMode && !GapScan.HasGap(pattern))
+            return null;
 
+        // The constructor parses the pattern as the routing's parse did before 0.1.0-preview.6,
+        // and refuses (throws) where that parse refused, so a pattern Broiler cannot own
+        // still falls back to the .NET translator.
         try
         {
             return new BroilerRegex(pattern, brFlags, JSUnicode.Tables);
@@ -99,132 +91,513 @@ public partial class JSRegExp
         }
     }
 
-    // Walks a Broiler.Regex AST to decide whether the pattern is a gap case worth
-    // routing (HasGap).
-    private sealed class GapScan(bool unicodeMode)
+    // Decides whether a pattern outside Unicode mode is a gap case worth routing.
+    //
+    // Until Broiler.Regex 0.1.0-preview.6 this walked the package's public syntax tree, which that
+    // version made internal (its task 2.9: "the 29 breaks"). It now reads the pattern text by the
+    // grammar the package's RegexParser reads outside Unicode mode (ECMA-262 22.2.1 with Annex B's
+    // B.1.2), consuming exactly what that parser consumes, and answers the walk's own questions of each
+    // term: whether it can match the empty string, whether it can match a non-empty one, and whether it
+    // is a capturing group or a back-reference inside a look-behind. The walk's Unicode-mode cases (an
+    // astral or lone-surrogate atom, any back-reference, a class with set operations or a property
+    // escape) never applied: TryRouteToBroiler scans only outside Unicode mode, where the parser builds
+    // none of them. A stopgap until SJL-11.5, whose deletion list names GapScan and TryRouteToBroiler.
+    private sealed class GapScan
     {
-        private readonly bool _unicode = unicodeMode;
+        private readonly string _src;
+        private int _pos;
+        private int _depth = 1;
+        private int _totalCaptureGroups;
+        private bool _hasGroupNames;
+        private bool _hasGap;
 
-        public bool HasGap;
+        private GapScan(string pattern) => _src = pattern;
 
-        public void Walk(RegexNode node, bool insideLookbehind)
+        // A pattern the parser would refuse: the scan stops, and the pattern is not routed.
+        private sealed class Refused : System.Exception
         {
-            switch (node)
+        }
+
+        // What the walk asked of a node: CanMatchEmpty and CanMatchNonEmpty.
+        private readonly record struct Shape(bool Empty, bool NonEmpty);
+
+        private static readonly Shape Character = new(false, true);
+        private static readonly Shape Assertion = new(true, false);
+        private static readonly Shape Backreference = new(true, true);
+
+        /// <summary>
+        /// True when <paramref name="pattern"/>, read outside Unicode mode, has a gap shape: a capturing
+        /// group or a back-reference inside a look-behind (problems 3 and 4), or a quantifier whose maximum
+        /// is above one over a body that can match both the empty string and a non-empty one (problem 8).
+        /// False also for a pattern Broiler.Regex's parser refuses.
+        /// </summary>
+        public static bool HasGap(string pattern)
+        {
+            var scan = new GapScan(pattern);
+            try
             {
-                case CharNode ch:
-                    // Astral or lone-surrogate atom under `u`: .NET matches per code
-                    // unit, Broiler per code point (problem 7).
-                    if (_unicode && (ch.CodePoint > 0xFFFF || (ch.CodePoint >= 0xD800 && ch.CodePoint <= 0xDFFF)))
-                        HasGap = true;
-                    break;
+                scan.PreScan();
+                scan.Disjunction(insideLookbehind: false);
+                if (scan._pos != scan._src.Length)
+                    return false;
+            }
+            catch (Refused)
+            {
+                return false;
+            }
 
-                case BackreferenceNode:
-                    // A back-reference inside a look-behind, or any back-reference in
-                    // Unicode mode, is a documented gap (problems 3, 4, 6).
-                    if (insideLookbehind || _unicode)
-                        HasGap = true;
-                    break;
+            return scan._hasGap;
+        }
 
-                case CharClassNode cls:
-                    // A v-mode class-set expression (`[a&&b]`, `[a--b]`, `[[a][b]]`,
-                    // `\q{…}`) and a property escape used as a class member are both
-                    // shapes the translator cannot hand to .NET as written: it evaluates
-                    // the set itself and emits an approximation, and inside `[…]` it falls
-                    // back to .NET's code-unit-based `\p{Lu}`, which cannot match a
-                    // supplementary-plane member. Broiler.Regex evaluates both directly.
-                    if (cls.Set.UsesSetOperations || cls.Set.UsesPropertyEscape)
-                        HasGap = true;
-                    break;
+        // The parser's pre-scan, outside v: the total number of capturing groups, which decides whether
+        // \n is a back-reference, and whether any group is named, which decides whether \k is one.
+        private void PreScan()
+        {
+            var inClass = false;
+            for (var i = 0; i < _src.Length; i++)
+            {
+                var c = _src[i];
+                if (c == '\\')
+                {
+                    i++;
+                    continue;
+                }
+                if (c == '[') { inClass = true; continue; }
+                if (c == ']') { inClass = false; continue; }
+                if (inClass || c != '(')
+                    continue;
 
-                case GroupNode grp:
-                    if (insideLookbehind && grp.IsCapturing)
-                        HasGap = true; // capturing group inside a look-behind (problems 3, 4)
-                    Walk(grp.Child, insideLookbehind);
-                    break;
+                if (i + 1 < _src.Length && _src[i + 1] == '?')
+                {
+                    if (i + 3 < _src.Length && _src[i + 2] == '<' && _src[i + 3] != '=' && _src[i + 3] != '!')
+                    {
+                        _totalCaptureGroups++;
+                        _hasGroupNames = true;
+                    }
+                    continue;
+                }
 
-                case ModifierGroupNode mod:
-                    Walk(mod.Child, insideLookbehind);
-                    break;
-
-                case QuantifierNode q:
-                    // Nullable quantifier divergence (problem 8): a repeat that runs
-                    // two or more times over a body that can match BOTH empty and
-                    // non-empty. ECMAScript drops the empty iteration, .NET keeps it.
-                    if ((q.Max == QuantifierNode.Unbounded || q.Max > 1)
-                        && CanMatchEmpty(q.Child) && CanMatchNonEmpty(q.Child))
-                        HasGap = true;
-                    Walk(q.Child, insideLookbehind);
-                    break;
-
-                case SequenceNode seq:
-                    foreach (var t in seq.Terms)
-                        Walk(t, insideLookbehind);
-                    break;
-
-                case DisjunctionNode dis:
-                    foreach (var alt in dis.Alternatives)
-                        Walk(alt, insideLookbehind);
-                    break;
-
-                case LookaroundNode la:
-                    Walk(la.Child, insideLookbehind || la.Behind);
-                    break;
+                _totalCaptureGroups++;
             }
         }
 
-        private static bool CanMatchEmpty(RegexNode node) => node switch
+        private Shape Disjunction(bool insideLookbehind)
         {
-            EmptyNode => true,
-            CharNode => false,
-            AnyCharNode => false,
-            // A v-mode class can hold the empty string (`[\q{}]`), which is the one
-            // character class that matches without advancing.
-            CharClassNode c => c.Set.MatchesEmptyString,
-            AnchorNode => true,
-            LookaroundNode => true,
-            BackreferenceNode => true, // an unset back-reference matches the empty string
-            GroupNode g => CanMatchEmpty(g.Child),
-            ModifierGroupNode m => CanMatchEmpty(m.Child),
-            QuantifierNode q => q.Min == 0 || CanMatchEmpty(q.Child),
-            SequenceNode s => AllEmpty(s.Terms),
-            DisjunctionNode d => AnyEmpty(d.Alternatives),
-            _ => true,
-        };
+            var shape = Alternative(insideLookbehind);
+            while (Peek() == '|')
+            {
+                _pos++;
+                var next = Alternative(insideLookbehind);
+                shape = new Shape(shape.Empty || next.Empty, shape.NonEmpty || next.NonEmpty);
+            }
+            return shape;
+        }
 
-        private static bool CanMatchNonEmpty(RegexNode node) => node switch
+        // An alternative of no term is the empty node; of one, that term; else a sequence, which can
+        // match empty when every term can, and non-empty when any term can.
+        private Shape Alternative(bool insideLookbehind)
         {
-            EmptyNode => false,
-            CharNode => true,
-            AnyCharNode => true,
-            CharClassNode => true,
-            AnchorNode => false,
-            LookaroundNode => false,
-            BackreferenceNode => true,
-            GroupNode g => CanMatchNonEmpty(g.Child),
-            ModifierGroupNode m => CanMatchNonEmpty(m.Child),
-            QuantifierNode q => q.Max != 0 && CanMatchNonEmpty(q.Child),
-            SequenceNode s => AnyNonEmpty(s.Terms),
-            DisjunctionNode d => AnyNonEmpty(d.Alternatives),
-            _ => true,
-        };
+            bool empty = true, nonEmpty = false;
+            while (!AtEnd && Peek() is not ('|' or ')'))
+            {
+                var term = Term(insideLookbehind);
+                empty &= term.Empty;
+                nonEmpty |= term.NonEmpty;
+            }
+            return new Shape(empty, nonEmpty);
+        }
 
-        private static bool AllEmpty(IReadOnlyList<RegexNode> ts)
+        private Shape Term(bool insideLookbehind)
         {
-            foreach (var t in ts) if (!CanMatchEmpty(t)) return false;
+            if (TryAssertion(insideLookbehind, out var assertion, out var quantifiable))
+            {
+                if (!HasQuantifier())
+                    return assertion;
+                // Annex B lets a look-ahead, and no other assertion, carry a quantifier.
+                if (!quantifiable)
+                    throw new Refused();
+                return Quantified(assertion);
+            }
+
+            return Quantified(Atom(insideLookbehind));
+        }
+
+        private bool TryAssertion(bool insideLookbehind, out Shape shape, out bool quantifiable)
+        {
+            shape = Assertion;
+            quantifiable = false;
+            var c = Peek();
+            if (c is '^' or '$')
+            {
+                _pos++;
+                return true;
+            }
+            if (c == '\\' && PeekAt(1) is 'b' or 'B')
+            {
+                _pos += 2;
+                return true;
+            }
+            if (c == '(' && PeekAt(1) == '?')
+            {
+                if (PeekAt(2) is '=' or '!')
+                {
+                    _pos += 3;
+                    Group(insideLookbehind);
+                    quantifiable = true;
+                    return true;
+                }
+                if (PeekAt(2) == '<' && PeekAt(3) is '=' or '!')
+                {
+                    _pos += 4;
+                    Group(insideLookbehind: true);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool HasQuantifier()
+        {
+            if (Peek() is '*' or '+' or '?')
+                return true;
+            if (Peek() != '{')
+                return false;
+            var save = _pos;
+            var found = TryBraceQuantifier(out _, out _);
+            _pos = save;
+            return found;
+        }
+
+        // The walk's quantifier case: a gap when the maximum is above one (or unbounded) and the body
+        // can match both empty and non-empty; the quantified term can match empty when its minimum is
+        // zero or its body can, and non-empty when its maximum is not zero and its body can.
+        private Shape Quantified(Shape body)
+        {
+            int min, max;
+            switch (Peek())
+            {
+                case '*': min = 0; max = -1; _pos++; break;
+                case '+': min = 1; max = -1; _pos++; break;
+                case '?': min = 0; max = 1; _pos++; break;
+                case '{':
+                    if (!TryBraceQuantifier(out min, out max))
+                        return body;
+                    break;
+                default:
+                    return body;
+            }
+            if (Peek() == '?')
+                _pos++;
+
+            if ((max == -1 || max > 1) && body.Empty && body.NonEmpty)
+                _hasGap = true;
+            return new Shape(min == 0 || body.Empty, max != 0 && body.NonEmpty);
+        }
+
+        // {n}, {n,} or {n,m}, the counts saturating at int.MaxValue, -1 for no maximum.
+        private bool TryBraceQuantifier(out int min, out int max)
+        {
+            max = 0;
+            var save = _pos;
+            _pos++;
+            if (!TryDecimal(out min))
+            {
+                _pos = save;
+                return false;
+            }
+            max = min;
+            if (Peek() == ',')
+            {
+                _pos++;
+                if (Peek() == '}')
+                    max = -1;
+                else if (!TryDecimal(out max))
+                {
+                    _pos = save;
+                    return false;
+                }
+            }
+            if (Peek() != '}')
+            {
+                _pos = save;
+                return false;
+            }
+            _pos++;
+            if (max != -1 && max < min)
+                throw new Refused();
             return true;
         }
 
-        private static bool AnyEmpty(IReadOnlyList<RegexNode> ts)
+        private Shape Atom(bool insideLookbehind)
         {
-            foreach (var t in ts) if (CanMatchEmpty(t)) return true;
-            return false;
+            var c = Peek();
+            switch (c)
+            {
+                case '.':
+                    _pos++;
+                    return Character;
+                case '(':
+                    return GroupAtom(insideLookbehind);
+                case '[':
+                    // Outside v no class holds the empty string.
+                    Class();
+                    return Character;
+                case '\\':
+                    return AtomEscape(insideLookbehind);
+                case '*' or '+' or '?':
+                    throw new Refused();
+                case '{' when HasQuantifier():
+                    throw new Refused();
+            }
+
+            // A pattern character, ']', '{' and '}' among them under Annex B: one code unit.
+            _pos++;
+            return Character;
         }
 
-        private static bool AnyNonEmpty(IReadOnlyList<RegexNode> ts)
+        private Shape GroupAtom(bool insideLookbehind)
         {
-            foreach (var t in ts) if (CanMatchNonEmpty(t)) return true;
-            return false;
+            _pos++;
+            if (Peek() != '?')
+            {
+                if (insideLookbehind)
+                    _hasGap = true;
+                return Group(insideLookbehind);
+            }
+
+            var second = PeekAt(1);
+            if (second == ':')
+            {
+                _pos += 2;
+                return Group(insideLookbehind);
+            }
+            if (second == '<' && PeekAt(2) is not ('=' or '!'))
+            {
+                _pos += 2;
+                SkipGroupName();
+                if (insideLookbehind)
+                    _hasGap = true;
+                return Group(insideLookbehind);
+            }
+            if (second is 'i' or 'm' or 's' or '-')
+            {
+                _pos++;
+                SkipModifierFlags();
+                if (Peek() == '-')
+                {
+                    _pos++;
+                    SkipModifierFlags();
+                }
+                Expect(':');
+                return Group(insideLookbehind);
+            }
+            throw new Refused();
         }
+
+        // A group's body and its ')', descending as the parser does: the pattern's own disjunction is
+        // depth 1 and each group adds 1, up to Broiler.Regex's nesting limit, which the routing's parse
+        // and the constructor take.
+        private Shape Group(bool insideLookbehind)
+        {
+            if (_depth >= BroilerRegex.MaximumNestingLimit)
+                throw new Refused();
+            _depth++;
+            var body = Disjunction(insideLookbehind);
+            Expect(')');
+            _depth--;
+            return body;
+        }
+
+        // A GroupName's '<' already read: its RegExpIdentifierName, which holds no '>', and the '>'.
+        private void SkipGroupName()
+        {
+            while (!AtEnd && Peek() != '>')
+                _pos++;
+            if (AtEnd)
+                throw new Refused();
+            _pos++;
+        }
+
+        private void SkipModifierFlags()
+        {
+            while (Peek() is 'i' or 'm' or 's')
+                _pos++;
+        }
+
+        private Shape AtomEscape(bool insideLookbehind)
+        {
+            _pos++;
+            var c = Peek();
+
+            // \1 to \9: a back-reference when its number is a group's, else a legacy octal or identity
+            // escape.
+            if (c is >= '1' and <= '9')
+            {
+                var start = _pos;
+                TryDecimal(out var number);
+                if (number <= _totalCaptureGroups)
+                {
+                    if (insideLookbehind)
+                        _hasGap = true;
+                    return Backreference;
+                }
+                _pos = start;
+                LegacyOctalOrIdentity();
+                return Character;
+            }
+
+            // \k<name> is a back-reference only when the pattern names a group; else the letter k.
+            if (c == 'k' && _hasGroupNames)
+            {
+                _pos++;
+                if (Peek() != '<')
+                    throw new Refused();
+                _pos++;
+                SkipGroupName();
+                if (insideLookbehind)
+                    _hasGap = true;
+                return Backreference;
+            }
+
+            // \d \D \w \W \s \S, or a character escape.
+            if (c is 'd' or 'D' or 'w' or 'W' or 's' or 'S')
+                _pos++;
+            else
+                CharacterEscape();
+            return Character;
+        }
+
+        // A CharacterEscape outside Unicode mode, its '\' already read.
+        private void CharacterEscape()
+        {
+            if (AtEnd)
+                throw new Refused();
+            var c = Peek();
+            switch (c)
+            {
+                case 'n' or 'r' or 't' or 'f' or 'v':
+                    _pos++;
+                    return;
+                case '0' when !char.IsAsciiDigit(PeekAt(1)):
+                    _pos++;
+                    return;
+                case 'x' when HasHexDigits(1, 2):
+                    _pos += 3;
+                    return;
+                case 'u' when HasHexDigits(1, 4):
+                    _pos += 5;
+                    return;
+                case 'c':
+                    // \c and a letter; else the backslash alone, and the c is read next.
+                    if (char.IsAsciiLetter(PeekAt(1)))
+                        _pos += 2;
+                    return;
+            }
+            if (c is >= '0' and <= '7')
+            {
+                LegacyOctalOrIdentity();
+                return;
+            }
+            _pos++;
+        }
+
+        // Up to three octal digits whose value is at most 0xFF; else one code unit.
+        private void LegacyOctalOrIdentity()
+        {
+            if (Peek() is not (>= '0' and <= '7'))
+            {
+                _pos++;
+                return;
+            }
+            var value = 0;
+            for (var count = 0; count < 3 && Peek() is >= '0' and <= '7'; count++)
+            {
+                var next = value * 8 + (Peek() - '0');
+                if (next > 0xFF)
+                    break;
+                value = next;
+                _pos++;
+            }
+        }
+
+        // A class outside v, '[' at the cursor: its atoms up to the first ']' no escape consumes.
+        private void Class()
+        {
+            _pos++;
+            if (Peek() == '^')
+                _pos++;
+            while (true)
+            {
+                if (AtEnd)
+                    throw new Refused();
+                if (Peek() == ']')
+                {
+                    _pos++;
+                    return;
+                }
+                ClassAtom();
+                if (Peek() == '-' && _pos + 1 < _src.Length && PeekAt(1) != ']')
+                {
+                    _pos++;
+                    ClassAtom();
+                }
+            }
+        }
+
+        private void ClassAtom()
+        {
+            if (Peek() != '\\')
+            {
+                _pos++;
+                return;
+            }
+            _pos++;
+            var c = Peek();
+            if (c is 'd' or 'D' or 'w' or 'W' or 's' or 'S' or 'b' or '-')
+                _pos++;
+            else if (c == 'c' && (char.IsAsciiDigit(PeekAt(1)) || PeekAt(1) == '_'))
+                _pos += 2;
+            else
+                CharacterEscape();
+        }
+
+        private bool TryDecimal(out int value)
+        {
+            value = 0;
+            if (!char.IsAsciiDigit(Peek()))
+                return false;
+            long accumulated = 0;
+            while (char.IsAsciiDigit(Peek()))
+            {
+                accumulated = System.Math.Min(accumulated * 10 + (Peek() - '0'), int.MaxValue);
+                _pos++;
+            }
+            value = (int)accumulated;
+            return true;
+        }
+
+        private bool HasHexDigits(int offset, int count)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                if (!char.IsAsciiHexDigit(PeekAt(offset + i)))
+                    return false;
+            }
+            return true;
+        }
+
+        private void Expect(char c)
+        {
+            if (Peek() != c)
+                throw new Refused();
+            _pos++;
+        }
+
+        private bool AtEnd => _pos >= _src.Length;
+
+        private char Peek() => _pos < _src.Length ? _src[_pos] : '\0';
+
+        private char PeekAt(int offset) => _pos + offset < _src.Length ? _src[_pos + offset] : '\0';
     }
 
     /// <summary>
@@ -351,8 +724,8 @@ public partial class JSRegExp
         if (!m.Success)
             return RegexMatchData.NoMatch;
 
-        var groups = new RegexCapture[m.Groups.Count];
-        for (var i = 0; i < m.Groups.Count; i++)
+        var groups = new RegexCapture[m.Groups.Length];
+        for (var i = 0; i < m.Groups.Length; i++)
         {
             var g = m.Groups[i];
             groups[i] = new RegexCapture(g.Success, g.Index, g.Length, g.Success ? g.Value : null);
