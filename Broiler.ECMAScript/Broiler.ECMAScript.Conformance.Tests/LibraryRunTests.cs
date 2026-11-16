@@ -441,6 +441,11 @@ public class LibraryRunTests
     /// owner's decision of 2026-11-02 on row O3 keeps for the library. No collation vector needs an engine. A tailoring vector
     /// whose Broiler.VM expectation is its narrower locale list's gives its <c>out</c>, Broiler.JS's expectation, since the tables
     /// carry JSD-0084's decision E3's tailorings.
+    /// <i>(Revised 2026-11-15, at corpus revision 40, with Broiler.JS's cut-over SJL-17.5: on those Han vectors Broiler.JS's
+    /// <c>per-engine</c> expectation is the implicit weights too, the owner's decision E-o3h, so both engines' expectations
+    /// agree, and <see cref="LibraryRun.Expected"/> holds the library to them: each of the 34 is now a match. The test read
+    /// "Assert.Equal(34, vm.Count)" of the vectors that do not match, and its assertions on them now hold of the 34 whose
+    /// expectations agree and differ from <c>out</c>.)</i>
     /// </summary>
     [Fact]
     public void Every_collation_vector_gives_its_out_or_Broiler_VM_s_expectation()
@@ -455,11 +460,17 @@ public class LibraryRunTests
             .ToList();
         Assert.True(failing.Count == 0, failing.Count + " fail:\n" + string.Join("\n", failing.Take(80)));
 
-        var vm = results.Where(static r => r.Verdict != Verdict.Match).ToList();
-        Assert.All(vm, static r => Assert.Equal("impl-defined", r.Vector.Class));
-        Assert.All(vm, static r => Assert.StartsWith("intl/collation/root/", r.Vector.Id, System.StringComparison.Ordinal));
-        Assert.All(vm, static r => Assert.Contains("O3", r.Vector["note"], System.StringComparison.Ordinal));
-        Assert.Equal(34, vm.Count);
+        Assert.Empty(results.Where(static r => r.Verdict != Verdict.Match));
+
+        // The Han vectors whose answer moves with the order across blocks: out is the reference's radical-stroke answer, and
+        // both engines' expectations, the implicit weights by block, are the library's answer.
+        var han = results.Where(static r => r.Vector["per-engine.broiler-js"] is { } expectation && expectation != r.Vector.Out).ToList();
+        Assert.All(han, static r => Assert.Equal("impl-defined", r.Vector.Class));
+        Assert.All(han, static r => Assert.Equal(r.Vector["per-engine.broiler-vm"], r.Vector["per-engine.broiler-js"]));
+        Assert.All(han, static r => Assert.Equal(r.Vector["per-engine.broiler-vm"], r.Expected));
+        Assert.All(han, static r => Assert.StartsWith("intl/collation/root/", r.Vector.Id, System.StringComparison.Ordinal));
+        Assert.All(han, static r => Assert.Contains("O3", r.Vector["note"], System.StringComparison.Ordinal));
+        Assert.Equal(34, han.Count);
     }
 
     /// <summary>
