@@ -2391,7 +2391,9 @@ This repository's part of it:
     root or the listed tailoring, so no comparison falls back to code-unit order (decision E4). The Collator's data lists
     `eor` and `emoji` on every host, as before; the alternative not taken, listing them only where the host has data,
     would leave `en` without a collation under invariant globalization.
-  - **The shared collator is unchanged**: nothing under `Broiler.ECMAScript/` changes, so no stream publication is asked.
+  - **The shared collator is unchanged**: no library under `Broiler.ECMAScript/` changes, so no stream publication is
+    asked. One test there does: `Broiler.ECMAScript.Conformance.Tests`' library-level check of the collation vectors, whose
+    Han vectors match once both engines' expectations agree (corpus revision 40).
   - **Records**: the changelog's entry of this date lists each correction (O5a, O5b, O7 and O8 with O18, O10, O12 and
     O14) and each data change (O1, O2, O3 and O16, and O5c) with its vectors; [`docs/public-api.md`](../public-api.md)
     records that `JSIntlCollator` keeps every public member; corpus revision 40 restates this engine's expectations that

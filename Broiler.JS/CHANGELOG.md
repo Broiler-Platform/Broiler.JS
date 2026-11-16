@@ -113,7 +113,9 @@ and `Collator/usage-de.js` and `compare/non-normative-phonebook.js` are answered
 Tests: `SharedCollatorTests` in `Broiler.JavaScript.BuiltIns.Tests`, each case naming its row (O3, O5a, O5b, O5c, O7,
 O8, O10, O11a, O11b, O12, O16 and O19); `Broiler.JavaScript.Vectors.Tests` over corpus revision 40, which restates this
 engine's expectations under rows O3 and O16; and the generators' tests of the two plan tables that revision restates
-(`scripts/conformance/tests/test_collation_vectors.py` and `test_intl_vectors.py`). No test is removed or weakened.
+(`scripts/conformance/tests/test_collation_vectors.py` and `test_intl_vectors.py`), with
+`Broiler.ECMAScript.Conformance.Tests`' library-level check of the collation vectors, whose 34 Han vectors match once both
+engines' expectations agree. No test is removed or weakened, and no library under `Broiler.ECMAScript/` changes.
 
 ### The engine's architecture tests hold the host-culture readers no build rule sees, and the host-culture rules' scope (2026-11-12, milestone SJL-9's clause 8)
 

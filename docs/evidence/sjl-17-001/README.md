@@ -194,8 +194,9 @@ was written require:
   `5669f2bd29899ac93e0d7af130b6a7adc5791d6b` (Broiler-Platform/Broiler.JS#1117), holds the cut-over, to land as one
   merge: the after commit is that merge, and the base commit its first parent. Its changes are the changelog's entry of
   this date, "`Intl.Collator` and `String.prototype.localeCompare` move to the shared collator", and the dated note of
-  this date in [`SharedLibraries.md`](../../roadmap/SharedLibraries.md) under "Collation (SJL-17.1)". Nothing under
-  `Broiler.ECMAScript/` changes, so the collator and the tables this rule's runs read are SJL-17.3's.
+  this date in [`SharedLibraries.md`](../../roadmap/SharedLibraries.md) under "Collation (SJL-17.1)". No library under
+  `Broiler.ECMAScript/` changes, so the collator and the tables this rule's runs read are SJL-17.3's; one test there
+  does, the library-level check of the collation vectors under corpus revision 40.
 - **2026-11-15: the base conditions, read by git at `5669f2bd`**, which is the base commit only if the branch merges
   with it as its first parent:
   - it descends from the rule commit: this file's rule, `decision-rule.md`, was last changed in
