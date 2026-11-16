@@ -2461,9 +2461,11 @@ public class JSIntlNumberFormat : JSObject
 // the shared ResolveLocale over the Collator's data, and the shared collator compares the locales and collations the shared data
 // covers (decision E3's list: root, and CLDR 48.2.0's tailorings for de (phonebook, search), root search, en, es, sv and th),
 // with numeric and caseFirst applied (rows O7 and O8) and Thai's default ignorePunctuation from the data (decision E5). The
-// optional host provider (HostCollationProvider) compares what the shared data does not cover: CJK and every other locale, and
-// a collation it does not carry for a covered locale (de's eor); where the host has no collation data, under invariant
-// globalization, the shared collator compares instead, so no comparison falls back to code-unit order (decision E4, row O14).
+// optional host provider (HostCollationProvider) compares what the shared data does not cover: CJK and every other locale, a
+// collation it does not carry for a covered locale (de's eor), and the sort collation CLDR gives a region or variant of a
+// covered language in a file of its own (de-AT's phonebook and en-US-posix's standard, RegionalCollations); where the host
+// has no collation data, under invariant globalization, the shared collator compares instead, so no comparison falls back to
+// code-unit order (decision E4, row O14).
 // The bound compare is made once and kept (row O12, decision E8). The engine keeps the reads, the resolved-option slots,
 // localeCompare's coercion and every error; it passes no charge (decision E7, row O17). Every public member stays (SJL-D-25 (a)).
 // Deleted at SJL-17.5 (decision E11, and the owner's ruling of 2026-11-11 on SJL-9's clause 7, "Fix (1); move (2) to
@@ -2557,19 +2559,60 @@ public class JSIntlCollator : JSObject
         // The shared collator for a covered locale and a collation the shared data carries (or the default, or search);
         // the host provider for the rest, where the host has collation data; otherwise the shared collator, by the
         // tailoring the data gives the locale, or the root (decision E4).
-        if (!IsShared(language, usage, collation, data))
+        if (!IsShared(language, resolved.DataLocale, usage, collation, data))
             hostCompareInfo = HostCollationProvider.CompareInfoFor(resolved.DataLocale, collation, usage);
 
         if (hostCompareInfo == null)
             collator = new UcaCollator(data, UcaCollatorOptions.FromResolved(sensitivity, ignorePunctuation, caseFirst, numeric, tailoring), JSUnicode.Normalization);
     }
 
-    // Whether the shared collator compares a collator of this language, usage and resolved collation (decision E3, read
-    // per locale and collation): a covered language, with its default, its search collation, or a collation the shared
-    // data carries for it.
-    private static bool IsShared(string language, string usage, string collation, UcaCollationData data)
+    // Whether the shared collator compares a collator of this language, data locale, usage and resolved collation
+    // (decision E3, read per locale and collation): a covered language, with its default, its search collation, or a
+    // collation the shared data carries for it, unless CLDR gives the data locale a sort collation of its own that the
+    // shared data does not carry (RegionalCollations).
+    private static bool IsShared(string language, string dataLocale, string usage, string collation, UcaCollationData data)
         => System.Array.IndexOf(CoveredLanguages, language) >= 0
-            && (usage == "search" || collation == "default" || data.HasTailoring(language + "-" + collation));
+            && (usage == "search" || collation == "default" || data.HasTailoring(language + "-" + collation))
+            && !(usage == "sort" && HasRegionalCollation(dataLocale, collation));
+
+    // The sort collations CLDR 48.2.0 gives a region or variant of a covered language, in a file of its own that the data
+    // home does not pin (it pins de.xml, en.xml, es.xml, sv.xml and th.xml alone): de_AT.xml's phonebook, with ä, ö and ü
+    // primary letters after a, o and u, and en_US_POSIX.xml's standard, which puts printable ASCII in code-point order.
+    // They stay the host provider's, as an uncovered locale does (decision E3's reading, per locale and collation), where
+    // the host has the data; the shared collator compares them by the language's collation otherwise (decision E4). No
+    // other region or variant of de, en, es, sv or th has a collation file of its own in CLDR 48.2.0 (en_US.xml holds no
+    // collation), and neither file has a search collation.
+    private static readonly (string Language, string Region, string? Variant, string Collation)[] RegionalCollations =
+    [
+        ("de", "AT", null, "phonebk"),
+        ("en", "US", "posix", "default"),
+    ];
+
+    private static bool HasRegionalCollation(string dataLocale, string collation)
+    {
+        if (LocaleId.TryParse(dataLocale, out var id) != IntlStatus.Completed || id is null || id.Region is null)
+            return false;
+
+        foreach (var (language, region, variant, type) in RegionalCollations)
+        {
+            if (id.Language == language && id.Region == region && type == collation
+                && (variant is null || HasVariant(id, variant)))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool HasVariant(LocaleId id, string variant)
+    {
+        foreach (var subtag in id.Variants)
+        {
+            if (subtag == variant)
+                return true;
+        }
+
+        return false;
+    }
 
     // [[SortLocaleData]].[[<locale>]].[[co]] and [[SearchLocaleData]]'s: null first; for sort, each collation the shared
     // data carries for the language (but standard and search, UcaCollationData.KeyValues), then each the host provider

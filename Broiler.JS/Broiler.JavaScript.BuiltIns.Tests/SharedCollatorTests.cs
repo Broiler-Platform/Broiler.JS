@@ -53,11 +53,13 @@ public class SharedCollatorTests
         => Assert.Equal(expected, Eval($"String({expression})"));
 
     // O19 and O5c (decision E5): Thai's default ignorePunctuation is its tailoring's, and with ignorePunctuation false a
-    // space counts, with no tie-break.
+    // space counts, with no tie-break. Under usage search the root's search collation applies, which states no shifted
+    // alternate, so the default is false (a move row O5c does not name; added 2026-11-16, at the review of SJL-17.5).
     [Fact]
     public void Thai_s_default_comes_from_its_tailoring()
     {
         Assert.Equal("true", Eval("String(new Intl.Collator('th').resolvedOptions().ignorePunctuation)"));
+        Assert.Equal("false", Eval("String(new Intl.Collator('th', { usage: 'search' }).resolvedOptions().ignorePunctuation)"));
         Assert.Equal("0", Eval("String(new Intl.Collator('th').compare('', ' '))"));
         Assert.Equal("-1", Eval("String(new Intl.Collator('th', { ignorePunctuation: false }).compare('', ' '))"));
         Assert.Equal("false", Eval("String(new Intl.Collator('en').resolvedOptions().ignorePunctuation)"));
@@ -92,14 +94,6 @@ public class SharedCollatorTests
             "[\"emoji\",\"eor\",\"phonebk\",\"phonetic\",\"pinyin\",\"stroke\",\"trad\",\"unihan\",\"zhuyin\"]",
             Eval("JSON.stringify(Intl.supportedValuesOf('collation'))"));
     }
-
-    // O11a (implementation-defined): under usage search the co data holds the default alone, as Broiler.VM's does, so the
-    // resolved options report what the Collator compares by.
-    [Fact]
-    public void Search_reports_the_collation_it_compares_by()
-        => Assert.Equal(
-            "de default",
-            Eval("var r = new Intl.Collator('de-u-co-phonebk', { usage: 'search' }).resolvedOptions(); r.locale + ' ' + r.collation"));
 
     // The keys co, kf and kn resolve through the shared ResolveLocale: a keyword the data supports is kept, in canonical
     // order, and an option that differs from it drops it.

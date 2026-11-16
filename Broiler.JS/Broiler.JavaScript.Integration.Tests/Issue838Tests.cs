@@ -69,6 +69,9 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   reserved "standard"/"search". (Refined for #912 Problem 11: the earlier fix listed the
 //   broader KnownCollations, including values like "big5han" that are accepted as an option
 //   but never resolved, which failed collations-accepted-by-Collator.)
+//   (Noted 2026-11-16, at SJL-17.5: NetCollationSuffix is now private to HostCollationProvider,
+//   and the list is JSIntlCollator.SortedCollations: the shared data's types and the host
+//   provider's.)
 //
 //   Problems 73, 79 (Unicode keyword canonicalization for calendar / collation) — keyword
 //   type-value aliases were not applied to the "-u-" extension during tag canonicalization, so

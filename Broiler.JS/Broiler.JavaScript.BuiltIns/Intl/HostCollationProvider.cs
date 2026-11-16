@@ -8,7 +8,9 @@ namespace Broiler.JavaScript.BuiltIns.Intl;
 /// Broiler.JS's optional host collation provider (milestone SJL-17.5; Broiler.VM's JSD-0084, decision E3, behind the
 /// same provider as decision SJL-D-22 (c)): the host's <see cref="CompareInfo"/> for what the shared collator does not
 /// cover, which is every locale outside decision E3's list (CJK among them), and a collation the shared data does not
-/// carry for a covered locale (<c>eor</c> and <c>emoji</c>, which the host resolves for every locale). It is never a second
+/// carry for a covered locale (<c>eor</c> and <c>emoji</c>, which the host resolves for every locale), or for a region or
+/// variant of one in a CLDR file of its own (<c>de-AT</c>'s phonebook and <c>en-US-posix</c>'s standard, added on
+/// 2026-11-16 at the review of SJL-17.5, where the covered language's tailoring compared them). It is never a second
 /// implementation of the algorithm: it hands both strings, after Broiler.Unicode's NFD, to the host.
 /// </summary>
 /// <remarks>
