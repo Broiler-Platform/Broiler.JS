@@ -30,4 +30,9 @@
     <InternalsVisibleTo Include="Broiler.JavaScript.BuiltIns" />
     <InternalsVisibleTo Include="Broiler.JavaScript.Parser.Tests" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="Microsoft.CodeAnalysis.BannedApiAnalyzers">
+      <IncludeAssets>build; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 </Project>
