@@ -1,0 +1,43 @@
+bundle: sjl-17-001 (Broiler.JS), its parts A to C
+collected: 2026-11-16T08:12:41Z, by docs/evidence/sjl-17-001/collect.py at 4484d15c56576b3e97c3c67fb577581db02e6756
+after commit: 2f012739cfc4d99e91b22d28a09941c49d8bd646 (Merge pull request #1118 from Broiler-Platform/claude/busy-lamport-m3yprr)
+after commit's parents: 5669f2bd29899ac93e0d7af130b6a7adc5791d6b 2661e605d2b4bcc5a5ffc7c0d3c6981c5f460de5
+base commit: 5669f2bd29899ac93e0d7af130b6a7adc5791d6b, the after commit's first parent: True
+rule commit (reading 1): 096793ae0f3aaef7f18829c4b5efd923f3dbef94 (SJL-17.1: the SJL-17 status row closes as the other started rows do, and part B's commit is named once)
+the other candidate: 59380ef98e6a4b91655f04dc832786aaea3c2aaa (SJL-17.1: collation's area verdict, the SJL-17 status row, and bundle sjl-17-001's rule)
+their default-branch merge: d1e8f5beec824438f0fc42c37bd941ad7421ce52 (Merge pull request #1087 from Broiler-Platform/claude/busy-lamport-m3yprr)
+condition 1, the base descends from the rule commit: True; from the other candidate: True; from their merge: True
+commits after the rule commit, up to the after commit, that change the rule file: none
+condition 2, the base descends from bundle sjl-9-001's after commit a5f2692e88a9aafeaa850bebe9c3399f6263353b: True; the base is that commit: False
+condition 3 (reading 4), first-parent successors of the base up to the after commit: 2f012739cfc4d99e91b22d28a09941c49d8bd646
+  2f012739cfc4d99e91b22d28a09941c49d8bd646 changes 5 product paths the rule names (Broiler.JS/Broiler.JavaScript.*/, Broiler.ECMAScript/ outside docs/, Directory.Packages.props):
+    Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/LibraryRunTests.cs
+    Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedCollatorTests.cs
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue838Tests.cs
+
+# the files the rule fixes, by blob at the rule commit, the base and the after commit
+docs/evidence/sjl-17-001/decision-rule.md: rule 892280409c95, base 892280409c95, after 892280409c95; base and after the same: True
+scripts/compliance/compare_test262_paths.py: rule e951dd478a85, base e951dd478a85, after e951dd478a85; base and after the same: True
+.github/workflows/test262-evidence.yml: rule fc38229782ee, base fc38229782ee, after fc38229782ee; base and after the same: True
+.github/actions/run-test262-shard/action.yml: rule ecc50ababf0a, base ecc50ababf0a, after ecc50ababf0a; base and after the same: True
+scripts/compliance/run_test262.py: rule af4f3d99f5c1, base 6123862cd4b4, after 6123862cd4b4; base and after the same: True
+scripts/compliance/merge_test262_shards.py: rule 5507b8d190a5, base 5507b8d190a5, after 5507b8d190a5; base and after the same: True
+scripts/conformance/run_reference_datasets.py: rule f25441084be6, base 4eeaf036661c, after 4eeaf036661c; base and after the same: True
+scripts/conformance/reference_dataset_driver.js: rule f2d5bfb5c58c, base f2d5bfb5c58c, after f2d5bfb5c58c; base and after the same: True
+conformance/datasets/intl/orderings.js: rule (absent), base df6b6910b0ed, after df6b6910b0ed; base and after the same: True
+conformance/datasets/intl/orderings.icu-77.1.txt: rule (absent), base dad23be8dd04, after dad23be8dd04; base and after the same: True
+conformance/datasets/intl/datasets.pin: rule 0e322537c7ef, base 62133735fd00, after 62133735fd00; base and after the same: True
+docs/evidence/sjl-17-001/divergence-groups.tsv: rule eb6ca8d6cade, base eb6ca8d6cade, after eb6ca8d6cade; base and after the same: True
+docs/evidence/sjl-17-001/invariant-probe.js: rule f17275862c2e, base f17275862c2e, after f17275862c2e; base and after the same: True
+docs/evidence/sjl-17-001/invariant-probe.expected.txt: rule 4eea437870c7, base 4eea437870c7, after 4eea437870c7; base and after the same: True
+docs/evidence/sjl-9-001/reference.txt: rule bd8cb1cb5470, base bd8cb1cb5470, after bd8cb1cb5470; base and after the same: True
+
+# the rule, by blob at each candidate and in this checkout
+docs/evidence/sjl-17-001/decision-rule.md at 59380ef98e6a: 8fa34de83a5044fe9f5210933e73bca0c77b1de3
+docs/evidence/sjl-17-001/decision-rule.md at 096793ae0f3a: 892280409c956cdca322d2a0b50cfececc394f4f
+docs/evidence/sjl-17-001/decision-rule.md at d1e8f5beec82: 892280409c956cdca322d2a0b50cfececc394f4f
+docs/evidence/sjl-17-001/decision-rule.md at 5669f2bd2989: 892280409c956cdca322d2a0b50cfececc394f4f
+docs/evidence/sjl-17-001/decision-rule.md at 2f012739cfc4: 892280409c956cdca322d2a0b50cfececc394f4f
+docs/evidence/sjl-17-001/decision-rule.md here: 892280409c956cdca322d2a0b50cfececc394f4f

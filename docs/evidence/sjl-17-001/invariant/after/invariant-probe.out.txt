@@ -1,0 +1,46 @@
+sort en | resolved en | " " < "_" < "-" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort en-US | resolved en-US | " " < "_" < "-" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort de | resolved en-US | " " < "_" < "-" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort de-u-co-phonebk | resolved en-US | " " < "_" < "-" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort de search | resolved en-US | " " < "_" < "-" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort sv | resolved en-US | " " < "_" < "-" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort es | resolved en-US | " " < "_" < "-" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort th | resolved en-US | " " < "_" < "-" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort ja | resolved en-US | " " < "_" < "-" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort zh | resolved en-US | " " < "_" < "-" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort tr | resolved en-US | " " < "_" < "-" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort xx | resolved en-US | " " < "_" < "-" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort default | resolved en-US | " " < "_" < "-" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort en base | resolved en | " " < "_" < "-" < "1" < "10" < "2" < "a" = "A" = "\u00e4" = "\u00c4" = "\u00e5" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" = "aB" < "ae" = "Ae" < "af" < "b" = "B" < "\u00e9" = "e" = "E" < "\u00f1" = "n" < "o" = "\u00f6" < "oe" < "\u00df" = "ss" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort en accent | resolved en | " " < "_" < "-" < "1" < "10" < "2" < "a" = "A" < "\u00e5" < "\u00e4" = "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" = "aB" < "ae" = "Ae" < "af" < "b" = "B" < "e" = "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort en case | resolved en | " " < "_" < "-" < "1" < "10" < "2" < "a" = "\u00e4" = "\u00e5" < "A" = "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "\u00e9" = "e" < "E" < "\u00f1" = "n" < "o" = "\u00f6" < "oe" < "\u00df" = "ss" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort en ignorePunctuation | resolved en | " " = "-" = "_" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a1" < "a10" < "a2" < "a-b" = "a b" = "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort en numeric | resolved en | " " < "_" < "-" < "1" < "2" < "10" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a2" < "a10" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort en caseFirst upper | resolved en | " " < "_" < "-" < "1" < "10" < "2" < "A" < "a" < "\u00e5" < "\u00c4" < "\u00e4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "aB" < "ab" < "Ae" < "ae" < "af" < "B" < "b" < "E" < "e" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort en caseFirst lower | resolved en | " " < "_" < "-" < "1" < "10" < "2" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a b" < "a-b" < "a1" < "a10" < "a2" < "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort en-u-kn-kf-upper | resolved en-u-kf-upper-kn | " " < "_" < "-" < "1" < "2" < "10" < "A" < "a" < "\u00e5" < "\u00c4" < "\u00e4" < "a b" < "a-b" < "a1" < "a2" < "a10" < "aB" < "ab" < "Ae" < "ae" < "af" < "B" < "b" < "E" < "e" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+sort de numeric ignorePunctuation | resolved en-US | " " = "-" = "_" < "1" < "2" < "10" < "a" < "A" < "\u00e5" < "\u00e4" < "\u00c4" < "a1" < "a2" < "a10" < "a-b" = "a b" = "ab" < "aB" < "ae" < "Ae" < "af" < "b" < "B" < "e" < "E" < "\u00e9" < "n" < "\u00f1" < "o" < "\u00f6" < "oe" < "ss" < "\u00df" < "st" < "v" < "w" < "z" < "\u03b1" < "\u0430"
+localeCompare "a" "B" | resolved en-US | <
+localeCompare de "a" "B" | resolved en-US | <
+localeCompare "B" "a" | resolved en-US | >
+localeCompare de "B" "a" | resolved en-US | >
+localeCompare "\u00e4" "b" | resolved en-US | <
+localeCompare de "\u00e4" "b" | resolved en-US | <
+localeCompare "\u00e4" "a\u0308" | resolved en-US | =
+localeCompare de "\u00e4" "a\u0308" | resolved en-US | =
+localeCompare "\u00c5" "\u212b" | resolved en-US | =
+localeCompare de "\u00c5" "\u212b" | resolved en-US | =
+localeCompare "a\u00adb" "ab" | resolved en-US | =
+localeCompare de "a\u00adb" "ab" | resolved en-US | =
+localeCompare "\ud800" "\udc00" | resolved en-US | <
+localeCompare de "\ud800" "\udc00" | resolved en-US | <
+localeCompare "\ud800" "a" | resolved en-US | >
+localeCompare de "\ud800" "a" | resolved en-US | >
+localeCompare "a2" "a10" | resolved en-US | >
+localeCompare de "a2" "a10" | resolved en-US | >
+localeCompare "" " " | resolved en-US | <
+localeCompare de "" " " | resolved en-US | <
+localeCompare "A" "a" | resolved en-US | >
+localeCompare de "A" "a" | resolved en-US | >
+localeCompare "\u00df" "ss" | resolved en-US | >
+localeCompare de "\u00df" "ss" | resolved en-US | >

@@ -1,0 +1,13 @@
+2026-11-16T06:08:48Z commit c884f87bae3b369347d1bf59b5b202d429bc7efb archive sha256 c317d995478b9d53ffa9582c14bc0d404973afdd31bc5d66aa7040540d147b07 tar commit id c884f87bae3b369347d1bf59b5b202d429bc7efb
+2026-11-16T06:08:49Z load 0.91 1.50 0.94; SDK 10.0.404
+2026-11-16T06:09:37Z build slnf rc=0
+2026-11-16T06:09:37Z build slnf warnings: 0, errors: 0
+2026-11-16T06:10:47Z tests shared rc=0
+2026-11-16T06:11:12Z probe aot publish rc=0
+2026-11-16T06:11:12Z probe aot publish warnings: 0
+2026-11-16T06:11:12Z probe publish managed dlls: 0
+2026-11-16T06:11:17Z probe aot run rc=0
+2026-11-16T06:11:29Z probe jit publish rc=0 warnings: 0
+2026-11-16T06:11:37Z probe jit run rc=0
+2026-11-16T06:11:37Z probe aot and jit reports identical
+2026-11-16T06:11:37Z done; tree removed

@@ -1,0 +1,11 @@
+Reference datasets, bundle sjl-17-001's rule, part B: an after run against a base run
+
+base: base, shell commit unknown, BroilerJS.dll 09d1dabc94f715a509fdc06b52258b9d158f7c56366500037eefd1cd8ad99849
+after: after, shell commit unknown, BroilerJS.dll 120f6e168e955ca024af6348e27287f07dfbf52a95fb6557f6f6c181ff154ac2
+copies: Broiler.VM 4e6a41e9d3860b8ca79d5d3ea6de215c1592b0c0, the same SHA-256 in both runs
+
+orderings: base completed yes, after completed yes
+  lines: 27; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 27; differing: 0
+  of those differing, the same as at the base: 0; moved since the base: 0
+  differing at the base and equal after: 8; equal at the base and differing after: 0
