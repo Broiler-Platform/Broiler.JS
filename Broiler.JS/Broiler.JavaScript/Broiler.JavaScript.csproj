@@ -63,5 +63,10 @@
   <ItemGroup>
     <Folder Include="ILPack\" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="Microsoft.CodeAnalysis.BannedApiAnalyzers">
+      <IncludeAssets>build; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
 </Project>

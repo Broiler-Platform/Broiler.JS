@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Update="Microsoft.CodeAnalysis.BannedApiAnalyzers">
+      <IncludeAssets>build; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 </Project>

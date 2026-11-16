@@ -15,4 +15,10 @@
     <ProjectReference Include="..\Broiler.JavaScript.Compiler\Broiler.JavaScript.Compiler.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Update="Microsoft.CodeAnalysis.BannedApiAnalyzers">
+      <IncludeAssets>build; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
 </Project>
