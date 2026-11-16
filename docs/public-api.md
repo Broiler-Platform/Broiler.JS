@@ -119,11 +119,19 @@ unchanged. The observable corrections and data changes are in [`Broiler.JS/CHANG
 | Member | Assembly | Disposition | What it does now |
 | --- | --- | --- | --- |
 | `JSIntlCollator(in Arguments)` | `BuiltIns` | kept, results corrected | Reads its options in the specification's order, each once, and refuses a `collation` that is not a type sequence (row O10); resolves `co`, `kf` and `kn` through the shared ResolveLocale; compares by the shared collator for the locales and collations decision E3 lists, and by the host provider for the rest |
-| `JSIntlCollator.Compare(in Arguments)` | `BuiltIns` | kept, results corrected | The shared `UcaCollator`'s -1, 0 or 1, with `numeric` and `caseFirst` applied, or the host provider's answer over Broiler.Unicode's NFD; a string whose NFD form is longer than `JSString.MaximumLength` is a RangeError, as before |
+| `JSIntlCollator.Compare(in Arguments)` | `BuiltIns` | kept, results corrected | The shared `UcaCollator`'s -1, 0 or 1, with `numeric` and `caseFirst` applied, or, where the host provider compares, the host's answer over Broiler.Unicode's NFD as before, with `sensitivity` and `ignorePunctuation` mapped onto `CompareOptions` and `numeric` and `caseFirst` not applied; a string whose NFD form is longer than `JSString.MaximumLength` is a RangeError, as before |
 | `JSIntlCollator.ResolvedOptionsPrototype(in Arguments)` | `BuiltIns` | kept | The resolved options the Collator compares by; under `usage: "search"` the locale keeps no `co` keyword (row O11a) |
 
 **Compatibility.** Binary-compatible and source-compatible: every public member is kept with its signature.
 Behaviour-breaking where the changelog's rows say.
+
+*(Noted 2026-11-16, at the review of SJL-17.5: the corrections of `Compare` hold for the locales and collations the
+shared collator compares. The host provider compares every locale decision E3 does not list, a collation the shared data
+does not carry for a listed locale (`emoji` and `eor`), and the sort collation CLDR gives a region or variant of a listed
+language in a file of its own (`de-AT`'s phonebook and `en-US-posix`'s standard), as before. The `Compare` row's last
+cell read "The shared `UcaCollator`'s -1, 0 or 1, with `numeric` and `caseFirst` applied, or the host provider's answer
+over Broiler.Unicode's NFD; a string whose NFD form is longer than `JSString.MaximumLength` is a RangeError, as
+before".)*
 
 ## Public API changes, 2026-11-10 (Intl moves to the shared Intl library, milestone SJL-9.5)
 

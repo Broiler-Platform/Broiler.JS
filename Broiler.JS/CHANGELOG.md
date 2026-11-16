@@ -25,8 +25,14 @@ are Broiler.VM's `docs/evidence/sjl-17-001/correspondence.md`.
 **What stays this engine's:** an optional host provider, `HostCollationProvider`, the host's `CompareInfo` after
 Broiler.Unicode's NFD, for every locale decision E3 does not list (CJK among them) and for a collation the shared data
 does not carry for a listed locale (`emoji` and `eor`, which the host resolves for every locale and applies for none, as
-before); where the host has no collation data, under invariant globalization, the shared collator compares instead. The
-default-locale provider (row O15), this engine's `Intl.Collator` objects, their errors and `localeCompare`'s coercion
+before), and for the sort collation CLDR 48.2.0 gives a region or variant of a listed language in a file of its own that
+the data home does not pin (`de-AT`'s phonebook and `en-US-posix`'s standard), which the host compared before and still
+does; where the host has no collation data, under invariant globalization, the shared collator compares instead. The host
+provider compares as before: it maps `sensitivity` and `ignorePunctuation` onto `CompareOptions` (so it ignores symbols
+too), and `numeric` and `caseFirst` are resolved and reported but not applied, so none of the corrections O5a, O5b, O7
+and O8 below holds for the locales and collations it compares, `en-u-co-emoji` and `de-u-co-eor` among them, when the
+host has collation data. *(Revised 2026-11-16, at the review of SJL-17.5: the regional collations, and the host
+provider's options.)* The default-locale provider (row O15), this engine's `Intl.Collator` objects, their errors and `localeCompare`'s coercion
 (row O13), and its meter, which is none (decision E7, row O17), stay.
 
 **Where they were**, each deleted (decision E11, with the owner's ruling of 2026-11-11 on SJL-9's clause 7, "Fix (1);
@@ -45,7 +51,8 @@ move (2) to SJL-17"):
 [`docs/public-api.md`](../docs/public-api.md), "Public API changes, 2026-11-15").
 
 **Corrections** (decision SJL-D-16 (a)): the correspondence's column "Correction of Broiler.JS", row by row, each where the
-shared collator follows the pinned text where this engine did not. Each classified `divergence.broiler-js` field the list
+shared collator follows the pinned text where this engine did not; O5a, O5b, O7 and O8 for the locales and collations the
+shared collator compares, the others for every locale. Each classified `divergence.broiler-js` field the list
 names reports that it no longer holds in this engine's run of the corpus on this change, and the corpus revision that
 retires them follows the merge, as revision 38 followed SJL-9.5's:
 
@@ -62,9 +69,10 @@ retires them follows the merge, as revision 38 followed SJL-9.5's:
   `new Intl.Collator("en", { numeric: true }).compare("a2", "a10")` and `"a2".localeCompare("a10", "en-u-kn")` are `-1`,
   where they were `1`; `new Intl.Collator("en", { caseFirst: "upper" }).compare("a", "A")` is `1`, where it was `-1`.
   Vectors: reason `js-o7`, 85 of `intl/collation/options/numeric/`, `0001` to `0198`; reason `js-o8`, 59 of
-  `intl/collation/options/case-first/`, `0001` to `0159`. With them the `orderings` reference dataset's lines that ask for
-  `numeric` or `caseFirst`, lines 7, 8, 10, 16, 17, 20, 26 and 27 (O18), equal its retained answer, as every other line
-  already did (bundle [`sjl-17-001`](../docs/evidence/sjl-17-001/README.md), part B).
+  `intl/collation/options/case-first/`, `0001` to `0159`. The `orderings` reference dataset's lines that ask for
+  `numeric` or `caseFirst`, lines 7, 8, 10, 16, 17, 20, 26 and 27 (O18), are the ones these corrections move; bundle
+  [`sjl-17-001`](../docs/evidence/sjl-17-001/README.md)'s part B reads them at the after commit, in SJL-17.6. *(Revised
+  2026-11-16, at the review of SJL-17.5: this sentence stated part B's outcome before the rule's run.)*
 - **The constructor reads its options in the specification's order, each once, and refuses a malformed `collation`**
   (O10): `usage`, `localeMatcher`, `collation`, `numeric`, `caseFirst`, then the locale is resolved, then `sensitivity`
   and `ignorePunctuation`, where the locale was resolved first, `localeMatcher` read before `usage`, `caseFirst` read
@@ -76,7 +84,8 @@ retires them follows the merge, as revision 38 followed SJL-9.5's:
   resolves as the available-locale policy says (`en-US` and `en`, JSD-0082's decision D7) and collates by the root,
   where every comparison was ordinal: `"a".localeCompare("B")` is `-1`, where it was `1`, and `"ä"` sorts after
   `"a"` and before `"b"`. Bundle `sjl-17-001`'s [`invariant-probe.js`](../docs/evidence/sjl-17-001/invariant-probe.js)
-  answers every line of its expected file (part C).
+  and its expected file hold it; part C reads them at the after commit, in SJL-17.6. *(Revised 2026-11-16, at the review
+  of SJL-17.5: this sentence stated part C's outcome before the rule's run.)*
 
 **Data changes** (class C5), each with its decision:
 - **CLDR 48.2.0's root and the tailorings of decision E3's list replace the host's ICU for the listed locales** (O1, O2,
@@ -98,7 +107,8 @@ retires them follows the merge, as revision 38 followed SJL-9.5's:
     vectors of `intl/collation/tailorings/` and `intl/collation/options/sensitivity/0131`).
 - **Thai's default `ignorePunctuation` comes from the tailoring data** (O5c, decision E5): `new Intl.Collator("th")`
   reports `true`, as before; with `usage: "search"` the root's search collation applies and it reports `false`, where the
-  language check gave `true`.
+  language check gave `true`. Row O5c, which says no answer moves, does not name this move; the records put it to the
+  owner (*added 2026-11-16, at the review of SJL-17.5*).
 
 **An implementation-defined change** (O11a): under `usage: "search"` the Collator's `co` data holds only the default, as
 Broiler.VM's does, so `new Intl.Collator("de-u-co-phonebk", { usage: "search" }).resolvedOptions()` reports the locale
@@ -111,11 +121,15 @@ and `Collator/usage-de.js` and `compare/non-normative-phonebook.js` are answered
 `Intl.supportedValuesOf("collation")` lists the same nine collations.
 
 Tests: `SharedCollatorTests` in `Broiler.JavaScript.BuiltIns.Tests`, each case naming its row (O3, O5a, O5b, O5c, O7,
-O8, O10, O11a, O11b, O12, O16 and O19); `Broiler.JavaScript.Vectors.Tests` over corpus revision 40, which restates this
+O8, O10, O11b, O12, O16 and O19); `Broiler.JavaScript.Vectors.Tests` over corpus revision 40, which restates this
 engine's expectations under rows O3 and O16; and the generators' tests of the two plan tables that revision restates
 (`scripts/conformance/tests/test_collation_vectors.py` and `test_intl_vectors.py`), with
 `Broiler.ECMAScript.Conformance.Tests`' library-level check of the collation vectors, whose 34 Han vectors match once both
 engines' expectations agree. No test is removed or weakened, and no library under `Broiler.ECMAScript/` changes.
+*(Revised 2026-11-16: the library-level check and the last sentence's second half were added on that date; and, at the
+review of SJL-17.5, the case for O11a, which the correspondence classes implementation-defined, is dropped, since only
+rows of the rule's classes C1 and C5 admit a new test, and the O5c case holds Thai under `usage: "search"` too. The list
+of rows read "(O3, O5a, O5b, O5c, O7, O8, O10, O11a, O11b, O12, O16 and O19)".)*
 
 ### The engine's architecture tests hold the host-culture readers no build rule sees, and the host-culture rules' scope (2026-11-12, milestone SJL-9's clause 8)
 

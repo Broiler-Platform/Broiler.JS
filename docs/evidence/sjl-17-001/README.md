@@ -196,7 +196,9 @@ was written require:
   this date, "`Intl.Collator` and `String.prototype.localeCompare` move to the shared collator", and the dated note of
   this date in [`SharedLibraries.md`](../../roadmap/SharedLibraries.md) under "Collation (SJL-17.1)". No library under
   `Broiler.ECMAScript/` changes, so the collator and the tables this rule's runs read are SJL-17.3's; one test there
-  does, the library-level check of the collation vectors under corpus revision 40.
+  does, the library-level check of the collation vectors under corpus revision 40. *(Revised 2026-11-16: this sentence
+  read "Nothing under `Broiler.ECMAScript/` changes, so the collator and the tables this rule's runs read are
+  SJL-17.3's.")*
 - **2026-11-15: the base conditions, read by git at `5669f2bd`**, which is the base commit only if the branch merges
   with it as its first parent:
   - it descends from the rule commit: this file's rule, `decision-rule.md`, was last changed in
@@ -207,9 +209,20 @@ was written require:
     (`git merge-base --is-ancestor`);
   - the third condition, that the after commit is its only first-parent successor that changes a product path, is a
     property of the merge, read when it lands.
-- **The rule commit**, which "State" below says is named when the change that carries it has merged: the reads above
-  take it as `096793ae`, the rule file's last change, merged in `d1e8f5be`; the rule names no other, and this item is a
-  reading for SJL-17.6's records to confirm, not a revision of the rule.
+- **The rule commit**, which "State" below says is named when the change that carries it has merged, has two
+  candidates in this bundle's records, and the reads above hold under each: `59380ef98e6a4b91655f04dc832786aaea3c2aaa`,
+  which part C's section above implies when it calls `61cb15b5` "the rule commit's parent" (`61cb15b5` is `59380ef9`'s
+  parent), and `096793ae`, the rule file's last change (its parent is `59380ef9`), merged in `d1e8f5be`. All three are
+  ancestors of `5669f2bd`, and no commit after `d1e8f5be` changes the file. The choice is left to SJL-17.6's records or
+  the owner; this item is a reading, not a revision of the rule. *(Revised 2026-11-16, at the review of SJL-17.5: this
+  item read "the reads above take it as `096793ae`, the rule file's last change, merged in `d1e8f5be`; the rule names no
+  other, and this item is a reading for SJL-17.6's records to confirm, not a revision of the rule.")*
+- **For the owner** *(added 2026-11-16, at the review of SJL-17.5)*: the branch revises one test that SJL-17.3 committed
+  and the rule's home clauses (1 and 2) are judged by, `Broiler.ECMAScript.Conformance.Tests`' library-level check of the
+  collation vectors (`LibraryRunTests`): it counted 34 vectors that do not match and now asserts that none fails to
+  match, with the 34 Han vectors still held to Broiler.VM's expectation, since corpus revision 40 moves this engine's
+  expectation, which the check reads, to Broiler.VM's. No library changes with it. The owner's acknowledgement is asked
+  before SJL-17.6 reads the home clauses.
 - **The local reads before the merge** of parts B and C, at `5669f2bd` and at the branch's head, are the stage's own,
   retained outside this bundle, and none is a run of the rule: the rule's runs are SJL-17.6's, at the after commit and
   its first parent.

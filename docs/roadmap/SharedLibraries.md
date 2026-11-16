@@ -2408,6 +2408,43 @@ This repository's part of it:
 
   Nothing above is met or accepted, and no clause is read.
 
+  *(Noted 2026-11-16, at the review of SJL-17.5, on the same branch.)* The review's findings change the branch and these
+  records as follows; each choice is taken under the owner's direction of 2026-10-18 and recorded with its alternative.
+  - **A region or variant of a listed language with a collation of its own stays the host provider's.** Decision E3's
+    reading, per locale and collation, puts a collation the shared data does not carry on the host provider. CLDR 48.2.0
+    gives two sort collations in files of their own to a region or variant of a listed language, `de_AT.xml`'s phonebook
+    and `en_US_POSIX.xml`'s standard, and the data home pins neither, so `de-AT` with `phonebk` and `en-US-posix` are now
+    the host provider's for sort, as they were before the cut-over; under invariant globalization the shared collator
+    compares them, as it does every locale. The alternative not taken, the branch's first reading, compared them by the
+    language's tailoring, which moved their answers with no row naming it.
+  - **The host provider compares as before.** It maps `sensitivity` and `ignorePunctuation` onto the host's options and
+    does not apply `numeric` or `caseFirst`, so the corrections of rows O5a, O5b, O7 and O8 hold for the locales and
+    collations the shared collator compares, and the changelog and `docs/public-api.md` now say so; `emoji` and `eor`
+    for a listed language therefore answer by the host where it has collation data and by the shared collator where it
+    has none. The alternatives not taken: applying `numeric` on the host's path with .NET's numeric ordering option, which
+    would move answers for locales no row lists; and comparing `emoji` and `eor` of a listed language by the shared
+    collator's default, which decision E3's reading puts on the host provider.
+  - **Thai under `usage: "search"`** now reports `ignorePunctuation` `false`, from the root's search collation, where the
+    language check gave `true`. Row O5c says no answer moves and does not name this one; it is put to the owner, and the
+    shared collator's tests hold it under row O5c. The alternative is to keep Thai's shifted default under search.
+  - **Row O11a has no test.** The correspondence classes it implementation-defined, and the stage's brief admits new
+    tests only under the rule's classes C1 and C5, so the case the branch added is dropped; the changelog still lists the
+    change. The alternative not taken: keep the case as a choice under the owner's direction.
+  - **The rule commit** has two candidates in bundle `sjl-17-001`'s records: `59380ef9`, which its part C section implies
+    by naming `61cb15b5` "the rule commit's parent", and `096793ae`, the rule file's last change, merged in `d1e8f5be`.
+    The base conditions read the same under each, and the choice is left to SJL-17.6's records or the owner. The base
+    conditions' item above says "it descends from the rule commit (the rule file's last change,
+    `096793ae0f3aaef7f18829c4b5efd923f3dbef94`, merged in `d1e8f5beec824438f0fc42c37bd941ad7421ce52`,
+    Broiler-Platform/Broiler.JS#1087, and unchanged since)", and stands as a reading under the second candidate.
+  - **For the owner:** the branch revises one test that SJL-17.3 committed and the home clauses 1 and 2 are judged by,
+    `Broiler.ECMAScript.Conformance.Tests`' library-level check of the collation vectors, whose Han vectors now match
+    because corpus revision 40 moves this engine's expectation to Broiler.VM's; the owner's acknowledgement is asked
+    before SJL-17.6 reads the home clauses.
+  - The item "The shared collator is unchanged" above was revised on 2026-11-16, before this note; it read "nothing under
+    `Broiler.ECMAScript/` changes, so no stream publication is asked."
+
+  Nothing in this note is met or accepted, and no clause is read.
+
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses 6 to 9 are judged in its bundle of
 the same name, and SJL-17 may not meet its gate before SJL-9 meets SJL-9's.
 
