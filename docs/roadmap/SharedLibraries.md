@@ -2445,6 +2445,45 @@ This repository's part of it:
 
   Nothing in this note is met or accepted, and no clause is read.
 
+  *(Noted 2026-11-16, at SJL-17.6, on the branch `sjl-17-6-evidence`.)* **SJL-17.5 merged, and SJL-17.6 runs and
+  judges bundle [`sjl-17-001`](../evidence/sjl-17-001/README.md)'s rule.**
+  - **The merge.** The branch `sjl-17-5-cutover` merged as `2f012739cfc4d99e91b22d28a09941c49d8bd646`
+    (Broiler-Platform/Broiler.JS#1118, observed), in one merge, the rule's after commit. Its first parent,
+    `5669f2bd29899ac93e0d7af130b6a7adc5791d6b`, is the base, and the base conditions hold on the bundle's git reads.
+  - **The readings.** The bundle's section "SJL-17.6" files its readings before any run's output was read, each the
+    recommended choice under the owner's direction of 2026-10-18, with its alternative:
+    - the rule commit, `096793ae`, chosen of the two candidates the note above left to these records (it read "the
+      choice is left to SJL-17.6's records or the owner");
+    - this machine for parts B and C;
+    - the hosted runs' SDK as the workflow resolves it;
+    - base condition 3 read up to the after commit;
+    - part A's classes by JSD-0084's columns;
+    - the reference run;
+    - "completes";
+    - the commit the home clauses are read at.
+  - **Parts A, B and C are each MET**, as the rule is written, on those readings. None rests on a revision of the rule
+    or on a ruling of the owner's own:
+    - part A by two hosted runs of `test262 evidence`, dispatched by this stage one at a time, in which no verdict
+      changed and `getCollations/output-array-values.js` kept its base verdict;
+    - part B by the `orderings` dataset, every line equal to Broiler.VM's retained answer after;
+    - part C by the invariant probe, every line equal to its expected answer after, with no `abort:` line.
+  - **Clauses.** The home clauses 1 and 2 are read met at SJL-17.3's merge, `c884f87b`, by the tests SJL-17.3
+    committed, and at the after commit. This engine's clauses 3 to 5 are read met at the after commit, clause 3 on the
+    SJL-17.5 records' reading of "the `CompareOptions` mapping" for the covered locales.
+  - **Corpus revision 41** retires the collation area's `divergence.broiler-js` fields. Revision 40 left them, in the
+    note of 2026-11-15 above, "to the revision that follows the merge, as revision 38 followed SJL-9.5's". CI's
+    `windows-latest` job at the merge has read them, and each no longer holds there or on `ubuntu-24.04`.
+  - **For the owner:**
+    - the acknowledgement the note above asks about `LibraryRunTests` (it read "the owner's acknowledgement is asked
+      before SJL-17.6 reads the home clauses") stays open, since this stage read the home clauses at both commits;
+    - the bundle's readings, two of which a verdict could turn on (the machine, and the hosted runs' SDK, which is the
+      runner image's newer one since the repository pins none);
+    - the items the review of SJL-17.5 left open.
+  - **No gate is met.** SJL-17's gate waits on SJL-9's, on SJL-3's and SJL-4's measurement clauses, on Broiler.VM's
+    clauses 6 to 9 and SJL-17's exit reading over both repositories, and on review (EX-30).
+
+  This note declares no clause met at the gate, and nothing is accepted.
+
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses 6 to 9 are judged in its bundle of
 the same name, and SJL-17 may not meet its gate before SJL-9 meets SJL-9's.
 
