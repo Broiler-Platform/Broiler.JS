@@ -460,7 +460,7 @@ public class LibraryRunTests
             .ToList();
         Assert.True(failing.Count == 0, failing.Count + " fail:\n" + string.Join("\n", failing.Take(80)));
 
-        Assert.Empty(results.Where(static r => r.Verdict != Verdict.Match));
+        Assert.DoesNotContain(results, static r => r.Verdict != Verdict.Match);
 
         // The Han vectors whose answer moves with the order across blocks: out is the reference's radical-stroke answer, and
         // both engines' expectations, the implicit weights by block, are the library's answer.
