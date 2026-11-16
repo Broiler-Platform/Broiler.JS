@@ -383,16 +383,16 @@ branch moves on. Whether the parts stand therefore turns on the owner's choice b
 run. The reading taken follows the owner's ruling on the same words in Broiler.VM's bundle `sjl-9-001` (its reading
 1, 2026-11-11, "Up to after commit"), which is its precedent.
 
-*(Noted 2026-11-16, later, when this branch merged the default branch at `cdf5559d`.)* The branch now holds
-`cdf5559d`, the owner's dependency update, which moves Broiler.Regex to `0.1.0-preview.6`, and adds after it a product
+*(Noted 2026-11-16, later, when this branch merged the default branch at `cdf5559d`.)* The branch now holds `cdf5559d`,
+the dependency update on the default branch, which moves Broiler.Regex to `0.1.0-preview.6`, and adds after it a product
 change of its own: the regular-expression adapter, `Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.Broiler.cs`,
 ported onto that version's public surface by the owner's ruling of 2026-11-16, "Adapt to preview.6 now", since the
-default branch does not build without it ([`SharedLibraries.md`](../../roadmap/SharedLibraries.md), SJL-11's note of
-the same day). Reading 4 as taken reads condition 3 only up to the after commit, `git rev-list --first-parent
+default branch does not build without it ([`SharedLibraries.md`](../../roadmap/SharedLibraries.md), SJL-11's note of the
+same day). Reading 4 as taken reads condition 3 only up to the after commit, `git rev-list --first-parent
 5669f2bd..2f012739`, which still names the after commit alone, so the change adds nothing new under it: the base, the
 after commit and every run stay as filed, and no part is taken again. Under the alternative every part was already void
-at `cdf5559d`, and this branch's merge, a further first-parent successor that changes named paths, leaves that answer
-as it was.
+at `cdf5559d`, and this branch's own merge into the default branch (Broiler-Platform/Broiler.JS#1119), a further
+first-parent successor that changes named paths, leaves that answer as it was.
 
 ### The commits, the files and the machine
 
