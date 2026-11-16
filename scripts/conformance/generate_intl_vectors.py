@@ -81,7 +81,7 @@ DEFAULT_OUT = CORPUS / "intl"
 INTLREF = SCRIPTS / "intlref.mjs"
 UNION = REPOSITORY / "docs" / "evidence" / "sjl-9-001" / "locales" / "union.tsv"
 SINCE = 27              # the corpus revision that added the area
-CORPUS_REVISION = 39    # the corpus revision this generator writes: REVISIONS.md's last row
+CORPUS_REVISION = 40    # the corpus revision this generator writes: REVISIONS.md's last row
 GENERATOR = "generate_intl_vectors.py"
 DIVERGENCES = SCRIPTS / "intl-divergences.txt"
 
@@ -155,9 +155,15 @@ VM_LIST_HOST_REASON = ("decision D5: Broiler.VM's locale list stays de, de-DE, e
 # table maps (Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs at the rule commit, kept in step with its
 # SupportedCollationsSorted, which Intl.supportedValuesOf("collation") lists). Broiler.VM's offers phonebk for German
 # alone (JSD-0043).
+# (Revised 2026-11-15, at corpus revision 40, with SJL-17.5, Broiler.JS's cut-over to the shared collator.) The comment
+# above reads "Broiler.JS's Collator keeps its host path: it resolves emoji and eor for every locale and, for a language,
+# the tailorings its NetCollationSuffix table maps". From SJL-17.5 its Collator resolves, for a language, the collations
+# the shared data carries for it (de phonebk, es trad and sv trad, decision E3's list, row O16) and those its optional host
+# provider resolves, where NetCollationSuffix moved (emoji and eor everywhere, and the CJK and Hungarian tailorings);
+# es and sv gain trad, and the nine of supportedValuesOf("collation") are unchanged.
 BROILER_JS_ROOT_COLLATIONS = ("emoji", "eor")
-BROILER_JS_TAILORINGS = {"de": ("phonebk",), "hu": ("trad",), "ja": ("unihan",), "ko": ("unihan",),
-                         "zh": ("phonetic", "pinyin", "stroke", "trad", "unihan", "zhuyin")}
+BROILER_JS_TAILORINGS = {"de": ("phonebk",), "es": ("trad",), "hu": ("trad",), "ja": ("unihan",), "ko": ("unihan",),
+                         "sv": ("trad",), "zh": ("phonetic", "pinyin", "stroke", "trad", "unihan", "zhuyin")}
 
 
 def broiler_js_collations(tag: str | None = None) -> list[str]:

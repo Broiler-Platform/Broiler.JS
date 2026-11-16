@@ -445,7 +445,7 @@ public static class JSIntl
         var constructor = new JSFunction((in Arguments a) =>
         {
             var options = ValidateConstructorArguments("Segmenter", in a, out var canonical, coerceOptions: false);
-            var locale = ResolveLocaleFromCanonical(canonical, NoRelevantKeys);
+            var locale = ResolveLocaleFromCanonical(canonical);
             var granularity = GetOption(options, GranularityKey, ["grapheme", "word", "sentence"], false, "grapheme");
             return new JSIntlSegmenter(locale, granularity);
         }, "Segmenter", "function Segmenter() { [native code] }", length: 0);
@@ -601,8 +601,14 @@ public static class JSIntl
                 if (a.This is not JSIntlCollator @this)
                     throw JSEngine.NewTypeError("Intl.Collator.prototype.compare called on incompatible receiver");
 
+                // [[BoundCompare]] is made on the first get and kept, so c.compare === c.compare (sec-intl.collator.prototype.compare,
+                // steps 4 and 5; row O12, decision E8, a correction: a new function was made on every get until SJL-17.5).
+                if (@this.BoundCompare is { } bound)
+                    return bound;
+
                 var compare = new JSFunction((in Arguments inner) => @this.Compare(in inner), "compare", "function compare() { [native code] }", createPrototype: false, length: 2);
                 compare.SetNameProperty(string.Empty);
+                @this.BoundCompare = compare;
                 return compare;
             },
                 "get compare",
@@ -747,37 +753,19 @@ public static class JSIntl
     // zhuyin/trad; ja/ko/zh unihan). Listing a collation here that no locale resolves would
     // fail test262 intl402/Intl/supportedValuesOf/collations-accepted-by-Collator.js
     // (#912 Problem 11), so this list is kept in sync with NetCollationSuffix.
-    internal static readonly string[] SupportedCollationsSorted = BuildSortedCollations();
+    // Revised 2026-11-15, at SJL-17.5: the list is JSIntlCollator.SortedCollations, the shared data's collation types
+    // (phonebk, trad) and the host collation provider's (emoji and eor everywhere, and NetCollationSuffix's, which moved
+    // there), each once, made on first use; it holds the same nine values. The comment above read the list as the root
+    // collations emoji and eor and NetCollationSuffix's tailorings, kept in sync with NetCollationSuffix; it is left as
+    // written. The list was a fixed array of those nine values.
+    private static readonly Lazy<string[]> SortedCollations = new(JSIntlCollator.SortedCollations, System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
-    private static string[] BuildSortedCollations()
-    {
-        var array = new[]
-        {
-            "emoji", "eor", "phonebk", "phonetic", "pinyin", "stroke", "trad", "unihan", "zhuyin",
-        };
-        System.Array.Sort(array, StringComparer.Ordinal);
-        return array;
-    }
+    internal static string[] SupportedCollationsSorted => SortedCollations.Value;
 
     // True when a String is a well-formed Unicode BCP 47 extension type, UTS #35's `type` (the grammar the calendar and
     // numberingSystem options must satisfy), over ASCII alone (the shared library's LocaleId.IsUnicodeType; row L14).
     internal static bool IsWellFormedUnicodeKeywordType(string value)
         => !string.IsNullOrEmpty(value) && LocaleId.IsUnicodeType(value);
-
-    // Canonicalizes a requested collation value (option or -u-co- tag) and returns it only
-    // when it is a collation the BCP 47 data defines, by its preferred value; an unknown (or reserved
-    // "standard"/"search") value returns null so the caller falls back to the "default" collation.
-    // The aliases and the list are the shared library's BCP 47 data (SJL-9.5, sub-area (a)); the
-    // Collator's own resolution stays its host path until SJL-17.
-    internal static string CanonicalizeCollation(string value)
-    {
-        if (value == null || !LocaleId.IsUnicodeType(value))
-            return null;
-        var lower = LocaleId.AsciiLowercase(value);
-        if (!JSIntlData.LocaleData.TryExtensionType('u', "co", lower, out var canonical))
-            return null;
-        return canonical is "standard" or "search" ? null : canonical;
-    }
 
     private static string OptionString(JSObject options, KeyString key)
     {
@@ -1133,23 +1121,14 @@ public static class JSIntl
     // with no keyword (SJL-9.5, sub-area (a); decision D7). The resolved locale is the available locale matched, never the
     // request itself (row L29, a correction), with the requested -u- keywords of the service's relevant extension keys, in
     // canonical order, and no other (row L30, a correction). Each service then resolves its keys' values against its own data.
-    internal static string ResolveLocaleFromCanonical(JSValue canonicalLocales, string[] relevantExtensionKeys)
-    {
-        var match = LocaleNegotiation.MatchLocale(
-            JSIntlLocaleProviders.AvailableLocales, RequestedLocales(canonicalLocales), JSIntlLocaleProviders.DefaultLocale);
-        var keywords = new StringBuilder();
-        foreach (var keyword in match.ExtensionKeywords)
-        {
-            if (System.Array.IndexOf(relevantExtensionKeys, keyword.Key) < 0)
-                continue;
-
-            keywords.Append('-').Append(keyword.Key);
-            if (keyword.Value.Length != 0 && keyword.Value != "true")
-                keywords.Append('-').Append(keyword.Value);
-        }
-
-        return keywords.Length == 0 ? match.Locale : match.Locale + "-u" + keywords;
-    }
+    // Revised 2026-11-15, at SJL-17.5, which deletes the keyword filter over CollatorRelevantKeys (the owner's ruling of
+    // 2026-11-11 on SJL-9's clause 7, "Fix (1); move (2) to SJL-17"): the Collator resolves co, kf and kn through the shared
+    // ResolveLocale (JSIntl.ResolveLocale), and the Segmenter, SJL-7's and the last reader, has no relevant key, so the
+    // matched locale is the answer. The method took the service's relevant extension keys and appended each requested
+    // keyword among them, "-key" and its value but "true", to the matched locale.
+    internal static string ResolveLocaleFromCanonical(JSValue canonicalLocales)
+        => LocaleNegotiation.MatchLocale(
+            JSIntlLocaleProviders.AvailableLocales, RequestedLocales(canonicalLocales), JSIntlLocaleProviders.DefaultLocale).Locale;
 
     // ResolveLocale's steps 5 to 12, each key's value against the service's data, are still this file's, by hand, until each
     // service's sub-area moves: JSD-0082's X6 gives negotiation to sub-area (a), and the plan's rows for tasks 8.4 to 8.6 do
@@ -1220,13 +1199,13 @@ public static class JSIntl
     // RemoveUnicodeExtensionKeyword, ReflectExtensionKeyword, ResolveLocaleFromCanonical's keyword filter over
     // CollatorRelevantKeys, and JSIntlCollator's StripUnicodeExtension (docs/roadmap/SharedLibraries.md, the dated notes on
     // both deletion lists). No code changes for it.
-
-    // The relevant extension keys of the services that resolve none: ListFormat, Segmenter, DisplayNames and PluralRules.
-    // Revised 2026-11-08, at SJL-9.5 (task 8.4): ListFormat, DisplayNames and PluralRules resolve through the shared
-    // library's ResolveLocale with NoRelevantKey; Segmenter, SJL-7's, still reads this list.
-    internal static readonly string[] NoRelevantKeys = [];
-
-    internal static readonly string[] CollatorRelevantKeys = ["co", "kf", "kn"];
+    // Noted 2026-11-15, at SJL-17.5, the Collator's cut-over: the five items the note above names are deleted.
+    // GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword and ReflectExtensionKeyword go with their last reader, the
+    // Collator's constructor, which resolves co, kf and kn through the shared library's ResolveLocale
+    // (JSIntl.ResolveLocale over the Collator's data); ResolveLocaleFromCanonical keeps no keyword filter, its last reader
+    // the Segmenter, which has no relevant key; CollatorRelevantKeys goes, and with it NoRelevantKeys, the empty list the
+    // Segmenter passed; and JSIntlCollator's StripUnicodeExtension goes with its comparison's host path for the covered
+    // locales. The notes above are left as written.
 
     // The numbering systems with simple digit mappings (ECMA-402 Table: "Numbering
     // System Identifiers"), i.e. the `nu` values an implementation negotiates via
@@ -1278,132 +1257,6 @@ public static class JSIntl
         if (!IsWellFormedUnicodeKeywordType(value))
             throw JSEngine.NewRangeError($"Invalid numberingSystem option: {value}");
         return value;
-    }
-
-    // ResolveLocale's per-key reflection rule: the "-u-<key>" keyword stays in the resolved locale
-    // when no option overrides it, or when the option value equals the extension value; an option
-    // that differs from the extension drops the keyword (test262 .../resolved-*-unicode-extensions-
-    // and-options). extValue is the extension's value (GetUnicodeExtensionType, null when absent;
-    // callers normalize an elided boolean "" to "true").
-    internal static string ReflectExtensionKeyword(string localeTag, string key, string optionValue, string extValue)
-    {
-        if (optionValue == null)
-            return localeTag;
-        return string.Equals(optionValue, extValue, StringComparison.Ordinal)
-            ? localeTag
-            : RemoveUnicodeExtensionKeyword(localeTag, key);
-    }
-
-    // Rebuilds a BCP-47 tag dropping a single Unicode ("-u-") extension keyword (and the
-    // whole "-u-" sequence when nothing else survives).
-    // Revised 2026-11-09, at SJL-9.5 (task 8.5): FilterUnicodeExtensionKeywords is deleted with DateTimeFormat's hand
-    // negotiation; the comment ended "Sibling of FilterUnicodeExtensionKeywords, which keeps a set instead of removing one."
-    internal static string RemoveUnicodeExtensionKeyword(string tag, string removeKey)
-    {
-        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase) < 0)
-            return tag;
-
-        var parts = tag.Split('-');
-        var u = -1;
-        for (var i = 0; i < parts.Length; i++)
-        {
-            if (parts[i].Length != 1)
-                continue;
-            // Stop at the private-use ("x") singleton; "-u-" inside private-use is a private
-            // subtag, not a Unicode extension to remove.
-            if (parts[i][0] == 'u' || parts[i][0] == 'U') { u = i; break; }
-            if (parts[i][0] == 'x' || parts[i][0] == 'X') break;
-        }
-
-        if (u < 0)
-            return tag;
-
-        var end = u + 1;
-        var keywords = new List<(string Key, List<string> Types)>();
-        while (end < parts.Length && parts[end].Length != 1)
-        {
-            if (parts[end].Length == 2)
-                keywords.Add((parts[end].ToLowerInvariant(), new List<string>()));
-            else if (keywords.Count > 0)
-                keywords[^1].Types.Add(parts[end]);
-            end++;
-        }
-
-        var sb = new StringBuilder();
-        for (var i = 0; i < u; i++)
-        {
-            if (i > 0)
-                sb.Append('-');
-            sb.Append(parts[i]);
-        }
-
-        var keptAny = false;
-        foreach (var (key, types) in keywords)
-        {
-            if (string.Equals(key, removeKey, StringComparison.Ordinal))
-                continue;
-
-            if (!keptAny)
-            {
-                sb.Append("-u");
-                keptAny = true;
-            }
-
-            sb.Append('-').Append(key);
-            foreach (var type in types)
-                sb.Append('-').Append(type);
-        }
-
-        for (var i = end; i < parts.Length; i++)
-            sb.Append('-').Append(parts[i]);
-
-        return sb.ToString();
-    }
-
-    // Returns the type value of the Unicode ("-u-") extension keyword `key` in `tag`
-    // (e.g. GetUnicodeExtensionType("en-US-u-hc-h23", "hc") == "h23"), or null when the
-    // keyword is absent. A bare key with no type returns the empty string.
-    internal static string GetUnicodeExtensionType(string tag, string key)
-    {
-        if (string.IsNullOrEmpty(tag))
-            return null;
-
-        var parts = tag.Split('-');
-        var u = -1;
-        for (var i = 0; i < parts.Length; i++)
-        {
-            if (parts[i].Length != 1)
-                continue;
-            // A "u" singleton starts the Unicode extension; an "x" singleton starts the
-            // private-use sequence (terminal in canonical form), so any "-u-" inside its
-            // payload is a private subtag and must not be treated as a Unicode extension.
-            if (parts[i][0] == 'u' || parts[i][0] == 'U') { u = i; break; }
-            if (parts[i][0] == 'x' || parts[i][0] == 'X') break;
-        }
-
-        if (u < 0)
-            return null;
-
-        var j = u + 1;
-        while (j < parts.Length && parts[j].Length != 1)
-        {
-            if (parts[j].Length == 2 && string.Equals(parts[j], key, StringComparison.OrdinalIgnoreCase))
-            {
-                var types = new List<string>();
-                var t = j + 1;
-                while (t < parts.Length && parts[t].Length >= 3)
-                {
-                    types.Add(parts[t].ToLowerInvariant());
-                    t++;
-                }
-
-                return types.Count == 0 ? string.Empty : string.Join("-", types);
-            }
-
-            j++;
-        }
-
-        return null;
     }
 
     internal static JSIntlDisplayNamesOptions ValidateDisplayNamesOptions(JSObject options)
@@ -2603,173 +2456,208 @@ public class JSIntlNumberFormat : JSObject
         => Intrinsics.IntlPrototype(IntrinsicKey);
 }
 
+// Intl.Collator over the shared Intl library's UcaCollator (milestone SJL-17.5; Broiler.VM's JSD-0084, decisions E2 to E11):
+// the constructor reads its options in the specification's order, each once (row O10), its co, kf and kn keys resolve through
+// the shared ResolveLocale over the Collator's data, and the shared collator compares the locales and collations the shared data
+// covers (decision E3's list: root, and CLDR 48.2.0's tailorings for de (phonebook, search), root search, en, es, sv and th),
+// with numeric and caseFirst applied (rows O7 and O8) and Thai's default ignorePunctuation from the data (decision E5). The
+// optional host provider (HostCollationProvider) compares what the shared data does not cover: CJK and every other locale, a
+// collation it does not carry for a covered locale (de's eor), and the sort collation CLDR gives a region or variant of a
+// covered language in a file of its own (de-AT's phonebook and en-US-posix's standard, RegionalCollations); where the host
+// has no collation data, under invariant globalization, the shared collator compares instead, so no comparison falls back to
+// code-unit order (decision E4, row O14).
+// The bound compare is made once and kept (row O12, decision E8). The engine keeps the reads, the resolved-option slots,
+// localeCompare's coercion and every error; it passes no charge (decision E7, row O17). Every public member stays (SJL-D-25 (a)).
+// Deleted at SJL-17.5 (decision E11, and the owner's ruling of 2026-11-11 on SJL-9's clause 7, "Fix (1); move (2) to
+// SJL-17"): ResolveCompareInfo for the covered locales, StripIgnorablePunctuation and its tie-break (row O19), the
+// CompareOptions mapping for the covered locales, the hard-coded Thai default (LocaleDefaultIgnorePunctuation),
+// StripUnicodeExtension, TryGetUnicodeExtension, IsCollationAvailableForLocale and TryGetOwnOption, with JSIntl's
+// GetUnicodeExtensionType, RemoveUnicodeExtensionKeyword, ReflectExtensionKeyword, CanonicalizeCollation,
+// CollatorRelevantKeys and ResolveLocaleFromCanonical's keyword filter; NetCollationSuffix moved into the host provider,
+// with the host's comparison for the locales and collations it serves.
 public class JSIntlCollator : JSObject
 {
+    private static readonly KeyString UsageKey = KeyStrings.GetOrCreate("usage");
+    private static readonly KeyString LocaleMatcherKey = KeyStrings.GetOrCreate("localeMatcher");
+    private static readonly KeyString CollationKey = KeyStrings.GetOrCreate("collation");
+    private static readonly KeyString NumericKey = KeyStrings.GetOrCreate("numeric");
+    private static readonly KeyString CaseFirstKey = KeyStrings.GetOrCreate("caseFirst");
+    private static readonly KeyString SensitivityKey = KeyStrings.GetOrCreate("sensitivity");
+    private static readonly KeyString IgnorePunctuationKey = KeyStrings.GetOrCreate("ignorePunctuation");
+
+    // Decision E3's list: the languages whose collations the shared collator compares, with the root's (und). Every other
+    // language, CJK among them, is the host provider's.
+    private static readonly string[] CoveredLanguages = ["de", "en", "es", "sv", "th", "und"];
+
+    // This engine's collation tables, the data home's for decision E3's list, decoded once (JSIntlData's embedded tables).
+    private static readonly Lazy<UcaCollationData> SharedData =
+        new(static () => new UcaCollationData(JSIntlData.Embedded), System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
+
     private readonly string locale;
-    private readonly string usage = "sort";
-    private readonly string sensitivity = "variant";
+    private readonly string usage;
+    private readonly string sensitivity;
     private readonly bool ignorePunctuation;
-    private readonly string collation = "default";
+    private readonly string collation;
     private readonly bool numeric;
-    private readonly string caseFirst = "false";
-    private readonly CompareInfo compareInfo;
+    private readonly string caseFirst;
+
+    // The shared collator, or null where the host provider compares (hostCompareInfo).
+    private readonly UcaCollator? collator;
+    private readonly CompareInfo? hostCompareInfo;
+
+    // [[BoundCompare]]: made once, on the first get of compare, and kept (row O12, decision E8).
+    internal JSFunction? BoundCompare;
 
     public JSIntlCollator(in Arguments a) : this()
     {
-        var options = JSIntl.ValidateConstructorArguments("Collator", in a, out var canonical, requireNew: false);
-        // Keep only the collation-relevant Unicode keywords (co/kf/kn) in the resolved locale, in
-        // canonical form (so e.g. "-kn-true" reduces to "-kn").
-        locale = JSIntl.ResolveLocaleFromCanonical(canonical, JSIntl.CollatorRelevantKeys);
+        // InitializeCollator (sec-initializecollator): CanonicalizeLocaleList, CoerceOptionsToObject, then usage,
+        // localeMatcher, collation, numeric and caseFirst, ResolveLocale, then sensitivity and ignorePunctuation, each read
+        // once (row O10, a correction: the locale was resolved first, caseFirst was read twice and collation last).
+        var canonical = JSIntl.CanonicalizeLocaleList(a.Get1());
+        var options = JSIntl.ValidateOptionsArgument(a.GetAt(1));
+        usage = JSIntl.GetOption(options, UsageKey, ["sort", "search"], false, "sort");
+        _ = JSIntl.GetOption(options, LocaleMatcherKey, ["lookup", "best fit"], false, "best fit");
 
-        if (TryGetUnicodeExtension(locale, "kn", out var kn))
-            numeric = kn == "true";
-        if (TryGetUnicodeExtension(locale, "kf", out var kf) && (kf == "upper" || kf == "lower" || kf == "false"))
-            caseFirst = kf;
-        // The locale's -u-co- value (canonicalized; null when absent/unrecognized) is a
-        // candidate collation, resolved against the locale's available collations below.
-        var extensionCollation = TryGetUnicodeExtension(locale, "co", out var co) && JSIntl.CanonicalizeCollation(co) is { } tagCo
-            ? tagCo
-            : null;
-
-        // usage / sensitivity / caseFirst are constrained string options: a provided value outside
-        // the allowed set is a RangeError (ECMA-402 GetOption), so route them through the shared
-        // validating helper rather than reading the raw string. The current field value is passed as
-        // the default so an absent option keeps the locale-derived / spec default.
-        usage = JSIntl.GetOption(options, KeyStrings.GetOrCreate("usage"), ["sort", "search"], false, usage);
-        sensitivity = JSIntl.GetOption(options, KeyStrings.GetOrCreate("sensitivity"), ["base", "accent", "case", "variant"], false, sensitivity);
-        if (TryGetOwnOption(options, "ignorePunctuation", out var ignorePunctuationValue))
-            ignorePunctuation = ignorePunctuationValue.BooleanValue;
-        else
-            ignorePunctuation = LocaleDefaultIgnorePunctuation(locale);
-        var numericPresent = TryGetOwnOption(options, "numeric", out var numericValue);
-        if (numericPresent)
-            numeric = numericValue.BooleanValue;
-        var caseFirstKey = KeyStrings.GetOrCreate("caseFirst");
-        var caseFirstPresent = options != null && options[caseFirstKey] is { IsUndefined: false };
-        caseFirst = JSIntl.GetOption(options, caseFirstKey, ["upper", "lower", "false"], false, caseFirst);
-        var optionCollation = TryGetOwnOption(options, "collation", out var collationValue)
-            && JSIntl.CanonicalizeCollation(collationValue.StringValue) is { } optCo
-            ? optCo
-            : null;
-
-        // ResolveLocale: keep the -u-kn / -u-kf keyword in the resolved locale only when the option
-        // matches the extension value (an absent option keeps it; a differing option drops it). The
-        // boolean "kn" keyword's "true" is elided to a value-less form in the canonical tag.
-        if (numericPresent)
+        // A collation that is not a type sequence, (3*8alphanum) *("-" (3*8alphanum)), is a RangeError (row O10).
+        var collationValue = options == null ? JSUndefined.Value : options[CollationKey];
+        string? collationOption = null;
+        if (!collationValue.IsUndefined)
         {
-            var knExt = JSIntl.GetUnicodeExtensionType(locale, "kn");
-            var knExtValue = knExt == null ? null : (knExt.Length == 0 ? "true" : knExt);
-            locale = JSIntl.ReflectExtensionKeyword(locale, "kn", numeric ? "true" : "false", knExtValue);
+            collationOption = collationValue.StringValue;
+            if (!LocaleId.IsUnicodeType(collationOption))
+                throw JSEngine.NewRangeError($"Invalid collation option: {collationOption}");
         }
-        if (caseFirstPresent)
-            locale = JSIntl.ReflectExtensionKeyword(locale, "kf", caseFirst, JSIntl.GetUnicodeExtensionType(locale, "kf"));
 
-        // ResolveLocale over the "co" key (UTS #35): the locale's -u-co- value is used when it is
-        // available for the locale; an available collation option overrides it, and when the option
-        // value differs from the extension value the -u-co- is dropped from the resolved locale.
-        // The resolved -u-co- is reflected only when the chosen value came from the locale extension.
-        var bareLocale = StripUnicodeExtension(locale);
-        var fromExtension = false;
-        if (extensionCollation != null && IsCollationAvailableForLocale(bareLocale, extensionCollation))
-        {
-            collation = extensionCollation;
-            fromExtension = true;
-        }
-        if (optionCollation != null && optionCollation != collation
-            && IsCollationAvailableForLocale(bareLocale, optionCollation))
-        {
-            collation = optionCollation;
-            fromExtension = false;
-        }
-        if (!fromExtension)
-            locale = JSIntl.RemoveUnicodeExtensionKeyword(locale, "co");
+        var numericValue = options == null ? JSUndefined.Value : options[NumericKey];
+        var numericOption = numericValue.IsUndefined ? null : numericValue.BooleanValue ? "true" : "false";
+        var caseFirstOption = JSIntl.GetOption(options, CaseFirstKey, ["upper", "lower", "false"], false, null);
 
-        compareInfo = ResolveCompareInfo(locale, collation, usage);
+        // ResolveLocale over co, kf and kn, the shared library's (the owner's ruling of 2026-11-11 on SJL-9's clause 7):
+        // [[SortLocaleData]] or [[SearchLocaleData]] of the matched locale, each option over the requested keyword.
+        var resolved = JSIntl.ResolveLocale(canonical, matched =>
+        [
+            new RelevantKey("co", CollationValues(Language(matched), usage)) { Option = collationOption },
+            new RelevantKey("kf", ["false", "lower", "upper"]) { Option = caseFirstOption },
+            new RelevantKey("kn", ["false", "true"]) { Option = numericOption },
+        ]);
+
+        locale = resolved.Locale;
+        collation = resolved.KeyValues["co"] ?? "default";
+        numeric = resolved.KeyValues["kn"] == "true";
+        caseFirst = resolved.KeyValues["kf"] ?? "false";
+
+        var language = Language(resolved.DataLocale);
+        var data = SharedData.Value;
+        var tailoring = data.TailoringFor(language, usage, collation);
+
+        // sensitivity: variant for both usages (row O6). ignorePunctuation: the data locale's default, true for a
+        // tailoring whose data states the shifted alternate, Thai's (decision E5, row O5c).
+        sensitivity = JSIntl.GetOption(options, SensitivityKey, ["base", "accent", "case", "variant"], false, "variant");
+        var ignorePunctuationValue = options == null ? JSUndefined.Value : options[IgnorePunctuationKey];
+        ignorePunctuation = ignorePunctuationValue.IsUndefined ? data.ShiftedByDefault(tailoring) : ignorePunctuationValue.BooleanValue;
+
+        // The shared collator for a covered locale and a collation the shared data carries (or the default, or search);
+        // the host provider for the rest, where the host has collation data; otherwise the shared collator, by the
+        // tailoring the data gives the locale, or the root (decision E4).
+        if (!IsShared(language, resolved.DataLocale, usage, collation, data))
+            hostCompareInfo = HostCollationProvider.CompareInfoFor(resolved.DataLocale, collation, usage);
+
+        if (hostCompareInfo == null)
+            collator = new UcaCollator(data, UcaCollatorOptions.FromResolved(sensitivity, ignorePunctuation, caseFirst, numeric, tailoring), JSUnicode.Normalization);
     }
 
-    // CompareInfo for the resolved locale, honouring the Unicode-extension collation tailoring
-    // (-u-co-). .NET ships a small set of named collation variants accessible via the BCP-47
-    // CultureInfo path: GetCultureInfo("de-DE-u-co-phonebk").CompareInfo tailors Ä to Ae
-    // (CompareInfo.GetCompareInfo("de-DE_phoneboo") returns a CompareInfo with the same Name
-    // but does NOT actually apply the tailoring — only the full BCP-47 culture-construction
-    // path is wired through to the ICU tailored collator). Falls back to the locale's default
-    // CompareInfo (or the invariant one) when the tailoring isn't recognised.
-    // Kept on the host's culture: Intl.Collator's comparison, which decision SJL-D-24 (c) leaves the host's until
-    // milestone SJL-17 (milestone SJL-9's clause 8, on the owner's ruling of 2026-11-11, "Fix all + enforce"). It names
-    // the culture it reads, which the five globalization rules accept; the banned-API rule
-    // (Broiler.JS/BannedSymbols.HostCulture.txt) bans a culture built from the host's data everywhere but the kept paths,
-    // and is suppressed for this method for that reason.
-#pragma warning disable RS0030 // Kept: Intl.Collator's comparison reads the host's collation data until SJL-17 (SJL-D-24 (c)).
-    private static CompareInfo ResolveCompareInfo(string localeTag, string collation, string usage)
+    // Whether the shared collator compares a collator of this language, data locale, usage and resolved collation
+    // (decision E3, read per locale and collation): a covered language, with its default, its search collation, or a
+    // collation the shared data carries for it, unless CLDR gives the data locale a sort collation of its own that the
+    // shared data does not carry (RegionalCollations).
+    private static bool IsShared(string language, string dataLocale, string usage, string collation, UcaCollationData data)
+        => System.Array.IndexOf(CoveredLanguages, language) >= 0
+            && (usage == "search" || collation == "default" || data.HasTailoring(language + "-" + collation))
+            && !(usage == "sort" && HasRegionalCollation(dataLocale, collation));
+
+    // The sort collations CLDR 48.2.0 gives a region or variant of a covered language, in a file of its own that the data
+    // home does not pin (it pins de.xml, en.xml, es.xml, sv.xml and th.xml alone): de_AT.xml's phonebook, with ä, ö and ü
+    // primary letters after a, o and u, and en_US_POSIX.xml's standard, which puts printable ASCII in code-point order.
+    // They stay the host provider's, as an uncovered locale does (decision E3's reading, per locale and collation), where
+    // the host has the data; the shared collator compares them by the language's collation otherwise (decision E4). No
+    // other region or variant of de, en, es, sv or th has a collation file of its own in CLDR 48.2.0 (en_US.xml holds no
+    // collation), and neither file has a search collation.
+    private static readonly (string Language, string Region, string? Variant, string Collation)[] RegionalCollations =
+    [
+        ("de", "AT", null, "phonebk"),
+        ("en", "US", "posix", "default"),
+    ];
+
+    private static bool HasRegionalCollation(string dataLocale, string collation)
     {
-        var bareLocale = StripUnicodeExtension(localeTag);
+        if (LocaleId.TryParse(dataLocale, out var id) != IntlStatus.Completed || id is null || id.Region is null)
+            return false;
 
-        // usage:"search" selects the locale's ICU "search" collation, which tailors
-        // comparison for string matching rather than sorting (e.g. German search treats
-        // Ä like AE, so "AE" and "Ä" no longer reorder). ECMA-402 never reflects "search"
-        // as the resolved collation, so it is applied here independently of the -u-co-
-        // option (test262 intl402/Collator/usage-de).
-        if (usage == "search")
+        foreach (var (language, region, variant, type) in RegionalCollations)
         {
-            try
-            {
-                return CultureInfo.GetCultureInfo(bareLocale + "-u-co-search").CompareInfo;
-            }
-            catch (CultureNotFoundException) { /* fall through */ }
+            if (id.Language == language && id.Region == region && type == collation
+                && (variant is null || HasVariant(id, variant)))
+                return true;
         }
 
-        if (collation != null && collation != "default" && collation != "standard"
-            && NetCollationSuffix(bareLocale, collation) != null)
+        return false;
+    }
+
+    private static bool HasVariant(LocaleId id, string variant)
+    {
+        foreach (var subtag in id.Variants)
         {
-            try
-            {
-                return CultureInfo.GetCultureInfo(bareLocale + "-u-co-" + collation).CompareInfo;
-            }
-            catch (CultureNotFoundException) { /* fall through */ }
+            if (subtag == variant)
+                return true;
         }
-        try { return CultureInfo.GetCultureInfo(bareLocale).CompareInfo; }
-        catch (CultureNotFoundException) { return CultureInfo.InvariantCulture.CompareInfo; }
-    }
-#pragma warning restore RS0030
 
-    // .NET's CompareInfo names map the BCP-47 collation key to a string suffix in a small
-    // (locale-specific) table. Only the variants .NET actually exposes are mapped here.
-    private static string NetCollationSuffix(string bareLocale, string collation)
+        return false;
+    }
+
+    // [[SortLocaleData]].[[<locale>]].[[co]] and [[SearchLocaleData]]'s: null first; for sort, each collation the shared
+    // data carries for the language (but standard and search, UcaCollationData.KeyValues), then each the host provider
+    // resolves for it (emoji and eor everywhere, and .NET's named tailorings). Search has the default alone (row O11a).
+    private static IReadOnlyList<string?> CollationValues(string language, string usage)
     {
-        if (string.IsNullOrEmpty(collation) || collation == "default" || collation == "standard")
-            return null;
-        var lang = bareLocale;
-        var dash = lang.IndexOf('-');
-        if (dash > 0) lang = lang.Substring(0, dash);
-        return (lang.ToLowerInvariant(), collation) switch
+        var values = new List<string?>(SharedData.Value.KeyValues(language, "co", usage));
+        if (usage != "sort")
+            return values;
+
+        foreach (var type in HostCollationProvider.TypesFor(language))
         {
-            ("de", "phonebk") => "phoneboo",
-            ("zh", "pinyin") => "pinyin",
-            ("zh", "stroke") => "stroke",
-            ("zh", "phonetic") or ("zh", "zhuyin") => "pronun",
-            ("zh", "trad") or ("zh", "unihan") => "radstr",
-            ("ja", "unihan") => "radstr",
-            ("ko", "unihan") => "korean",
-            ("hu", "trad") => "techni",
-            _ => null,
-        };
+            if (!values.Contains(type))
+                values.Add(type);
+        }
+
+        return values;
     }
 
-    private static string StripUnicodeExtension(string tag)
+    // The language subtag of a well-formed tag, the shared library's parse (ASCII alone); the tag itself otherwise.
+    private static string Language(string tag)
+        => LocaleId.TryParse(tag, out var id) == IntlStatus.Completed && id is not null ? id.Language : tag;
+
+    // AvailableCanonicalCollations (Intl.supportedValuesOf("collation")) in ascending code-unit order: every collation some
+    // locale resolves, the shared data's types (phonebk, trad) and the host provider's, each once.
+    internal static string[] SortedCollations()
     {
-        if (string.IsNullOrEmpty(tag))
-            return "";
-        var parts = tag.Split('-');
-        for (var i = 0; i < parts.Length; i++)
-            if (parts[i].Length == 1 && (parts[i][0] == 'u' || parts[i][0] == 'U'))
-                return string.Join("-", parts, 0, i);
-        return tag;
+        var set = new SortedSet<string>(HostCollationProvider.Types, StringComparer.Ordinal);
+        foreach (var name in SharedData.Value.TailoringNames)
+        {
+            var dash = name.IndexOf('-');
+            var type = dash < 0 ? null : name[(dash + 1)..];
+            if (type is not null and not "standard" and not "search")
+                set.Add(type);
+        }
+
+        var array = new string[set.Count];
+        set.CopyTo(array);
+        return array;
     }
 
-    // This Collator's data as CollationsOfLocale reads it (JSD-0082, decision D33 (c); rows L17 and L18): the available
-    // locales are every service's (decision D7), and a locale's sort collations are those this Collator resolves for it,
-    // each value of Intl.supportedValuesOf("collation") that IsCollationAvailableForLocale admits. The Collator's data and
-    // comparison stay its host path until SJL-17.
+    // This Collator's data as CollationsOfLocale and supportedValuesOf read it (JSD-0082, decision D33 (c); rows L17, L18
+    // and L40): the available locales are every service's (decision D7), and a locale's sort collations are those this
+    // Collator resolves for it, CollationValues above, so en keeps emoji and eor (test262
+    // Locale/prototype/getCollations/output-array-values.js keeps its base verdict).
     internal static ICollatorLocaleData LocaleData { get; } = new CollatorLocaleData();
 
     private sealed class CollatorLocaleData : ICollatorLocaleData
@@ -2778,112 +2666,36 @@ public class JSIntlCollator : JSObject
 
         public IReadOnlyList<string> Collations => JSIntl.SupportedCollationsSorted;
 
-        public IReadOnlyList<string?> SortLocaleData(string locale)
-        {
-            var bareLocale = StripUnicodeExtension(locale);
-            var collations = new List<string?> { null };
-            foreach (var collation in JSIntl.SupportedCollationsSorted)
-            {
-                if (IsCollationAvailableForLocale(bareLocale, collation))
-                    collations.Add(collation);
-            }
-
-            return collations;
-        }
-    }
-
-    // Whether a (canonical, recognized) collation is available for a locale. The root
-    // collations "emoji" and "eor" are available everywhere; every other tailoring is
-    // locale-specific and recognized only where .NET exposes it (NetCollationSuffix), e.g.
-    // "phonebk" for German but not English.
-    private static bool IsCollationAvailableForLocale(string bareLocale, string collation)
-    {
-        if (string.IsNullOrEmpty(collation) || collation == "default" || collation == "standard" || collation == "search")
-            return false;
-        if (collation == "emoji" || collation == "eor")
-            return true;
-        return NetCollationSuffix(bareLocale, collation) != null;
-    }
-
-    // The locale's default ignorePunctuation. CLDR gives Thai the only root collation with
-    // alternate="shifted", so "th" defaults to true; every other locale defaults to false.
-    private static bool LocaleDefaultIgnorePunctuation(string localeTag)
-    {
-        if (string.IsNullOrEmpty(localeTag))
-            return false;
-        var dash = localeTag.IndexOf('-');
-        var language = dash < 0 ? localeTag : localeTag.Substring(0, dash);
-        return string.Equals(language, "th", StringComparison.OrdinalIgnoreCase);
+        public IReadOnlyList<string?> SortLocaleData(string locale) => CollationValues(Language(locale), "sort");
     }
 
     private JSIntlCollator() : base(CurrentPrototype()) { }
-
-    // Removes the characters ignorePunctuation drops (whitespace, punctuation and
-    // symbols — the variable-weighted characters in the Unicode Collation Algorithm),
-    // so two strings can be tested for differing only in such characters.
-    private static string StripIgnorablePunctuation(string s)
-    {
-        StringBuilder sb = null;
-        for (var i = 0; i < s.Length; i++)
-        {
-            var c = s[i];
-            if (char.IsWhiteSpace(c) || char.IsPunctuation(c) || char.IsSymbol(c))
-            {
-                sb ??= new StringBuilder(s.Length).Append(s, 0, i);
-                continue;
-            }
-            sb?.Append(c);
-        }
-        return sb?.ToString() ?? s;
-    }
 
     public JSValue Compare(in Arguments a)
     {
         var left = a.Get1().StringValue;
         var right = a.GetAt(1).StringValue;
-        // ECMA-402 §10.3.5 (CompareStrings) treats canonically-equivalent strings as equal,
-        // but .NET's CompareInfo.Compare reads the raw UTF-16 code units and so distinguishes
-        // (ä,combining-dot-below) from (a,combining-dot-below,combining-diaeresis) — different
-        // composition orders of the same canonical character. Pre-normalizing both sides to
-        // NFD (canonical decomposition) folds the orderings together before the locale-aware
-        // collation runs, matching the spec's "canonically equivalent strings compare equal"
-        // requirement (test262 intl402/Collator/prototype/compare/canonically-equivalent-strings).
-        // The decomposition is Broiler.Unicode's (SJL-7.5), which passes a lone surrogate through
-        // where the host's threw (N1) and answers a string already in NFD as itself; the collation
-        // that follows is still the host's (SJL-17).
-        left = String.JSString.NormalizeText(left, NormalForm.Nfd);
-        right = String.JSString.NormalizeText(right, NormalForm.Nfd);
+        return CreateNumber(CompareStrings(left, right));
+    }
 
-        var options = CompareOptions.None;
-        if (sensitivity == "base")
-            options |= CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace;
-        else if (sensitivity == "accent")
-            options |= CompareOptions.IgnoreCase;
-        else if (sensitivity == "case")
-            options |= CompareOptions.IgnoreNonSpace;
-        if (ignorePunctuation)
-            options |= CompareOptions.IgnoreSymbols;
-
-        var result = compareInfo.Compare(left, right, options);
-
-        // Some locale collations (notably Thai) give punctuation/whitespace zero
-        // primary weight, so "" and " " compare equal even though ignorePunctuation is
-        // false. ECMA-402 only ignores those characters when ignorePunctuation is true,
-        // so when it is false and the two strings are equal apart from such ignorable
-        // characters, break the tie on them (test262
-        // intl402/Collator/prototype/compare/ignorePunctuation).
-        if (result == 0 && !ignorePunctuation && !string.Equals(left, right, StringComparison.Ordinal))
+    // CompareStrings (sec-collator-comparestrings): the shared collator's -1, 0 or 1, which normalizes both strings to NFD by
+    // Broiler.Unicode first (decision E6) and refuses one whose NFD form passes this engine's length policy; or, where the
+    // host provider compares, the host's answer over Broiler.Unicode's NFD (SJL-7.5), as before.
+    internal int CompareStrings(string left, string right)
+    {
+        if (collator is not null)
         {
-            // When removing the ignorable punctuation/whitespace makes the two strings
-            // identical, their ONLY difference is those characters — so break the tie on
-            // them (without ignorePunctuation they are significant). A difference that
-            // survives stripping is a genuine collation tie (e.g. case/accent folded by
-            // the sensitivity) and is left equal.
-            if (string.Equals(StripIgnorablePunctuation(left), StripIgnorablePunctuation(right), StringComparison.Ordinal))
-                result = Math.Sign(string.CompareOrdinal(left, right));
+            return collator.Compare(left, right, String.JSString.MaximumLength, null, out var order) == IntlStatus.Completed
+                ? order
+                : throw JSEngine.NewRangeError("Invalid string length");
         }
 
-        return CreateNumber(result);
+        return HostCollationProvider.Compare(
+            hostCompareInfo!,
+            String.JSString.NormalizeText(left, NormalForm.Nfd),
+            String.JSString.NormalizeText(right, NormalForm.Nfd),
+            sensitivity,
+            ignorePunctuation);
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
@@ -2901,59 +2713,6 @@ public class JSIntlCollator : JSObject
         result.FastAddValue(KeyStrings.GetOrCreate("caseFirst"), CreateString(@this.caseFirst), JSPropertyAttributes.EnumerableConfigurableValue);
         return result;
     }
-
-    private static bool TryGetOwnOption(JSObject options, string name, out JSValue value)
-    {
-        value = JSUndefined.Value;
-        if (options == null)
-            return false;
-
-        // GetOption (ECMA-402) reads the property with [[Get]]: an accessor option must
-        // have its getter invoked (and a throwing getter must propagate), not be skipped
-        // because the descriptor carries no [[Value]]. Reading the descriptor's value
-        // ignored getters entirely, so e.g. `new Intl.Collator(l, { get usage() { throw } })`
-        // silently swallowed the exception.
-        var key = KeyStrings.GetOrCreate(name);
-        value = options[key];
-        return !value.IsUndefined;
-    }
-
-    private static bool TryGetUnicodeExtension(string locale, string key, out string value)
-    {
-        value = null;
-        if (string.IsNullOrEmpty(locale))
-            return false;
-
-        var parts = locale.Split('-', StringSplitOptions.RemoveEmptyEntries);
-        var u = -1;
-        for (var i = 0; i < parts.Length; i++)
-        {
-            if (parts[i].Length != 1)
-                continue;
-            // Stop at the private-use ("x") singleton; a "u" inside private-use is a
-            // private subtag, not a Unicode extension.
-            if (parts[i][0] == 'u' || parts[i][0] == 'U') { u = i; break; }
-            if (parts[i][0] == 'x' || parts[i][0] == 'X') return false;
-        }
-
-        if (u < 0)
-            return false;
-
-        for (var i = u + 1; i < parts.Length; i++)
-        {
-            // The Unicode extension ends at the next singleton (start of another extension).
-            if (parts[i].Length == 1)
-                return false;
-            if (!string.Equals(parts[i], key, StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            value = i + 1 < parts.Length && parts[i + 1].Length > 2 ? parts[i + 1] : "true";
-            return true;
-        }
-
-        return false;
-    }
-
 
     private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.Collator");
 
