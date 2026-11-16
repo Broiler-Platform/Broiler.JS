@@ -1417,6 +1417,40 @@ This repository's part of it:
   `0.1.0-preview.5` on 2026-10-29 from Broiler.Regex `24344b3`, so the next is `0.1.0-preview.6`. The bullet read
   "Broiler.Regex's SJL-11 surface ships as `0.2.0-preview.1`, and it breaks the `0.1` surface this engine calls today"
   and "no release of either engine depends on `0.2` before both cut-overs have merged".)*
+  *(Noted 2026-11-16, on the owner's ruling of that day; the bullet above is left as written.)* The bullet reads "**This
+  engine moves its pin only at SJL-11.5**, and no release of either engine depends on the version that carries the
+  surface before both cut-overs have merged". The owner's dependency update on the default branch, `cdf5559d`
+  ("Update dependencies"), moved `Directory.Packages.props`' Broiler.Regex to `0.1.0-preview.6`, whose syntax tree,
+  `RegexParser` and `RegexFlagsParser.Parse` are internal and whose `RegexMatch.Groups` is a span (Broiler.RegEx's task
+  2.9 of SJL-11.2, its breaks against `0.1.0-preview.5`), so `JSRegExp.Broiler.cs` no longer compiled. Asked "How should
+  I fix main?", with the options "Pin back to preview.5" (recommended), "Adapt to preview.6 now" and "Leave it to the
+  contributor", the owner chose "Adapt to preview.6 now", described as "A PR that ports JSRegExp.Broiler.cs onto
+  preview.6's public surface now. This pulls part of SJL-11.5's adapter work ahead of its rule's base and after
+  commits, and changes regex code on main outside SJL-11.5's window." **So the adapter moved onto `0.1.0-preview.6`'s
+  public surface at the merge of `cdf5559d` into Broiler-Platform/Broiler.JS#1119, ahead of SJL-11.5, by the owner's
+  choice.** `GapScan` reads the pattern text by the grammar the package's parser reads outside Unicode mode, where it
+  walked the tree; `TryRouteToBroiler` reads the flags through `RegexFlagsText.Parse`; `FromBroiler` reads the span's
+  `Length`. The routing, the translator, the validators and every other member of the deletion list stay, and no answer
+  of this engine is meant to move: that merge's description gives its runs against `2f012739`'s. What SJL-11.5 and
+  bundle [`sjl-11-001`](../evidence/sjl-11-001/README.md) must now read differently:
+  - **The pin is no longer SJL-11.5's to move.** SJL-11.5's base commit will already pin `0.1.0-preview.6` and route
+    through it, so its base runs answer as that version answers for every `u` and `v` pattern and every gap shape, not
+    as `0.1.0-preview.4` or `0.1.0-preview.5` answered. A row that the rule's list of corrections names "with
+    Broiler.Regex `0.1.0-preview.4`" (B1 to B3, B5, B8, S3b's process abort and M7's look-behind) may already follow the
+    specification at the base and then not move; such a row is one the runs cannot show, not a regression.
+  - **Task 2.9's breaks, as this engine met them, are answered here by a stopgap.** After this merge the adapter reads
+    none of the members it read (the tree, `RegexParser`, `RegexFlagsParser.Parse` and the type of `Groups`).
+    SJL-11.5's adapter work is otherwise as its records say: the translator's retirement, the routing's deletion, the
+    validate entry, the flag parser and text helpers, the ceilings and the nesting limit. `GapScan` and
+    `TryRouteToBroiler`, which part E's search names, still exist and still go at SJL-11.5, so that search reads as
+    written.
+  - **For the owner, words that no longer fit** (no rule file is edited here): bundle `sjl-11-001`'s README, "The pins"
+    and its dated note of 2026-11-01, which say that SJL-11.5 moves the pin; the rule's part C, whose N cases "end the
+    process where Broiler.Regex `0.1.0-preview.4`'s parser recurses past the stack" at the base; and this bullet's "no
+    release of either engine depends on the version that carries the surface before both cut-overs have merged", which
+    a release of this engine from the default branch would now break, since the pin is the owner's to keep.
+    Broiler.RegEx's roadmap records, under its task 2.10, that this engine's shell "cannot take `0.1.0-preview.6`
+    without SJL-11.5's adapter"; that record is Broiler.RegEx's, and is not revised here.
 - **The component's test262 (decision D14).** Broiler.RegEx's CI runs a host job through this engine's shell, at a
   commit of this repository that its roadmap names by a dated record, with the candidate package from a local feed:
   SJL-11.5's branch until it merges, then the default branch. So that branch exists early (decision D35), and the
