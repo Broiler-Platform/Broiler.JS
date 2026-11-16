@@ -2476,8 +2476,11 @@ This repository's part of it:
   - **For the owner:**
     - the acknowledgement the note above asks about `LibraryRunTests` (it read "the owner's acknowledgement is asked
       before SJL-17.6 reads the home clauses") stays open, since this stage read the home clauses at both commits;
-    - the bundle's readings, two of which a verdict could turn on (the machine, and the hosted runs' SDK, which is the
-      runner image's newer one since the repository pins none);
+    - the bundle's readings, three of which a verdict could turn on: the machine; the hosted runs' SDK, which is the
+      runner image's newer one since the repository pins none; and base condition 3 read up to the after commit, since
+      the default branch moved past it to `cdf5559d`, which changes named paths *(revised 2026-11-16, later; it read
+      "two of which a verdict could turn on (the machine, and the hosted runs' SDK, which is the runner image's newer one
+      since the repository pins none)")*;
     - the items the review of SJL-17.5 left open.
   - **No gate is met.** SJL-17's gate waits on SJL-9's, on SJL-3's and SJL-4's measurement clauses, on Broiler.VM's
     clauses 6 to 9 and SJL-17's exit reading over both repositories, and on review (EX-30).

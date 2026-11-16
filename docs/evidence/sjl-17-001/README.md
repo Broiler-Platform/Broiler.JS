@@ -374,6 +374,8 @@ owner may rule otherwise. They change no part, class or condition of the rule, a
 
    This reads clauses only. It judges no part.
 
+*(Noted 2026-11-16, later, at SJL-17.6, after the runs were read; the readings above are left as filed.)* Reading 4's alternative says the default branch "is at the after commit". That held when the readings were filed, at 06:01Z. At 08:28Z the default branch moved to `cdf5559d5b69113c536f734e9a6ab305a3c71430`, "Update dependencies", a commit whose only parent is the after commit. It changes `Directory.Packages.props` and the project files under `Broiler.JS/Broiler.JavaScript.*/`, which are named paths. Under the reading taken, the condition is read up to the after commit and still holds: `git rev-list --first-parent 5669f2bd..2f012739` names the after commit alone. Under the alternative, `cdf5559d` is a second first-parent successor that changes a named path, so the condition would fail and every part would be void. Reading 4 is therefore one a verdict turns on: all three parts rest on it.
+
 ### The commits, the files and the machine
 
 [`identity.txt`](identity.txt), written by [`collect.py`](collect.py), records:
@@ -514,15 +516,17 @@ read.
 
 | Part | Verdict | Readings it rests on | Under the alternatives |
 |---|---|---|---|
-| A, test262 per path in UTC | **MET** | 1 (the rule commit), 3 (SDK and images: both runs built with 11.0.100), 4 (base condition 3) | Reading 1's alternative: MET. Reading 3's alternative: MET, since both runs' SDKs agree (11.0.100); held to the local machine's SDK, no hosted run could meet it, NOT MET. Reading 4's alternative: MET today, since the default branch is at the after commit. Readings 5 and 6, either way: MET, since no verdict changed |
-| B, the `orderings` dataset | **MET** | 1, 2 (this machine), 4, 7 (the reference), 8 ("completes") | Every alternative: MET, except reading 2's, under which the part waits for another machine, unjudged. Reading 7's alternative: MET, since classes V and R hold no line |
-| C, invariant globalization | **MET** | 1, 2, 4, 8 | Every alternative: MET, except reading 2's, under which the part waits, unjudged |
+| A, test262 per path in UTC | **MET** | 1 (the rule commit), 3 (SDK and images: both runs built with 11.0.100), 4 (base condition 3) | Reading 1's alternative: MET. Reading 3's alternative: MET, since both runs' SDKs agree (11.0.100); held to the local machine's SDK, no hosted run could meet it, NOT MET. Reading 4's alternative: void, since the default branch's `cdf5559d` changes named paths (the note after the readings) *(revised 2026-11-16, later; read "Reading 4's alternative: MET today, since the default branch is at the after commit.")*. Readings 5 and 6, either way: MET, since no verdict changed |
+| B, the `orderings` dataset | **MET** | 1, 2 (this machine), 4, 7 (the reference), 8 ("completes") | Every alternative: MET, except reading 2's, under which the part waits for another machine, unjudged, and reading 4's, under which it is void. Reading 7's alternative: MET, since classes V and R hold no line |
+| C, invariant globalization | **MET** | 1, 2, 4, 8 | Every alternative: MET, except reading 2's, under which the part waits, unjudged, and reading 4's, under which it is void |
 
 None of the three rests on a revision of the rule, and no ruling of the owner's own is needed for any.
 
 **What would change a verdict.** Each part is MET as the rule is written, on the readings above. Should the owner rule
 otherwise on reading 2, parts B and C would be taken again on the machine the owner names. Should the owner rule
-otherwise on reading 3 in the strict form, no hosted run could meet part A.
+otherwise on reading 3 in the strict form, no hosted run could meet part A. Should the owner rule otherwise on reading 4,
+every part would be void, whatever runs were taken, since `cdf5559d` changes named paths
+*(this sentence added 2026-11-16, later)*.
 
 ### The home clauses, by the tests SJL-17.3 committed (reading 9)
 
@@ -599,7 +603,9 @@ None of these is done here.
   tests as SJL-17.3 wrote them. At the after commit it rests on this engine's corpus expectations as revision 40
   restated them. The acknowledgement stays open.
 - **The readings above**, each the recommended choice under the owner's direction of 2026-10-18. The owner may rule
-  otherwise on any, and reading 2 (the machine) and reading 3 (the hosted SDK) are the ones a verdict could turn on.
+  otherwise on any. The ones a verdict could turn on are reading 2 (the machine), reading 3 (the hosted SDK) and reading 4
+  (base condition 3, since the default branch moved to `cdf5559d`) *("and reading 4 ..." added 2026-11-16, later; it
+  read "and reading 2 (the machine) and reading 3 (the hosted SDK) are the ones a verdict could turn on.")*.
 - **From Broiler-Platform/Broiler.JS#1118, still open:**
   - Thai under `usage: "search"` reports `ignorePunctuation` `false`, a move row O5c does not name;
   - the header of `Broiler.JS/BannedSymbols.HostCulture.txt`, a rule file, still names the kept path as
