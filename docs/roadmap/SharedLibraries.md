@@ -151,6 +151,22 @@ Broiler.VM apart from this record.
 - **What it changes.** No rule, no gate and no clause. SJL-3 stays `In progress`, and every milestone that may not
   meet its gate before SJL-3 meets SJL-3's still waits. Nothing is accepted: no second holder exists to review it.
 
+*(Noted 2026-11-17. **Trigger (a) is reached**: a controlled lane exists, recorded as `Measurement.md` requires, in
+[`docs/evidence/lanes/win-x64-r7-5800x/`](../evidence/lanes/win-x64-r7-5800x/README.md). It is one machine and one
+RID, `win-x64`: the owner's workstation, quieted for a run window, which the owner confirmed as the lane, RID included,
+on 2026-11-17 before any run on it. The route above read "linux-x64 first"; no linux-x64 lane exists, and nothing here
+is about one. The owner's choice at (a) was to take part B on that lane as written: "Take part B's first judged run,
+and judge it as the rule says." Both original arms, `1410079e` and `ef676932`, build there, so neither fallback above
+applies. **The reading is MET**, every clause of part B holding (bundle [`sjl-3-001`](../evidence/sjl-3-001/README.md),
+section 7, and its sub-bundle
+[`measurement-win-x64-r7-5800x/`](../evidence/sjl-3-001/measurement-win-x64-r7-5800x/README.md)); on `Literals`, the
+workload the void run's arithmetic would have failed, the difference is below the lane's A/A floor. So, as "What would
+meet the clause" above says, **clause 7's measurement half is met**. What it does not change: no rule, gate or clause;
+SJL-3 stays `In progress`, because Broiler.VM's clause 13 stays open after the last measurement its rule's revision
+allows, and a third measurement would first need a new dated revision of that rule by the owner; and nothing is
+accepted, because no second holder exists to review it. The programme's ledger and a dated note under decision
+SJL-D-23 are to record trigger (a) and this reading; both are filed in Broiler.VM apart from this record.)*
+
 **Numerics (SJL-4.1), filed 2026-10-13: all four sub-areas accepted.** Broiler.VM's record is
 `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0067-numerics-move-to-the-shared-algorithms-library.md`
 (JSD-0067), which states each condition for integer conversions and Float16, the Math kernels, exact
