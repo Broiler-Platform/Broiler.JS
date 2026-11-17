@@ -13,6 +13,14 @@ namespace Broiler.JavaScript.BuiltIns.RegExp;
 /// </summary>
 /// <remarks>
 /// <para>
+/// <strong>Unreached since milestone SJL-11.5.</strong> Every <see cref="JSRegExp"/> now compiles and matches through
+/// Broiler.Regex, and the .NET <see cref="Regex"/> this type races, with <c>JSRegExp.CreateRegex</c> that built it and
+/// the match path that called <see cref="Decide"/>, is deleted, so nothing in the engine calls this type and
+/// <c>BROILER_JS_REGEX_TIERING</c> changes nothing. The records' deletion list (Broiler.VM's JSD-0081, decisions D20
+/// and D21) names it for removal with its tests; SJL-11.5's branch keeps both for the owner. The remarks below
+/// describe it as it was used.
+/// </para>
+/// <para>
 /// <strong>Why there is no predicate here.</strong> Phase 5's measurement found
 /// <c>Compiled</c> worth 1.7×–2.3× on six of seven real Octane patterns and a stable
 /// <strong>4.3× against</strong> on the seventh — <c>/^[\s\xa0]+|[\s\xa0]+$/</c>, an ordinary
@@ -199,7 +207,7 @@ public static class RegexTiering
     /// </summary>
     /// <remarks>
     /// The pattern and options are read back off the instance rather than threaded down from
-    /// <c>CreateRegex</c>, because by this point the pattern has been through every one of that
+    /// <c>CreateRegex</c> (deleted at milestone SJL-11.5), because by this point the pattern has been through every one of that
     /// method's ECMAScript translations — anchor rewriting, quantifier clamping, capture-group
     /// renaming — and <see cref="Regex.ToString"/> is the only place the translated form
     /// survives. Reconstructing it from <c>JSRegExp.pattern</c> would re-run the translation and
@@ -209,8 +217,8 @@ public static class RegexTiering
     {
         try
         {
-            // RegexOptions.CultureInvariant, which the interpreted instance already carries (JSRegExp.CreateRegex builds
-            // every RegExp's .NET Regex with it), is named here too, so that the compiled arm folds case by the invariant
+            // RegexOptions.CultureInvariant, which the interpreted instance already carries (JSRegExp.CreateRegex, until
+            // milestone SJL-11.5 deleted it, built every RegExp's .NET Regex with it), is named here too, so that the compiled arm folds case by the invariant
             // culture whatever options it is handed (milestone SJL-9's clause 8; the host-culture readers' architecture
             // test, on the owner's ruling of 2026-11-12, "Follow-up arch test", refuses options it cannot see include it).
             return new System.Text.RegularExpressions.Regex(

@@ -223,25 +223,26 @@ public class SharedUnicodeTests
     public void The_constructor_resolves_names_exactly(string pattern, string flags, string input, bool expected)
         => Assert.Equal(expected ? "true" : "false", Eval($"new RegExp('{pattern.Replace("\\", "\\\\")}', '{flags}').test('{input}')"));
 
-    // Every General_Category name and alias ECMA-262's table writes, the 78 the translator's in-class table spelled
-    // until milestone SJL-11.5 deleted it with the translator, is admitted under u, as a value of General_Category and
-    // alone.
+    // Every General_Category name and alias ECMA-262's table writes, 80 in all, is admitted under u, as a value of
+    // General_Category and alone: the 78 the translator's in-class table spelled until milestone SJL-11.5 deleted it
+    // with the translator, and LC (Cased_Letter), which that table left out because it had no .NET form.
     private static readonly string[] GeneralCategoryNames =
     [
-        "L", "Letter", "Lu", "Uppercase_Letter", "Ll", "Lowercase_Letter", "Lt", "Titlecase_Letter", "Lm", "Modifier_Letter",
-        "Lo", "Other_Letter", "M", "Mark", "Combining_Mark", "Mn", "Nonspacing_Mark", "Mc", "Spacing_Mark", "Me",
-        "Enclosing_Mark", "N", "Number", "Nd", "Decimal_Number", "digit", "Nl", "Letter_Number", "No", "Other_Number",
-        "P", "Punctuation", "punct", "Pc", "Connector_Punctuation", "Pd", "Dash_Punctuation", "Ps", "Open_Punctuation",
-        "Pe", "Close_Punctuation", "Pi", "Initial_Punctuation", "Pf", "Final_Punctuation", "Po", "Other_Punctuation", "S",
-        "Symbol", "Sm", "Math_Symbol", "Sc", "Currency_Symbol", "Sk", "Modifier_Symbol", "So", "Other_Symbol", "Z",
-        "Separator", "Zs", "Space_Separator", "Zl", "Line_Separator", "Zp", "Paragraph_Separator", "C", "Other", "Cc",
-        "Control", "cntrl", "Cf", "Format", "Cs", "Surrogate", "Co", "Private_Use", "Cn", "Unassigned",
+        "L", "Letter", "LC", "Cased_Letter", "Lu", "Uppercase_Letter", "Ll", "Lowercase_Letter", "Lt",
+        "Titlecase_Letter", "Lm", "Modifier_Letter", "Lo", "Other_Letter", "M", "Mark", "Combining_Mark", "Mn",
+        "Nonspacing_Mark", "Mc", "Spacing_Mark", "Me", "Enclosing_Mark", "N", "Number", "Nd", "Decimal_Number", "digit",
+        "Nl", "Letter_Number", "No", "Other_Number", "P", "Punctuation", "punct", "Pc", "Connector_Punctuation", "Pd",
+        "Dash_Punctuation", "Ps", "Open_Punctuation", "Pe", "Close_Punctuation", "Pi", "Initial_Punctuation", "Pf",
+        "Final_Punctuation", "Po", "Other_Punctuation", "S", "Symbol", "Sm", "Math_Symbol", "Sc", "Currency_Symbol",
+        "Sk", "Modifier_Symbol", "So", "Other_Symbol", "Z", "Separator", "Zs", "Space_Separator", "Zl",
+        "Line_Separator", "Zp", "Paragraph_Separator", "C", "Other", "Cc", "Control", "cntrl", "Cf", "Format", "Cs",
+        "Surrogate", "Co", "Private_Use", "Cn", "Unassigned",
     ];
 
     [Fact]
     public void Every_general_category_name_is_admitted()
     {
-        Assert.Equal(78, GeneralCategoryNames.Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(80, GeneralCategoryNames.Distinct(StringComparer.Ordinal).Count());
         foreach (var name in GeneralCategoryNames)
             Assert.Equal("true", Eval($"/\\p{{General_Category={name}}}/u instanceof RegExp && /\\p{{{name}}}/u instanceof RegExp"));
     }

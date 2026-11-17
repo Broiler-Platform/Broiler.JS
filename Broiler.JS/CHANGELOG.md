@@ -85,11 +85,12 @@ them in [`decision-rule.md`](../docs/evidence/sjl-11-001/decision-rule.md) and i
 - **F3's** `(?x:a)` (decision D-widen) is refused;
 - **case-insensitive matching through .NET**: **M2**, Kelvin U+212A against `[a-z]` or `k` without `u` (bundle
   `sjl-7-001`'s F2), and the Ohm sign U+2126 against `[\u03C9]`: `/[a-z]/i.test("\u212A")` is `false`, where it was
-  `true`; **M2a**, U+0130 and U+0131, and **M15**, `i` and `I` under `tr-TR` and `lt-LT`, which no host culture moves
-  now, as the translator's `RegexOptions.CultureInvariant` of SJL-9's clause 8 (2026-11-11) already made the case on
-  the inputs this branch probed, so neither moves here under the invariant culture (part D's runs under `tr-TR` and
-  `lt-LT` are the rule's); **M2b**, U+1F80 against U+1F88, `false` where it was `true`; and **U3**, U+A7CE against
-  U+A7CF, `true` where it was `false`, under Unicode 17.0.0's data through the Unicode owner's provider (class C5,
+  `true`; **M2a**, U+0130 and U+0131 under `tr-TR` and `lt-LT`, and **M15**, `i` and `I` under them, are corrected
+  already at this branch's first parent, and do not move here: since SJL-9's clause 8 (`0705e80b`, 2026-11-12) the
+  translator built every .NET `Regex` with `RegexOptions.CultureInvariant`, so no host culture moved its case folding,
+  and Broiler.Regex reads none. This branch ran their inputs under the default culture only; part D's runs under
+  `tr-TR` and `lt-LT` are the rule's; **M2b**, U+1F80 against U+1F88, `false` where it was `true`; and **U3**, U+A7CE
+  against U+A7CF, `true` where it was `false`, under Unicode 17.0.0's data through the Unicode owner's provider (class C5,
   decision SJL-D-6 (c));
 - **M3**, .NET's line terminators (bundle `sjl-7-001`'s W5): `^` and `$` under `m` at U+2028 and U+2029,
   `/^b/m.test("a\u2028b")` being `true` where it was `false`, and `$` without `m` no longer matching before a final
@@ -120,7 +121,8 @@ them in [`decision-rule.md`](../docs/evidence/sjl-11-001/decision-rule.md) and i
   letter by .NET's word set, case pairs no row records, an empty `\q{}`; **M9**, an `exec` .NET threw on; **M10**, a
   group name the translator rewrote; **M11**, the empty iteration of a `?` that .NET kept; **M12**, `\p{…}`, `\P{…}`
   and `\a` in a class without `u` or `v`; **M13**, `-[…]` in a class read as a subtraction; **M14**, `\-` in a class
-  read as starting no range; **M15**, `i` and `I` under `tr-TR` and `lt-LT`; **M16**, `\c` with no control letter;
+  read as starting no range; **M15**, `i` and `I` under `tr-TR` and `lt-LT` (corrected already at the first parent,
+  above); **M16**, `\c` with no control letter;
   **M17**, a group name written with `\u{…}`; **M18**, `\k<…>` written with `\u{…}`; **M19**, a legacy octal escape
   in a nullable loop; **M20**, a legacy octal escape before `\d` in a class; **M21**, `\S` in a class; **M22**, an empty
   group under a lazy quantifier with a minimum of 1; **M23**, `^` or `$` as a member of a class under `m`; **M24**, a
@@ -130,6 +132,17 @@ them in [`decision-rule.md`](../docs/evidence/sjl-11-001/decision-rule.md) and i
   is a `SyntaxError` (S12), where it was built. No test262 file the rule names its corrections from is explained by
   these rows. Several of their constructs already reached Broiler.Regex `0.1.0-preview.6` at this branch's first
   parent, through the routing, and answer alike there.
+
+**A change no row names: the `y` flag on the members that do not go through `exec`.** `IJSRegExp.IsMatch`, which
+`assert.match` calls, and the public `JSRegExp.Replace` now try a sticky pattern at the start of each step alone, as
+`exec` from `lastIndex` 0 and `RegExp.prototype[@@replace]` do, and the public `JSRegExp.Split`, which
+`String.prototype.split` calls when a `RegExp`'s `@@split` is `undefined` or `null`, ignores the flag, as
+`RegExp.prototype[@@split]` does in effect, its splitter being sticky whatever the flags and tried at every position.
+At this branch's first parent the three honoured `y` only for a pattern routed to Broiler.Regex (a `u` or `v`
+pattern or a gap shape) and ignored it for one the translator answered: `assert.match("ba", /a/y)` now throws, where
+it passed, and `"bab".split(/a/uy)` with `@@split` removed is `["b", "b"]`, where it was `["bab"]`. That `split`
+fallback is not the specification's either, which converts the separator with ToString when no `@@split` applies (as
+row M6 reads `search`); it is not on the deletion list (decision D20), and is left as it is, for a later change.
 
 `\0` before a non-ASCII digit is Broiler.Regex's alone and not observable here (row S4); B4, uncharged alternation, is
 not observable here, since this engine passes no meter; and an invalid literal read as a division stays SJL-14's (row
@@ -154,7 +167,9 @@ reads `\u{1d306}` as `source` (row T1); `RegExpConstructorEarlyErrorTests` and t
 `RegExpLiteralEarlyErrorTests` read `(?<a>.)[\k]` as valid (row S5's class case, decision D-s5); and the parser's
 `/[\q{/}--[a]]/v` moves from a theory that admits it to one that refuses it (row S8). `SharedUnicodeTests`' two tests
 of the translator's path (decision D21, "`SharedUnicodeTests.cs:204-235` is rewritten") run their inputs through the
-constructor, with the same answers. `RegexTieringTests.HotPattern_RacesExactlyOnce_AndSiblingsInheritTheVerdict`
+constructor, with the same answers, and the second also tries `LC` and `Cased_Letter`, the two General_Category names
+the translator's table had no .NET form for, so it holds all 80 of ECMA-262's. `RegExpEngineConsistencyTests` adds
+three tests of the `y` flag above. `RegexTieringTests.HotPattern_RacesExactlyOnce_AndSiblingsInheritTheVerdict`
 fails on this branch, since no `RegExp` reaches the tiering of a .NET `Regex` any more; no row admits it, and it is
 left failing, not deleted or skipped, for the owner, with the type it tests. No library under `Broiler.ECMAScript/`
 changes.

@@ -284,8 +284,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         // Iterate through Broiler.Regex's matches, so the pattern splits on the same matches
         // exec reports. Groups is already the ECMAScript-order capture array; an unmatched
-        // group contributes undefined.
-        foreach (var match in EnumerateMatches(input))
+        // group contributes undefined. The y flag does not anchor the search: RegExp.prototype
+        // [@@split] (ECMA-262 22.2.6.14) builds its splitter sticky whatever the flags and
+        // tries every position, so the flag changes nothing there either.
+        foreach (var match in EnumerateMatches(input, anchored: false))
         {
             // Do not split on an empty match at the start or end of the string or at the
             // end of the previous match.
@@ -350,7 +352,8 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// Builds the replacement result: each match up to the global/first-only limit has its
     /// span replaced by <paramref name="evaluator"/>. Iterates Broiler.Regex's matches through
     /// <see cref="EnumerateMatches"/>, so the pattern replaces on the same matches <c>exec</c>
-    /// reports.
+    /// reports: a sticky pattern matches at the start of each step alone, as
+    /// RegExp.prototype[@@replace] (ECMA-262 22.2.6.11) finds it through exec from lastIndex 0.
     /// </summary>
     private string ReplaceMatches(string input, System.Func<RegexMatchData, string> evaluator)
     {
@@ -359,7 +362,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
         int last = 0;
         int done = 0;
 
-        foreach (var match in EnumerateMatches(input))
+        foreach (var match in EnumerateMatches(input, anchored: sticky))
         {
             if (done >= limit)
                 break;

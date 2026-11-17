@@ -176,14 +176,16 @@ public partial class JSRegExp
     /// <summary>
     /// Enumerates the non-overlapping matches of this pattern in <paramref name="input"/>, advancing past an empty
     /// match by one code point (a surrogate pair under <c>u</c>/<c>v</c>) as §22.2.6.9 iteration requires, so that
-    /// <see cref="Split"/> and <see cref="Replace(string,string)"/> read the same match data <c>exec</c> sees.
+    /// <see cref="Split"/> and <see cref="Replace(string,string)"/> read the same match data <c>exec</c> sees. Each
+    /// step tries its start position alone when <paramref name="anchored"/> is set, as <c>exec</c> does for a sticky
+    /// pattern (ECMA-262 22.2.7.2, step 13.a).
     /// </summary>
-    internal IEnumerable<RegexMatchData> EnumerateMatches(string input)
+    internal IEnumerable<RegexMatchData> EnumerateMatches(string input, bool anchored)
     {
         var pos = 0;
         while (pos <= input.Length)
         {
-            var match = RunMatch(input, pos, anchored: false);
+            var match = RunMatch(input, pos, anchored);
             if (!match.Success)
                 yield break;
 
@@ -201,7 +203,8 @@ public partial class JSRegExp
     }
 
     /// <summary>
-    /// True when this pattern matches anywhere in <paramref name="input"/>, as <c>exec</c> from lastIndex 0 finds it.
+    /// True when this pattern matches in <paramref name="input"/> as <c>exec</c> from lastIndex 0 finds it: anywhere,
+    /// or at index 0 alone when the pattern is sticky (ECMA-262 22.2.7.2, step 13.a).
     /// </summary>
-    internal bool IsMatch(string input) => RunMatch(input, 0, anchored: false).Success;
+    internal bool IsMatch(string input) => RunMatch(input, 0, anchored: sticky).Success;
 }

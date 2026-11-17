@@ -100,6 +100,10 @@ docs/evidence/sjl-10-001/datasets/** -text
 # manifest.tsv, which LimitsTests and the part G runner check before parsing, and the fuzz seeds by the corpus
 # manifest the fuzz target checks. A Windows checkout that converted them to CRLF would change every digest.
 docs/evidence/sjl-13-001/inputs/** -text
+# Bundle sjl-11-001's inputs (milestone SJL-11.1) are held by their SHA-256 the same way: the workloads by their
+# README, which RegExpBenchmarks checks byte for byte before it runs one (SJL-11.5's inputs commit), and the
+# adversarial programs by their manifest.tsv. They are LF text today; no filter may rewrite them.
+docs/evidence/sjl-11-001/inputs/** -text
 
 # CI job logs retained in an evidence bundle are kept byte for byte as GitHub Actions served them;
 # the Windows jobs' logs have CRLF line endings.
