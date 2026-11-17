@@ -31,9 +31,7 @@ it answered `true`.
 
 **What stays this engine's:** its `RegExp` objects, `lastIndex`, the `Symbol` protocols, species, `GetSubstitution`'s
 evaluation, the legacy statics (`LegacyRegExpState`), argument conversion and its errors. The scanner's reading of an
-invalid literal as a division stays, SJL-14's (row S9). `RegexTiering` and `RegexTieringDiagnostics`, whose only
-input was the deleted .NET matcher, are not deleted here: the records' deletion list (decision D20) names them, and
-SJL-11.5's branch keeps them and their tests for the owner (see "Not deleted" below).
+invalid literal as a division stays, SJL-14's (row S9).
 
 **Where they were**, each deleted (decision D20):
 - in `JSRegExp` (`Broiler.JavaScript.BuiltIns`): the translator, every member from `ClampLargeQuantifiers` to
@@ -49,7 +47,15 @@ SJL-11.5's branch keeps them and their tests for the owner (see "Not deleted" be
 - in `Broiler.JavaScript.Ast`: the regular-expression prechecks, `RegExpGroupNames` (`FirstError`, `FirstDuplicate`
   and the rest) and `JSUnicodePropertyNames` (`FirstRefused`);
 - in `String.prototype.search`: the direct `value.Match` call; a `RegExp` whose `@@search` is undefined or null now
-  reaches a regular expression only through RegExpCreate and an Invoke of `@@search` (row M6).
+  reaches a regular expression only through RegExpCreate and an Invoke of `@@search` (row M6);
+- the tiering of a .NET `Regex` (decisions D20 and D21), whose only input was the .NET matcher deleted above:
+  `RegexTiering` (`RegExp/RegexTiering.cs`), with its environment switch `BROILER_JS_REGEX_TIERING`, and
+  `RegexTieringDiagnostics` (`RegExp/RegexTieringDiagnostics.cs`); with them their own tests, `RegexTieringTests`, and
+  the benchmark that measured only them, `RegexTieringMetrics`, with its `--regex-tiering` emitter.
+  `--specializing-tier`'s counters drop the `regexPatternsBuilt`, `regexRaces`, `regexRacesPromoted`,
+  `regexVerdictsReused`, `regexVerdictsReusedPromoted`, `regexRaceRounds` and `regexRaceDetail` fields they read from
+  `RegexTieringDiagnostics`. Setting `BROILER_JS_REGEX_TIERING` changes nothing, as it already did not once the .NET
+  matcher was gone.
 
 **Kept:** `RegExpUnicodeValidator`, namespace `Broiler.JavaScript.Runtime`, held by `Ast` and forwarded by `Runtime`:
 an SJL-D-25 (a) forwarder whose body is a call of `BroilerRegex.Validate` under `u` (decision D21). `JSRegExp.Match`,
@@ -60,7 +66,11 @@ projects that reference them.
 **Removed public members** (SJL-D-25 (c), decision D21): both `JSRegExp.CreateRegex` overloads, after the consumer
 check the records ask for, an organisation-wide code search of 2026-11-17 (`gh search code "CreateRegex" --owner
 Broiler-Platform`), which finds them only in this repository and in Broiler's `docs/broiler-js-gaps-closed.md`, a
-document.
+document. `RegexTiering` (`EnvironmentVariable`, `PromotionThreshold`, `Enabled`, `ResetForTests`) and
+`RegexTieringDiagnostics` (`Enabled`, `RacesRun`, `RacesPromoted`, `VerdictsReused`, `VerdictsReusedPromoted`,
+`RaceRounds`, `PatternsRebuilt`, `Races`, `Reset` and the `RaceRecord` struct), after the same check of 2026-11-17
+(`gh search code "RegexTiering"`, `"RegexTieringDiagnostics"` and `"BROILER_JS_REGEX_TIERING"`, each `--owner
+Broiler-Platform`), which finds them in this repository only, in its code, its tests, its benchmarks and its records.
 
 **Corrections** (decision SJL-D-16 (a)), by row of the correspondence, each where Broiler.Regex follows the
 specification where this engine did not. The rule of bundle [`sjl-11-001`](../docs/evidence/sjl-11-001/README.md) names
@@ -169,10 +179,9 @@ reads `\u{1d306}` as `source` (row T1); `RegExpConstructorEarlyErrorTests` and t
 of the translator's path (decision D21, "`SharedUnicodeTests.cs:204-235` is rewritten") run their inputs through the
 constructor, with the same answers, and the second also tries `LC` and `Cased_Letter`, the two General_Category names
 the translator's table had no .NET form for, so it holds all 80 of ECMA-262's. `RegExpEngineConsistencyTests` adds
-three tests of the `y` flag above. `RegexTieringTests.HotPattern_RacesExactlyOnce_AndSiblingsInheritTheVerdict`
-fails on this branch, since no `RegExp` reaches the tiering of a .NET `Regex` any more; no row admits it, and it is
-left failing, not deleted or skipped, for the owner, with the type it tests. No library under `Broiler.ECMAScript/`
-changes.
+three tests of the `y` flag above. `RegexTieringTests` is deleted with the types it tests, as decisions D20 and D21
+list it ("Their own tests are deleted with them"); its test of a hot pattern had failed on this branch since no
+`RegExp` reached the tiering of a .NET `Regex`. No library under `Broiler.ECMAScript/` changes.
 
 ### `Intl.Collator` and `String.prototype.localeCompare` move to the shared collator (2026-11-15, milestone SJL-17.5)
 

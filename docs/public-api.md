@@ -111,7 +111,7 @@ public member the move changes (decision D21). The observable corrections are in
 | `JSRegExp.CreateRegex(string, string, out CaptureGroupMap)` and its overload with `out BroilerRegex` | `BuiltIns` | removed (SJL-D-25 (c)), with the consumer check below | Gone with the translator and the .NET `Regex` it returned; the constructor compiles through Broiler.Regex |
 | `RegExpUnicodeValidator.IsValidUnicodePattern(string)`, namespace `Broiler.JavaScript.Runtime` | `Ast`; `Runtime` forwards it | kept, a forwarder (SJL-D-25 (a)) | A call of `BroilerRegex.Validate` under `u`, with this engine's Unicode tables and the nesting limit 512; it answers every early error, where it checked structure only. Neither the parser nor the constructor calls it now |
 | `JSRegExp(string pattern, string flags)`, `JSRegExp.Match`, `Split` and `Replace`, `JSRegExp.CaptureGroupMap` | `BuiltIns` | kept, results corrected | Through Broiler.Regex, as the changelog's rows say; a limit reached is a `RangeError` and the nesting limit a `SyntaxError` (decisions D7 and D10) |
-| `RegexTiering` and `RegexTieringDiagnostics` | `BuiltIns` | kept on the branch | Unchanged, and no longer reached by any `RegExp`, which has no .NET `Regex` to tier; decision D21 names them for removal under SJL-D-25 (c), which the branch leaves to the owner |
+| `RegexTiering` and `RegexTieringDiagnostics` | `BuiltIns` | removed (SJL-D-25 (c)), with the consumer check below | Gone with the .NET `Regex` they tiered, with the switch `BROILER_JS_REGEX_TIERING`, their tests and the benchmark that measured them (decisions D20 and D21) |
 
 **The consumer check** (decision D21; SJL-11.1's search was of 2026-10-19). On 2026-11-17 an organisation-wide code
 search, `gh search code "CreateRegex" --owner Broiler-Platform`, found the member in this repository and in Broiler's
@@ -122,6 +122,16 @@ search, `gh search code "CreateRegex" --owner Broiler-Platform`, found the membe
 **Compatibility.** Removing `CreateRegex` is binary- and source-breaking for a caller of it, which the search found
 none of. `Ast` and `Parser` now reference the `Broiler.Regex` package, its compile assets private, so a project that
 references them compiles as before.
+
+*(Noted 2026-11-17, on branch `sjl-11-5`.)* The table's row for `RegexTiering` and `RegexTieringDiagnostics` read
+"kept on the branch" in its third cell and "Unchanged, and no longer reached by any `RegExp`, which has no .NET `Regex`
+to tier; decision D21 names them for removal under SJL-D-25 (c), which the branch leaves to the owner" in its fourth.
+The branch now removes them, as decisions D20 and D21 list them: their public members are `RegexTiering`'s
+`EnvironmentVariable`, `PromotionThreshold`, `Enabled` and `ResetForTests`, and `RegexTieringDiagnostics`' `Enabled`,
+`RacesRun`, `RacesPromoted`, `VerdictsReused`, `VerdictsReusedPromoted`, `RaceRounds`, `PatternsRebuilt`, `Races`,
+`Reset` and `RaceRecord`. Their consumer check, on 2026-11-17: `gh search code "RegexTiering"`,
+`"RegexTieringDiagnostics"` and `"BROILER_JS_REGEX_TIERING"`, each `--owner Broiler-Platform`, found them in this
+repository only (its code, tests, benchmarks and records), so removing them breaks no caller the search found.
 
 ## Public API changes, 2026-11-15 (Intl.Collator moves to the shared collator, milestone SJL-17.5)
 
