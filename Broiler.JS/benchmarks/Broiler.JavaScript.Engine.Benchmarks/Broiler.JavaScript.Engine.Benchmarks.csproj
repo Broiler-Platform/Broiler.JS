@@ -25,4 +25,9 @@
     <None Include="..\..\OtherTests\JIntPerfTests\Scripts\*.js" CopyToOutputDirectory="PreserveNewest" LinkBase="Scripts" />
   </ItemGroup>
 
+  <!-- RegExpBenchmarks runs bundle sjl-11-001's workloads verbatim: the files themselves, embedded byte for byte. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\..\docs\evidence\sjl-11-001\inputs\workloads\*.js" LogicalName="RegExpWorkloads.%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

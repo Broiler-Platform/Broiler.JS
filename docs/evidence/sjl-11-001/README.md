@@ -56,6 +56,21 @@ paragraph names the `0.1.0-preview.4` restored when it was written. The filed ru
   engine's and the shared folder's code are held (decision D16).
 - The after runs follow that merge.
 
+*Dated note, 2026-11-17, at the inputs commit, on branch `sjl-11-5`; the block above is not rewritten.* It reads
+"**State, 2026-10-25, at SJL-11.1: rules only. Nothing here is a verdict, and nothing has been taken.**" Since
+2026-11-01, [`engine/`](engine/) holds both engines' first runs on the regular-expression vectors at corpus
+revisions 31 and 32, with each engine's negative control and this engine's three cultures, as the note of that day
+below says; they are retained and read, not judged, and none of them is taken at a commit the rule names. So
+"nothing has been taken" no longer holds as written: **no run the rule judges has been taken** (no base, no after,
+no control and no measurement), and nothing here is a verdict. This commit is the inputs commit the block names:
+it adds `RegExpBenchmarks` (`Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/RegExpBenchmarks.cs`) and
+the benchmark `Program.cs`'s `--regexp-answers`, which read the files of [`inputs/workloads/`](inputs/workloads/)
+verbatim, embedded in the benchmark assembly byte for byte and each checked against its SHA-256 there before it
+runs. It changes only `Broiler.JS/benchmarks/` and `docs/`. It is made on the branch of SJL-11.5, `sjl-11-5`
+(decision D35), where the rule asks for "the default-branch commit"; the rule's base commit "descends from the
+inputs commit", so this commit reaches the default branch before the base is taken, or the base does not satisfy
+the rule. That is the owner's to order; nothing here merges it.
+
 **The commits named so far:**
 - **The rule commit** carries [`decision-rule.md`](decision-rule.md) and the inputs. It is named here, by all forty
   digits, when the change that carries it has merged.
