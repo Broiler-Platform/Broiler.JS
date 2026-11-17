@@ -10,6 +10,7 @@ ccaac100), and are skipped where they are not given. The syntax area's tests rea
 
 from __future__ import annotations
 
+import hashlib
 import os
 import re
 import subprocess
@@ -100,6 +101,25 @@ class GeneratorTests(unittest.TestCase):
             for name in produced:
                 self.assertEqual((first / name).read_bytes(), (second / name).read_bytes(), name)
                 self.assertEqual((COMMITTED / name).read_bytes(), (first / name).read_bytes(), name)
+
+    def test_without_the_later_vectors_and_with_no_divergences_it_writes_revision_42_byte_for_byte(self) -> None:
+        # The repository's generator convention: the generator reproduces the prior revision. Revision 42's files (commit
+        # 1cb27c7b), each by its SHA-256, are what the vectors added at revision 42 write with no divergence classified.
+        revision_42 = {
+            "annex-b": "c7175ffbff506d00ec15d7f82afb1c074600f691e649c480974a5f1736d20633",
+            "arguments": "426cf08d88da2fc55df7fe247bfbeedde05b503387497bd49a42a75eb1703af6",
+            "expressions": "e61fe70d50aa04764baf7743e842cf80bc7cb417f4aa52f7792ede7cf4cff1f5",
+            "jumps": "12cc8b4f9a53161977829b2073ba5ffaeb99723c69f135dca717130a6a45ed93",
+            "named-evaluation": "00fc0cce51b94e40999835a8fa85939498f7b3a49ae234f9346158a2f2798997",
+            "private-names": "9776c18397f2014016e44d2fa67599f93a94b63434e8ebe54a36e12728167d5a",
+            "scopes": "5061a21f300b76053ebb209f15a81e756d9f8fbf35af9f9b6aa9a06f9d970f4d",
+            "super": "e276db78f5e291b2a8d161c3247d4c172d913d7130650ca849767aadde5dcf9c",
+        }
+        cases = [case for case in generator.build() if case.since == generator.SINCE]
+        with tempfile.TemporaryDirectory() as scratch:
+            generator.write_files(generator.identifiers(cases), Path(scratch), {})
+            produced = {p.stem: hashlib.sha256(p.read_bytes()).hexdigest() for p in Path(scratch).glob("*.vectors")}
+        self.assertEqual(revision_42, produced)
 
     def test_every_semantics_row_is_covered_or_named_with_its_reason(self) -> None:
         cases = generator.build()
