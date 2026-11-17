@@ -1474,6 +1474,30 @@ This repository's part of it:
   - E, the deletion list, by a search and a scoped metadata check, with a control (decision D34).
 
   Every base is taken at the first parent of the merge that lands SJL-11.5, under a hold (decision D16).
+- *(Noted 2026-11-17, at SJL-11.5; the bullets above are left as written.)* **SJL-11.5 is on its own branch,
+  `sjl-11-5`, in this repository, and is not merged.** The owner allowed the branch on 2026-11-17: "I push the SJL-11.5
+  cut-over to a new branch, sjl-11-5, in Broiler-Platform/Broiler.JS: fast-forward only, never force, opened as a PR
+  only when its merge is due." It is the branch decision D35 asks for early, which Broiler.RegEx's host job (its task
+  2.10) builds this engine's shell from. **Its merge waits** on Broiler.RegEx's candidate reading, on the hold under
+  which every base is taken (decision D16), and on the base runs, taken at the first parent of the merge that lands it;
+  no run of bundle [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s rule has been taken. The branch holds, in order:
+  - **the rule's inputs commit**, `RegExpBenchmarks` and the benchmark `Program.cs`'s `--regexp-answers`, which read
+    the bundle's workloads verbatim. The rule names "the default-branch commit" from which the base descends, so it
+    reaches the default branch before the base is taken; the bundle's README says so in a dated note;
+  - **a revision of the rule**, [`decision-rule-revised-2026-11-17.md`](../evidence/sjl-11-001/decision-rule-revised-2026-11-17.md),
+    filed before any of its runs under the owner's direction of 2026-10-18, which adds rows S12 to S15 and M8 to M27 to
+    part A's list of this engine's corrections and says how the rows the list names "with Broiler.Regex
+    0.1.0-preview.4" read now that the base routes through `0.1.0-preview.6`; `decision-rule.md` is not edited;
+  - **the cut-over**, as the bullets above list it: the translator, the routing, `RegExpValidator`, the prechecks and
+    both `CreateRegex` overloads deleted; `RegExpUnicodeValidator` a forwarder to the validate entry; the scanner's
+    check re-pointed to it, with the braced-escape decoding and the parenthesis-balance patch deleted and the division
+    fallback kept; the step out of a pair moving only the matcher's start (row M4); and every correction listed in
+    [`Broiler.JS/CHANGELOG.md`](../../Broiler.JS/CHANGELOG.md). `RegexTiering` and `RegexTieringDiagnostics`, which the
+    deletion list above names, and the tests and benchmarks that test only them, are kept on the branch, and the
+    records put that to the owner; part E's search finds them until they go.
+
+  The branch's own local runs are no runs of the rule and judge nothing. Every clause of this engine's, 4 to 7, is
+  unmet, and none of it is accepted.
 
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses and the component's are judged in
 their own bundles of the same name, and SJL-11 may not meet its gate before SJL-7 meets SJL-7's, and so not before
