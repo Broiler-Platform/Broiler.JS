@@ -15,6 +15,13 @@ adversarial corpus in this engine, and this engine's measurement.
 Clause 7, every correction listed, is read from `Broiler.JS/CHANGELOG.md` against the parts' C1 rows and the rule's
 list of this engine's corrections. The rule names it and does not decide it.
 
+*Dated note, 2026-11-17, on branch `sjl-11-5`; the paragraphs above are not rewritten.* The rule is revised, before
+any run it judges, by [`decision-rule-revised-2026-11-17.md`](decision-rule-revised-2026-11-17.md), which quotes it
+whole: part A's list of this engine's corrections names rows S12 to S15 and M8 to M27 of the correspondence, the
+corrections of Broiler.JS that Broiler.VM's JSD-0081 added by its decisions D-jsrows, D-jsexec and D-jsrest of
+2026-11-16, and says how a row the list names "with Broiler.Regex 0.1.0-preview.4" reads now that the base routes
+through `0.1.0-preview.6`. `decision-rule.md` is not edited; the two are read together.
+
 **Area verdict:** [`SharedLibraries.md`](../../roadmap/SharedLibraries.md), "Area verdicts", "Regular expressions
 (SJL-11.1)", with Broiler.VM's JSD-0081,
 `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0081-regular-expressions-move-to-broiler-regex-under-its-owner-conditions.md`,
