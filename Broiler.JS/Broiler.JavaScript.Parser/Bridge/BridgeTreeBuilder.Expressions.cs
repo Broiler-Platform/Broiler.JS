@@ -36,8 +36,8 @@ internal sealed partial class BridgeTreeBuilder
                 return String(@string);
             case RegularExpressionLiteral regex:
             {
-                var cooked = BridgeRegularExpressions.Cooked(regex.Pattern, regex.Flags) ?? regex.Pattern;
-                var token = tokens.Make(TokenTypes.RegExLiteral, regex.Span.Offset, regex.Span.Length, cooked, regex.Flags);
+                // The body as written, as FastScanner's token carries it since SJL-11.5 (row T1).
+                var token = tokens.Make(TokenTypes.RegExLiteral, regex.Span.Offset, regex.Span.Length, regex.Pattern, regex.Flags);
                 return new AstLiteral(TokenTypes.RegExLiteral, token);
             }
 

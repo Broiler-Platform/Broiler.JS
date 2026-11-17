@@ -1037,120 +1037,17 @@ public class FastScanner
         }
     }
 
-    private static char HexDigit(int nibble)
-        => (char)(nibble < 10 ? '0' + nibble : 'a' + (nibble - 10));
-
-    // Rewrites every `\u{H..H}` braced code-point escape in a u/v-mode regex body into
-    // the fixed-width `\uHHHH` form (a surrogate-pair escape for an astral code point),
-    // leaving all other text — including a `\\u{…}` where the `\u` is itself escaped —
-    // untouched. The body has already been validated by the source scanner, so any
-    // `\u{` here is a well-formed escape with at least one hex digit and a closing `}`.
-    private string DecodeBracedUnicodeEscapes(string pattern)
-        => TryDecodeBracedUnicodeEscapes(pattern, out var decoded) ? decoded : throw Unexpected();
-
-    // The same rewrite, answering false where the escape is malformed (the scanner throws Unexpected there). Static so that
-    // the bridge's regular-expression provider gives the compiler the pattern this scanner gives it (milestone SJL-14.2,
-    // decision D51: the decoding stays until SJL-11.5 deletes it, or SJL-14 relocates it behind the provider).
-    internal static bool TryDecodeBracedUnicodeEscapes(string pattern, out string decoded)
-    {
-        decoded = pattern;
-        if (pattern.IndexOf("\\u{", StringComparison.Ordinal) < 0)
-            return true;
-
-        var t = new StringBuilder(pattern.Length);
-        int i = 0;
-        while (i < pattern.Length)
-        {
-            char c = pattern[i];
-            if (c == '\\' && i + 1 < pattern.Length)
-            {
-                if (pattern[i + 1] == 'u' && i + 2 < pattern.Length && pattern[i + 2] == '{')
-                {
-                    // In u/v mode `\u{ … }` must be a non-empty run of hexadecimal digits
-                    // naming a code point ≤ U+10FFFF, closed by `}`. Anything else — a
-                    // non-hex char (`\u{G}`, `\u{0.0}`, `\u{-1}`), an empty `\u{}`, an
-                    // unterminated `\u{`, or a value above U+10FFFF — is a SyntaxError
-                    // (there is no IdentityEscape fallback in Unicode mode).
-                    static int HexDigitValue(char ch) =>
-                        ch is >= '0' and <= '9' ? ch - '0'
-                        : ch is >= 'a' and <= 'f' ? ch - 'a' + 10
-                        : ch is >= 'A' and <= 'F' ? ch - 'A' + 10
-                        : -1;
-
-                    int j = i + 3;
-                    int codePoint = 0;
-                    int digitCount = 0;
-                    while (j < pattern.Length && pattern[j] != '}')
-                    {
-                        int hexValue = HexDigitValue(pattern[j]);
-                        if (hexValue < 0)
-                            return false;
-
-                        codePoint = codePoint * 16 + hexValue;
-                        if (codePoint > 0x10FFFF)
-                            return false;
-
-                        digitCount++;
-                        j++;
-                    }
-
-                    // Reject an empty `\u{}` and an unterminated `\u{…` (ran off the end
-                    // without a closing `}`).
-                    if (digitCount == 0 || j >= pattern.Length)
-                        return false;
-
-                    // A braced escape naming a lone surrogate (`\u{D83D}`) is its OWN
-                    // single code point and must never combine with an adjacent surrogate:
-                    // `/\u{D83D}\u{DC38}/u` is two lone surrogates, NOT the astral pair
-                    // `/\u{1F438}/u`. Decoding both to the bare `\uHHHH` form would make
-                    // them indistinguishable (`🐸`), so the RegExp runtime would
-                    // wrongly fold the two lone surrogates into one code point. Keep the
-                    // brace form (normalized) for lone surrogates — the runtime's
-                    // TransformBracedUnicodeEscapes guards each so it cannot pair — and
-                    // decode every other code point to the fixed-width form as before.
-                    if (codePoint is >= 0xD800 and <= 0xDFFF)
-                    {
-                        t.Append('\\');
-                        t.Append('u');
-                        t.Append('{');
-                        t.Append(HexDigit((codePoint >> 12) & 0xF));
-                        t.Append(HexDigit((codePoint >> 8) & 0xF));
-                        t.Append(HexDigit((codePoint >> 4) & 0xF));
-                        t.Append(HexDigit(codePoint & 0xF));
-                        t.Append('}');
-                    }
-                    else
-                    {
-                        foreach (var cu in codePoint.FromCodePoint())
-                        {
-                            t.Append('\\');
-                            t.Append('u');
-                            t.Append(HexDigit(cu >> 12));
-                            t.Append(HexDigit((cu >> 8) & 0xF));
-                            t.Append(HexDigit((cu >> 4) & 0xF));
-                            t.Append(HexDigit(cu & 0xF));
-                        }
-                    }
-
-                    i = j + 1; // skip past the closing '}'
-                    continue;
-                }
-
-                // Any other escape (including a literal `\\`) is copied with the char it
-                // escapes so that char cannot be misread as starting a `\u{`.
-                t.Append(c);
-                t.Append(pattern[i + 1]);
-                i += 2;
-                continue;
-            }
-
-            t.Append(c);
-            i++;
-        }
-
-        decoded = t.ToString();
-        return true;
-    }
+    /// <summary>
+    /// Whether a regular-expression literal's body and flags are a RegularExpressionLiteral the specification admits
+    /// (ECMA-262 13.2.7.2, IsValidRegularExpressionLiteral): Broiler.Regex's validate entry, under the nesting limit
+    /// this engine compiles under (Broiler.VM's JSD-0081, decisions D7 and D22).
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 13.2.7.2 and JSD-0081 decision D22; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+    // Broiler-Falsified-If: the literal /(?<=a)?/ or /[(]/v is admitted, or /\u{1F600}/u is refused
+    // Broiler-Human:        PENDING
+    internal static bool IsValidRegularExpressionLiteral(string pattern, string flags)
+        => Broiler.Regex.BroilerRegex.Validate(pattern, flags, JSUnicode.Tables, Broiler.Regex.BroilerRegex.MaximumNestingLimit,
+            out _, out _) == Broiler.Regex.RegexStatus.Success;
 
     private FastToken ReadTemplateString(State state, TokenTypes part = TokenTypes.TemplateBegin)
     {
@@ -1372,7 +1269,6 @@ public class FastScanner
             var t = sb.Builder;
             var classMarker = false;
             var terminated = false;
-            var sawBracedUnicodeEscape = false;
 
             token = null;
 
@@ -1429,18 +1325,6 @@ public class FastScanner
                                 break;
                             }
 
-                            // A `\u{...}` braced escape is appended verbatim and scanned as
-                            // ordinary characters (the brace/hex run holds no `/`, so it
-                            // cannot swallow the terminator). It is a code-point escape only
-                            // in u/v mode; without those flags it is the legacy `u`
-                            // IdentityEscape followed by a `{n}` quantifier (so `/\u{3}/` \u2261
-                            // `u{3}`). The flags are only known after the body, so decoding
-                            // to fixed-width `\uHHHH` (the form the Unicode validator and the
-                            // RegExp runtime expect) is deferred to DecodeBracedUnicodeEscapes
-                            // below, applied only when a u/v flag is present.
-                            if (first == 'u' && Next() == '{')
-                                sawBracedUnicodeEscape = true;
-
                             // A LineTerminator (LF, CR, U+2028, U+2029) immediately
                             // after a backslash is never valid in a regex literal.
                             if (first is '\n' or '\r' or '\u2028' or '\u2029')
@@ -1468,49 +1352,15 @@ public class FastScanner
                 sb.Clear();
             }
 
-            // BROILER-PATCH: Validate parentheses balance in regex pattern (ES3 §15.10.1)
-            // Reject patterns with unmatched ')' outside character classes
-            {
-                int depth = 0;
-                bool cls = false;
-
-                for (int vi = 0; vi < regExp.Length; vi++)
-                {
-                    char vc = regExp[vi];
-
-                    if (vc == '\\' && vi + 1 < regExp.Length) { vi++; continue; }
-                    if (cls) { if (vc == ']') cls = false; continue; }
-                    if (vc == '[')
-                    {
-                        // ES3: ] immediately after [ closes the class (empty class)
-                        if (vi + 1 < regExp.Length && regExp[vi + 1] == ']')
-                        {
-                            vi++; // skip ']'
-                            continue;
-                        }
-                        cls = true;
-                        continue;
-                    }
-
-                    if (vc == '(') depth++;
-                    if (vc == ')') { depth--; if (depth < 0) { token = null; return false; } }
-                }
-
-                if (depth != 0) { token = null; return false; }
-            }
-
             var flags = ScanFlags();
 
-            // In u/v mode a `\u{...}` braced escape is a code point: decode it to the
-            // fixed-width `\uHHHH` form (a surrogate pair for astral code points) the
-            // Unicode validator and the RegExp runtime expect, mirroring what was
-            // previously done inline. Without a u/v flag the escape is left verbatim so
-            // the legacy `u`-plus-`{n}`-quantifier reading survives (`/\u{3}/` ≡ `u{3}`).
-            if (sawBracedUnicodeEscape && (flags.IndexOf('u') >= 0 || flags.IndexOf('v') >= 0))
-                regExp = DecodeBracedUnicodeEscapes(regExp);
-
-            // we should test if it is a valid JSRegEx
-            if (!RegExpValidator.IsValid(regExp, flags))
+            // IsValidRegularExpressionLiteral (ECMA-262 13.2.7.2): the body and the flags as written, checked by
+            // Broiler.Regex's validate entry under the nesting limit the RegExp constructor compiles under (milestone
+            // SJL-11.5; Broiler.VM's JSD-0081, decision D22). The token carries the body as written, so `source` is
+            // the text the literal holds (row T1). Until SJL-11.5 the check was the parser's own .NET-based validator, after a
+            // parenthesis-balance patch and a rewrite of `\u{…}` escapes under u or v, which are gone. A literal it
+            // refuses is still read as a division here, the fallback SJL-14 owns (row S9).
+            if (!IsValidRegularExpressionLiteral(regExp, flags))
                 return false;
 
             token = state.Commit(TokenTypes.RegExLiteral, regExp, flags);

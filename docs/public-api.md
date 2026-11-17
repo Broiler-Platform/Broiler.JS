@@ -99,6 +99,30 @@ row's second cell read "`0.1.0-preview.1`, the first version the stream will pub
 row's second cell began "`0.1.0-preview.1` published; `0.1.0-preview.2`, with the numerics area, the
 next", and its third cell ended at "`BigIntText` and `BigIntPolicy`".*
 
+## Public API changes, 2026-11-17 (regular expressions move to Broiler.Regex, milestone SJL-11.5, on branch `sjl-11-5`, not merged)
+
+Milestone SJL-11.5 compiles and matches every regular expression with Broiler.Regex and deletes the .NET translator,
+its routing and the validators (Broiler.VM's JSD-0081, decisions D20 to D22). It applies decision SJL-D-25 to each
+public member the move changes (decision D21). The observable corrections are in
+[`Broiler.JS/CHANGELOG.md`](../Broiler.JS/CHANGELOG.md), "Regular expressions move to Broiler.Regex", by row.
+
+| Member | Assembly | Disposition | What it does now |
+| --- | --- | --- | --- |
+| `JSRegExp.CreateRegex(string, string, out CaptureGroupMap)` and its overload with `out BroilerRegex` | `BuiltIns` | removed (SJL-D-25 (c)), with the consumer check below | Gone with the translator and the .NET `Regex` it returned; the constructor compiles through Broiler.Regex |
+| `RegExpUnicodeValidator.IsValidUnicodePattern(string)`, namespace `Broiler.JavaScript.Runtime` | `Ast`; `Runtime` forwards it | kept, a forwarder (SJL-D-25 (a)) | A call of `BroilerRegex.Validate` under `u`, with this engine's Unicode tables and the nesting limit 512; it answers every early error, where it checked structure only. Neither the parser nor the constructor calls it now |
+| `JSRegExp(string pattern, string flags)`, `JSRegExp.Match`, `Split` and `Replace`, `JSRegExp.CaptureGroupMap` | `BuiltIns` | kept, results corrected | Through Broiler.Regex, as the changelog's rows say; a limit reached is a `RangeError` and the nesting limit a `SyntaxError` (decisions D7 and D10) |
+| `RegexTiering` and `RegexTieringDiagnostics` | `BuiltIns` | kept on the branch | Unchanged, and no longer reached by any `RegExp`, which has no .NET `Regex` to tier; decision D21 names them for removal under SJL-D-25 (c), which the branch leaves to the owner |
+
+**The consumer check** (decision D21; SJL-11.1's search was of 2026-10-19). On 2026-11-17 an organisation-wide code
+search, `gh search code "CreateRegex" --owner Broiler-Platform`, found the member in this repository and in Broiler's
+`docs/broiler-js-gaps-closed.md`, a document, and nowhere else; `gh search code "RegExpUnicodeValidator"` and
+`"IsValidUnicodePattern"` found them in this repository only. The internal members the move deletes (`RegExpValidator`,
+`RegExpGroupNames`, `JSUnicodePropertyNames`, the scanner's braced-escape decoding and the routing) were never public.
+
+**Compatibility.** Removing `CreateRegex` is binary- and source-breaking for a caller of it, which the search found
+none of. `Ast` and `Parser` now reference the `Broiler.Regex` package, its compile assets private, so a project that
+references them compiles as before.
+
 ## Public API changes, 2026-11-15 (Intl.Collator moves to the shared collator, milestone SJL-17.5)
 
 Milestone SJL-17.5 moves `Intl.Collator`'s comparison and the resolution of its `co`, `kf` and `kn` keys onto

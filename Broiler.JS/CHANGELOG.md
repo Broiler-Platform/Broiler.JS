@@ -10,6 +10,155 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### Regular expressions move to Broiler.Regex (2026-11-17, milestone SJL-11.5, on branch `sjl-11-5`, not merged)
+
+Every regular expression, with or without `u` or `v`, is compiled and matched by Broiler.Regex, `0.1.0-preview.6`,
+the version `Directory.Packages.props` pins since Broiler-Platform/Broiler.JS#1119. The `RegExp` constructor and
+`RegExp.prototype.compile` compile through Broiler.Regex's `Compile`, its flags through `RegexFlagsText`, and every
+match, `exec`, `test`, `@@match`, `@@matchAll`, `@@replace`, `@@search`, `@@split` and the public `JSRegExp.Match`,
+`Split` and `Replace`, runs through its offset entry. A regular-expression literal is checked by its validate entry in
+the scanner, and `RegExp.escape` and `source` are its text helpers' (requirement R9). The area verdict is "Regular
+expressions (SJL-11.1)" in [`docs/roadmap/SharedLibraries.md`](../docs/roadmap/SharedLibraries.md); the rows below are
+Broiler.VM's `docs/evidence/sjl-11-001/correspondence.md`, and its JSD-0081's decisions D7, D10 and D20 to D23.
+
+**The policy** (decisions D7 and D10), as Broiler.VM passes it: no meter and no step ceiling; a frame ceiling of
+`1 << 20` and a trail ceiling of `1 << 21`, a ceiling reached being a catchable `RangeError` ("Maximum regular
+expression backtracking frames exceeded", or "trail"), never a no-match; and a nesting limit of 512, the pattern's own
+disjunction depth 1 and each group adding 1, so 511 nested groups compile and 512 are a `SyntaxError`. Patterns this
+engine accepted at every depth that did not end its process (rows S3 and S3b), and matches that ran on .NET past those
+ceilings, are listed refusals, the rule's class C3 (L): `/^(?:a|b)*$/.test("a".repeat(2000000))` is a `RangeError`, where
+it answered `true`.
+
+**What stays this engine's:** its `RegExp` objects, `lastIndex`, the `Symbol` protocols, species, `GetSubstitution`'s
+evaluation, the legacy statics (`LegacyRegExpState`), argument conversion and its errors. The scanner's reading of an
+invalid literal as a division stays, SJL-14's (row S9). `RegexTiering` and `RegexTieringDiagnostics`, whose only
+input was the deleted .NET matcher, are not deleted here: the records' deletion list (decision D20) names them, and
+SJL-11.5's branch keeps them and their tests for the owner (see "Not deleted" below).
+
+**Where they were**, each deleted (decision D20):
+- in `JSRegExp` (`Broiler.JavaScript.BuiltIns`): the translator, every member from `ClampLargeQuantifiers` to
+  `HexValue` that is not object-model code, with the Unicode-sets translator `JSRegExp.UnicodeSets.cs`; the routing
+  (`GapScan`, `TryRouteToBroiler`, `FromNet`), the overflow fallback to .NET and the .NET `value` field; both
+  `CreateRegex` overloads; `ParseFlags` and `BuildFlagsString`, onto `RegexFlagsText.Parse` and `Format`; and the escape
+  helpers `TryAppendEscape` and `EscapePatternSource` with theirs, onto `RegexEscaper.EscapeString` and
+  `EscapePattern`;
+- in `Broiler.JavaScript.Parser`: `RegExpValidator`, which validated with .NET; and in `FastScanner`, the rewrite of a
+  literal's braced `\u{…}` escapes (`DecodeBracedUnicodeEscapes`, `TryDecodeBracedUnicodeEscapes`) and the
+  parenthesis-balance patch (decision D22); the scanner's check calls Broiler.Regex's validate entry instead, and the
+  bridge's provider (`BridgeRegularExpressions`) wraps the same entry (SJL-14's decision D51);
+- in `Broiler.JavaScript.Ast`: the regular-expression prechecks, `RegExpGroupNames` (`FirstError`, `FirstDuplicate`
+  and the rest) and `JSUnicodePropertyNames` (`FirstRefused`);
+- in `String.prototype.search`: the direct `value.Match` call; a `RegExp` whose `@@search` is undefined or null now
+  reaches a regular expression only through RegExpCreate and an Invoke of `@@search` (row M6).
+
+**Kept:** `RegExpUnicodeValidator`, namespace `Broiler.JavaScript.Runtime`, held by `Ast` and forwarded by `Runtime`:
+an SJL-D-25 (a) forwarder whose body is a call of `BroilerRegex.Validate` under `u` (decision D21). `JSRegExp.Match`,
+`Split` and `Replace`, and `JSRegExp.CaptureGroupMap`, built from Broiler.Regex's group names. `Ast` and `Parser`
+reference Broiler.Regex with its compile assets private, so that its namespace does not hide .NET's `Regex` in the
+projects that reference them.
+
+**Removed public members** (SJL-D-25 (c), decision D21): both `JSRegExp.CreateRegex` overloads, after the consumer
+check the records ask for, an organisation-wide code search of 2026-11-17 (`gh search code "CreateRegex" --owner
+Broiler-Platform`), which finds them only in this repository and in Broiler's `docs/broiler-js-gaps-closed.md`, a
+document.
+
+**Corrections** (decision SJL-D-16 (a)), by row of the correspondence, each where Broiler.Regex follows the
+specification where this engine did not. The rule of bundle [`sjl-11-001`](../docs/evidence/sjl-11-001/README.md) names
+them in [`decision-rule.md`](../docs/evidence/sjl-11-001/decision-rule.md) and its revision of 2026-11-17,
+[`decision-rule-revised-2026-11-17.md`](../docs/evidence/sjl-11-001/decision-rule-revised-2026-11-17.md):
+- **The literal check** (decision D22), closed by the scanner's call of the validate entry:
+  - **S2b**, a reference spelled with an escape, `/(?<A>x)\k<A>/`, is admitted, as the constructor admitted it;
+  - **S7**, a quantified look-behind without `u`, `/(?<=a)?/`, is refused: test262's
+    `language/literals/regexp/invalid-optional-lookbehind.js`, `invalid-optional-negative-lookbehind.js`,
+    `invalid-range-lookbehind.js` and `invalid-range-negative-lookbehind.js` pass, where they failed;
+  - **S8**, the `v` flag's reserved syntax and syntax characters, `/[(]/v` and `/[\q{/}]/v` among them, is refused:
+    `built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-01.js` to `-28.js` but `-03.js` pass, where they
+    failed;
+  - **S11**, a literal's errors reported early, not when it is evaluated: the invalid modifiers, `/(?ii:a)/` and the
+    row's others, and the `v`-mode classes; the 30 `language/literals/regexp/early-err-modifiers-*` and
+    `early-err-arithmetic-modifiers-*` files the rule names pass, where they failed;
+- **S2a**, a name spelled once with an escape and once without in one alternative, `(?<a>x)(?<a>y)`, is refused;
+- **S5's class case** (decision D-s5), `\k` in a class beside a named group without `u`, `/(?<a>.)[\k]/`, is admitted as
+  the letter, as B.1.2 reads it;
+- **S10's class case**, `[\uD83D\u{DC38}]` under `u`, is two lone surrogates, not one astral code point; a `u`
+  pattern went to Broiler.Regex at this branch's first parent already, so it answers so there too;
+- **F3's** `(?x:a)` (decision D-widen) is refused;
+- **case-insensitive matching through .NET**: **M2**, Kelvin U+212A against `[a-z]` or `k` without `u` (bundle
+  `sjl-7-001`'s F2), and the Ohm sign U+2126 against `[\u03C9]`: `/[a-z]/i.test("\u212A")` is `false`, where it was
+  `true`; **M2a**, U+0130 and U+0131, and **M15**, `i` and `I` under `tr-TR` and `lt-LT`, which no host culture moves
+  now, as the translator's `RegexOptions.CultureInvariant` of SJL-9's clause 8 (2026-11-11) already made the case on
+  the inputs this branch probed, so neither moves here under the invariant culture (part D's runs under `tr-TR` and
+  `lt-LT` are the rule's); **M2b**, U+1F80 against U+1F88, `false` where it was `true`; and **U3**, U+A7CE against
+  U+A7CF, `true` where it was `false`, under Unicode 17.0.0's data through the Unicode owner's provider (class C5,
+  decision SJL-D-6 (c));
+- **M3**, .NET's line terminators (bundle `sjl-7-001`'s W5): `^` and `$` under `m` at U+2028 and U+2029,
+  `/^b/m.test("a\u2028b")` being `true` where it was `false`, and `$` without `m` no longer matching before a final
+  LF, `/a$/.test("a\n")` being `false` where it was `true`;
+- **M4**, the matches of half a surrogate pair from a `lastIndex` inside it under `u` or `v`: the matcher starts from the
+  pair, and the step moves only its start, never the reported `index` or substring (decision D23); the empty match there,
+  decision D41's implementation-defined case, is reported at the pair's first unit, the corpus's `per-engine.broiler-js`
+  answer;
+- **M6**, `String.prototype.search`'s direct call (above): `"abc".search(r)` for `r = /b/` with an own `@@search` of
+  `undefined` is `-1`, the search for `"/b/"`, where it was `1`;
+- **T1**, a literal's `source`: `/\u{1F600}/u.source` is `\u{1F600}`, the text the literal holds, as its constructor
+  twin's is, where it was `😀`;
+- **with Broiler.Regex `0.1.0-preview.4`**: B1 (a shortened match and the no-match of a long greedy run, widened to
+  `/^[a]*$/u`), B2 (a wrong index), B3 (a flipped look-around), B5 (the stack guard's fallback, to .NET and to no
+  match), B8 (the process abort of a flat sequence), S3b's process abort at the deepest nesting and M7's look-behind
+  back-reference inside a pair. Since #1119 this branch's first parent already routes those patterns to
+  `0.1.0-preview.6`, so each may already follow the specification there and not move here, as B1's `/^[a]*$/u` over
+  10,000,001 `a` and M7's `foo(.+)bar\1` under `u` do not on this branch's probes; S3b's 200,000 nested groups are now
+  the nesting limit's `SyntaxError` (class C3), where they compiled;
+- **the reference arms' rows** (decisions D-jsrows, D-jsexec and D-jsrest), each a construct the translator or its
+  routing answered otherwise and Broiler.Regex answers as the text does: **S12**, patterns the grammar refuses that the
+  constructor accepted (a quantified assertion, a lone quantifier, an invalid escape under `u` or `v`, a lone syntax
+  character, a trailing backslash, an unterminated class, a range as an operand of `&&`, an escaped modifier); **S13**,
+  patterns an early error refuses that it accepted (a decimal escape past the group count, a class range out of order,
+  an undefined group name, a braced quantifier after an assertion, a negated class with strings); **S14**, patterns
+  without `u` or `v` that B.1.2 admits and it refused (`\p{…}`, `\P{…}` and `\u{…}` among them, and those refused only
+  under `s`); **S15**, a quantifier bound past 2^31 − 1 refused under `i`; **M8**, `\b` and `\B` beside a non-ASCII
+  letter by .NET's word set, case pairs no row records, an empty `\q{}`; **M9**, an `exec` .NET threw on; **M10**, a
+  group name the translator rewrote; **M11**, the empty iteration of a `?` that .NET kept; **M12**, `\p{…}`, `\P{…}`
+  and `\a` in a class without `u` or `v`; **M13**, `-[…]` in a class read as a subtraction; **M14**, `\-` in a class
+  read as starting no range; **M15**, `i` and `I` under `tr-TR` and `lt-LT`; **M16**, `\c` with no control letter;
+  **M17**, a group name written with `\u{…}`; **M18**, `\k<…>` written with `\u{…}`; **M19**, a legacy octal escape
+  in a nullable loop; **M20**, a legacy octal escape before `\d` in a class; **M21**, `\S` in a class; **M22**, an empty
+  group under a lazy quantifier with a minimum of 1; **M23**, `^` or `$` as a member of a class under `m`; **M24**, a
+  back-reference to a group that has not participated, without .NET's ECMAScript option; **M25**, a letter expanded
+  inside a modifier group that removes `i`; **M26**, a class with `\W`, `\p{…}` or `\P{…}` under `i`; and **M27**, a
+  loop over `\D` or a negated class of ASCII word characters before `\b`, which .NET made atomic: `new RegExp("^*")`
+  is a `SyntaxError` (S12), where it was built. No test262 file the rule names its corrections from is explained by
+  these rows. Several of their constructs already reached Broiler.Regex `0.1.0-preview.6` at this branch's first
+  parent, through the routing, and answer alike there.
+
+`\0` before a non-ASCII digit is Broiler.Regex's alone and not observable here (row S4); B4, uncharged alternation, is
+not observable here, since this engine passes no meter; and an invalid literal read as a division stays SJL-14's (row
+S9).
+
+**test262** (`ccaac100`, original variant, negative tests included, `TZ=UTC`, locally through the shell, not the
+rule's runs): over `built-ins/RegExp`, `language/literals/regexp`, `annexB/built-ins/RegExp`,
+`annexB/language/literals/regexp`, staging's `built-ins/RegExp` and the String methods that take a regular expression,
+the 61 files of rows S7, S8 and S11 that failed at this branch's first parent pass, no file that passed fails, and
+`built-ins/RegExp/proto-from-ctor-realm.js`, a realm's, still fails. Every file whose front matter lists
+`regexp-duplicate-named-groups` passes, as before, the four Broiler.RegEx's task 2.10 leaves to its host job among them.
+
+**The corpus** (revision 41, `TZ=UTC`, no `LANG`): every vector's difference is classified, and each of the 169
+`divergence.broiler-js` fields of `conformance/vectors/regexp/` reports that it no longer holds, by row: B8 1, F3 1,
+M2 4, M2b 3, M3 15, M6 4, S2a 5, S2b 3, S3 14, S3b 3, S5 4, S7 11, S8 65, S11 29, T1 4 and U3 3. Row S3's and S3b's
+fields classified the nesting this engine accepted, which the limit now refuses (class C3). A corpus revision that
+retires them follows the merge, as for the earlier areas; none is made here.
+
+**Tests.** The tests of behaviour that stays run unchanged through Broiler.Regex. Three expectations move with the
+rows that name them, each test keeping its input: `BuiltInsTests.RegExp_Unicode_CodePoint_Literal_Source_RoundTrips_For_ScriptHost_Test262_Cases`
+reads `\u{1d306}` as `source` (row T1); `RegExpConstructorEarlyErrorTests` and the parser's
+`RegExpLiteralEarlyErrorTests` read `(?<a>.)[\k]` as valid (row S5's class case, decision D-s5); and the parser's
+`/[\q{/}--[a]]/v` moves from a theory that admits it to one that refuses it (row S8). `SharedUnicodeTests`' two tests
+of the translator's path (decision D21, "`SharedUnicodeTests.cs:204-235` is rewritten") run their inputs through the
+constructor, with the same answers. `RegexTieringTests.HotPattern_RacesExactlyOnce_AndSiblingsInheritTheVerdict`
+fails on this branch, since no `RegExp` reaches the tiering of a .NET `Regex` any more; no row admits it, and it is
+left failing, not deleted or skipped, for the owner, with the type it tests. No library under `Broiler.ECMAScript/`
+changes.
+
 ### `Intl.Collator` and `String.prototype.localeCompare` move to the shared collator (2026-11-15, milestone SJL-17.5)
 
 `JSIntlCollator` compares through `Broiler.ECMAScript.Intl`'s `UcaCollator` (the Unicode Collation Algorithm over CLDR

@@ -206,16 +206,9 @@ public partial class JSString
         if (search.IsUndefined)
             return NumberZero;
 
-        // is Regex?
-        if (search is JSRegExp jSRegExp)
-        {
-            var reg = jSRegExp.value.Match(@this);
-
-            if (!reg.Success)
-                return NumberMinusOne;
-            return CreateNumber(reg.Index);
-        }
-
+        // §22.1.3.12 step 4: RegExpCreate(regexp, undefined), whose RegExpInitialize reads ToString(regexp), a
+        // RegExp object among them whose @@search is undefined or null. Until SJL-11.5 such a RegExp reached its .NET
+        // engine's Match directly here (row M6 of Broiler.VM's correspondence, a correction of Broiler.JS).
         var created = new JSRegExp(search.StringValue, "");
         var builtinSearcher = created[(IJSSymbol)JSSymbol.search];
         // §22.1.3.12 step 5: Invoke(rx, @@search, « string »), where string is ToString(O)

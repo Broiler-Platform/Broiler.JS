@@ -10817,7 +10817,10 @@ public class BuiltInsTests
             return [source, recreated.test('\ud834\udf06'), recreated.test('𝌆')].join('|');
         })();");
 
-        Assert.Equal("\\ud834\\udf06|true|true", result.ToString());
+        // Row T1 of Broiler.VM's correspondence: since milestone SJL-11.5 the scanner no longer rewrites a literal's
+        // braced escapes, so `source` is the text the literal holds, where it read "\\ud834\\udf06", a correction of
+        // Broiler.JS. The round trip still matches.
+        Assert.Equal("\\u{1d306}|true|true", result.ToString());
     }
 
     [Fact]

@@ -70,16 +70,13 @@ public partial class JSRegExp
         }
 
         // Parse/validate the new pattern and flags BEFORE mutating any instance state:
-        // CreateRegex throws a SyntaxError for an invalid pattern or flags, and in that
+        // CompilePattern throws a SyntaxError for an invalid pattern or flags, and in that
         // case `compile` must leave the receiver's [[OriginalSource]] and
         // [[RegExpMatcher]] untouched (annexB RegExp.prototype.compile
         // pattern-string-invalid / flags-string-invalid).
-        var compiled = CreateRegex(nextPattern, nextFlags, out var nextCaptureMap, out var nextBroiler);
+        var compiled = CompilePattern(nextPattern, nextFlags);
         pattern = nextPattern;
-        captureMap = nextCaptureMap;
-        broiler = nextBroiler;
-        (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, flags) = compiled;
-        ArmTiering();
+        Initialize(compiled);
         SetObservableLastIndex(0);
         return this;
     }
@@ -147,7 +144,7 @@ public partial class JSRegExp
     /// Split out so <c>RegExp.prototype[@@replace]</c>'s streaming path can drive matching
     /// without materializing one result array per match, while remaining incapable of drifting
     /// from <see cref="Exec"/> — both call this, so `lastIndex` progression, sticky handling,
-    /// the Broiler/.NET engine routing and the statics update are the same code, not the same
+    /// the match through Broiler.Regex and the statics update are the same code, not the same
     /// intention written twice.
     /// </remarks>
     internal RegexMatchData ExecMatch(string input)
@@ -169,15 +166,12 @@ public partial class JSRegExp
             return null;
         }
 
-        // Perform the regular expression matching. RunMatch dispatches to the
-        // Broiler.Regex engine for gap-feature patterns (look-behind captures/
-        // back-refs, nullable quantifiers, code-point back-references) and to the
-        // translated .NET regex otherwise; both yield the same normalized shape.
+        // Perform the regular expression matching through Broiler.Regex, which tries only
+        // the start position when the regex is sticky (RegExpBuiltinExec step 13.a's
+        // "If sticky is true and r is failure"), and steps a start inside a surrogate pair
+        // back to the pair under u or v (row M4).
         var startPosition = useLastIndex ? observableLastIndex : 0;
-        var match = RunMatch(input, startPosition);
-
-        if (sticky && (!match.Success || match.Index != startPosition))
-            match = RegexMatchData.NoMatch;
+        var match = RunMatch(input, startPosition, anchored: sticky);
 
         // Return null if no match was found.
         if (match.Success == false)
@@ -193,16 +187,14 @@ public partial class JSRegExp
             SetObservableLastIndex(match.Index + match.Length);
 
         var groups = match.Groups;
-        // When the pattern has named groups every capture was renamed to a
-        // synthetic, source-ordered name (see RewriteCaptureGroups), so .NET now
-        // numbers them 1..n in ECMAScript order and integer indexing is correct.
-        // The captureMap supplies that count and the original-name mapping.
+        // Broiler.Regex numbers the captures in ECMAScript (source) order; the captureMap
+        // supplies their count and the names.
         var c = captureMap != null ? captureMap.Count + 1 : groups.Length;
 
         // §B.2.4 UpdateLegacyRegExpStaticProperties: a successful built-in exec records
         // the match on the realm's legacy RegExp statics (RegExp.lastMatch, RegExp.$1, …).
-        // groups[1..c-1] are the captures in ECMAScript order (RewriteCaptureGroups
-        // renumbers named captures), matching the numbered $1..$9 slots.
+        // groups[1..c-1] are the captures in ECMAScript order, matching the numbered
+        // $1..$9 slots.
         if (JSEngine.Current is { } legacyContext)
         {
             var capturedValues = new string[c - 1];

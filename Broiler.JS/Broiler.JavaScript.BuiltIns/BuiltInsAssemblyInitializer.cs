@@ -420,7 +420,7 @@ internal static class BuiltInsAssemblyInitializer
     {
         // §20.1.3.6 step 14: an object with a [[RegExpMatcher]] internal slot (a real RegExp instance,
         // whose compiled matcher is set — unlike %RegExp.prototype%, an ordinary object) tags as "RegExp".
-        if (value is JSRegExp { value: not null })
+        if (value is JSRegExp { broiler: not null })
             return "RegExp";
 
         // §20.1.3.6 step 13: an object with a [[DateValue]] internal slot (a real Date

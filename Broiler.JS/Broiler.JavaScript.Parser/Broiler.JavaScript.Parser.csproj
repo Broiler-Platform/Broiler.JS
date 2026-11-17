@@ -25,6 +25,12 @@
     <ProjectReference Include="..\Broiler.JavaScript.Ast\Broiler.JavaScript.Ast.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Expressions\Broiler.JavaScript.Expressions.csproj" />
   </ItemGroup>
+  <!-- Broiler.Regex's validate entry checks a regular-expression literal (milestone SJL-11.5; Broiler.VM's JSD-0081,
+       decision D22). Its compile assets stay private here too, as in Ast, so that its namespace does not reach the
+       projects that reference the parser. -->
+  <ItemGroup>
+    <PackageReference Include="Broiler.Regex" PrivateAssets="compile" />
+  </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Broiler.JavaScript.Compiler" />
     <InternalsVisibleTo Include="Broiler.JavaScript.BuiltIns" />

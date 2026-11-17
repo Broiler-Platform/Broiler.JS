@@ -127,7 +127,7 @@ internal static class RegexCallEnvelopeMetrics
     /// </param>
     private static Row Direct((string Name, string Pattern, string Subject) site, bool match)
     {
-        // RegexOptions.ECMAScript is what JSRegExp.ParseFlags starts from, so this arm is the
+        // RegexOptions.ECMAScript is what JSRegExp's flag reader started from, so this arm is the
         // matcher the engine actually holds rather than a default-constructed one.
         var regex = new NetRegex(site.Pattern, RegexOptions.ECMAScript);
         for (var i = 0; i < 1_000; i++)

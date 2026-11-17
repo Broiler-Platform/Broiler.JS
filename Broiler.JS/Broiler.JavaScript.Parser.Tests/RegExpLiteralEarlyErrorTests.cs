@@ -50,7 +50,6 @@ public class RegExpLiteralEarlyErrorTests
     [InlineData("/\\k(?<a>.)/")]
     [InlineData("/(?<a>.)\\k<a/")]
     [InlineData("/(?<a>.)\\k<1>/")]
-    [InlineData("/(?<a>.)[\\k]/")]
     public void An_incomplete_named_reference_is_an_early_error(string source) => ParseError(source);
 
     [Theory]
@@ -63,6 +62,9 @@ public class RegExpLiteralEarlyErrorTests
     [InlineData("/\\k<a>/")]
     [InlineData("/(?<=a)\\k/")]                   // a lookbehind declares no name
     [InlineData("/[(?<a>.)]\\k/")]                // nor does a class
+    // Row S5's class case (Broiler.VM's JSD-0081, decision D-s5): without u, B.1.2 reads `\k` in a class beside a
+    // named group as the letter, which this engine refused until milestone SJL-11.5, a correction of Broiler.JS.
+    [InlineData("/(?<a>.)[\\k]/")]
     public void Valid_group_names_and_references_are_read(string source) => Parse(source);
 
     // Under v a negated class may not contain strings (MayContainStrings): a union may when an operand may,

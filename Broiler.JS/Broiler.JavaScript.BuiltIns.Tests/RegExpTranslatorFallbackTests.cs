@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.BuiltIns.Tests;
 /// <summary>
 /// The tail of Action 4 (Broiler.JS gaps roadmap, track 2): a pattern routed to the
 /// Broiler.Regex backend no longer has to be translatable to a .NET <c>Regex</c> as well.
-/// When a transform or <c>new Regex</c> cannot represent a routed pattern, <c>CreateRegex</c>
+/// When a transform or <c>new Regex</c> cannot represent a routed pattern, the constructor
 /// runs with a null .NET engine and every operation reads Broiler.
 ///
 /// The `v`-mode set operations `[\s&&\S]`, `[\d&&\s]` and `[\s--\d]` are the concrete case:
