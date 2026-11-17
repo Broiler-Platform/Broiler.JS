@@ -30,24 +30,37 @@ shared library or of the rule.
 
 ## What they show
 
-- **Broiler.JS** refuses before any code runs the `semantics` rows `SyntaxValidation` checks (the jumps, the duplicate
-  `__proto__`, a private name no class declares) and a field initialiser's super call at the top level; it refuses neither when the construct is reached nor when it is not, in all three forms, the super rows of an
-  object literal's and a class's methods, of a function's or a generator's or an async function's parameters and body
-  that holds a super property, of a class with no heritage whose constructor holds a super call, the `arguments` of a
-  field initialiser or of a static block, and `this` as a for-in target; it refuses the super calls of a function's,
-  a generator's and an async function's parameters or body with an `Error` that is a .NET `ArgumentNullException`; it
-  compiles a field initialiser holding a super call inside a function without end (`TIMEOUT`); and a static block's
-  super call inside a function is a run-time `TypeError` when it runs. Of the values, it answers otherwise than the
-  specification for a closure in the parameters, which sees the body's `var` (FF4), a direct eval in an arrow, whose
-  `var` reaches the enclosing function (FF5), three anonymous functions in the probes' indirect-eval code, which take no
-  name (NE1), and a `var` of eval code against the calling eval code's `let` (EA0006 and EA0007's path), which it
-  accepts.
-- **Broiler.VM** refuses every timing probe before any code runs, its message the profile's admission refusal; of the
-  values, it answers otherwise than the specification for a block function named `arguments` (AB1: it keeps the
-  arguments object, as test262's `annexB/language/function-code/block-decl-func-skip-arguments.js` at `ccaac100`
-  asserts and the pinned edition's FunctionDeclarationInstantiation does not), a block function under a `let` of its
-  name in an enclosing block (AB1: aliased), a block function in strict indirect-eval code (AB1: aliased), and
-  `continue` to the outer label of a loop's label set (LB1: refused, JSD-0083's hand-off H20).
+**Every probe is eval code**, compiled by an indirect eval (`tt`), so what they show of each engine is what it does in
+eval code. The `semantics` vectors' first runs (corpus revision 42, classified at revision 43) run the same constructs
+as Scripts and as direct-eval code, and where a Script's answer differs from the probe's the vectors say which.
+
+- **Broiler.JS, in eval code**, refuses before any code runs the `semantics` rows `SyntaxValidation` checks (the jumps,
+  the duplicate `__proto__`, a private name no class declares) and a field initialiser's super call at the eval code's
+  top level. It refuses neither when the construct is reached nor when it is not, in all three forms, the super rows of
+  an object literal's and a class's methods, of a function's, a generator's or an async function's parameters and body
+  that hold a super property, and of a class with no heritage whose constructor holds a super call, and the `arguments`
+  of a field initialiser: an indirect eval compiles its code as direct-eval code
+  (`Broiler.JS/Broiler.JavaScript.Globals/JSGlobal.cs:145`, `PushDirectEvalCompilation`), and the compiler's `Visit*`
+  checks of those rows skip direct-eval code (`Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397`,
+  `FastCompiler.VisitMemberExpression.cs:25`, `FastCompiler.VisitIdentifier.cs:344`), leaving them to
+  `DirectEvalSupport`'s validator, which checks the eval code's own top level and no method or function in it. It
+  refuses the super calls of a function's, a generator's and an async function's parameters or body with an `Error`
+  that is a .NET `ArgumentNullException`; it compiles a field initialiser holding a super call inside a function
+  without end (`TIMEOUT`); a static block's super call is a run-time `TypeError` when it runs; and it refuses neither
+  the `arguments` of a static block nor `this` as a for-in target, which it checks nowhere. **As Scripts**, the
+  `semantics` vectors' first runs show it refusing every one of these rows before any code runs but the last two, whose
+  vectors differ there as here. Of the values, it answers otherwise than the specification for a closure in the
+  parameters, which sees the body's `var` (FF4), and a direct eval in an arrow, whose `var` reaches the enclosing
+  function (FF5), as Scripts too; and, in indirect-eval code alone, for three anonymous functions, which take no name
+  (NE1: a direct eval's code names them, as revision 43's vectors show), and a `var` of eval code against the calling
+  eval code's `let` (EA0007's path), which it accepts.
+- **Broiler.VM, in eval code**, refuses every timing probe before any code runs, its message the profile's admission
+  refusal; of the values, it answers otherwise than the specification for a block function named `arguments` (AB1: it
+  keeps the arguments object, as test262's `annexB/language/function-code/block-decl-func-skip-arguments.js` at
+  `ccaac100` asserts and the pinned edition's FunctionDeclarationInstantiation does not), a block function under a `let`
+  of its name in an enclosing block and a block function in strict eval code (AB1: aliased in both), and `continue` to
+  the outer label of a loop's label set (LB1: refused, JSD-0083's hand-off H20). **As Scripts**, the vectors' first runs
+  show the first and the last, and not the two other Annex B answers, which only its eval code gives.
 - **Not shown:** Broiler.VM's timing of eval code's undeclared private name (row PN1, finding F6 of its correspondence):
   its executor refuses the probe's eval code before any of it runs, so no completion value here separates the
   executor's check from a compile-time one.

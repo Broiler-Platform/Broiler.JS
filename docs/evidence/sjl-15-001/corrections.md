@@ -23,28 +23,35 @@ compiled or when eval runs (`FastCompiler.EarlyErrors`, a `Visit*` method, `Dire
 probe shows this engine refusing after any of the probe ran, or not at all, each with the probes that show it. The
 probes put each row's refused construct at the top level of indirect-eval code, inside a function expression never
 called, and inside one that is called ([`probes/`](probes/README.md)); the specification refuses all three before any of
-the code runs. At `6fda6ca4` this engine refuses the `super` rows of an object literal's or a class's methods, of a
-function's parameters and body that holds a super property, of a class with no heritage whose constructor holds a super
-call, of a field initialiser that holds `arguments`, and of async functions and generators that hold a super property,
-in none of the three forms: each is class T, its SyntaxError "raised later, or not at all" (decision D64's words).
+the code runs. **In eval code**, at `6fda6ca4`, this engine refuses the `super` rows of an object literal's or a class's
+methods, of a function's parameters and body that hold a super property, of a class with no heritage whose constructor
+holds a super call, of a field initialiser that holds `arguments`, and of async functions and generators that hold a
+super property, in none of the three forms: an indirect eval compiles its code as direct-eval code, and the `Visit*`
+checks of those rows skip direct-eval code, leaving them to `DirectEvalSupport`'s validator, which checks the eval code's
+own top level only ([`probes/README.md`](probes/README.md), "What they show"). Each is class T, its SyntaxError "raised
+later, or not at all" (decision D64's words). **As a Script**, the `semantics` vectors' first runs show this engine
+refusing every one of those rows before any code runs; the corpus's revision 43 adds each row's refusal in direct-eval
+code, so that the vectors carry the half the probes found.
 
 ## C1, the corrections
 
 [`corrections/corrections.tsv`](corrections/corrections.tsv), by row:
 - the `semantics` rows this engine checks nowhere (the stage table's `js_stage` `none`): EE0021, EE0054, EE0138 and
   EA0008;
-- the rows a timing probe shows refused with another error than a SyntaxError, or not answered within the probe's bound:
+- the rows a timing probe shows refused, in eval code, with another error than a SyntaxError, or not answered within the
+  probe's bound:
   the super calls in a function's or a generator's or an async function's parameters or body, refused with a .NET
   `ArgumentNullException` the shell surfaces as an `Error`; a field initialiser holding a super call inside a function,
   which this engine compiles without end (each probe stopped at its bound, the first run's process having grown in
   memory until it was stopped); and a static block holding a super call, a run-time `TypeError`;
 - the rows of the correspondence whose value probes this engine answers otherwise than the specification: FF4 (a
   closure in the parameters sees the body's `var`), FF5 (a direct eval in an arrow declares its `var` in the enclosing
-  function), NE1 (an anonymous function in the indirect-eval code of the probes takes no name) and EA0006 (a `var` of eval
-  code against a lexical declaration of the code that called it, accepted).
+  function), both as Scripts too; and, in indirect-eval code, NE1 (an anonymous function takes no name; a direct eval's code
+  names it) and EA0006, whose probe
+  takes EA0007's path (a `var` of eval code against a lexical declaration of the eval code that called it, accepted).
 
-Each is listed in `Broiler.JS/CHANGELOG.md` at the cut-over (decision SJL-D-16 (a)). The `semantics` vectors' first runs
-(corpus revision 43) classify each engine's differences by the same rows.
+Each is listed in `Broiler.JS/CHANGELOG.md` at the cut-over (decision SJL-D-16 (a)). Corpus revision 43 classifies each
+engine's differences on the `semantics` vectors by the same rows.
 
 ## What these tables are not
 

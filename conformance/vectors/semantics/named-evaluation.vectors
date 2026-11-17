@@ -203,3 +203,36 @@ prov: spec:es2026@0248456c#sec-runtime-semantics-namedevaluation spec:es2026@024
 script: class C { x = function () {}; } new C().x.name
 note: correspondence row NE1: accepted, an anonymous function as a field's initialiser
 since: 42
+
+id: semantics/named-evaluation/ne1/0019
+area: semantics
+op: DirectEval
+in: str:"eval('var f = function () {}; f.name')"
+out: value: str:"f"
+class: normative
+prov: spec:es2026@0248456c#sec-runtime-semantics-namedevaluation spec:es2026@0248456c#sec-variable-statement-runtime-semantics-evaluation spec:es2026@0248456c#sec-performeval
+script: eval('var f = function () {}; f.name')
+note: correspondence row NE1: accepted, an anonymous function in a var initialiser, in eval code a direct eval evaluates
+since: 43
+
+id: semantics/named-evaluation/ne1/0020
+area: semantics
+op: DirectEval
+in: str:"eval('var a; a ??= function () {}; a.name')"
+out: value: str:"a"
+class: normative
+prov: spec:es2026@0248456c#sec-runtime-semantics-namedevaluation spec:es2026@0248456c#sec-assignment-operators-runtime-semantics-evaluation spec:es2026@0248456c#sec-performeval
+script: eval('var a; a ??= function () {}; a.name')
+note: correspondence row NE1: accepted, an anonymous function in a logical assignment, in eval code a direct eval evaluates
+since: 43
+
+id: semantics/named-evaluation/ne1/0021
+area: semantics
+op: DirectEval
+in: str:"eval('var x = (function () {}); x.name')"
+out: value: str:"x"
+class: normative
+prov: spec:es2026@0248456c#sec-runtime-semantics-namedevaluation spec:es2026@0248456c#sec-isanonymousfunctiondefinition spec:es2026@0248456c#sec-performeval
+script: eval('var x = (function () {}); x.name')
+note: correspondence row NE1: accepted, an anonymous function through a parenthesised expression, in eval code a direct eval evaluates
+since: 43

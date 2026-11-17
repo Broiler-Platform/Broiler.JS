@@ -698,3 +698,303 @@ prov: spec:es2026@0248456c#sec-performeval
 script: class B {} class C extends B { m() { eval('super()'); } } new C().m()
 note: catalogue row EA0004; correspondence row EE1: refused, a super call in eval code in a derived class's method
 since: 42
+
+id: semantics/super/ee0015/0004
+area: semantics
+op: DirectEval
+in: str:"eval('({ m() { super(); } });')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-object-initializer-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('({ m() { super(); } });')
+note: catalogue row EE0015; correspondence row EE1: refused, a super call in an object literal's method, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0074/0003
+area: semantics
+op: DirectEval
+in: str:"eval('function f(a = super.x) {}')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('function f(a = super.x) {}')
+note: catalogue row EE0074; correspondence row EE1: refused, a super property in a function declaration's parameters, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0075/0003
+area: semantics
+op: DirectEval
+in: str:"eval('function f() { super.x; }')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('function f() { super.x; }')
+note: catalogue row EE0075; correspondence row EE1: refused, a super property in a function declaration's body, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0076/0003
+area: semantics
+op: DirectEval
+in: str:"eval('function f(a = super()) {}')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS's compiler throws a .NET ArgumentNullException on a super call in a function's, a generator's or an async function's parameters or body, which escapes the evaluation (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J2); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv), which SJL-15.5 answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('function f(a = super()) {}')
+note: catalogue row EE0076; correspondence row EE1: refused, a super call in a function declaration's parameters, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0077/0004
+area: semantics
+op: DirectEval
+in: str:"eval('function f() { super(); }')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS's compiler throws a .NET ArgumentNullException on a super call in a function's, a generator's or an async function's parameters or body, which escapes the evaluation (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J2); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv), which SJL-15.5 answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('function f() { super(); }')
+note: catalogue row EE0077; correspondence row EE1: refused, a super call in a function declaration's body, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0093/0003
+area: semantics
+op: DirectEval
+in: str:"eval('({ *g() { super(); } });')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-generator-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('({ *g() { super(); } });')
+note: catalogue row EE0093; correspondence row EE1: refused, a super call in a generator method, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0102/0003
+area: semantics
+op: DirectEval
+in: str:"eval('function* g(a = super.x) {}')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-generator-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('function* g(a = super.x) {}')
+note: catalogue row EE0102; correspondence row EE1: refused, a super property in a generator declaration's parameters, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0103/0003
+area: semantics
+op: DirectEval
+in: str:"eval('function* g() { super.x; }')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-generator-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('function* g() { super.x; }')
+note: catalogue row EE0103; correspondence row EE1: refused, a super property in a generator declaration's body, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0104/0003
+area: semantics
+op: DirectEval
+in: str:"eval('function* g(a = super()) {}')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS's compiler throws a .NET ArgumentNullException on a super call in a function's, a generator's or an async function's parameters or body, which escapes the evaluation (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J2); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv), which SJL-15.5 answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-generator-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('function* g(a = super()) {}')
+note: catalogue row EE0104; correspondence row EE1: refused, a super call in a generator declaration's parameters, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0105/0003
+area: semantics
+op: DirectEval
+in: str:"eval('function* g() { super(); }')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS's compiler throws a .NET ArgumentNullException on a super call in a function's, a generator's or an async function's parameters or body, which escapes the evaluation (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J2); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv), which SJL-15.5 answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-generator-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('function* g() { super(); }')
+note: catalogue row EE0105; correspondence row EE1: refused, a super call in a generator declaration's body, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0106/0003
+area: semantics
+op: DirectEval
+in: str:"eval('({ async *g() { super(); } });')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-async-generator-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('({ async *g() { super(); } });')
+note: catalogue row EE0106; correspondence row EE1: refused, a super call in an async generator method, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0117/0003
+area: semantics
+op: DirectEval
+in: str:"eval('async function* g(a = super.x) {}')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-async-generator-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('async function* g(a = super.x) {}')
+note: catalogue row EE0117; correspondence row EE1: refused, a super property in an async generator declaration's parameters, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0118/0003
+area: semantics
+op: DirectEval
+in: str:"eval('async function* g() { super.x; }')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-async-generator-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('async function* g() { super.x; }')
+note: catalogue row EE0118; correspondence row EE1: refused, a super property in an async generator declaration's body, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0119/0003
+area: semantics
+op: DirectEval
+in: str:"eval('async function* g(a = super()) {}')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS's compiler throws a .NET ArgumentNullException on a super call in a function's, a generator's or an async function's parameters or body, which escapes the evaluation (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J2); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv), which SJL-15.5 answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-async-generator-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('async function* g(a = super()) {}')
+note: catalogue row EE0119; correspondence row EE1: refused, a super call in an async generator declaration's parameters, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0120/0003
+area: semantics
+op: DirectEval
+in: str:"eval('async function* g() { super(); }')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS's compiler throws a .NET ArgumentNullException on a super call in a function's, a generator's or an async function's parameters or body, which escapes the evaluation (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J2); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv), which SJL-15.5 answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-async-generator-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('async function* g() { super(); }')
+note: catalogue row EE0120; correspondence row EE1: refused, a super call in an async generator declaration's body, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0121/0003
+area: semantics
+op: DirectEval
+in: str:"eval('class C { constructor() { super(); } }')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-class-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('class C { constructor() { super(); } }')
+note: catalogue row EE0121; correspondence row EE1: refused, a super call in the constructor of a class with no heritage, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0124/0004
+area: semantics
+op: DirectEval
+in: str:"eval('class C { m() { super(); } }')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-class-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('class C { m() { super(); } }')
+note: catalogue row EE0124; correspondence row EE1: refused, a super call in a class's method, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0126/0003
+area: semantics
+op: DirectEval
+in: str:"eval('class C { static m() { super(); } }')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-class-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('class C { static m() { super(); } }')
+note: catalogue row EE0126; correspondence row EE1: refused, a super call in a static method, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0131/0003
+area: semantics
+op: DirectEval
+in: str:"eval('(function () { class C { x = super(); } });')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS compiles a field initialiser that holds a super call, in a class in a function expression, without end, and the runner's time limit stops it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J2, probes T077 and T078); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row EE0131), which SJL-15.5 answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-class-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('(function () { class C { x = super(); } });')
+note: catalogue row EE0131; correspondence row EE1: refused, a super call in a field initialiser of a class in a function expression, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0139/0003
+area: semantics
+op: DirectEval
+in: str:"eval('class C { static { super(); } }')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS accepts a class static block that holds a super call, and evaluating the block throws a TypeError (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J2, probe T088); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row EE0139), which SJL-15.5 answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-class-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('class C { static { super(); } }')
+note: catalogue row EE0139; correspondence row EE1: refused, a super call in a static block, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0142/0003
+area: semantics
+op: DirectEval
+in: str:"eval('({ async m() { super(); } });')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-async-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('({ async m() { super(); } });')
+note: catalogue row EE0142; correspondence row EE1: refused, a super call in an async method, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0150/0003
+area: semantics
+op: DirectEval
+in: str:"eval('async function f(a = super.x) {}')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-async-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('async function f(a = super.x) {}')
+note: catalogue row EE0150; correspondence row EE1: refused, a super property in an async function declaration's parameters, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0151/0003
+area: semantics
+op: DirectEval
+in: str:"eval('async function f() { super.x; }')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-async-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('async function f() { super.x; }')
+note: catalogue row EE0151; correspondence row EE1: refused, a super property in an async function declaration's body, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0152/0003
+area: semantics
+op: DirectEval
+in: str:"eval('async function f(a = super()) {}')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS's compiler throws a .NET ArgumentNullException on a super call in a function's, a generator's or an async function's parameters or body, which escapes the evaluation (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J2); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv), which SJL-15.5 answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-async-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('async function f(a = super()) {}')
+note: catalogue row EE0152; correspondence row EE1: refused, a super call in an async function declaration's parameters, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/super/ee0153/0003
+area: semantics
+op: DirectEval
+in: str:"eval('async function f() { super(); }')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS's compiler throws a .NET ArgumentNullException on a super call in a function's, a generator's or an async function's parameters or body, which escapes the evaluation (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J2); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv), which SJL-15.5 answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-async-function-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('async function f() { super(); }')
+note: catalogue row EE0153; correspondence row EE1: refused, a super call in an async function declaration's body, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43

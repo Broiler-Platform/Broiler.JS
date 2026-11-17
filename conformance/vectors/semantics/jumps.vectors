@@ -264,7 +264,8 @@ area: semantics
 op: ScriptEvaluation
 in: str:"var n = 0; A: B: for (var i = 0; i < 2; i++) { n++; continue A; } n"
 out: value: f64:0x4000000000000000
-class: normative
+class: divergence
+divergence.broiler-vm: row LB1: Broiler.VM's binder refuses continue naming an outer label of a loop's label set (Broiler.VM's bundle sjl-15-001's correspondence, row LB1; bundle sjl-13-001's row D30, JSD-0083's hand-off H20); a correction of Broiler.VM, class F of its bundle sjl-15-001's rule, which SJL-15.3 makes from the model's jump targets (JSD-0088's decision D-handoffs)
 prov: spec:es2026@0248456c#sec-static-semantics-containsundefinedcontinuetarget spec:es2026@0248456c#sec-runtime-semantics-labelledevaluation
 script: var n = 0; A: B: for (var i = 0; i < 2; i++) { n++; continue A; } n
 note: catalogue row EE0166; correspondence row LB1: accepted, continue to the outer label of a loop's label set, at a Script's top level
@@ -275,7 +276,8 @@ area: semantics
 op: ScriptEvaluation
 in: str:"function f() { var n = 0; A: B: for (var i = 0; i < 3; i++) { n++; continue A; } return n; } f()"
 out: value: f64:0x4008000000000000
-class: normative
+class: divergence
+divergence.broiler-vm: row LB1: Broiler.VM's binder refuses continue naming an outer label of a loop's label set (Broiler.VM's bundle sjl-15-001's correspondence, row LB1; bundle sjl-13-001's row D30, JSD-0083's hand-off H20); a correction of Broiler.VM, class F of its bundle sjl-15-001's rule, which SJL-15.3 makes from the model's jump targets (JSD-0088's decision D-handoffs)
 prov: spec:es2026@0248456c#sec-static-semantics-containsundefinedcontinuetarget spec:es2026@0248456c#sec-runtime-semantics-labelledevaluation
 script: function f() { var n = 0; A: B: for (var i = 0; i < 3; i++) { n++; continue A; } return n; } f()
 note: catalogue row EE0082; correspondence row LB1: accepted, continue to the outer label of a loop's label set, in a function body
@@ -286,7 +288,8 @@ area: semantics
 op: ScriptEvaluation
 in: str:"var n = 0; A: B: C: do { n++; if (n < 3) continue B; } while (n < 5); n"
 out: value: f64:0x4014000000000000
-class: normative
+class: divergence
+divergence.broiler-vm: row LB1: Broiler.VM's binder refuses continue naming an outer label of a loop's label set (Broiler.VM's bundle sjl-15-001's correspondence, row LB1; bundle sjl-13-001's row D30, JSD-0083's hand-off H20); a correction of Broiler.VM, class F of its bundle sjl-15-001's rule, which SJL-15.3 makes from the model's jump targets (JSD-0088's decision D-handoffs)
 prov: spec:es2026@0248456c#sec-static-semantics-containsundefinedcontinuetarget spec:es2026@0248456c#sec-runtime-semantics-labelledevaluation
 script: var n = 0; A: B: C: do { n++; if (n < 3) continue B; } while (n < 5); n
 note: catalogue row EE0166; correspondence row LB1: accepted, continue to the middle label of a do-while statement's label set

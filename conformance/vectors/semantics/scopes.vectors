@@ -22,7 +22,8 @@ area: semantics
 op: ScriptEvaluation
 in: str:"function f(a, b = function () { return a; }) { var a = 2; return a + ',' + b(); } f(1)"
 out: value: str:"2,1"
-class: normative
+class: divergence
+divergence.broiler-js: row FF4: Broiler.JS separates a function's parameter environment from its body's only where a sloppy function holds a direct eval, not wherever the list has parameter expressions, so a closure in the parameters reads the body's var of the parameter's name (bundle sjl-15-001's correspondence-broiler-js.md, row FF4, probe V010); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row FF4), which SJL-15.5 answers by reading the model's fact
 prov: spec:es2026@0248456c#sec-functiondeclarationinstantiation
 script: function f(a, b = function () { return a; }) { var a = 2; return a + ',' + b(); } f(1)
 note: correspondence row FF4: accepted, the body's var of a parameter's name is a binding of its own
@@ -88,7 +89,8 @@ area: semantics
 op: DirectEval
 in: str:"function f() { var x = 1; (() => eval('var x = 2'))(); return x; } f()"
 out: value: f64:0x3FF0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: row FF5: a direct eval in an arrow declares its var in the enclosing function's variable environment, not the arrow's own (bundle sjl-15-001's correspondence-broiler-js.md, row FF5, probe V015); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row FF5), which SJL-15.5 answers by reading the model's direct-eval facts
 prov: spec:es2026@0248456c#sec-performeval spec:es2026@0248456c#sec-evaldeclarationinstantiation
 script: function f() { var x = 1; (() => eval('var x = 2'))(); return x; } f()
 note: correspondence row FF5: accepted, a direct eval in an arrow declares its var in the arrow's own variable environment

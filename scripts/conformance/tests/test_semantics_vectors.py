@@ -127,7 +127,7 @@ class GeneratorTests(unittest.TestCase):
             for kwargs in ({"rows": ("EE0015",)}, {"clauses": ("sec-scripts",)},
                            {"rows": ("EE0015",), "clauses": ("sec-scripts",), "op": "ParseScript"},
                            {"rows": ("EE0015",), "clauses": ("sec-scripts",), "op": "DirectEval"},
-                           {"rows": ("EE0015",), "clauses": ("sec-scripts",), "since": 43}):
+                           {"rows": ("EE0015",), "clauses": ("sec-scripts",), "since": 44}):
                 with self.assertRaises(generator.GeneratorError, msg=str(kwargs)):
                     generator.add("super", "x", "1", generator.V(1), **kwargs)
             with self.assertRaises(generator.GeneratorError):
@@ -232,7 +232,9 @@ class CommittedFileTests(unittest.TestCase):
         self.assertEqual(list(range(1, len(rows) + 1)), rows)
         self.assertEqual(generator.CORPUS_REVISION, rows[-1])
         self.assertLessEqual(generator.SINCE, generator.CORPUS_REVISION)
-        self.assertEqual({str(generator.SINCE)}, {v["since"] for v in self.vectors.values()})
+        # Revision 42 added the area; revision 43 added the eval-code vectors the probes asked for, each a direct eval.
+        self.assertEqual({str(generator.SINCE), str(generator.EVAL_CODE)}, {v["since"] for v in self.vectors.values()})
+        self.assertTrue(all(v["op"] == "DirectEval" for v in self.vectors.values() if v["since"] == str(generator.EVAL_CODE)))
 
     def test_one_file_per_kind_of_fact_and_ids_by_file(self) -> None:
         self.assertEqual(sorted(generator.FILES), sorted(FILES))

@@ -66,7 +66,8 @@ area: semantics
 op: ScriptEvaluation
 in: str:"class C { static { arguments; } }"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row EE1: Broiler.JS checks no rule of EE0138 (the stage table's js_stage none), so a class static block that names arguments, directly or in an arrow, is accepted and runs (bundle sjl-15-001's correspondence-broiler-js.md, row EE1); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row EE0138), which SJL-15.5, its compiler on the model, answers
 prov: spec:es2026@0248456c#sec-class-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-static-semantics-containsarguments test262:test/language/statements/class/static-init-invalid-arguments.js
 script: class C { static { arguments; } }
 note: catalogue row EE0138; correspondence row EE1: refused, arguments in a static block
@@ -77,7 +78,8 @@ area: semantics
 op: ScriptEvaluation
 in: str:"class C { static { var f = () => arguments; } }"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row EE1: Broiler.JS checks no rule of EE0138 (the stage table's js_stage none), so a class static block that names arguments, directly or in an arrow, is accepted and runs (bundle sjl-15-001's correspondence-broiler-js.md, row EE1); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row EE0138), which SJL-15.5, its compiler on the model, answers
 prov: spec:es2026@0248456c#sec-class-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-static-semantics-containsarguments
 script: class C { static { var f = () => arguments; } }
 note: catalogue row EE0138; correspondence row EE1: refused, arguments in an arrow in a static block
@@ -214,3 +216,27 @@ prov: spec:es2026@0248456c#sec-functiondeclarationinstantiation spec:es2026@0248
 script: function f(arguments) { return arguments; } f(5)
 note: correspondence row FF3: accepted, a parameter named arguments means no arguments object is needed
 since: 42
+
+id: semantics/arguments/ee0130/0005
+area: semantics
+op: DirectEval
+in: str:"eval('class C { x = arguments; }')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+prov: spec:es2026@0248456c#sec-class-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('class C { x = arguments; }')
+note: catalogue row EE0130; correspondence row EE1: refused, arguments in a field initialiser, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
+
+id: semantics/arguments/ee0138/0004
+area: semantics
+op: DirectEval
+in: str:"eval('class C { static { arguments; } }')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: Broiler.JS checks no rule of EE0138 (the stage table's js_stage none), so a class static block that names arguments, directly or in an arrow, is accepted and runs (bundle sjl-15-001's correspondence-broiler-js.md, row EE1); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row EE0138), which SJL-15.5, its compiler on the model, answers
+prov: spec:es2026@0248456c#sec-class-definitions-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('class C { static { arguments; } }')
+note: catalogue row EE0138; correspondence row EE1: refused, arguments in a static block, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43

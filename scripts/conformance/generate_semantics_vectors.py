@@ -30,7 +30,10 @@ docs/evidence/sjl-15-001/correspondence.md; this engine's column in docs/evidenc
 FF3, FF4, FF5, RS2, AB1, LB1, PN1 and NE1. A refusal some engine may check only when a function's body is compiled is
 also given in a form that runs code before that body: the construct inside a function the Script calls in a try
 statement, where an early error refuses the whole Script before any of it runs (the rule's class T, decision D64's
-second half).
+second half). Revision 43 adds, for each row whose construct eval code may hold at its own top level and which a
+compiler checks as it lowers, its refusal in eval code a direct eval evaluates, and three named-evaluation names in eval
+code (``eval_code``), which bundle sjl-15-001's probes found Broiler.JS leaving unchecked or unnamed in eval code; each
+vector's `since` is 43.
 
 THE EXPECTED VALUES are the specification's, ECMA-262 ES2026 at 0248456c (sources/ecma262.pin), each vector citing the
 clauses that decide it and, where one asserts the vector's outcome, the test262 tests at ccaac100 the catalogue names
@@ -77,7 +80,8 @@ STAGES = REPOSITORY / "Broiler.ECMAScript" / "docs" / "frontend" / "stages.tsv"
 DIVERGENCES = SCRIPTS / "semantics-divergences.txt"
 CHECKER = SCRIPTS / "syntaxcheck.mjs"
 SINCE = 42              # the corpus revision that added the area
-CORPUS_REVISION = 42    # the corpus revision this generator writes: REVISIONS.md's last row
+EVAL_CODE = 43          # the corpus revision that added the eval-code refusals the probes of bundle sjl-15-001 asked for
+CORPUS_REVISION = 43    # the corpus revision this generator writes: REVISIONS.md's last row
 GENERATOR = "generate_semantics_vectors.py"
 REFERENCE_VERSION = "v26.12.0"
 
@@ -215,8 +219,8 @@ def add(file: str, group: str, script: str, out: str, *, rows: Sequence[str] = (
         raise GeneratorError(f"{group}: {script!r} names no row")
     if op == "DirectEval" and "eval(" not in script:
         raise GeneratorError(f"{group}: a DirectEval vector's script calls eval")
-    if since != SINCE:
-        raise GeneratorError(f"{group}: a vector is added at revision {SINCE}, not {since}")
+    if since not in (SINCE, EVAL_CODE):
+        raise GeneratorError(f"{group}: a vector is added at revision {SINCE} or {EVAL_CODE}, not {since}")
     if rows and not corr:
         # A catalogue row's vector names the correspondence row that holds the row's early error.
         corr = tuple(dict.fromkeys(ROW_CORRESPONDENCE.get(row, "EE1") for row in rows))
@@ -800,6 +804,57 @@ def expressions() -> None:
         note="a parenthesised sum as a for-of statement's target")
 
 
+def eval_code() -> None:
+    """Revision 43: the refusals of the rows whose construct a direct eval's eval code may hold at its own top level, in
+    eval code. Eval code is parsed as a Script (PerformEval), so each is an early error of the eval code, and the eval
+    call throws a SyntaxError before any of the eval code runs. Bundle sjl-15-001's probes (Broiler.JS) found the rows
+    a compiler checks while it lowers left unchecked in eval code, where the Script's form of each is refused; these
+    vectors carry that half."""
+    note = "in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script"
+    rows = [
+        ("super", "ee0015", "EE0015", OBJ_EE, "({ m() { super(); } });", "a super call in an object literal's method"),
+        ("super", "ee0074", "EE0074", FN_EE, "function f(a = super.x) {}", "a super property in a function declaration's parameters"),
+        ("super", "ee0075", "EE0075", FN_EE, "function f() { super.x; }", "a super property in a function declaration's body"),
+        ("super", "ee0076", "EE0076", FN_EE, "function f(a = super()) {}", "a super call in a function declaration's parameters"),
+        ("super", "ee0077", "EE0077", FN_EE, "function f() { super(); }", "a super call in a function declaration's body"),
+        ("super", "ee0093", "EE0093", GEN_EE, "({ *g() { super(); } });", "a super call in a generator method"),
+        ("super", "ee0102", "EE0102", GEN_EE, "function* g(a = super.x) {}", "a super property in a generator declaration's parameters"),
+        ("super", "ee0103", "EE0103", GEN_EE, "function* g() { super.x; }", "a super property in a generator declaration's body"),
+        ("super", "ee0104", "EE0104", GEN_EE, "function* g(a = super()) {}", "a super call in a generator declaration's parameters"),
+        ("super", "ee0105", "EE0105", GEN_EE, "function* g() { super(); }", "a super call in a generator declaration's body"),
+        ("super", "ee0106", "EE0106", AGEN_EE, "({ async *g() { super(); } });", "a super call in an async generator method"),
+        ("super", "ee0117", "EE0117", AGEN_EE, "async function* g(a = super.x) {}", "a super property in an async generator declaration's parameters"),
+        ("super", "ee0118", "EE0118", AGEN_EE, "async function* g() { super.x; }", "a super property in an async generator declaration's body"),
+        ("super", "ee0119", "EE0119", AGEN_EE, "async function* g(a = super()) {}", "a super call in an async generator declaration's parameters"),
+        ("super", "ee0120", "EE0120", AGEN_EE, "async function* g() { super(); }", "a super call in an async generator declaration's body"),
+        ("super", "ee0121", "EE0121", CLASS_EE, "class C { constructor() { super(); } }", "a super call in the constructor of a class with no heritage"),
+        ("super", "ee0124", "EE0124", CLASS_EE, "class C { m() { super(); } }", "a super call in a class's method"),
+        ("super", "ee0126", "EE0126", CLASS_EE, "class C { static m() { super(); } }", "a super call in a static method"),
+        ("super", "ee0131", "EE0131", CLASS_EE, "(function () { class C { x = super(); } });", "a super call in a field initialiser of a class in a function expression"),
+        ("super", "ee0139", "EE0139", CLASS_EE, "class C { static { super(); } }", "a super call in a static block"),
+        ("super", "ee0142", "EE0142", ASYNC_EE, "({ async m() { super(); } });", "a super call in an async method"),
+        ("super", "ee0150", "EE0150", ASYNC_EE, "async function f(a = super.x) {}", "a super property in an async function declaration's parameters"),
+        ("super", "ee0151", "EE0151", ASYNC_EE, "async function f() { super.x; }", "a super property in an async function declaration's body"),
+        ("super", "ee0152", "EE0152", ASYNC_EE, "async function f(a = super()) {}", "a super call in an async function declaration's parameters"),
+        ("super", "ee0153", "EE0153", ASYNC_EE, "async function f() { super(); }", "a super call in an async function declaration's body"),
+        ("arguments", "ee0130", "EE0130", CLASS_EE, "class C { x = arguments; }", "arguments in a field initialiser"),
+        ("arguments", "ee0138", "EE0138", CLASS_EE, "class C { static { arguments; } }", "arguments in a static block"),
+        ("expressions", "ee0054", "EE0054", "sec-for-in-and-for-of-statements-static-semantics-early-errors", "for (this in {}) ;",
+         "this as a for-in statement's target"),
+    ]
+    for file, group, row, clause, construct, what in rows:
+        add(file, group, "eval('" + construct + "')", SE, op="DirectEval", rows=(row,), clauses=C(clause, PERFORM_EVAL),
+            note=f"{what}, {note}", since=EVAL_CODE)
+    # Row NE1 in eval code: the probes found anonymous functions in indirect-eval code given no name.
+    names = [("var f = function () {}; f.name", "f", C(NAMED, VAR_STMT), "an anonymous function in a var initialiser"),
+             ("var a; a ??= function () {}; a.name", "a", C(NAMED, ASSIGN), "an anonymous function in a logical assignment"),
+             ("var x = (function () {}); x.name", "x", C(NAMED, ANON), "an anonymous function through a parenthesised "
+                                                                        "expression")]
+    for source, name, clauses, what in names:
+        add("named-evaluation", "ne1", "eval('" + source + "')", V(name), op="DirectEval", corr=("NE1",),
+            clauses=clauses + C(PERFORM_EVAL), note=f"{what}, in eval code a direct eval evaluates", since=EVAL_CODE)
+
+
 # ---- Coverage -------------------------------------------------------------------------------------------------------
 
 MODULE = "only the Module goal reaches it, which schema 1 has no field for (decision D61, as D25 for the syntax area)"
@@ -995,6 +1050,7 @@ def build() -> list[Case]:
     annex_b()
     named_evaluation()
     expressions()
+    eval_code()
     return list(CASES)
 
 

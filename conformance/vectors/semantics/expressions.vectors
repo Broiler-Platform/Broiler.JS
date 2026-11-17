@@ -99,7 +99,8 @@ area: semantics
 op: ScriptEvaluation
 in: str:"for (this in {}) ;"
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row EE1: Broiler.JS checks no rule of EE0054 (the stage table's js_stage none), so this as a for-in statement's target is accepted and the loop assigns nothing (bundle sjl-15-001's correspondence-broiler-js.md, row EE1); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row EE0054), which SJL-15.5 answers
 prov: spec:es2026@0248456c#sec-for-in-and-for-of-statements-static-semantics-early-errors spec:es2026@0248456c#sec-static-semantics-assignmenttargettype test262:test/language/statements/for-in/head-lhs-non-asnmt-trgt.js
 script: for (this in {}) ;
 note: catalogue row EE0054; correspondence row EE1: refused, this as a for-in statement's target
@@ -115,3 +116,15 @@ prov: spec:es2026@0248456c#sec-for-in-and-for-of-statements-static-semantics-ear
 script: for ((a + b) of []) ;
 note: catalogue row EE0054; correspondence row EE1: refused, a parenthesised sum as a for-of statement's target
 since: 42
+
+id: semantics/expressions/ee0054/0005
+area: semantics
+op: DirectEval
+in: str:"eval('for (this in {}) ;')"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row EE1: Broiler.JS checks no rule of EE0054 (the stage table's js_stage none), so this as a for-in statement's target is accepted and the loop assigns nothing (bundle sjl-15-001's correspondence-broiler-js.md, row EE1); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row EE0054), which SJL-15.5 answers
+prov: spec:es2026@0248456c#sec-for-in-and-for-of-statements-static-semantics-early-errors spec:es2026@0248456c#sec-performeval
+script: eval('for (this in {}) ;')
+note: catalogue row EE0054; correspondence row EE1: refused, this as a for-in statement's target, in eval code a direct eval at a Script's top level evaluates, which is parsed as a Script
+since: 43
