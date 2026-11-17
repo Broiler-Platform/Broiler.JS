@@ -1515,6 +1515,31 @@ This repository's part of it:
     which the branch deletes, and lines of `RegExpUnicodeValidator.cs`, which it makes a forwarder. That record is
     Broiler.ECMAScript's, and its dated note is that owner's, after the merge; the branch changes nothing under
     `Broiler.ECMAScript/`.
+- *(Noted 2026-11-17, on branch `sjl-11-5`; the two notes above are left as written.)* **The conflict the note above
+  puts to the owner is resolved by decisions D20 and D21, and `RegexTiering` and `RegexTieringDiagnostics` are deleted
+  on the branch with their tests.** The note above reads "The branch keeps them because the instruction it is made
+  under reads "Never weaken, skip or delete a test"; which of the two governs is the owner's to rule, and the merge
+  waits on that ruling as well", and the note before it "`RegexTiering` and `RegexTieringDiagnostics`, which the
+  deletion list above names, and the tests and benchmarks that test only them, are kept on the branch, and the
+  records put that to the owner; part E's search finds them until they go". The instruction's sentence was a guard
+  against weakening a test to make a run pass; it was never meant to override the programme's own deletion list, and
+  the session that wrote the instruction has corrected it so: decisions D20 and D21 govern. **This is a correction of
+  that session's own instruction, not a ruling of the owner's and not a choice taken under the owner's direction**,
+  so the merge no longer waits on a ruling on it. The branch deletes, as D20 and D21 list them, `RegexTiering` with
+  its environment switch `BROILER_JS_REGEX_TIERING`, `RegexTieringDiagnostics`, their own tests `RegexTieringTests`,
+  and the benchmark that measured only them, `RegexTieringMetrics` (its `--regex-tiering` emitter, and the
+  `regexRaces` fields `--specializing-tier` read from `RegexTieringDiagnostics`); the consumer check D21 asks for is in
+  [`docs/public-api.md`](../public-api.md), and the members are listed in
+  [`Broiler.JS/CHANGELOG.md`](../../Broiler.JS/CHANGELOG.md). D20's other test and benchmark entries,
+  `RegExpTranslatorFallbackTests`, the clamp parts of `Issue810RegExpLargeQuantifierTests` and `RegexProfileMetrics`'
+  .NET rows, are not touched by this change. Part E's search is a run of the rule and judges this; nothing here
+  declares it met.
+  - **A change no row names, a finding for Broiler.VM's correspondence.** Since `4e2e00ad` on this branch,
+    `IJSRegExp.IsMatch` and the public `JSRegExp.Replace` honour the `y` flag, as `RegExpBuiltinExec` from
+    `lastIndex` and `RegExp.prototype[@@replace]` do in the specification's text, and the public `JSRegExp.Split`
+    reads every position as `RegExp.prototype[@@split]`'s sticky splitter does; at the branch's first parent the
+    three honoured `y` only for a pattern routed to Broiler.Regex. No row of the correspondence names it, so it is
+    recorded in the bundle's README as a finding for Broiler.VM's correspondence, whose row is Broiler.VM's to add.
 
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses and the component's are judged in
 their own bundles of the same name, and SJL-11 may not meet its gate before SJL-7 meets SJL-7's, and so not before

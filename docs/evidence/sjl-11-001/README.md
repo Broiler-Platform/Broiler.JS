@@ -58,6 +58,35 @@ the paragraph above is not rewritten.* What the revision says and the sources re
 None of this changes what the revision decides. Every run this branch has taken is a local run of its own, at the
 default branch's product code or at the branch's: none is a base or an after run of the rule.
 
+*Dated note, 2026-11-17, on branch `sjl-11-5`, after the deletion of `RegexTiering`; the paragraphs above are not
+rewritten.* Two findings of the branch's local runs, neither of them a run of the rule:
+- **A pre-existing defect: `RuntimeTests.JSException_From_RegularException_CreatesNewJSException` depends on the
+  order of its project's tests.** The review of the branch recorded it as an intermittent failure "no row explains"
+  ("JSException.CreateJSError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.").
+  It is no row's and not this branch's. The test calls `JSException.From` on an `InvalidOperationException`, whose
+  constructor reads `JSException.CreateJSError`, which only the BuiltIns assembly's module initializer sets, and the
+  test touches no BuiltIns type itself: it passes only when a test that does (`RuntimeTests.JSNull_IsNull`, the tests
+  that build a `JSString`, or `Phase5TaggedValuePrototypeTests`, which creates a `JSContext`) has run before it in the
+  same process. Run alone it fails, at the default branch's `6fda6ca4` as at the branch's `1bee060a`. In a run of the
+  whole project the order is xunit v3's, which follows its tests' unique IDs, and those change with the test
+  assembly's path (the runner's assembly ID differs between the two directories below, and so does the order), so
+  the order, and the outcome, follow the directory a build is made in, not the commit: built from a clean archive of
+  `6fda6ca4` in the directory where `1bee060a`'s full runs had failed, it fails every time, and `1bee060a` built in
+  the directory where `6fda6ca4`'s full runs had passed passes every time. The runs are retained in the session's notes
+  and summarised in the change's description. The test is not skipped and is not changed here; making it independent
+  of the order (for example by touching a BuiltIns type, or creating a `JSContext`, before it calls `JSException.From`)
+  is a follow-up of its own.
+- **A change no row names: the `y` flag on the members that do not go through `exec`.** Since `4e2e00ad` on this
+  branch, `IJSRegExp.IsMatch` (which the `assert` module's `assert.match` calls) and the public `JSRegExp.Replace`
+  honour the `y` flag as `RegExpBuiltinExec` from `lastIndex` and `RegExp.prototype[@@replace]` do in the
+  specification's text, and the public `JSRegExp.Split`, which `String.prototype.split` calls when `@@split` is
+  `undefined` or `null`, tries every position as `RegExp.prototype[@@split]`'s splitter, sticky whatever the flags,
+  does. At the branch's first parent the three honoured `y` only for a pattern routed to Broiler.Regex. No row of
+  Broiler.VM's `correspondence.md` names this (read at Broiler.VM's `450c785f`), so it is recorded here as **a finding
+  for Broiler.VM's correspondence**, whose row is Broiler.VM's to add; `Broiler.JS/CHANGELOG.md` lists it as "A change
+  no row names". The `split` fallback is still not the specification's, which converts the separator with ToString
+  when no `@@split` applies, and is left for a later change.
+
 **Area verdict:** [`SharedLibraries.md`](../../roadmap/SharedLibraries.md), "Area verdicts", "Regular expressions
 (SJL-11.1)", with Broiler.VM's JSD-0081,
 `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0081-regular-expressions-move-to-broiler-regex-under-its-owner-conditions.md`,
