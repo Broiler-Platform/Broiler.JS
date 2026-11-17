@@ -1,0 +1,74 @@
+# engine: broiler-vm
+# corpus: Broiler-Platform/broiler.js@1cb27c7b0bbb060bfd35af8f70a3ffb6b73940c7 content sha256 52229776f83557c1d5c4cacd3e40b184ac68630d3b2e3bda2e1af9f6fe890f8c
+# vectors: 111343
+# match: 111277
+# classified-divergence: 61
+# difference: 5
+# divergence no longer holds: 0
+id	class	expected	rendered	verdict
+regexp/budget/o-ordinary/0004	divergence	value: str:"lastIndex=0;index=0;length=3;0=1:y;1=u;2=1:y;groups=1;<a>=1:y;indices=u"	error: SyntaxError	classified-divergence
+regexp/last-index/m4-surrogate-pairs/0001	divergence	value: str:"lastIndex=2;index=1;length=1;0=1:\uDF06;groups=u;indices=u"	value: str:"lastIndex=2;index=0;length=1;0=2:\uD834\uDF06;groups=u;indices=u"	classified-divergence
+regexp/last-index/m4-surrogate-pairs/0002	divergence	value: str:"lastIndex=2;index=1;length=1;0=1:\uDF06;groups=u;indices=u"	value: str:"lastIndex=2;index=0;length=1;0=2:\uD834\uDF06;groups=u;indices=u"	classified-divergence
+regexp/last-index/m4-surrogate-pairs/0007	divergence	value: str:"lastIndex=2;index=1;length=1;0=1:\uDF06;groups=u;indices=u"	value: str:"lastIndex=2;index=0;length=1;0=2:\uD834\uDF06;groups=u;indices=u"	classified-divergence
+regexp/last-index/m4-surrogate-pairs/0010	divergence	value: str:"lastIndex=3;index=2;length=1;0=1:\uDF06;groups=u;indices=u"	value: str:"lastIndex=3;index=1;length=1;0=2:\uD834\uDF06;groups=u;indices=u"	classified-divergence
+regexp/last-index/m4-surrogate-pairs/0012	divergence	value: str:"lastIndex=2;index=1;length=1;0=1:\uDF06;groups=u;indices=1;0=1-2;igroups=u"	value: str:"lastIndex=2;index=0;length=1;0=2:\uD834\uDF06;groups=u;indices=1;0=0-2;igroups=u"	classified-divergence
+regexp/last-index/m4-surrogate-pairs/0013	divergence	value: str:"lastIndex=2;index=1;length=2;0=1:\uDF06;1=2:\uD834\uDF06;groups=u;indices=2;0=1-2;1=0-2;igroups=u"	value: str:"lastIndex=2;index=0;length=2;0=2:\uD834\uDF06;1=2:\uD834\uDF06;groups=u;indices=2;0=0-2;1=0-2;igroups=u"	classified-divergence
+regexp/last-index/m4-surrogate-pairs/0015	divergence	value: str:"lastIndex=2;index=1;length=1;0=1:\uDF06;groups=u;indices=u"	value: str:"lastIndex=2;index=0;length=1;0=2:\uD834\uDF06;groups=u;indices=u"	classified-divergence
+regexp/literals/s1-s5-names/0006	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0001	divergence	value: str:"lastIndex=0;index=0;length=3;0=1:y;1=u;2=1:y;groups=1;<a>=1:y;indices=u"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0002	divergence	value: str:"lastIndex=0;index=0;length=3;0=1:y;1=u;2=1:y;groups=1;<a>=1:y;indices=3;0=0-1;1=u;2=0-1;igroups=1;<a>=0-1"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0003	divergence	value: str:"lastIndex=0;index=0;length=3;0=1:y;1=u;2=1:y;groups=1;<a>=1:y;indices=u"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0004	divergence	value: str:"lastIndex=0;index=0;length=3;0=1:x;1=1:x;2=u;groups=1;<a>=1:x;indices=u"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0005	divergence	value: str:"lastIndex=0;index=0;length=3;0=1:x;1=1:x;2=u;groups=1;<a>=1:x;indices=3;0=0-1;1=0-1;2=u;igroups=1;<a>=0-1"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0006	divergence	value: str:"lastIndex=0;index=0;length=3;0=2:yy;1=u;2=1:y;groups=1;<a>=1:y;indices=u"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0007	divergence	value: str:"lastIndex=0;index=0;length=3;0=2:xx;1=1:x;2=u;groups=1;<a>=1:x;indices=u"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0008	divergence	value: str:"lastIndex=0;null"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0009	divergence	value: str:"lastIndex=0;index=0;length=4;0=1:z;1=u;2=u;3=1:z;groups=1;<a>=1:z;indices=u"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0010	divergence	value: str:"lastIndex=0;index=0;length=4;0=1:z;1=u;2=u;3=1:z;groups=1;<a>=1:z;indices=4;0=0-1;1=u;2=u;3=0-1;igroups=1;<a>=0-1"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0011	divergence	value: str:"lastIndex=0;index=0;length=5;0=2:pq;1=1:p;2=1:q;3=u;4=u;groups=2;<b>=1:p;<a>=1:q;indices=u"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0012	divergence	value: str:"lastIndex=0;index=0;length=5;0=2:pq;1=1:p;2=1:q;3=u;4=u;groups=2;<b>=1:p;<a>=1:q;indices=5;0=0-2;1=0-1;2=1-2;3=u;4=u;igroups=2;<b>=0-1;<a>=1-2"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0013	divergence	value: str:"lastIndex=0;index=0;length=3;0=2:xy;1=u;2=1:y;groups=1;<a>=1:y;indices=3;0=0-2;1=u;2=1-2;igroups=1;<a>=1-2"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0014	divergence	value: str:"lastIndex=0;index=0;length=3;0=2:yx;1=1:x;2=u;groups=1;<a>=1:x;indices=3;0=0-2;1=1-2;2=u;igroups=1;<a>=1-2"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0015	divergence	value: str:"lastIndex=0;index=0;length=4;0=1:z;1=u;2=u;3=1:z;groups=2;<a>=1:z;<b>=u;indices=4;0=0-1;1=u;2=u;3=0-1;igroups=2;<a>=0-1;<b>=u"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0016	divergence	value: str:"lastIndex=0;index=0;length=4;0=3:xxc;1=1:x;2=u;3=1:c;groups=2;<a>=1:x;<b>=1:c;indices=4;0=0-3;1=0-1;2=u;3=2-3;igroups=2;<a>=0-1;<b>=2-3"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0017	divergence	value: str:"lastIndex=0;null"	error: SyntaxError	classified-divergence
+regexp/matching/s1-duplicate-names/0018	divergence	value: str:"lastIndex=0;index=0;length=3;0=1:y;1=u;2=1:y;groups=1;<a>=1:y;indices=3;0=0-1;1=u;2=0-1;igroups=1;<a>=0-1"	error: SyntaxError	classified-divergence
+regexp/matching/s10-lead-surrogate-escapes/0001	divergence	value: str:"lastIndex=0;null"	error: SyntaxError	classified-divergence
+regexp/matching/s10-lead-surrogate-escapes/0005	divergence	value: str:"lastIndex=0;index=0;length=1;0=1:\uD83D;groups=u;indices=u"	error: SyntaxError	classified-divergence
+regexp/matching/s10-lead-surrogate-escapes/0006	divergence	value: str:"lastIndex=0;index=0;length=1;0=3:\uD83D\u3042\u3042;groups=u;indices=u"	error: SyntaxError	classified-divergence
+regexp/matching/s10-lead-surrogate-escapes/0007	divergence	value: str:"lastIndex=0;index=0;length=1;0=1:\uD83D;groups=u;indices=u"	error: SyntaxError	classified-divergence
+regexp/matching/s10-lead-surrogate-escapes/0008	divergence	value: str:"lastIndex=0;index=0;length=1;0=4:\uD83D\u3042\u3042\uD83D;groups=u;indices=u"	error: SyntaxError	classified-divergence
+regexp/matching/s10-lead-surrogate-escapes/0009	divergence	value: str:"lastIndex=0;index=0;length=1;0=1:\uDC38;groups=u;indices=u"	error: SyntaxError	classified-divergence
+regexp/matching/s10-lead-surrogate-escapes/0010	divergence	value: str:"lastIndex=0;index=0;length=1;0=1:\uD83D;groups=u;indices=u"	error: SyntaxError	classified-divergence
+regexp/matching/s10-lead-surrogate-escapes/0011	divergence	value: str:"lastIndex=0;null"	error: SyntaxError	classified-divergence
+regexp/matching/s10-lead-surrogate-escapes/0012	divergence	value: str:"lastIndex=0;null"	error: SyntaxError	classified-divergence
+regexp/matching/m7-backreference-surrogates/0001	divergence	value: str:"lastIndex=0;null"	value: str:"lastIndex=0;index=0;length=2;0=8:foo\uD834bar\uD834;1=1:\uD834;groups=u;indices=u"	classified-divergence
+regexp/matching/m7-backreference-surrogates/0008	divergence	value: str:"lastIndex=0;null"	value: str:"lastIndex=0;index=0;length=2;0=8:foo\uD834bar\uD834;1=1:\uD834;groups=1;<x>=1:\uD834;indices=u"	classified-divergence
+regexp/matching/m7-backreference-surrogates/0009	divergence	value: str:"lastIndex=0;null"	value: str:"lastIndex=0;index=3;length=2;0=1:b;1=1:\uDC00;groups=u;indices=u"	classified-divergence
+regexp/matching/m7-backreference-surrogates/0011	divergence	value: str:"lastIndex=0;null"	value: str:"lastIndex=0;index=0;length=2;0=8:foo\uD834bar\uD834;1=1:\uD834;groups=u;indices=u"	classified-divergence
+regexp/matching/m7-backreference-surrogates/0016	divergence	value: str:"lastIndex=0;null"	value: str:"lastIndex=0;index=0;length=2;0=2:\uD834\uD834;1=1:\uD834;groups=u;indices=u"	classified-divergence
+regexp/syntax/s1-duplicate-names/0001	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s1-duplicate-names/0002	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s1-duplicate-names/0003	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s1-duplicate-names/0004	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s1-duplicate-names/0005	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s1-duplicate-names/0006	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s1-duplicate-names/0009	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s1-duplicate-names/0012	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s1-duplicate-names/0013	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s1-duplicate-names/0016	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s1-duplicate-names/0017	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s2a-escaped-duplicates/0003	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s10-lead-surrogate-escapes/0001	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s10-lead-surrogate-escapes/0005	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s10-lead-surrogate-escapes/0006	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s10-lead-surrogate-escapes/0007	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/s10-lead-surrogate-escapes/0008	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/syntax/early-errors/0002	divergence	value: bool:true	error: SyntaxError	classified-divergence
+regexp/text/t2-t3-source-escapes/0005	divergence	value: bool:true	value: bool:false	classified-divergence
+regexp/text/t2-t3-source-escapes/0006	divergence	value: bool:true	value: bool:false	classified-divergence
+semantics/annex-b/ab1/0005	impl-defined	value: str:"function"	value: str:"object"	difference
+semantics/jumps/lb1/0001	normative	value: f64:0x4000000000000000	error: SyntaxError	difference
+semantics/jumps/lb1/0002	normative	value: f64:0x4008000000000000	error: SyntaxError	difference
+semantics/jumps/lb1/0003	normative	value: f64:0x4014000000000000	error: SyntaxError	difference
+semantics/named-evaluation/ne1/0001	normative	value: str:"f0"	value: str:"f"	difference

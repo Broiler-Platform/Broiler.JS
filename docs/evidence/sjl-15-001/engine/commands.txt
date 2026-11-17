@@ -1,0 +1,81 @@
+How the engine-level runs in this directory were taken (SJL-15.1, Broiler.JS's half: the `semantics` vectors,
+2026-11-17).
+
+They are each engine's first run on the semantics area, at corpus revision 42, which revision 43 classifies; both
+engines' runs on revision 43 as drafted, before it was committed, for the vectors it adds; and both engines' runs on
+revision 43. They are no part of the rule's parts A to J, and nothing here is a verdict.
+
+Host, for every run here: Ubuntu 24.04.5 LTS; Linux 6.18.44 x86_64; 4 logical CPUs; ICU 74.2; the .NET SDK 10.0.404.
+The semantics area reads no locale or time-zone data. Every run is under TZ=UTC with no LANG, LANGUAGE or LC_ALL, one at
+a time under the machine's build lock and idle gate, from scratch folders on /dev/shm written by `git archive` (no
+checkout, no worktree). Each Broiler.JS run is four evaluating processes (BROILER_VECTORS_WORKERS=4), its Broiler.JS/
+the corpus commit's, whose product paths are 6fda6ca4's (this change touches none); it was built once beforehand:
+  dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers -nodeReuse:false -p:UseSharedCompilation=false
+and run with
+  env -u LANG -u LANGUAGE -u LC_ALL TZ=UTC BROILER_VECTORS_WORKERS=4 BROILER_VECTORS_REPORT=<report>
+    dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --filter "Category=EngineCorpus"
+    --logger "console;verbosity=normal"
+Its negative control changes semantics/named-evaluation/ne1/0001's `out` to `value: str:"g"` in the scratch tree's copy
+of the corpus and runs again; the control's file here keeps its report's header and every line that is not a match.
+Each Broiler.VM run is its conformance root at its origin/main 5e90bfe485aad60b3637d9f69e54ed71adcd73af
+(Broiler-Platform/Broiler.VM#216), built once from a clean archive:
+  dotnet build src/compositions/Broiler.VM.Composition.JavaScript.Conformance -c Release --disable-build-servers -nodeReuse:false -p:UseSharedCompilation=false
+over a scratch archive of the corpus, written by
+  git archive --format=tar.gz <corpus commit> -- conformance/vectors ':(exclude)conformance/vectors/controls'
+twice, byte for byte the same, the second extracted and hashed for a scratch pin in the form of Broiler.VM's
+src/tests/vectors/pins/vectors.pin (`content-sha256` over each file's path below conformance/vectors/ and SHA-256,
+sorted), and run with
+  env -u LANG -u LANGUAGE -u LC_ALL TZ=UTC dotnet <Broiler.VM.Composition.JavaScript.Conformance.dll>
+    --vectors <archive> --expect <scratch pin> --report <report> [--mutate semantics/named-evaluation/ne1/0001]
+Each log was written whole by the run's script: a header naming the commits and the corpus, the runner's output, then
+the exit code and the end time. The scripts are this stage's and are not retained; their commands are the ones above.
+
+== Revision 42, corpus 1cb27c7b0bbb060bfd35af8f70a3ffb6b73940c7
+
+Broiler.JS.
+  times    run 09:15:41Z to 09:26:01Z; negative control 09:26:01Z to 09:36:55Z
+  exit     1 each: 5 unclassified differences, all in the semantics area (EE0138 twice, EE0054, FF4 and FF5), and the
+           run's test fails; 6 under the negative control
+  files    broiler-js-run-revision-42-utc.log and its report .tsv.gz; broiler-js-negative-control-revision-42-utc.log
+           and .tsv
+
+Broiler.VM.
+  pin      broiler-vm-revision-42.pin
+  times    run 09:36:56Z to 09:40:57Z; negative control 09:50:02Z to 09:53:53Z, taken again after the first runs'
+           script was stopped by its time bound during its control (the control's log and report of that try are not
+           retained); its pin was written again from a new archive of the same commit and equals the run's
+  exit     1 each: 4 unclassified differences, all in the semantics area (LB1 three times, AB1 once); 5 under the
+           negative control
+  files    broiler-vm-run-revision-42.log and its report .tsv.gz; broiler-vm-negative-control-revision-42.log and .tsv
+
+== Revision 43 as drafted, before it was committed
+
+The tree: Broiler.JS 750630fb3d2d6e5a9d2c6533d5cf5a38542e3bf7 (this branch, revision 42) with the working tree's
+conformance/vectors/ laid over it: revision 42's files with the vectors revision 43 adds (`since: 43`) and a draft row
+43 in REVISIONS.md, before the classification was written. Broiler.VM's archive of it was written with tar, not git
+archive, and pinned by broiler-vm-revision-43-drafted.pin.
+  Broiler.JS   10:00:42Z to 10:11:48Z; exit 1: 33 unclassified differences, all in the semantics area: revision 42's
+               5 and 28 of the vectors revision 43 adds; broiler-js-run-revision-43-drafted-utc.log and .tsv.gz
+  Broiler.VM   10:11:49Z to 10:15:48Z; exit 1: 4 unclassified differences, revision 42's; none of the added vectors;
+               broiler-vm-run-revision-43-drafted.log and .tsv.gz
+An earlier try of the Broiler.JS run on the drafted tree, without the draft row 43, was refused by the corpus's
+validator (a vector's `since` beyond the corpus's revision) before any vector ran, and is not retained; Broiler.VM's run
+on that tree (09:53:57Z to 09:59:05Z), whose runner reads no `since`, gave the same 4 differences, and is not retained.
+
+== Revision 43, corpus 1f1f2bab174d38600613ff4143dbadcb3a4a4c39
+
+The corpus as committed, its divergence fields read by each runner; no later commit of this change touches
+conformance/vectors/.
+Broiler.JS.
+  times    run 10:33:10Z to 10:43:24Z; negative control 10:43:24Z to 10:54:04Z
+  exit     0 for the run: no unclassified difference, and the run's test passes; of the semantics area, 184 match and
+           33 are classified divergences; 1 under the negative control, its one difference
+  files    broiler-js-run-revision-43-utc.log and its report .tsv.gz; broiler-js-negative-control-revision-43-utc.log
+           and .tsv
+
+Broiler.VM.
+  pin      broiler-vm-revision-43.pin
+  times    run 10:54:05Z to 10:58:06Z; negative control 10:58:06Z to 11:02:04Z
+  exit     0 for the run: no unclassified difference; of the semantics area, 213 match and 4 are classified
+           divergences; 1 for the negative control, its one difference
+  files    broiler-vm-run-revision-43.log and its report .tsv.gz; broiler-vm-negative-control-revision-43.log and .tsv
