@@ -69,11 +69,12 @@ rewritten.* Two findings of the branch's local runs, neither of them a run of th
   that build a `JSString`, or `Phase5TaggedValuePrototypeTests`, which creates a `JSContext`) has run before it in the
   same process. Run alone it fails, at the default branch's `6fda6ca4` as at the branch's `1bee060a`. In a run of the
   whole project the order is xunit v3's, which follows its tests' unique IDs, and those change with the test
-  assembly's path (the runner's assembly ID differs between the two directories below, and so does the order), so
-  the order, and the outcome, follow the directory a build is made in, not the commit: built from a clean archive of
-  `6fda6ca4` in the directory where `1bee060a`'s full runs had failed, it fails every time, and `1bee060a` built in
-  the directory where `6fda6ca4`'s full runs had passed passes every time. The runs are retained in the session's notes
-  and summarised in the change's description. The test is not skipped and is not changed here; making it independent
+  assembly's path (the runner's assembly ID differs between the two build directories named next, and so does the
+  order), so the order, and the outcome, follow the directory a build is made in, not the commit: built from a clean
+  archive of `6fda6ca4` in `/dev/shm/js-s115b/base`, where `1bee060a`'s full runs had failed, a run of the project
+  fails 3 times in 3, and `1bee060a` built in `/dev/shm/js-s115b/race-6fda6ca4`, where `6fda6ca4`'s ten full runs had
+  passed, passes 3 times in 3; `7eeba1eb`, the commit that adds this note, does the same in each directory. The runs
+  are not retained in this bundle; the change's description summarises them. The test is not skipped and is not changed here; making it independent
   of the order (for example by touching a BuiltIns type, or creating a `JSContext`, before it calls `JSException.From`)
   is a follow-up of its own.
 - **A change no row names: the `y` flag on the members that do not go through `exec`.** Since `4e2e00ad` on this

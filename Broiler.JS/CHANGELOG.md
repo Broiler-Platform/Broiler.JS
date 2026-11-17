@@ -71,6 +71,7 @@ document. `RegexTiering` (`EnvironmentVariable`, `PromotionThreshold`, `Enabled`
 `RaceRounds`, `PatternsRebuilt`, `Races`, `Reset` and the `RaceRecord` struct), after the same check of 2026-11-17
 (`gh search code "RegexTiering"`, `"RegexTieringDiagnostics"` and `"BROILER_JS_REGEX_TIERING"`, each `--owner
 Broiler-Platform`), which finds them in this repository only, in its code, its tests, its benchmarks and its records.
+None of the searches of 2026-11-17 finds the Broiler.Unicode test-only copies that the search of 2026-10-19 found.
 
 **Corrections** (decision SJL-D-16 (a)), by row of the correspondence, each where Broiler.Regex follows the
 specification where this engine did not. The rule of bundle [`sjl-11-001`](../docs/evidence/sjl-11-001/README.md) names

@@ -131,7 +131,9 @@ The branch now removes them, as decisions D20 and D21 list them: their public me
 `RacesRun`, `RacesPromoted`, `VerdictsReused`, `VerdictsReusedPromoted`, `RaceRounds`, `PatternsRebuilt`, `Races`,
 `Reset` and `RaceRecord`. Their consumer check, on 2026-11-17: `gh search code "RegexTiering"`,
 `"RegexTieringDiagnostics"` and `"BROILER_JS_REGEX_TIERING"`, each `--owner Broiler-Platform`, found them in this
-repository only (its code, tests, benchmarks and records), so removing them breaks no caller the search found.
+repository only (its code, tests, benchmarks and records), so removing them breaks no caller the search found. It no
+longer finds the Broiler.Unicode test-only copies that the search of 2026-10-19 found (decision D21's bullet in
+[`roadmap/SharedLibraries.md`](roadmap/SharedLibraries.md)), and neither does the `CreateRegex` search above.
 
 ## Public API changes, 2026-11-15 (Intl.Collator moves to the shared collator, milestone SJL-17.5)
 
