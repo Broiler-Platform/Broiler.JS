@@ -1,0 +1,54 @@
+time: 2026-11-16T17:59:13Z
+== CPU
+model: AMD Ryzen 7 5800X 8-Core Processor
+vendor: AuthenticAMD
+identifier: AMD64 Family 25 Model 33 Stepping 0
+processor id (CPUID signature and features): 178BFBFF00A20F10
+microcode (Update Revision): 0x0A20102B
+microcode before this boot's update (Previous Update Revision): 0x0A20102B
+base clock MHz: 3801
+L2 KiB: 4096; L3 KiB: 32768
+== topology
+sockets: 1
+physical cores: 8
+logical processors: 16
+SMT: on
+[Environment]::ProcessorCount: 16
+== memory
+total bytes: 34276364288
+module: 17179869184 bytes, rated 2666 MT/s, configured 2666 MT/s, part BL16G26C16U4W.16FD, bank P0 CHANNEL A, slot DIMM 1
+module: 17179869184 bytes, rated 2666 MT/s, configured 2666 MT/s, part BL16G26C16U4W.16FD, bank P0 CHANNEL B, slot DIMM 1
+== board and firmware
+board: Gigabyte Technology Co., Ltd. A320M-S2H-CF
+firmware: F58d, released 2024-09-02
+system type: desktop
+== OS and kernel
+os: Microsoft Windows 11 Enterprise, 25H2, 64-Bit
+kernel: 10.0.26200.9974 (ntoskrnl.exe 10.0.26100.9974)
+hypervisor present: True
+virtualization-based security: status 2 (0 off, 1 configured, 2 running); security services running: 1 (1 Credential Guard, 2 memory integrity)
+Defender real-time protection: True
+last boot: 2026-11-15T14:17:12Z
+== power and thermal policy
+power source: mains (AC); no battery
+active scheme: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c (High performance)
+AC minimum processor state %: 100 (the scheme's default)
+AC maximum processor state %: 100 (the scheme's default)
+AC processor boost mode: 2 (the scheme's default) (0 disabled, 1 enabled, 2 aggressive, 3 efficient enabled, 4 efficient aggressive)
+AC system cooling policy: 1 (the scheme's default) (0 passive, 1 active)
+AC core parking minimum cores %: 100 (the scheme's default)
+AC sleep after seconds: 0 (the scheme's default) (0 never)
+AC hibernate after seconds: 0 (the scheme's default) (0 never)
+== .NET
+dotnet --version: 10.0.404
+RID: win-x64
+SDKs:
+  10.0.100-rc.1.25451.107 [C:\Program Files\dotnet\sdk]
+  10.0.404 [C:\Program Files\dotnet\sdk]
+runtimes:
+  Microsoft.AspNetCore.App 8.0.34 [C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App]
+  Microsoft.AspNetCore.App 10.0.15 [C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App]
+  Microsoft.NETCore.App 8.0.34 [C:\Program Files\dotnet\shared\Microsoft.NETCore.App]
+  Microsoft.NETCore.App 10.0.15 [C:\Program Files\dotnet\shared\Microsoft.NETCore.App]
+  Microsoft.WindowsDesktop.App 8.0.34 [C:\Program Files\dotnet\shared\Microsoft.WindowsDesktop.App]
+  Microsoft.WindowsDesktop.App 10.0.15 [C:\Program Files\dotnet\shared\Microsoft.WindowsDesktop.App]
