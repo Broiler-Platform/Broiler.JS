@@ -163,8 +163,9 @@ VALUES = [
     ("NE1", "-", "class C { static #m = function () {}; static n() { return C.#m.name; } } C.n()", "\"#m\"",
      "NamedEvaluation for a private field's initialiser"),
     ("NE1", "-", "var [k = function () {}] = []; k.name", "\"k\"", "NamedEvaluation for a binding element's initialiser"),
-    ("EA0006", "EA0006", "let x; eval('var x;')", "THROWS SyntaxError",
-     "EvalDeclarationInstantiation: a var of eval code against a global lexical declaration"),
+    ("EA0007", "EA0007", "let x; eval('var x;')", "THROWS SyntaxError",
+     "EvalDeclarationInstantiation step 3.d.i.2.a.i (EA0007): a var of eval code against a lexical declaration of the "
+     "eval code that calls it, since the probe is itself eval code (an indirect eval's) and its let is that eval code's"),
     ("EA0007", "EA0007", "function f() { let x; { eval('var x;'); } } f()", "THROWS SyntaxError",
      "EvalDeclarationInstantiation: a var of eval code against a lexical declaration it hoists past"),
     ("EA0007", "EA0007", "var r; try { throw 1; } catch (x) { eval('var x = 2;'); r = x; } r", "2",
@@ -181,6 +182,13 @@ VALUES = [
     ("EE1", "EA0005", "class C { x = eval('(function () { return arguments.length; })(1, 2, 3)'); } new C().x", "3",
      "ContainsArguments does not look into a function the eval code holds"),
 ]
+
+
+# The ids a probe ran under, where its row was relabelled after the runs under runs/ were taken (noted 2026-11-17, after
+# review): probe 46 was labelled EA0006 ("a var of eval code against a global lexical declaration") when it ran, but the
+# probes are eval code, so its `let x` is the calling eval code's and the refusal it tests is EA0007's step. Its row is
+# EA0007 here; its id stays the one the retained runs answer, so that merge_answers.py still joins them.
+RAN_AS = {46: "V046-EA0006"}
 
 
 def js_string(text: str) -> str:
@@ -206,7 +214,7 @@ def probes():
         # A directive stays the first statement, so that it is still one.
         directive = "'use strict'; " if source.startswith("'use strict'; ") else ""
         src = directive + "__reached = true; " + source[len(directive):]
-        out.append((f"V{i:03d}-{corr}", "V", corr, row, src, answer, why))
+        out.append((RAN_AS.get(i, f"V{i:03d}-{corr}"), "V", corr, row, src, answer, why))
     return out
 
 

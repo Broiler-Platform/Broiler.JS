@@ -64,3 +64,20 @@ as Scripts and as direct-eval code, and where a Script's answer differs from the
 - **Not shown:** Broiler.VM's timing of eval code's undeclared private name (row PN1, finding F6 of its correspondence):
   its executor refuses the probe's eval code before any of it runs, so no completion value here separates the
   executor's check from a compile-time one.
+
+## Dated notes
+
+*(Noted 2026-11-17, after review, before any run of the rule.)*
+- **"What they show" was revised in `1f1f2bab`**, after the `semantics` vectors' first runs (corpus revision 42) had
+  been seen, to say that every probe is eval code and what the vectors show as Scripts; no probe, run or answer changed.
+  Its first item had begun "**Broiler.JS** refuses before any code runs the `semantics` rows `SyntaxValidation` checks
+  (the jumps, the duplicate `__proto__`, a private name no class declares) and a field initialiser's super call at the
+  top level", had counted "the `arguments` of a field initialiser or of a static block, and `this` as a for-in target"
+  among the rows refused in none of the three forms, and had ended "and a `var` of eval code against the calling eval
+  code's `let` (EA0006 and EA0007's path), which it accepts."; its second had begun "**Broiler.VM** refuses every timing
+  probe before any code runs" and named "a block function in strict indirect-eval code (AB1: aliased)".
+- **Probe `V046-EA0006`'s row is EA0007**, after review: its source, `let x; eval('var x;')`, runs as eval code, so its
+  `let x` is that eval code's and the refusal it tests is EvalDeclarationInstantiation's step 3.d.i.2.a.i (row EA0007),
+  not the global record's (EA0006). [`gen_probes.py`](gen_probes.py) labels its row EA0007 and keeps the id it ran
+  under, which `runs/` answers; `probes.tsv` and `answers.tsv` were written again, and `probes.js`, the program that ran,
+  is unchanged byte for byte.

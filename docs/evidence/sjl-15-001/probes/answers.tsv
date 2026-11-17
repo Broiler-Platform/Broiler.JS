@@ -161,7 +161,7 @@ V042-NE1	V	NE1	-	"x"	""	"x"	x=
 V043-NE1	V	NE1	-	""	""	""	==
 V044-NE1	V	NE1	-	"#m"	"#m"	"#m"	==
 V045-NE1	V	NE1	-	"k"	"k"	"k"	==
-V046-EA0006	V	EA0006	EA0006	THROWS SyntaxError	undefined	THROWS SyntaxError: a direct eval cannot declare var x: a lexical declaration, or a parameter the evaluation's parameter list binds, of the same name lies between the call and its variable environment	x=
+V046-EA0006	V	EA0007	EA0007	THROWS SyntaxError	undefined	THROWS SyntaxError: a direct eval cannot declare var x: a lexical declaration, or a parameter the evaluation's parameter list binds, of the same name lies between the call and its variable environment	x=
 V047-EA0007	V	EA0007	EA0007	THROWS SyntaxError	THROWS SyntaxError: Invalid declaration in direct eval code	THROWS SyntaxError: a direct eval cannot declare var x: a lexical declaration, or a parameter the evaluation's parameter list binds, of the same name lies between the call and its variable environment	==
 V048-EA0007	V	EA0007	EA0007	2	2	2	==
 V049-EE1	V	EE1	EA0003	true	true	true	==

@@ -16,7 +16,7 @@ EE0139	another error than a SyntaxError, or no answer within the bound	T088-EE01
 EE0152	another error than a SyntaxError, or no answer within the bound	T100-EE0152-top (THROWS (template) Error), T101-EE0152-nested (THROWS (template) Error), T102-EE0152-called (THROWS (template) Error)
 EE0153	another error than a SyntaxError, or no answer within the bound	T103-EE0153-top (THROWS (template) Error), T104-EE0153-nested (THROWS (template) Error), T105-EE0153-called (THROWS (template) Error)
 EA0008	checked nowhere (js_stage none)	no probe
-EA0006	a completion value or outcome the specification does not give	V046-EA0006 (undefined, specification THROWS SyntaxError)
+EA0007	a completion value or outcome the specification does not give	V046-EA0006 (undefined, specification THROWS SyntaxError)
 FF4	a completion value or outcome the specification does not give	V010-FF4 (2,2, specification 2,1)
 FF5	a completion value or outcome the specification does not give	V015-FF5 (2, specification 1)
 NE1	a completion value or outcome the specification does not give	V039-NE1 (, specification f), V041-NE1 (, specification a), V042-NE1 (, specification x)

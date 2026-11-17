@@ -161,7 +161,7 @@ V042-NE1	V	NE1	-	__reached = true; var x = (function () {}); x.name	"x"	NamedEva
 V043-NE1	V	NE1	-	__reached = true; var y = (0, function () {}); y.name	""	a comma expression is no anonymous function definition
 V044-NE1	V	NE1	-	__reached = true; class C { static #m = function () {}; static n() { return C.#m.name; } } C.n()	"#m"	NamedEvaluation for a private field's initialiser
 V045-NE1	V	NE1	-	__reached = true; var [k = function () {}] = []; k.name	"k"	NamedEvaluation for a binding element's initialiser
-V046-EA0006	V	EA0006	EA0006	__reached = true; let x; eval('var x;')	THROWS SyntaxError	EvalDeclarationInstantiation: a var of eval code against a global lexical declaration
+V046-EA0006	V	EA0007	EA0007	__reached = true; let x; eval('var x;')	THROWS SyntaxError	EvalDeclarationInstantiation step 3.d.i.2.a.i (EA0007): a var of eval code against a lexical declaration of the eval code that calls it, since the probe is itself eval code (an indirect eval's) and its let is that eval code's
 V047-EA0007	V	EA0007	EA0007	__reached = true; function f() { let x; { eval('var x;'); } } f()	THROWS SyntaxError	EvalDeclarationInstantiation: a var of eval code against a lexical declaration it hoists past
 V048-EA0007	V	EA0007	EA0007	__reached = true; var r; try { throw 1; } catch (x) { eval('var x = 2;'); r = x; } r	2	B.3.4: a var of eval code may name a catch parameter (Annex B)
 V049-EE1	V	EE1	EA0003	__reached = true; ({ m() { return eval('super.constructor') === Object; } }).m()	true	eval code in a method may hold a super property (PerformEval step 11.f)

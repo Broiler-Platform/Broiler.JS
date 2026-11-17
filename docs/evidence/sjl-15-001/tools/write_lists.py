@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Write the class tables of bundle sjl-15-001 (Broiler.JS): corrections/class-e.tsv, class-t.tsv and corrections.tsv.
 
-    python3 -I docs/evidence/sjl-15-001/tools/write_lists.py [check]
+    python3 -I docs/evidence/sjl-15-001/tools/write_lists.py check|write
 
 From Broiler.ECMAScript/docs/frontend/stages.tsv (every row whose stage is `semantics`) and the bundle's
 probes/answers.tsv (Broiler.JS's answer to each probe at 6fda6ca4), by the rules corrections.md states:
@@ -14,7 +14,9 @@ probes/answers.tsv (Broiler.JS's answer to each probe at 6fda6ca4), by the rules
 - C1, the corrections: every semantics row Broiler.JS checks nowhere (`js_stage` none), every row a timing probe shows
   answered with another error than a SyntaxError or not answered within its bound, and every value probe Broiler.JS
   answers otherwise than the specification, by its row of the correspondence.
-`check` writes nothing and fails if a committed table differs from what it would write. Two runs write the same bytes.
+`check` writes nothing and fails if a committed table differs from what it would write; `write` writes the tables. Any
+other argument, or none, is refused and writes nothing (revised 2026-11-17, after review: until then every argument but
+`check` wrote the tables). Two runs write the same bytes.
 """
 from __future__ import annotations
 
@@ -94,6 +96,9 @@ def tables():
 
 
 def main(argv):
+    if argv[1:] not in (["check"], ["write"]):
+        print("usage: write_lists.py check|write (check compares, write writes; nothing else is done)", file=sys.stderr)
+        return 2
     out = tables()
     if argv[1:] == ["check"]:
         bad = [n for n, text in out.items()
