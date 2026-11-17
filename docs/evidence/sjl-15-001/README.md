@@ -1,6 +1,6 @@
 # Bundle SJL-15-001: Broiler.JS on the shared semantic model
 
-**Rules, records and probes only. Nothing here is a verdict, and no run of the rule has been taken.**
+**Rules, records, probes and the `semantics` vectors' runs only. Nothing here is a verdict, and no run of the rule has been taken.**
 
 **Written:** 2026-11-17, at milestone SJL-15 (work packages SJL-15.0 and SJL-15.1, Broiler.JS's half) of the shared
 JavaScript libraries programme, Broiler.VM's `docs/javascript-shared-libraries/milestones/sjl-15-static-semantics.md`.
@@ -22,6 +22,8 @@ default branch on 2026-11-17.
 | [`correspondence-broiler-js.md`](correspondence-broiler-js.md) | This engine's column of Broiler.VM's correspondence, read from code at `6fda6ca4`, each row with its class across both engines (decisions D-x2 and D-js-column), and its findings J1 to J7 |
 | [`probes/`](probes/README.md) | The probes that settle the rows a reading cannot, run on both engines' default branches, every answer recorded beside the specification's |
 | [`corrections.md`](corrections.md) and [`corrections/`](corrections/class-t.tsv) | The classes E and T and the corrections C1, each by row, before any run, written by [`tools/write_lists.py`](tools/write_lists.py) from the stage table and the probes |
+| [`engine/`](engine/commands.txt) | The `semantics` vectors' runs: each engine's first run on corpus revision 42, with its negative control; both engines' runs on revision 43 as drafted, for the vectors it adds; and both engines' runs on revision 43, with their negative controls. Not runs of the rule |
+| [`hashes.txt`](hashes.txt) | The SHA-256 of every other file of the bundle |
 
 ## What it will hold
 
@@ -40,3 +42,7 @@ runs at the library commit; part J's runs, void on a lane that is not controlled
 
 **Owner:** the Broiler.JS maintainer. One person holds every role (the programme's EX-30, recorded in Broiler.VM), and
 nothing here has been read by anyone but its author.
+
+**What this repository's half leaves to Broiler.VM.** The column and the deletion list reach Broiler.VM's bundle
+`sjl-15-001` and JSD-0088 by a dated note in a Broiler.VM change of its own (decision D-x2), which this change does not
+make; until it merges, JSD-0088 records no row's class across both engines, and no SJL-15.2 code merges.
