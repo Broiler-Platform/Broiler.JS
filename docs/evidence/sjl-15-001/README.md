@@ -17,6 +17,7 @@ default branch on 2026-11-17.
 | File | What |
 |---|---|
 | [`decision-rule.md`](decision-rule.md) | The rule: ten predeclared parts, A to J, filed before any change it judges (no model beyond the declarations walk, no model merge, no cut-over, no deletion); it holds no figure |
+| [`decision-rule-revised-2026-11-17.md`](decision-rule-revised-2026-11-17.md) | The rule's first revision, written before any run it judges: a model commit's conditions on Broiler.VM's merges, what part J decides, the commit that carries the class tables and the column, and part D's input; it quotes the rule whole *(row added 2026-11-17, after review)* |
 | [`inputs/closure-suites.txt`](inputs/closure-suites.txt) | Part D's population, the closure-sensitive suites, each test class with its file's digest at `6fda6ca4` and how it entered the list |
 | [`dispositions.md`](dispositions.md) | SJL-15.5's deletion list member by member, and the disposition of every public type it empties (SJL-D-25), this engine's half of X6 |
 | [`correspondence-broiler-js.md`](correspondence-broiler-js.md) | This engine's column of Broiler.VM's correspondence, read from code at `6fda6ca4`, each row with its class across both engines (decisions D-x2 and D-js-column), and its findings J1 to J7 |
@@ -39,6 +40,26 @@ runs at the library commit; part J's runs, void on a lane that is not controlled
   merge, and is never rewritten after it.
 - **The model commits, the library commit, the base commit and the after commit**: named here when each exists, as the
   rule's section "The commits, named before they exist" defines them.
+
+*(Noted 2026-11-17, after review, before any run of the rule.)* The rule commit was defined above as "the last commit on
+this bundle's branch that changes `decision-rule.md`", which is `31ad8140`, a commit that carries none of
+`corrections.md`, its tables, this engine's column or the probes, though the rule says they are "Committed in the same
+change". They were added in `750630fb`, after the records and corpus revision 42, while Broiler.JS's first run on
+revision 42 was being taken and before any result of any vector run had been seen. By the rule's revision of 2026-11-17
+(matter 3), "the same change" is this branch's change, filed by its one merge, and **the rule commit is the last commit
+on this branch that changes `decision-rule.md` or `decision-rule-revised-2026-11-17.md`**, with that merge: it carries
+the rule, its revision, the class tables, the column and the probes together. The same revision says that a model commit
+lands after Broiler-Platform/Broiler.VM#214 and after the Broiler.VM change of decision D-x2 have merged, each observed
+and named here, rather than descending from them (matter 1).
+
+*(Noted 2026-11-17, after review.)* Three files' prose was revised in place after the `semantics` vectors' first runs
+(revision 42) had been seen: `corrections.md`, `correspondence-broiler-js.md` and `probes/README.md`, each in
+`1f1f2bab` and again after review. Each holds a dated note quoting what was replaced. The class tables under
+`corrections/` are as first committed in `750630fb` but for one row of `corrections.tsv`, C1's row of probe
+`V046-EA0006`, moved from EA0006 to EA0007 after review, when the probe was found to test EA0007's step
+(`corrections.md`'s note); no run of the rule had been taken. The `semantics` vectors do not yet hold the eval-code
+inputs of probes V029, V030 and V046, which the probes show and revision 43 did not carry: they are next, by decision
+D-js-revisions' note of 2026-11-17 in `docs/roadmap/SharedLibraries.md`.
 
 **Owner:** the Broiler.JS maintainer. One person holds every role (the programme's EX-30, recorded in Broiler.VM), and
 nothing here has been read by anyone but its author.

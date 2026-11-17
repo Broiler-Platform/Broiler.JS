@@ -10,6 +10,12 @@
 # Issue966InertEvalTests (the inert-eval fast path's cost), Issue818DirectEvalAssignmentTests (a spread call's
 # arguments), and the Intl and Temporal tests the search for "with" and "eval" also reaches.
 #
+# NOTED 2026-11-17, after review, before any run of the rule: the search above gives ten lines at 6fda6ca4, not eleven.
+# FreeNameScanTests was tagged `search`; its file's name holds none of the three words, the draft of this list had put it
+# under the search, and it enters by reading, for the fact its header names (free names and captures, row FC1). Its
+# tag is now `read`, and the sentence above, which reads "gives the first eleven lines (`search`)", is left as written.
+# Part D's population is unchanged: every class listed before is listed, and no other.
+#
 # Columns: the test project's file, relative to Broiler.JS/; the test class; the file's SHA-256 at 6fda6ca4; how it
 # entered the list; the fact it reaches.
 Broiler.JavaScript.Compiler.Tests/CaptureLayoutTests.cs	Broiler.JavaScript.Compiler.Tests.CaptureLayoutTests	4a657653f101a3d7b63ae9e829c64034a03ad7d17bb028cfe179649b75bb54f8	search	captures and their layout
@@ -17,7 +23,7 @@ Broiler.JavaScript.Compiler.Tests/CapturedNumericLocalTests.cs	Broiler.JavaScrip
 Broiler.JavaScript.Compiler.Tests/CapturedScopeCallbackTests.cs	Broiler.JavaScript.Compiler.Tests.CapturedScopeCallbackTests	b3d0214a94dbaa50d8ac95273124fa9a969d3e2e8b90ac64edb2de27d22374ec	search	captured scopes
 Broiler.JavaScript.Compiler.Tests/DirectEvalClosureScopeTests.cs	Broiler.JavaScript.Compiler.Tests.DirectEvalClosureScopeTests	3a16aa19f0502bb174493268f7559a9e49c5f0d50a159b36b2ddb9a25bbc71ed	search	direct-eval contamination of closures
 Broiler.JavaScript.Compiler.Tests/BlockScopedVarNumericLocalTests.cs	Broiler.JavaScript.Compiler.Tests.BlockScopedVarNumericLocalTests	a794e878e0e04868f127d7c314e415deb073a643629d13a2e8ec1a31b131842c	search	block-scoped and var bindings
-Broiler.JavaScript.Compiler.Tests/FreeNameScanTests.cs	Broiler.JavaScript.Compiler.Tests.FreeNameScanTests	e523de82399cb3019540d6c8f1b4d758ab165b994082f6109e13763ededf7ea8	search	free names and captures (FreeNameScan)
+Broiler.JavaScript.Compiler.Tests/FreeNameScanTests.cs	Broiler.JavaScript.Compiler.Tests.FreeNameScanTests	e523de82399cb3019540d6c8f1b4d758ab165b994082f6109e13763ededf7ea8	read	free names and captures (FreeNameScan)
 Broiler.JavaScript.Integration.Tests/Issue650ForLoopScopeTests.cs	Broiler.JavaScript.Integration.Tests.Issue650ForLoopScopeTests	545777fa6a6b2aa7b9d18b6581fb272853a387dc771def6e1651867cb8fa541d	search	for-loop scopes
 Broiler.JavaScript.Integration.Tests/Issue818ForLetConditionClosureTests.cs	Broiler.JavaScript.Integration.Tests.Issue818ForLetConditionClosureTests	eb33d7a16911a68dc1b991d8bb14c9ee9d8bc33e39e9f28c8a1845b10c380ae0	search	per-iteration bindings captured
 Broiler.JavaScript.Integration.Tests/Issue828WithClosureUnscopablesTests.cs	Broiler.JavaScript.Integration.Tests.Issue828WithClosureUnscopablesTests	db5241d431d751ede0d98c3d567ac697ea983ff3883cb13cb9ed07bea88c41fc	search	with and closures
