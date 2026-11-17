@@ -126,7 +126,7 @@ public partial class JSRegExp
     /// </para>
     /// </remarks>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.2.7.2 and JSD-0081 decisions D10, D23 and D41; IP=Low; Security=High; Resources=5; Fingerprint=TBF
-    // Broiler-Falsified-If: /\udf06/u.exec("𝌆") from lastIndex 1 matches, or /^a*$/ over 2,000,000 "a" answers null instead of throwing a RangeError or matching
+    // Broiler-Falsified-If: /\udf06/u.exec("\ud834\udf06") from lastIndex 1 matches, or /^a*$/ over 2,000,000 "a" answers null instead of throwing a RangeError or matching
     // Broiler-Human:        PENDING
     internal RegexMatchData RunMatch(string input, int start, bool anchored)
     {

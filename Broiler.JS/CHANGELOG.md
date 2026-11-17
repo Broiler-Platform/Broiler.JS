@@ -67,7 +67,7 @@ specification where this engine did not. The rule of bundle [`sjl-11-001`](../do
 them in [`decision-rule.md`](../docs/evidence/sjl-11-001/decision-rule.md) and its revision of 2026-11-17,
 [`decision-rule-revised-2026-11-17.md`](../docs/evidence/sjl-11-001/decision-rule-revised-2026-11-17.md):
 - **The literal check** (decision D22), closed by the scanner's call of the validate entry:
-  - **S2b**, a reference spelled with an escape, `/(?<A>x)\k<A>/`, is admitted, as the constructor admitted it;
+  - **S2b**, a reference spelled with an escape, `/(?<A>x)\k<\u0041>/`, is admitted, as the constructor admitted it;
   - **S7**, a quantified look-behind without `u`, `/(?<=a)?/`, is refused: test262's
     `language/literals/regexp/invalid-optional-lookbehind.js`, `invalid-optional-negative-lookbehind.js`,
     `invalid-range-lookbehind.js` and `invalid-range-negative-lookbehind.js` pass, where they failed;
@@ -77,7 +77,7 @@ them in [`decision-rule.md`](../docs/evidence/sjl-11-001/decision-rule.md) and i
   - **S11**, a literal's errors reported early, not when it is evaluated: the invalid modifiers, `/(?ii:a)/` and the
     row's others, and the `v`-mode classes; the 30 `language/literals/regexp/early-err-modifiers-*` and
     `early-err-arithmetic-modifiers-*` files the rule names pass, where they failed;
-- **S2a**, a name spelled once with an escape and once without in one alternative, `(?<a>x)(?<a>y)`, is refused;
+- **S2a**, a name spelled once with an escape and once without in one alternative, `(?<\u0061>x)(?<a>y)`, is refused;
 - **S5's class case** (decision D-s5), `\k` in a class beside a named group without `u`, `/(?<a>.)[\k]/`, is admitted as
   the letter, as B.1.2 reads it;
 - **S10's class case**, `[\uD83D\u{DC38}]` under `u`, is two lone surrogates, not one astral code point; a `u`
@@ -101,7 +101,7 @@ them in [`decision-rule.md`](../docs/evidence/sjl-11-001/decision-rule.md) and i
 - **M6**, `String.prototype.search`'s direct call (above): `"abc".search(r)` for `r = /b/` with an own `@@search` of
   `undefined` is `-1`, the search for `"/b/"`, where it was `1`;
 - **T1**, a literal's `source`: `/\u{1F600}/u.source` is `\u{1F600}`, the text the literal holds, as its constructor
-  twin's is, where it was `😀`;
+  twin's is, where it was `\ud83d\ude00`;
 - **with Broiler.Regex `0.1.0-preview.4`**: B1 (a shortened match and the no-match of a long greedy run, widened to
   `/^[a]*$/u`), B2 (a wrong index), B3 (a flipped look-around), B5 (the stack guard's fallback, to .NET and to no
   match), B8 (the process abort of a flat sequence), S3b's process abort at the deepest nesting and M7's look-behind
