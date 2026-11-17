@@ -22,6 +22,42 @@ corrections of Broiler.JS that Broiler.VM's JSD-0081 added by its decisions D-js
 2026-11-16, and says how a row the list names "with Broiler.Regex 0.1.0-preview.4" reads now that the base routes
 through `0.1.0-preview.6`. `decision-rule.md` is not edited; the two are read together.
 
+*Dated note, 2026-11-17, after review, on branch `sjl-11-5`; the revision is a filed rule file and is not edited, and
+the paragraph above is not rewritten.* What the revision says and the sources read otherwise:
+- **The runs seen.** It says it is written "before any run this rule judges and before any run of this engine's
+  regular expressions at SJL-11.5", and its list of the runs seen leaves one out. At 2026-11-17T08:28:06Z, before the
+  inputs commit `24fe7cba` was made and before the revision `189d65ff`, the benchmark `Program.cs`'s `--regexp-answers`
+  ran the workloads of [`inputs/workloads/`](inputs/workloads/README.md) through this engine, from a Release build of
+  this branch's working tree: the inputs commit's files not yet committed, over the default branch's product code at
+  `6fda6ca4`, the translator's. It was seen before the revision was written. It is taken at no commit the rule names,
+  it is no base, after, control or measurement, and it judges nothing, so the revision's "It is not weaker evidence"
+  still holds; this bundle does not retain its output.
+- **No earlier revision.** It says "No earlier revision of it exists". No earlier revision file exists. The blob it
+  quotes, `b1f7091d`, already holds the rule's own revision of 2026-10-25, "*Revised 2026-10-25, the day it was
+  written, after review, before any run ...*", and its dated notes of 2026-11-01, which the revision says stand.
+- **How it quotes.** From its heading "The rule it revises, quoted whole" on, each line of the blob is prefixed with
+  "> ", and a blank line is a bare ">". The file does not say so itself.
+- **Rows M2a and M15 at the base.** Since SJL-9's clause 8 (`0705e80b`, 2026-11-12) the translator has built every
+  .NET `Regex` with `RegexOptions.CultureInvariant` (`Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1013-1016`
+  at `6fda6ca4`), so both rows are corrected already at the base and cannot move between the base and after runs. The
+  revision adds M15 to part A's list, where it can explain no row. Part D's "How it is read", "the base runs show it
+  (row M2a, under `tr-TR` and under `lt-LT`), and the after runs must not", was written at `1f91b8f1`, before that
+  change: at the base its first half no longer holds, and its second still does. The revision reads neither.
+- **Part C and "The pins" through `0.1.0-preview.6`.** The revision says "Nothing else changes: parts B to E". Part C's
+  reading of the N cases, which "end the process where Broiler.Regex `0.1.0-preview.4`'s parser recurses past the
+  stack" at the base, and "The pins" above, "Broiler.Regex `0.1.0-preview.4`, which this engine restores today, until
+  SJL-11.5 moves the pin", read through `0.1.0-preview.6` at the base, as the plan's note of 2026-11-16
+  ([`SharedLibraries.md`](../../roadmap/SharedLibraries.md)) says: the base pins it, SJL-11.5 does not move the pin,
+  and at the base the deepest nesting of row S3b compiles rather than ending the process.
+- **The rows' words.** The revision says "Each of the correspondence's rows above says that no test262 file that run
+  fails is explained by it". At Broiler.VM's `5e90bfe4` only row S12 says so: "No test262 file at `ccaac100` that
+  Broiler.JS's `sjl-10-001` after run fails is explained by this row ..., so no Broiler.JS part A row is known to move
+  for it". Rows S13 to S15 and M8 say "as row S12, no Broiler.JS test262 row is known to move for it", and rows M9 to
+  M27 "no test262 row is known to move for it".
+
+None of this changes what the revision decides. Every run this branch has taken is a local run of its own, at the
+default branch's product code or at the branch's: none is a base or an after run of the rule.
+
 **Area verdict:** [`SharedLibraries.md`](../../roadmap/SharedLibraries.md), "Area verdicts", "Regular expressions
 (SJL-11.1)", with Broiler.VM's JSD-0081,
 `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0081-regular-expressions-move-to-broiler-regex-under-its-owner-conditions.md`,

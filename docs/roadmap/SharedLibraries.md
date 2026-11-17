@@ -1498,6 +1498,23 @@ This repository's part of it:
 
   The branch's own local runs are no runs of the rule and judge nothing. Every clause of this engine's, 4 to 7, is
   unmet, and none of it is accepted.
+- *(Noted 2026-11-17, after review of branch `sjl-11-5`; the note above is left as written.)* The note above reads
+  "`RegexTiering` and `RegexTieringDiagnostics`, which the deletion list above names, and the tests and benchmarks
+  that test only them, are kept on the branch, and the records put that to the owner". **That departs from decision
+  D21's bullet**, which reads "`RegexTiering`, `RegexTieringDiagnostics` and both `CreateRegex` overloads: **(c),
+  removal**, with a consumer check" and "Their own tests are deleted with them", and from decision D20's list, which
+  names "`RegexTieringTests`", "`RegexTieringMetrics`, and `RegexProfileMetrics`' .NET rows or the whole file". The
+  branch keeps them because the instruction it is made under reads "Never weaken, skip or delete a test"; which of the
+  two governs is the owner's to rule, and the merge waits on that ruling as well. Nothing in the engine calls the two
+  types on the branch, since the .NET `Regex` they tier is deleted: `BROILER_JS_REGEX_TIERING` changes nothing,
+  `RegexTieringTests`' test of a hot pattern fails, and its other tests pass without reaching a race.
+  - **A record outside the area that goes stale at the merge:** `Broiler.ECMAScript/docs/frontend/early-errors.md`'s
+    table of moved paths and the rows that cite them (EE0183, EE0184, EE0186 to EE0190, EE0192, EE0193, EE0195,
+    EE0197 to EE0205, EE0210, EE0212 and EX0026) name
+    `Broiler.JavaScript.Ast/RegExpGroupNames.cs` and `Broiler.JavaScript.Ast/Unicode/JSUnicodePropertyNames.cs`,
+    which the branch deletes, and lines of `RegExpUnicodeValidator.cs`, which it makes a forwarder. That record is
+    Broiler.ECMAScript's, and its dated note is that owner's, after the merge; the branch changes nothing under
+    `Broiler.ECMAScript/`.
 
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses and the component's are judged in
 their own bundles of the same name, and SJL-11 may not meet its gate before SJL-7 meets SJL-7's, and so not before
