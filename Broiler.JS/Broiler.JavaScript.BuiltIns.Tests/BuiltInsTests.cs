@@ -9988,6 +9988,59 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void ForIn_Visits_Every_Original_Property_When_The_Added_Key_Relocates_A_Trie_Node()
+    {
+        // Regression for the order-dependent failure of the test above (`p1|p1`). Own
+        // properties live in a trie keyed by the process-global KeyString id. Adding a key
+        // whose id is smaller than an existing key's, on the same trie path, moves the
+        // existing node into a newly allocated child group; when that allocation grows the
+        // backing array, an enumerator that held a by-value copy of the map kept reading the
+        // old array, where the slot already carried the new key and the moved node was gone,
+        // so the walk stopped early. Whether `p4` displaced `p2` depended on which test
+        // interned those names first. Here the ids are chosen so the displacement always
+        // happens: the added key is interned first (smaller id) and shares the root slot
+        // (id & 3) of the second property; slot 0 is avoided because key 0 owns it.
+        EnsureBuiltInsLoaded();
+
+        static string Fresh(out uint id)
+        {
+            var name = "k" + Guid.NewGuid().ToString("N");
+            id = KeyStrings.GetOrCreate(name).Key;
+            return name;
+        }
+
+        string added;
+        uint addedId;
+        do added = Fresh(out addedId); while ((addedId & 3) == 0);
+
+        string first = null, displaced = null, last = null;
+        var usedSlots = new HashSet<uint> { 0, addedId & 3 };
+        while (first == null || displaced == null || last == null)
+        {
+            var name = Fresh(out var id);
+            if ((id & 3) == (addedId & 3))
+            {
+                if (displaced == null && id > addedId)
+                    displaced = name;
+            }
+            else if (usedSlots.Add(id & 3))
+            {
+                if (first == null) first = name; else last = name;
+            }
+        }
+
+        using var ctx = new JSContext();
+        var result = ctx.Eval($@"
+            var o = {{ '{first}': 1, '{displaced}': 2, '{last}': 3 }};
+            var visited = [];
+            for (var k in o) {{ if (k === '{first}') o['{added}'] = 4; visited.push(k); }}
+            visited.join(',');
+        ");
+
+        Assert.Equal($"{first},{displaced},{last}", result.ToString());
+    }
+
+    [Fact]
     public void ForIn_Continues_After_Deleting_The_Next_Property_Match_Test262()
     {
         // Regression: deleting the property that for-in is about to visit terminated

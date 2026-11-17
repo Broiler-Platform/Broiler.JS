@@ -1,4 +1,6 @@
+using System.Runtime.CompilerServices;
 using Broiler.JavaScript.Ast.Misc;
+using Broiler.JavaScript.BuiltIns.Error;
 using Broiler.JavaScript.BuiltIns.Null;
 using Broiler.JavaScript.BuiltIns.String;
 using Broiler.JavaScript.Runtime;
@@ -102,6 +104,13 @@ public class RuntimeTests
     [Fact]
     public void JSException_From_RegularException_CreatesNewJSException()
     {
+        // JSException.From wraps a CLR exception in a JS Error, built through the
+        // JSException.CreateJSError delegate that only the BuiltIns assembly's module
+        // initializer installs (Runtime cannot reference BuiltIns). Nothing else in this
+        // test touches a BuiltIns type, so without this it passed only when an earlier
+        // test in the same process happened to load BuiltIns, and failed when run alone.
+        RuntimeHelpers.RunModuleConstructor(typeof(JSError).Assembly.ManifestModule.ModuleHandle);
+
         var exception = new InvalidOperationException("boom");
 
         var jsException = JSException.From(exception);
