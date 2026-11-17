@@ -1,0 +1,22 @@
+# Bundle sjl-15-001 (Broiler.JS): C1, the corrections the model makes of this engine, by row
+# Written by tools/write_lists.py from Broiler.ECMAScript/docs/frontend/stages.tsv and probes/answers.tsv; never
+# edited by hand. corrections.md says how it is read.
+row	kind	evidence
+EE0021	checked nowhere (js_stage none)	no probe
+EE0054	checked nowhere (js_stage none)	T007-EE0054-top (undefined), T008-EE0054-nested (function), T009-EE0054-called (undefined)
+EE0076	another error than a SyntaxError, or no answer within the bound	T022-EE0076-top (THROWS (template) Error), T023-EE0076-nested (THROWS (template) Error), T024-EE0076-called (THROWS (template) Error)
+EE0077	another error than a SyntaxError, or no answer within the bound	T025-EE0077-top (THROWS (template) Error), T026-EE0077-nested (THROWS (template) Error), T027-EE0077-called (THROWS (template) Error)
+EE0104	another error than a SyntaxError, or no answer within the bound	T043-EE0104-top (THROWS (template) Error), T044-EE0104-nested (THROWS (template) Error), T045-EE0104-called (THROWS (template) Error)
+EE0105	another error than a SyntaxError, or no answer within the bound	T046-EE0105-top (THROWS (template) Error), T047-EE0105-nested (THROWS (template) Error), T048-EE0105-called (THROWS (template) Error)
+EE0119	another error than a SyntaxError, or no answer within the bound	T058-EE0119-top (THROWS (template) Error), T059-EE0119-nested (THROWS (template) Error), T060-EE0119-called (THROWS (template) Error)
+EE0120	another error than a SyntaxError, or no answer within the bound	T061-EE0120-top (THROWS (template) Error), T062-EE0120-nested (THROWS (template) Error), T063-EE0120-called (THROWS (template) Error)
+EE0131	another error than a SyntaxError, or no answer within the bound	T077-EE0131-nested (TIMEOUT), T078-EE0131-called (TIMEOUT)
+EE0138	checked nowhere (js_stage none)	T085-EE0138-top (true), T086-EE0138-nested (function), T087-EE0138-called (undefined)
+EE0139	another error than a SyntaxError, or no answer within the bound	T088-EE0139-top (THROWS TypeError), T090-EE0139-called (THROWS TypeError)
+EE0152	another error than a SyntaxError, or no answer within the bound	T100-EE0152-top (THROWS (template) Error), T101-EE0152-nested (THROWS (template) Error), T102-EE0152-called (THROWS (template) Error)
+EE0153	another error than a SyntaxError, or no answer within the bound	T103-EE0153-top (THROWS (template) Error), T104-EE0153-nested (THROWS (template) Error), T105-EE0153-called (THROWS (template) Error)
+EA0008	checked nowhere (js_stage none)	no probe
+EA0006	a completion value or outcome the specification does not give	V046-EA0006 (undefined, specification THROWS SyntaxError)
+FF4	a completion value or outcome the specification does not give	V010-FF4 (2,2, specification 2,1)
+FF5	a completion value or outcome the specification does not give	V015-FF5 (2, specification 1)
+NE1	a completion value or outcome the specification does not give	V039-NE1 (, specification f), V041-NE1 (, specification a), V042-NE1 (, specification x)

@@ -1,0 +1,54 @@
+# Bundle sjl-15-001 (Broiler.JS): class E, the semantics rows this engine checks in a compiler stage (decision D45)
+# Written by tools/write_lists.py from Broiler.ECMAScript/docs/frontend/stages.tsv and probes/answers.tsv; never
+# edited by hand. corrections.md says how it is read.
+id	shared_code	js_stage	js_site
+EE0015	JSE1311	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0018	JSE1314	SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:908
+EE0058	JSE1419	SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:555
+EE0059	JSE1420	SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:539
+EE0074	JSE1507	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMemberExpression.cs:25
+EE0075	JSE1508	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMemberExpression.cs:25
+EE0076	JSE1509	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0077	JSE1510	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0081	JSE1514	SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:534
+EE0082	JSE1515	SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:550
+EE0093	JSE1526	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0102	JSE1535	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMemberExpression.cs:25
+EE0103	JSE1536	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMemberExpression.cs:25
+EE0104	JSE1537	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0105	JSE1538	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0106	JSE1539	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0117	JSE1550	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMemberExpression.cs:25
+EE0118	JSE1551	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMemberExpression.cs:25
+EE0119	JSE1552	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0120	JSE1553	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0121	JSE1554	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0124	JSE1557	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0126	JSE1559	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0130	JSE1563	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitIdentifier.cs:344
+EE0131	JSE1564	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0136	JSE1569	SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:534
+EE0137	JSE1570	SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:550
+EE0139	JSE1572	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0142	JSE1575	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0150	JSE1583	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMemberExpression.cs:25
+EE0151	JSE1584	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMemberExpression.cs:25
+EE0152	JSE1585	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0153	JSE1586	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0162	JSE1603	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMemberExpression.cs:25; Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0165	JSE1606	SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:534
+EE0166	JSE1607	SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:550
+EE0167	JSE1608	SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1253; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1217
+EE0170	JSE1611	SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:345
+EE0171	JSE1612	Visit*	Broiler.JavaScript.Compiler/Statements/FastCompiler.Module.cs:147
+EE0172	JSE1613	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMemberExpression.cs:25; Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
+EE0175	JSE1616	SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:534
+EE0176	JSE1617	SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:550
+EE0177	JSE1618	SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:1253; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1217
+EA0003	JSE1903	DirectEvalSupport	Broiler.JavaScript.Compiler/DirectEvalSupport.cs:281
+EA0004	JSE1904	DirectEvalSupport	Broiler.JavaScript.Compiler/DirectEvalSupport.cs:267
+EA0005	JSE1905	DirectEvalSupport	Broiler.JavaScript.Compiler/DirectEvalSupport.cs:302
+EA0007	JSE1907	DirectEvalSupport+SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:42; Broiler.JavaScript.Compiler/DirectEvalSupport.cs:718; Broiler.JavaScript.Compiler/DirectEvalSupport.cs:732
+EA0009	JSE1909	DirectEvalSupport+SyntaxValidation	Broiler.JavaScript.Compiler/SyntaxValidation.cs:730; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1217; Broiler.JavaScript.Compiler/SyntaxValidation.cs:1253
+EP0017	JSE7403	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMemberExpression.cs:25
+EP0018	JSE7404	Visit*	Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397
