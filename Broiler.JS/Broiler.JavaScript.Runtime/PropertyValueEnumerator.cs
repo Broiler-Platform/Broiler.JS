@@ -11,7 +11,6 @@ namespace Broiler.JavaScript.Runtime;
 public struct PropertyValueEnumerator
 {
     public JSObject target;
-    private SAUint32Map<JSObjectProperty> map;
     private uint start;
     readonly bool showEnumerableOnly;
 
@@ -19,16 +18,27 @@ public struct PropertyValueEnumerator
     {
         this.showEnumerableOnly = showEnumerableOnly;
         this.target = target;
-        ref var properties = ref target.GetOwnProperties();
-        map = properties.GetMap();
-        start = properties.Head;
+        start = target.GetOwnProperties().Head;
     }
+
+    // The target's live property map, read afresh on every step rather than copied once.
+    // SAUint32Map is a struct over a growable node array, so a by-value copy goes stale as
+    // soon as the object gains a property that grows that array: the copy keeps reading the
+    // old array, in which a node relocated by the insertion (a smaller key displacing a
+    // larger one on its trie path) is missing, and the walk stopped at the first such key.
+    // A for-in body adding a property hit exactly that, so for-in dropped the properties
+    // still to come — depending on the process-global KeyString ids, which made
+    // ForIn_Does_Not_Visit_Properties_Added_During_Enumeration_Match_Test262 order-dependent.
+    // Walking the live map keeps the insertion-order chain consistent; properties added
+    // mid-walk are filtered by the for-in caller (KeyEnumerator), not here.
+    private readonly ref SAUint32Map<JSObjectProperty> Map
+        => ref target.GetOwnProperties(false).GetMap();
 
     public bool MoveNext(out KeyString key)
     {
         while (start > 0)
         {
-            ref var objP = ref map.GetRefOrDefault(start, ref JSObjectProperty.Empty);
+            ref var objP = ref Map.GetRefOrDefault(start, ref JSObjectProperty.Empty);
             ref var p = ref objP.Property;
 
             if (p.IsEmpty)
@@ -61,7 +71,7 @@ public struct PropertyValueEnumerator
     {
         while (start > 0)
         {
-            ref var objP = ref map.GetRefOrDefault(start, ref JSObjectProperty.Empty);
+            ref var objP = ref Map.GetRefOrDefault(start, ref JSObjectProperty.Empty);
             ref var p = ref objP.Property;
 
             if (p.IsEmpty)
@@ -97,7 +107,7 @@ public struct PropertyValueEnumerator
     {
         while (start > 0)
         {
-            ref var objP = ref map.GetRefOrDefault(start, ref JSObjectProperty.Empty);
+            ref var objP = ref Map.GetRefOrDefault(start, ref JSObjectProperty.Empty);
             ref var p = ref objP.Property;
 
             if (p.IsEmpty)
