@@ -254,6 +254,56 @@ whose second is `20f1cbbb`, the head of `sjl-11-5-inputs`. So the inputs commit 
 
 Nothing here names the after commit, and no run here is a verdict.
 
+*Dated note, 2026-11-18, on branch `sjl-11-5`, the base runs; the list "What the bundle will hold" below is not
+rewritten.* It reads "`base/`: part A's base run, imported unchanged with the digest of its zip, and parts C and D's
+base runs". Every base run the rule asks of parts A, C and D was taken on 2026-11-18 at
+`5429c4065e8b273e5c7965598b8a2f5490a8ad98`, during the hold, with the default branch's head at that commit before
+and after each, and is retained in [`base/`](base/), with [`base/hashes.txt`](base/hashes.txt) (the SHA-256 of every
+file there) and [`base/manifest.json`](base/manifest.json). They are base runs only, read and not judged: each part
+is judged on its after runs, which do not exist yet, and nothing here is a verdict.
+- **Part A**, by `.github/workflows/test262-evidence.yml` as the default branch carries it at that commit, blob
+  `fc38229782ee1b2e93ecca9e990d182f5e44dbf2`, the blob the second revision admits: workflow run
+  [44377139618](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/44377139618) (attempt 1), dispatched on
+  `main` with commit `5429c4065e8b273e5c7965598b8a2f5490a8ad98`, suite_ref
+  `ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e`, max_workers 4, test_timeout_seconds 30, rerun_timeouts true, time_zone
+  empty and include_negative true, the inputs part A's configuration line fixes. Its head commit, its `run.txt`'s
+  tested commit and its dispatched ref all read `5429c406`; its conclusion is success, and so is every job's. Its
+  artifact `test262-evidence` (id 14465668792) was downloaded, and the zip's SHA-256,
+  `94779ac9e0dba0fa11aa24a4d29443291ea9ad40c986eb7898374444dd02a9a0`, equals the digest GitHub records for it; the
+  zip is named here by that digest, and every file in it is retained unchanged in [`base/part-a/`](base/part-a/),
+  with [`imported.txt`](base/part-a/imported.txt), `runner-images.txt` and `part-a-artifacts.txt` added. Its own
+  records read "shards: 8; distinct lists: 1" (one shell), "shards: 8; in the expected zone: 8" (UTC, tzdata 2026e)
+  and "0 incomplete shard(s)". The shard jobs ran on three versions of the `ubuntu-24.04` image, as
+  `runner-images.txt` lists; the rule fixes the shell and the zone, which the records show, and not the image version.
+- **Part C**, locally, from a clean `git archive` of that commit on disk, the shell `BroilerJS` built in Release:
+  every case of [`inputs/adversarial/manifest.tsv`](inputs/adversarial/manifest.tsv), one process each with
+  `--script-host`, its program checked against the manifest's SHA-256 first (every one matched; the folder is the
+  rule commit's, tree `3b1c1a60`), under the manifest's wall-clock limit, the invariant culture and `TZ=UTC`, by
+  [`base/run-part-c.py`](base/run-part-c.py); exit 0. [`base/part-c/results.tsv`](base/part-c/results.tsv) gives each
+  case's exit and outcome and `base/part-c/cases/` each process's whole output. At the base, cases M01 and M02
+  complete where their declared outcome is a `RangeError`, N02, N04, N08, N10, N11, N14 and N16 complete where theirs is
+  a `SyntaxError`, and N05 passes the wall-clock limit where its is a `SyntaxError`; every other case gives its
+  declared outcome. Part C compares the after outcomes with the declared ones and with these.
+- **Part D**, locally, from the same tree: the vector runner `Broiler.JavaScript.Vectors.Tests` built in Release, run
+  three times, under the invariant culture, `tr-TR` and `lt-LT`, one evaluating process each, `TZ=UTC`; exits 0, 1 and
+  1. Each report is the whole corpus at the tree's corpus revision, 43, kept as
+  [`base/part-d/run-*.tsv.gz`](base/part-d/) with each run's negative control beside it. The `regexp/` vectors of
+  revision 43 are revision 32's, the revision part D names, with the same ids, inputs and `out` lines; revision 39
+  retired some of their `divergence` fields and reclassed them, which changes only their `class` and `divergence.*`
+  lines (`git diff de8d7b54 5429c406 -- conformance/vectors/regexp`). [`base/part-d/reading.txt`](base/part-d/reading.txt)
+  reads the three reports: their `regexp/` lines are byte-identical, and every line that differs between the cultures
+  is an `intl/` vector, outside part D's population, which is why the `tr-TR` and `lt-LT` runs exit 1. Part D's "How
+  it is read", "the base runs show it (row M2a, under `tr-TR` and under `lt-LT`), and the after runs must not", does not
+  hold at this base for its first half, as the note of 2026-11-17 above on rows M2a and M15 says.
+- **Part B** is not taken here. The rule judges it "an acceptance comparison when the lane is a controlled lane", and
+  this machine is not one; its arms are builds of the base and after commits, measured in one session in a rotating
+  order, so it needs the after commit. Whether it is taken on the owner's lane or recorded void is the owner's.
+- **Part E** has no base run: its population is "the after commit's sources".
+
+[`base/commands.txt`](base/commands.txt) gives every local command as it was run, and `base/logs/` each step's gate,
+machine record, exit, output and time. The test262 checkout the local parts would need is none: neither part C nor
+part D reads test262.
+
 *2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
 
 *2026-11-01, at corpus revision 32:* **part D names revision 32**, the revision that classifies both engines' first
