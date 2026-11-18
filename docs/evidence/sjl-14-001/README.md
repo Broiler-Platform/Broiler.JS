@@ -36,7 +36,12 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
   since the rule classifies only at the base commit; `side-by-side/w2-base/` waits for the base commit.)*
 - `base/` and `after/` - part A's hosted runs (UTC, negative tests), imported unchanged with their digests, and the
   comparison; parts D, E, F, G, H and K's local runs;
-- `measurement/` - part I's runs, void on a lane that is not controlled (decision D48);
+- `measurement/` - part I's runs, void on a lane that is not controlled (decision D48); *(Noted 2026-11-18: this
+  line reads "`measurement/` - part I's runs, void on a lane that is not controlled". Part I is to be taken as written
+  on the controlled lane [`win-x64-r7-5800x`](../lanes/win-x64-r7-5800x/README.md), by the owner's choice of
+  2026-11-18 (the note under "Clause 6" below). That run goes to a new sub-bundle named for the lane, as bundle
+  `sjl-3-001`'s part B run on that lane went to its own `measurement-win-x64-r7-5800x/`. `measurement/` stays for
+  runs on a lane that is not controlled. No run of part I exists.)*
 - `fuzz/` - part J's session;
 - `manifest.json` (decision D56), written by the bundle's collector at the evidence step.
 
@@ -205,7 +210,19 @@ taken is to take them in this stage. Part C's verdict reads only the runs at the
   go to `measurement/` as before, retained and recorded void. The choice is recorded in
   [`docs/roadmap/SharedLibraries.md`](../../roadmap/SharedLibraries.md)'s SJL-14 section and by a dated note on
   Broiler.VM's decision SJL-D-23; [`decision-rule.md`](decision-rule.md) is not edited, as it leaves the choice to the
-  owner and makes none.)*
+  owner and makes none.)* *(Noted 2026-11-18, at SJL-D-23's trigger (a): the note above reads "Clause 6 is kept as
+  written: met only by a MET reading of part I on a controlled lane, and unmet until one exists." A controlled lane
+  exists, [`win-x64-r7-5800x`](../lanes/win-x64-r7-5800x/README.md), recorded with bundle `sjl-3-001`'s part B run on
+  it. On 2026-11-18 the owner was asked "SJL-14 clause 6 (Broiler.JS's parse measurement, part I of the sjl-14-001
+  rule) was deferred on 2026-11-03 until a controlled lane exists. Now that win-x64-r7-5800x is recorded, what should
+  happen?" and chose "Take it on the lane": "Part I is taken on win-x64-r7-5800x as written, the way part B was. I
+  write a short brief for a local session on your workstation; you run it there." Not taken: "Keep it deferred":
+  "Clause 6 stays unmet. It is still listed under trigger (b), and nothing is run." This is the owner's own dated
+  choice, not one taken under the owner's direction of 2026-10-18. **Part I is to be taken as written on that lane, and
+  not yet**: its arms are "B the base commit's build; A the after commit's", and neither commit exists. W2, the after
+  commit, is held for SJL-11.5 (the commits above), so part I is taken after W2 merges. Until then part I has no run
+  and stays void as recorded here, and clause 6 is unmet. Part I names no RID: it is judged "on the lane the bundle
+  names with its effective configuration". [`decision-rule.md`](decision-rule.md) is not edited.)*
 - **Exclusions:** none.
 
 | Exclusion | What | Why |
