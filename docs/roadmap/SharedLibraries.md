@@ -167,6 +167,22 @@ allows, and a third measurement would first need a new dated revision of that ru
 accepted, because no second holder exists to review it. The programme's ledger and a dated note under decision
 SJL-D-23 are to record trigger (a) and this reading; both are filed in Broiler.VM apart from this record.)*
 
+*(Noted 2026-11-18, at trigger (a), on the owner's own dated choice for Broiler.VM's clause 13. The note above reads
+"Broiler.VM's clause 13 stays open after the last measurement its rule's revision allows, and a third measurement would
+first need a new dated revision of that rule by the owner". On 2026-11-18 the owner was asked: "SJL-3 clause 13
+(Broiler.VM's measurement) is open after the last measurement its 2026-10-20 revision allows. What should happen now
+that a controlled lane exists?" The owner chose "Third run on the lane": "You make a new dated revision of the rule
+whose only change is one more measurement on win-x64-r7-5800x, with the tolerance unchanged. I draft it for your words;
+the run happens in a local session on your workstation." Not taken: "Keep it open": "No revision and no run. Clause 13
+stays open until trigger (b), where the choice is between waiting and a gate revision."; and "Gate revision now":
+"Revise SJL-3's exit gate under SJL-D-23 alternative (b) now, instead of measuring. This would be the first exit-gate
+revision made after the evidence it concerns." This is the owner's own dated choice, as SJL-D-23 reserves it, and not
+one taken under the owner's direction of 2026-10-18. **A third Broiler.VM measurement for clause 13 is to be taken on
+the same lane, `win-x64-r7-5800x`, under a new dated revision of Broiler.VM's rule.** That revision is filed in
+Broiler.VM, separately from this record, and this record neither restates nor reads it. No rule, gate or clause of
+this repository changes. SJL-3 stays `In progress`, and Broiler.VM's clause 13 stays open until that measurement is
+taken and judged under its revision. Nothing is accepted.)*
+
 **Numerics (SJL-4.1), filed 2026-10-13: all four sub-areas accepted.** Broiler.VM's record is
 `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0067-numerics-move-to-the-shared-algorithms-library.md`
 (JSD-0067), which states each condition for integer conversions and Float16, the Math kernels, exact
