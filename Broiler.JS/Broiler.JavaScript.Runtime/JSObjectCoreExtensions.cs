@@ -112,6 +112,14 @@ internal static class JSObjectCoreExtensions
             }
         }
 
+        // Take the own string keys first, then read each property afresh. Reading a value
+        // can run a getter, and so can the caller between entries; either may add or delete
+        // properties. PropertySequence.PropertyEnumerator walks a by-value copy of the
+        // property map, which goes stale once a mutation grows the map's node array: an
+        // added key can relocate a later node, the copy no longer finds it, and the walk used
+        // to end there, dropping every remaining entry. A key deleted before its turn is
+        // skipped; a key added during the walk is not visited.
+        List<uint> keys = null;
         var en = @object.GetOwnProperties(false).GetEnumerator();
         while (en.MoveNext(out var p))
         {
@@ -125,7 +133,20 @@ internal static class JSObjectCoreExtensions
             if (JSObject.IsPrivateName(in key))
                 continue;
 
-            yield return (GetJSString(p.key), value.GetValue(in p));
+            (keys ??= []).Add(p.key);
+        }
+
+        if (keys != null)
+        {
+            foreach (var id in keys)
+            {
+                if (!@object.GetOwnProperties(false).TryGetValue(id, out var p))
+                    continue;
+                if (showEnumerableOnly && !p.IsEnumerable)
+                    continue;
+
+                yield return (GetJSString(id), value.GetValue(in p));
+            }
         }
 
         var @base = (value.prototypeChain as IJSPrototype)?.Object as JSObject;

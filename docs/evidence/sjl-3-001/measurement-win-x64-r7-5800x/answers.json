@@ -1,0 +1,23 @@
+{
+ "answers": {
+  "Literals": "720",
+  "LiteralsControl": "720",
+  "ToNumber": "100000",
+  "ToNumberControl": "100000",
+  "ToString": "80000",
+  "ToStringControl": "80000"
+ },
+ "configuration": {
+  "concurrentGc": "",
+  "framework": ".NET 10.0.15",
+  "os": "Microsoft Windows 10.0.26200",
+  "processArchitecture": "X64",
+  "processorCount": "16",
+  "readyToRun": "",
+  "rid": "win-x64",
+  "serverGc": "True",
+  "tieredCompilation": "",
+  "tieredPgo": "",
+  "vectorHardwareAccelerated": "True"
+ }
+}

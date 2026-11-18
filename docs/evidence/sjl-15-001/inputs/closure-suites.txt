@@ -1,0 +1,39 @@
+# Bundle sjl-15-001 (Broiler.JS): the closure-sensitive suites its rule's part D judges (SJL-15.1's "Broiler.JS's
+# closure-sensitive suites"), written 2026-11-17 at Broiler.JS 6fda6ca44c041cea348dd5302c91ff90a0fe67bc, before any
+# change the rule judges.
+#
+# HOW THE LIST WAS MADE. A search of the test files' names under Broiler.JS/ (benchmarks excluded) for "closure",
+# "captur" and "scope" gives the first eleven lines (`search`). Reading each test class whose name names a fact the
+# model moves into the compiler at SJL-15.5 (`arguments`, a separate variable environment, direct eval, with, labels and
+# private names) adds the rest (`read`), each for the fact its header comment names. Classes read and left out:
+# Issue830PrivateNameIntegrityTests (the private-element store under preventExtensions, an object-model fact),
+# Issue966InertEvalTests (the inert-eval fast path's cost), Issue818DirectEvalAssignmentTests (a spread call's
+# arguments), and the Intl and Temporal tests the search for "with" and "eval" also reaches.
+#
+# NOTED 2026-11-17, after review, before any run of the rule: the search above gives ten lines at 6fda6ca4, not eleven.
+# FreeNameScanTests was tagged `search`; its file's name holds none of the three words, the draft of this list had put it
+# under the search, and it enters by reading, for the fact its header names (free names and captures, row FC1). Its
+# tag is now `read`, and the sentence above, which reads "gives the first eleven lines (`search`)", is left as written.
+# Part D's population is unchanged: every class listed before is listed, and no other.
+#
+# Columns: the test project's file, relative to Broiler.JS/; the test class; the file's SHA-256 at 6fda6ca4; how it
+# entered the list; the fact it reaches.
+Broiler.JavaScript.Compiler.Tests/CaptureLayoutTests.cs	Broiler.JavaScript.Compiler.Tests.CaptureLayoutTests	4a657653f101a3d7b63ae9e829c64034a03ad7d17bb028cfe179649b75bb54f8	search	captures and their layout
+Broiler.JavaScript.Compiler.Tests/CapturedNumericLocalTests.cs	Broiler.JavaScript.Compiler.Tests.CapturedNumericLocalTests	377ebe37680fa5f224363abe56fa21127a07b4239197b810e43542ea496edf4c	search	captured locals
+Broiler.JavaScript.Compiler.Tests/CapturedScopeCallbackTests.cs	Broiler.JavaScript.Compiler.Tests.CapturedScopeCallbackTests	b3d0214a94dbaa50d8ac95273124fa9a969d3e2e8b90ac64edb2de27d22374ec	search	captured scopes
+Broiler.JavaScript.Compiler.Tests/DirectEvalClosureScopeTests.cs	Broiler.JavaScript.Compiler.Tests.DirectEvalClosureScopeTests	3a16aa19f0502bb174493268f7559a9e49c5f0d50a159b36b2ddb9a25bbc71ed	search	direct-eval contamination of closures
+Broiler.JavaScript.Compiler.Tests/BlockScopedVarNumericLocalTests.cs	Broiler.JavaScript.Compiler.Tests.BlockScopedVarNumericLocalTests	a794e878e0e04868f127d7c314e415deb073a643629d13a2e8ec1a31b131842c	search	block-scoped and var bindings
+Broiler.JavaScript.Compiler.Tests/FreeNameScanTests.cs	Broiler.JavaScript.Compiler.Tests.FreeNameScanTests	e523de82399cb3019540d6c8f1b4d758ab165b994082f6109e13763ededf7ea8	read	free names and captures (FreeNameScan)
+Broiler.JavaScript.Integration.Tests/Issue650ForLoopScopeTests.cs	Broiler.JavaScript.Integration.Tests.Issue650ForLoopScopeTests	545777fa6a6b2aa7b9d18b6581fb272853a387dc771def6e1651867cb8fa541d	search	for-loop scopes
+Broiler.JavaScript.Integration.Tests/Issue818ForLetConditionClosureTests.cs	Broiler.JavaScript.Integration.Tests.Issue818ForLetConditionClosureTests	eb33d7a16911a68dc1b991d8bb14c9ee9d8bc33e39e9f28c8a1845b10c380ae0	search	per-iteration bindings captured
+Broiler.JavaScript.Integration.Tests/Issue828WithClosureUnscopablesTests.cs	Broiler.JavaScript.Integration.Tests.Issue828WithClosureUnscopablesTests	db5241d431d751ede0d98c3d567ac697ea983ff3883cb13cb9ed07bea88c41fc	search	with and closures
+Broiler.JavaScript.Modules.Tests/ModuleScopeIsolationTests.cs	Broiler.JavaScript.Modules.Tests.ModuleScopeIsolationTests	bf35cfc8579577c2f9927f2c6b3688c1214f3ba5bfcbec02cf3f79a7f947559b	search	module scopes
+Broiler.JavaScript.Portable.Tests/BytecodeClosureIsEmitFreeTests.cs	Broiler.JavaScript.Portable.Tests.BytecodeClosureIsEmitFreeTests	764d58fe8f1ca2c73a9dbf8ca94cfb61113dc10696c4507eeed3fdd767796393	search	the portable compiler's closures
+Broiler.JavaScript.Integration.Tests/Issue912ArgumentsShadowTests.cs	Broiler.JavaScript.Integration.Tests.Issue912ArgumentsShadowTests	9be3ed685d4ccea07641b9b2a598a8667d1380d2fc94bc8ec171d3dc2d8372a9	read	a lexical binding named arguments
+Broiler.JavaScript.Integration.Tests/Issue914ArgumentsParamVarEnvTests.cs	Broiler.JavaScript.Integration.Tests.Issue914ArgumentsParamVarEnvTests	bbb0637c915732e12a001242c5a3bbdf0ee68c1f8c2157a5371f27c4c3f5ed08	read	a separate parameter and variable environment
+Broiler.JavaScript.Integration.Tests/Issue828GlobalLexicalEvalTests.cs	Broiler.JavaScript.Integration.Tests.Issue828GlobalLexicalEvalTests	944aa329b9ab7d7d7af26d25aed0d82603b1b5ad2d6072e1b79a5db8350086cf	read	global lexical bindings and eval
+Broiler.JavaScript.Integration.Tests/Issue814NamedFunctionExpressionEvalTests.cs	Broiler.JavaScript.Integration.Tests.Issue814NamedFunctionExpressionEvalTests	3289c2eebbe06066308777efc4e8c675a65b4a27cbc50f1cc2a14fc94164c761	read	a named function expression's own name and eval
+Broiler.JavaScript.Integration.Tests/ClassFieldInitializerEvalSuperTests.cs	Broiler.JavaScript.Integration.Tests.ClassFieldInitializerEvalSuperTests	6c278588731a31ceca40d370bed89b9a34b8f99e824c334128d54b5dbab0ee1e	read	super in a field initialiser and its eval code
+Broiler.JavaScript.Integration.Tests/Issue814DerivedConstructorEvalSuperTests.cs	Broiler.JavaScript.Integration.Tests.Issue814DerivedConstructorEvalSuperTests	45b0acca12ee8545eab17f405d4db668f5534089e213f78d92c972fd5657d891	read	a super call in eval code in a derived constructor
+Broiler.JavaScript.Integration.Tests/Issue921EvalWithOrderingTests.cs	Broiler.JavaScript.Integration.Tests.Issue921EvalWithOrderingTests	b1e90353c228777e88f91a23f0376b4a8b32f19dbc26a51d6f29cba186ed6707	read	direct eval inside with
+Broiler.JavaScript.Integration.Tests/Issue912LabeledFunctionTests.cs	Broiler.JavaScript.Integration.Tests.Issue912LabeledFunctionTests	8d7fb23c50ae4047e456123bb577f030c13162218170ddc55902648d0cf46157	read	labelled function declarations in strict code

@@ -1,0 +1,87 @@
+# Broiler.JS engine-level run, revision 43 as drafted (HEAD 750630fb3d2d6e5a9d2c6533d5cf5a38542e3bf7 and the working tree's corpus)
+# started 2026-11-17T10:00:42Z
+Test run for /dev/shm/js-s151-scratch/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.18]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.41]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.60]   Starting:    Broiler.JavaScript.Vectors.Tests
+111374 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 11 min 1.4 s; the slowest, semantics/super/ee0131/0003, took 5.001 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 2 found no completion in the parallel pass and were run again alone: regexp/matching/b8-flat-sequence/0001, semantics/super/ee0131/0003.
+[xUnit.net 00:11:04.81]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+[xUnit.net 00:11:04.81]       33 of 111374 vectors differ and nothing classifies them:
+[xUnit.net 00:11:04.81]       semantics/arguments/ee0138/0002: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:11:04.81]       semantics/arguments/ee0138/0003: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:11:04.81]       semantics/arguments/ee0130/0005: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:11:04.81]       semantics/arguments/ee0138/0004: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:11:04.81]       semantics/expressions/ee0054/0003: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:11:04.81]       semantics/expressions/ee0054/0005: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:11:04.81]       semantics/scopes/ff4/0002: expected value: str:"2,1", rendered value: str:"2,2"
+[xUnit.net 00:11:04.81]       semantics/scopes/ff5/0004: expected value: f64:0x3FF0000000000000, rendered value: f64:0x4000000000000000
+[xUnit.net 00:11:04.81]       semantics/super/ee0015/0004: expected error: SyntaxError, rendered value: object
+[xUnit.net 00:11:04.81]       semantics/super/ee0074/0003: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:11:04.81]       semantics/super/ee0075/0003: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:11:04.81]       semantics/super/ee0076/0003: expected error: SyntaxError, rendered abort: ArgumentNullException: Value cannot be null.
+[xUnit.net 00:11:04.81]       semantics/super/ee0077/0004: expected error: SyntaxError, rendered abort: ArgumentNullException: Value cannot be null.
+[xUnit.net 00:11:04.81]       semantics/super/ee0093/0003: expected error: SyntaxError, rendered value: object
+[xUnit.net 00:11:04.81]       semantics/super/ee0102/0003: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:11:04.81]       semantics/super/ee0103/0003: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:11:04.81]       semantics/super/ee0104/0003: expected error: SyntaxError, rendered abort: ArgumentNullException: Value cannot be null.
+[xUnit.net 00:11:04.81]       semantics/super/ee0105/0003: expected error: SyntaxError, rendered abort: ArgumentNullException: Value cannot be null.
+[xUnit.net 00:11:04.81]       semantics/super/ee0106/0003: expected error: SyntaxError, rendered value: object
+[xUnit.net 00:11:04.81]       semantics/super/ee0117/0003: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:11:04.81]       semantics/super/ee0118/0003: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:11:04.81]       semantics/super/ee0119/0003: expected error: SyntaxError, rendered abort: ArgumentNullException: Value cannot be null.
+[xUnit.net 00:11:04.81]       semantics/super/ee0120/0003: expected error: SyntaxError, rendered abort: ArgumentNullException: Value cannot be null.
+[xUnit.net 00:11:04.81]       semantics/super/ee0121/0003: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:11:04.81]       semantics/super/ee0124/0004: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:11:04.81]       Stack Trace:
+[xUnit.net 00:11:04.81]         /dev/shm/js-s151-scratch/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs(58,0): at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified()
+[xUnit.net 00:11:04.81]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:11:04.81]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:11:04.81]       Output:
+[xUnit.net 00:11:04.81]         111374 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 11 min 1.4 s; the slowest, semantics/super/ee0131/0003, took 5.001 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 2 found no completion in the parallel pass and were run again alone: regexp/matching/b8-flat-sequence/0001, semantics/super/ee0131/0003.
+[xUnit.net 00:11:04.86]   Finished:    Broiler.JavaScript.Vectors.Tests (ID = '0bd9c4ad04d499511874a292f6e43b7c3c32fd63d9908e0aa468a27aad1fb4a6')
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [11 m 4 s]
+  Error Message:
+   33 of 111374 vectors differ and nothing classifies them:
+semantics/arguments/ee0138/0002: expected error: SyntaxError, rendered value: undefined
+semantics/arguments/ee0138/0003: expected error: SyntaxError, rendered value: undefined
+semantics/arguments/ee0130/0005: expected error: SyntaxError, rendered value: undefined
+semantics/arguments/ee0138/0004: expected error: SyntaxError, rendered value: undefined
+semantics/expressions/ee0054/0003: expected error: SyntaxError, rendered value: undefined
+semantics/expressions/ee0054/0005: expected error: SyntaxError, rendered value: undefined
+semantics/scopes/ff4/0002: expected value: str:"2,1", rendered value: str:"2,2"
+semantics/scopes/ff5/0004: expected value: f64:0x3FF0000000000000, rendered value: f64:0x4000000000000000
+semantics/super/ee0015/0004: expected error: SyntaxError, rendered value: object
+semantics/super/ee0074/0003: expected error: SyntaxError, rendered value: undefined
+semantics/super/ee0075/0003: expected error: SyntaxError, rendered value: undefined
+semantics/super/ee0076/0003: expected error: SyntaxError, rendered abort: ArgumentNullException: Value cannot be null.
+semantics/super/ee0077/0004: expected error: SyntaxError, rendered abort: ArgumentNullException: Value cannot be null.
+semantics/super/ee0093/0003: expected error: SyntaxError, rendered value: object
+semantics/super/ee0102/0003: expected error: SyntaxError, rendered value: undefined
+semantics/super/ee0103/0003: expected error: SyntaxError, rendered value: undefined
+semantics/super/ee0104/0003: expected error: SyntaxError, rendered abort: ArgumentNullException: Value cannot be null.
+semantics/super/ee0105/0003: expected error: SyntaxError, rendered abort: ArgumentNullException: Value cannot be null.
+semantics/super/ee0106/0003: expected error: SyntaxError, rendered value: object
+semantics/super/ee0117/0003: expected error: SyntaxError, rendered value: undefined
+semantics/super/ee0118/0003: expected error: SyntaxError, rendered value: undefined
+semantics/super/ee0119/0003: expected error: SyntaxError, rendered abort: ArgumentNullException: Value cannot be null.
+semantics/super/ee0120/0003: expected error: SyntaxError, rendered abort: ArgumentNullException: Value cannot be null.
+semantics/super/ee0121/0003: expected error: SyntaxError, rendered value: undefined
+semantics/super/ee0124/0004: expected error: SyntaxError, rendered value: undefined
+  Stack Trace:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /dev/shm/js-s151-scratch/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 58
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 111374 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 11 min 1.4 s; the slowest, semantics/super/ee0131/0003, took 5.001 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 2 found no completion in the parallel pass and were run again alone: regexp/matching/b8-flat-sequence/0001, semantics/super/ee0131/0003.
+
+
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 11.0923 Minutes
+VSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.
+# exit 1, ended 2026-11-17T10:11:48Z

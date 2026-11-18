@@ -19,6 +19,22 @@ public struct PropertySequence
 {
     public readonly PropertyEnumerator GetEnumerator(bool showEnumerableOnly = true) => new(this, showEnumerableOnly);
 
+    /// <summary>
+    /// Walks the properties in insertion order over a <b>by-value copy</b> of the sequence
+    /// taken when the enumerator is created.
+    /// </summary>
+    /// <remarks>
+    /// The copy is only valid while the sequence is not changed. <see cref="SAUint32Map{T}"/>
+    /// is a struct over a growable node array: once an insertion grows that array, the copy
+    /// keeps reading the old one. An inserted key with a smaller id than an existing key on
+    /// the same trie path moves that key's node into a newly allocated child group. The old
+    /// array then holds the new key in that slot and lacks the moved node, so the walk ends
+    /// there without visiting the remaining properties. Do not run anything that can change
+    /// the object, such as a getter, a setter or other user code, between steps. Take the keys
+    /// first and look each one up again on the live sequence instead, as
+    /// <c>JSObjectCoreExtensions.GetAllEntries</c> and <c>JSJSON</c> do, or walk the live
+    /// sequence, as <c>PropertyValueEnumerator</c> does for for-in.
+    /// </remarks>
     public struct PropertyEnumerator(PropertySequence sequence, bool showEnumerableOnly)
     {
         private SAUint32Map<JSObjectProperty> map = sequence.map;
