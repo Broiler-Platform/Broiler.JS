@@ -9988,6 +9988,96 @@ public class BuiltInsTests
     }
 
     [Fact]
+    public void ForIn_Visits_Every_Original_Property_When_The_Added_Key_Relocates_A_Trie_Node()
+    {
+        // Regression for the order-dependent failure of the test above (`p1|p1`). Own
+        // properties live in a trie keyed by the process-global KeyString id. Adding a key
+        // whose id is smaller than an existing key's, on the same trie path, moves the
+        // existing node into a newly allocated child group; when that allocation grows the
+        // backing array, an enumerator that held a by-value copy of the map kept reading the
+        // old array, where the slot already carried the new key and the moved node was gone,
+        // so the walk stopped early. Whether `p4` displaced `p2` depended on which test
+        // interned those names first. Here the ids are chosen so the displacement always
+        // happens (see ChooseKeysWhereAddingOneRelocatesAnother).
+        EnsureBuiltInsLoaded();
+        var (added, first, displaced, last) = ChooseKeysWhereAddingOneRelocatesAnother();
+
+        using var ctx = new JSContext();
+        var result = ctx.Eval($@"
+            var o = {{ '{first}': 1, '{displaced}': 2, '{last}': 3 }};
+            var visited = [];
+            for (var k in o) {{ if (k === '{first}') o['{added}'] = 4; visited.push(k); }}
+            visited.join(',');
+        ");
+
+        Assert.Equal($"{first},{displaced},{last}", result.ToString());
+    }
+
+    [Fact]
+    public void ToDetailString_Lists_Every_Property_When_A_Getter_Adds_A_Key_That_Relocates_A_Trie_Node()
+    {
+        // JSObject.ToDetailString walks GetAllEntries, which used to read a by-value copy
+        // of the property map (PropertySequence.PropertyEnumerator) while invoking getters.
+        // A getter that added a property whose insertion relocated a later node and grew the
+        // map's node array left the copy reading the old array, so every entry from the
+        // relocated one onward was silently dropped. The keys are chosen so that happens on
+        // every run, whatever the process-global KeyString ids are.
+        EnsureBuiltInsLoaded();
+        var (added, first, displaced, last) = ChooseKeysWhereAddingOneRelocatesAnother();
+
+        using var ctx = new JSContext();
+        var o = (JSObject)ctx.Eval($@"
+            ({{ get '{first}'() {{ this['{added}'] = 4; return 1; }}, '{displaced}': 2, '{last}': 3 }});
+        ");
+
+        var detail = o.ToDetailString();
+
+        Assert.Contains($"{first}: 1", detail);
+        Assert.Contains($"{displaced}: 2", detail);
+        Assert.Contains($"{last}: 3", detail);
+        // The entries are the keys present when the walk began; the one the getter added is not.
+        Assert.DoesNotContain(added, detail);
+    }
+
+    // Interns fresh property names whose process-global KeyString ids make inserting `added`
+    // into an object that holds { first, displaced, last } (in that order) relocate
+    // `displaced`'s trie node into a newly allocated child group, growing the map's node
+    // array. `added` is interned first, so its id is the smallest, and it shares
+    // `displaced`'s root slot (id & 3); `first` and `last` take the other two root slots.
+    // Slot 0 is avoided because key 0 owns it.
+    private static (string Added, string First, string Displaced, string Last) ChooseKeysWhereAddingOneRelocatesAnother()
+    {
+        static string Fresh(out uint id)
+        {
+            var name = "k" + Guid.NewGuid().ToString("N");
+            id = KeyStrings.GetOrCreate(name).Key;
+            return name;
+        }
+
+        string added;
+        uint addedId;
+        do added = Fresh(out addedId); while ((addedId & 3) == 0);
+
+        string first = null, displaced = null, last = null;
+        var usedSlots = new HashSet<uint> { 0, addedId & 3 };
+        while (first == null || displaced == null || last == null)
+        {
+            var name = Fresh(out var id);
+            if ((id & 3) == (addedId & 3))
+            {
+                if (displaced == null && id > addedId)
+                    displaced = name;
+            }
+            else if (usedSlots.Add(id & 3))
+            {
+                if (first == null) first = name; else last = name;
+            }
+        }
+
+        return (added, first, displaced, last);
+    }
+
+    [Fact]
     public void ForIn_Continues_After_Deleting_The_Next_Property_Match_Test262()
     {
         // Regression: deleting the property that for-in is about to visit terminated

@@ -16,7 +16,9 @@ clause reads; clause 7's measurement half is void on this machine and stays open
 own bundle of the same name for its own half, judged by its own rule; neither bundle reads the
 other's runs. *(Revised 2026-10-13, when the last run was added. The paragraph began: "**State:**
 collection in progress. Each run is added as it is taken, and the table of section 2 says which have
-been; nothing here is a verdict until its section says so.")*
+been; nothing here is a verdict until its section says so.")* *(Noted 2026-11-17: clause 7's measurement half is
+met, by part B's first judged run, on a controlled lane (section 7); where this paragraph reads "clause 7's
+measurement half is void on this machine and stays open", that stays true of the container's run only.)*
 
 ## 1. Identity
 
@@ -40,7 +42,7 @@ been; nothing here is a verdict until its section says so.")*
 | 4 | `Parser`, `Runtime` and `BuiltIns` reference the library; every member of the deletion list absent; every disposition applied | section 8; [`docs/public-api.md`](../../public-api.md) | the deletion list: **every member absent**; the references and dispositions are in the cut-over commit |
 | 5 | Test262 per path: no path passing at the base fails after; every improvement listed | section 5, [`test262/`](test262/) | **Met**: part A MET, no row of 96,720 changed |
 | 6 | Engine-level vectors pass; every correction in the changelog | section 4; [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md) | **Met**: no difference, four classified divergences SJL-14 answers |
-| 7 | The pristine consumer and package checks; the measurement meets its rule | sections 3, 6 and 7 | the consumers and package checks: **met**; the measurement **void** on this machine, so this half is open (section 7) |
+| 7 | The pristine consumer and package checks; the measurement meets its rule | sections 3, 6 and 7 | the consumers and package checks: **met**; the measurement **MET** on the controlled lane `win-x64-r7-5800x`, so this half is met (section 7) *(noted 2026-11-17; read "the measurement **void** on this machine, so this half is open (section 7)", which stays true of the container's run)* |
 | 14 | Each adapter's review finds no algorithm; no intra-engine duplicate of the area survives | section 8 | **reviewed**: no algorithm in an adapter, and no duplicate after `ef67693` |
 
 ## 3. The home: the library at the after commit
@@ -161,6 +163,19 @@ run.").
 decision of 2026-10-20", records the route to such a lane, the fallbacks if the arms cannot be
 built there or clause 5 fails there, and when the owner's next dated choice is due. This section's
 reading is unchanged, and so is [`measurement/`](measurement/README.md).)*
+
+*(Noted 2026-11-17. Part B's first judged run is taken, at its own arms `1410079e` and `ef676932`, on the
+controlled lane [`win-x64-r7-5800x`](../lanes/win-x64-r7-5800x/README.md), on 2026-11-17 from 20:30Z to 21:30Z, by
+[`collect-lane.py`](collect-lane.py), which runs `collect.py`'s measure step into a sub-bundle of its own and says where
+it departs from it: **MET**, every clause of part B holding ([`measurement-win-x64-r7-5800x/`](measurement-win-x64-r7-5800x/README.md)).
+Clause 1: the lane, one machine and one RID, `win-x64`, is recorded as `Measurement.md` asks, before the run, and the
+owner confirmed it, RID included, before any run on it; the route the note above names was linux-x64 first, and this
+reading says nothing about linux-x64. Clauses 2 to 4 hold, as they did on the void run. Clause 5 holds for `ToString`,
+`ToNumber` and `Literals`; on `Literals`, the workload the void run put first, the difference is below the lane's A/A
+floor, so below resolution. **So clause 7's measurement half is met**, as the note above says a MET reading of part B
+as written on a controlled lane at these arms would meet it. This section's first sentence, "**Void, as this section
+said before the run it would be: clause 7's measurement half stays open.**", stays the reading of the container's run,
+which [`measurement/`](measurement/README.md) still holds unchanged; nothing in this section is reviewed.)*
 
 ## 8. The simplification check (SJL-3.7)
 

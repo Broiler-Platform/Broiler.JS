@@ -1,0 +1,47 @@
+# Broiler.JS engine-level run, corpus 1cb27c7b0bbb060bfd35af8f70a3ffb6b73940c7 (rev42), Broiler.JS/ of the same archive
+# started 2026-11-17T09:15:41Z
+Test run for /dev/shm/js-s151-first/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.21]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.48]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.68]   Starting:    Broiler.JavaScript.Vectors.Tests
+111343 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 10 min 15.1 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 3.756 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 0 found no completion in the parallel pass and were run again alone.
+[xUnit.net 00:10:18.67]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+[xUnit.net 00:10:18.67]       5 of 111343 vectors differ and nothing classifies them:
+[xUnit.net 00:10:18.67]       semantics/arguments/ee0138/0002: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:10:18.67]       semantics/arguments/ee0138/0003: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:10:18.67]       semantics/expressions/ee0054/0003: expected error: SyntaxError, rendered value: undefined
+[xUnit.net 00:10:18.67]       semantics/scopes/ff4/0002: expected value: str:"2,1", rendered value: str:"2,2"
+[xUnit.net 00:10:18.67]       semantics/scopes/ff5/0004: expected value: f64:0x3FF0000000000000, rendered value: f64:0x4000000000000000
+[xUnit.net 00:10:18.67]       Stack Trace:
+[xUnit.net 00:10:18.68]         /dev/shm/js-s151-first/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs(58,0): at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified()
+[xUnit.net 00:10:18.68]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:10:18.68]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:10:18.68]       Output:
+[xUnit.net 00:10:18.68]         111343 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 10 min 15.1 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 3.756 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 0 found no completion in the parallel pass and were run again alone.
+[xUnit.net 00:10:18.72]   Finished:    Broiler.JavaScript.Vectors.Tests (ID = '76bba63e69a44db9b5e2da90540a5818926cf4d563cc2cc589f08465cec5a5d6')
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [10 m 17 s]
+  Error Message:
+   5 of 111343 vectors differ and nothing classifies them:
+semantics/arguments/ee0138/0002: expected error: SyntaxError, rendered value: undefined
+semantics/arguments/ee0138/0003: expected error: SyntaxError, rendered value: undefined
+semantics/expressions/ee0054/0003: expected error: SyntaxError, rendered value: undefined
+semantics/scopes/ff4/0002: expected value: str:"2,1", rendered value: str:"2,2"
+semantics/scopes/ff5/0004: expected value: f64:0x3FF0000000000000, rendered value: f64:0x4000000000000000
+  Stack Trace:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /dev/shm/js-s151-first/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 58
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 111343 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 10 min 15.1 s; the slowest, regexp/matching/b8-flat-sequence/0001, took 3.756 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 0 found no completion in the parallel pass and were run again alone.
+
+
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 10.3251 Minutes
+VSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.
+# exit 1, ended 2026-11-17T09:26:01Z

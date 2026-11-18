@@ -1,0 +1,30 @@
+# The builds the correspondence probes ran on (SJL-15.1, Broiler.JS's half), 2026-11-17.
+# Each engine was built from a clean `git archive` of its default branch, unpacked in a scratch folder of its own on
+# /dev/shm (no checkout, no worktree), one build at a time under the machine's build lock and idle gate, with the .NET
+# SDK 10.0.404 on Ubuntu 24.04.5 LTS, Linux 6.18 x64 (four processors).
+
+Broiler.JS  origin/main 6fda6ca44c041cea348dd5302c91ff90a0fe67bc
+  git archive 6fda6ca4 | tar -x -C <js>
+  dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release --disable-build-servers -nodeReuse:false -p:UseSharedCompilation=false
+  Build succeeded. 0 Warning(s). 0 Error(s).
+  The shell: <js>/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll,
+  SHA-256 c0e746b687b81586b1eeea507e764df345939746027cb525c5090eb6f3de8183
+
+Broiler.VM  origin/main 5e90bfe485aad60b3637d9f69e54ed71adcd73af
+  git archive 5e90bfe4 | tar -x -C <vm>
+  dotnet build src/compositions/Broiler.VM.Composition.JavaScript.Conformance -c Release --disable-build-servers -nodeReuse:false -p:UseSharedCompilation=false
+  Build succeeded. 0 Warning(s). 0 Error(s).
+  The conformance root: <vm>/src/compositions/Broiler.VM.Composition.JavaScript.Conformance/bin/Release/net10.0/Broiler.VM.Composition.JavaScript.Conformance.dll,
+  SHA-256 0c1b74e7ae67c1b7891d16afbc7b4eeebc6d6deddaf29d11ad9848c706230f3a
+  Its test262 root: harness/ and features.txt extracted from <vm>/src/tests/conformance/pins/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e.tar.gz,
+  SHA-256 f58ce79141529c9fa33592e22ff3ff0d83b83830ac8e372ecd32e1623db1c040 (the pin's), and the probe program under test/sjl15p/.
+  The conformance root reports the run as one failing test (the root holds no suite revision file); the program still
+  runs, and its answers are the lines between OUT<< and >>OUT.
+
+The runs, each `bash run_probes.sh` from this folder, under TZ=UTC with no LANG, LC_* or BROILER_* variable:
+  js   bash run_probes.sh js <BroilerJS.dll> runs/js          (one shell process per probe, each under `timeout 60`)
+  vm   bash run_probes.sh vm <Conformance.dll> runs/vm <test262 root>
+Then `python3 -I merge_answers.py` wrote answers.tsv. A first js run, one process for every probe, stopped at probe
+T077, which this shell compiles without end, its memory growing; it was stopped by hand and is not retained, and the js
+mode of run_probes.sh was made one process per probe before the run retained here. Paths of the scratch folders are
+written <js> and <vm>.

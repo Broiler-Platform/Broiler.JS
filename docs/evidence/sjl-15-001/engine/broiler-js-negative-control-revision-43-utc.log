@@ -1,0 +1,39 @@
+# Broiler.JS negative control: semantics/named-evaluation/ne1/0001's out changed to value: str:"g" in the archive's copy
+# started 2026-11-17T10:43:24Z
+Test run for /dev/shm/js-s151-first/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.14]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.32]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.47]   Starting:    Broiler.JavaScript.Vectors.Tests
+111374 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 10 min 34.6 s; the slowest, semantics/super/ee0131/0003, took 5.000 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: semantics/super/ee0131/0003.
+[xUnit.net 00:10:37.96]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+[xUnit.net 00:10:37.96]       1 of 111374 vectors differ and nothing classifies them:
+[xUnit.net 00:10:37.96]       semantics/named-evaluation/ne1/0001: expected value: str:"g", rendered value: str:"f"
+[xUnit.net 00:10:37.96]       Stack Trace:
+[xUnit.net 00:10:37.97]         /dev/shm/js-s151-first/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs(58,0): at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified()
+[xUnit.net 00:10:37.97]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:10:37.97]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:10:37.97]       Output:
+[xUnit.net 00:10:37.97]         111374 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 10 min 34.6 s; the slowest, semantics/super/ee0131/0003, took 5.000 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: semantics/super/ee0131/0003.
+[xUnit.net 00:10:38.02]   Finished:    Broiler.JavaScript.Vectors.Tests (ID = '76bba63e69a44db9b5e2da90540a5818926cf4d563cc2cc589f08465cec5a5d6')
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [10 m 37 s]
+  Error Message:
+   1 of 111374 vectors differ and nothing classifies them:
+semantics/named-evaluation/ne1/0001: expected value: str:"g", rendered value: str:"f"
+  Stack Trace:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /dev/shm/js-s151-first/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 58
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 111374 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 10 min 34.6 s; the slowest, semantics/super/ee0131/0003, took 5.000 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: semantics/super/ee0131/0003.
+
+
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 10.6431 Minutes
+VSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.
+# exit 1, ended 2026-11-17T10:54:04Z
