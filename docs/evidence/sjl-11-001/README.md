@@ -88,6 +88,18 @@ rewritten.* Two findings of the branch's local runs, neither of them a run of th
   no row names". The `split` fallback is still not the specification's, which converts the separator with ToString
   when no `@@split` applies, and is left for a later change.
 
+*Dated note, 2026-11-18, on branch `sjl-11-5`, after the default branch at `5429c406` was merged into it; the note
+above is not rewritten.* Its first item reads "A pre-existing defect:
+`RuntimeTests.JSException_From_RegularException_CreatesNewJSException` depends on the order of its project's tests"
+and ends "making it independent of the order (for example by touching a BuiltIns type, or creating a `JSContext`,
+before it calls `JSException.From`) is a follow-up of its own". That follow-up was made on the default branch by
+`a4a2f911c8984656569944692867144f4a1fdef6` ("Make two order-dependent tests independent of test order"), which this
+branch now holds through that merge: the test "now runs that module initializer itself". At this branch's merge
+commit `fff4172c8103cc75a71ab5b9bf5c445caae328c3`, built in Release from a clean archive on disk, the test passed run
+alone (`dotnet test Broiler.JS/Broiler.JavaScript.Runtime.Tests -c Release --no-build --filter
+"FullyQualifiedName~JSException_From_RegularException_CreatesNewJSException"`, one test, passed), and CI's test step
+passed whole. These are local runs of the branch, not runs of the rule, and are not retained here.
+
 **Area verdict:** [`SharedLibraries.md`](../../roadmap/SharedLibraries.md), "Area verdicts", "Regular expressions
 (SJL-11.1)", with Broiler.VM's JSD-0081,
 `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0081-regular-expressions-move-to-broiler-regex-under-its-owner-conditions.md`,
