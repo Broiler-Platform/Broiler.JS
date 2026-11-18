@@ -150,6 +150,43 @@ the rule. That is the owner's to order; nothing here merges it.
 
 No other commit is named yet.
 
+*Dated note, 2026-11-18, on branch `sjl-11-5`; the paragraphs above are not rewritten.* The note of 2026-11-17 at the
+inputs commit above ends "so this commit reaches the default branch before the base is taken, or the base does not
+satisfy the rule. That is the owner's to order; nothing here merges it." The owner ordered it on 2026-11-18, by an
+answer of the owner's own, not one taken under the owner's direction of 2026-10-18. Asked: "SJL-11.5's base in
+Broiler.JS needs two things only you can order. First, its inputs commits (24fe7cba, 189d65ff) and a new dated rule
+revision must land on main by a merge commit before the base is taken. Second, test262-evidence.yml moved from
+ubuntu-latest to ubuntu-24.04 in your dependency update of 2026-10-29 (3b4b6860), and the rule fixes the workflow "as
+this file's commit carries it". Only a dated rule revision filed before any run can admit that change. Do you allow
+both?" Chosen: "Allow both" — "The inputs land on main by a merge commit with one dated revision. The revision lists the
+y-flag correction row and admits the ubuntu-24.04 workflow. Then the hold starts and the base runs are taken at main's
+head." Not taken: "Inputs only" — "The inputs land, but the workflow change is not admitted. Part A's base can then only
+be taken with the workflow as the rule's commit carries it."; "Not yet" — "Nothing lands on main for SJL-11.5. Its base
+and merge wait." So, by the rule's words and the owner's:
+- **What lands first.** The inputs commit `24fe7cba` and the rule's revision `189d65ff`, with one new dated revision of
+  the rule, land on the default branch by a merge commit before the base is taken. That revision is not filed here, and
+  no rule file is added or edited here. By the owner's answer it "lists the y-flag correction row", the row of the
+  finding above, "whose row is Broiler.VM's to add", "and admits the ubuntu-24.04 workflow": part A's configuration
+  fixes the workflow "by .github/workflows/test262-evidence.yml as this file's commit carries it", and `3b4b6860` of
+  2026-10-29 moved that file's jobs from `ubuntu-latest` to `ubuntu-24.04`.
+- **Then the hold and the base.** The rule reads "**The base commit** is the default-branch commit that the merge
+  landing SJL-11.5 has as its first parent. It descends from the inputs commit. Every base run is taken there, before
+  the merge, while merges to `Broiler.JS/Broiler.JavaScript.*/` and `Broiler.ECMAScript/` are held (decision D16)." and
+  "**The after commit** is that merge. If its first parent is not the commit the base runs were taken at, the base runs
+  are void and are taken again before any after run is seen." The block above, "Every base run is taken at the base
+  commit, the first parent of the merge that lands SJL-11.5, while merges to this engine's and the shared folder's code
+  are held (decision D16)", says the same.
+- **The pins.** By the owner's answer of the same day on D13, "Keep preview.6" — "No new Regex release. Both cut-overs
+  use preview.6, whose library sources the reading judged.", this engine keeps its pin of Broiler.Regex
+  `0.1.0-preview.6`, which the note of 2026-11-17 above on "The pins" reads the base as pinning.
+- **Broiler.RegEx's reading.** Its candidate reading at `49d7be1f`, part A's second reading and the owner's ruling that
+  "the block on both cut-overs is lifted as far as part A goes" are Broiler.RegEx's records, which
+  [`SharedLibraries.md`](../../roadmap/SharedLibraries.md)'s SJL-11 section quotes in its notes of the same date, with
+  the owner's other answers of that day and what the merge still waits on. This bundle reads none of their runs.
+
+No commit is named here as the default branch's, and "The commits named so far" above is not changed by this note. No
+run the rule judges has been taken, and nothing here is a verdict.
+
 *2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
 
 *2026-11-01, at corpus revision 32:* **part D names revision 32**, the revision that classifies both engines' first
