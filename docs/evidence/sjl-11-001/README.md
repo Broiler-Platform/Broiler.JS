@@ -304,6 +304,54 @@ is judged on its after runs, which do not exist yet, and nothing here is a verdi
 machine record, exit, output and time. The test262 checkout the local parts would need is none: neither part C nor
 part D reads test262.
 
+*Dated note, 2026-11-18, on branch `sjl-11-5`, after review of the base runs; the note above is not rewritten, and
+no file in `base/` changes.*
+- **The default branch's head during the runs.** The note above reads "with the default branch's head at that
+  commit before and after each". The retained records show less. The local runs' script checked once, before its
+  first step, that this clone's remote-tracking ref of the default branch read `5429c406`, with no fetch of its own,
+  and no record checks it after any run. What shows the head at that commit throughout lies outside `base/logs/`:
+  that remote-tracking ref last moved on 2026-11-18 at 18:26:39 UTC, to `5429c406`, before every run, and fetches
+  after the runs left it there; `git ls-remote origin refs/heads/main` read
+  `5429c4065e8b273e5c7965598b8a2f5490a8ad98` at 2026-11-18T22:06:48Z, after every run; and
+  `.github/workflows/test262-evidence.yml` has one run at that commit, 44377139618.
+- **Part A was dispatched first.** Run 44377139618 was dispatched at 2026-11-18T19:07:33Z, before this branch's local
+  checks of its merge of the default branch (from 19:07:58Z) and before the note of the hold's start above was
+  committed (19:24:43Z) and pushed (19:24:55Z). The hold began with Broiler-Platform/Broiler.JS#1125's merge, by the
+  owner's order, and the run reads only `5429c406`, so the order changes nothing it retains.
+- **Part A's jobs by id.** `base/part-a/runner-images.txt` names each job by its name only. GitHub's record of the
+  run's jobs, read 2026-11-18, gives prepare 135059191047, shard (0) 135059373813, shard (1) 135059373739, shard (2)
+  135059373728, shard (3) 135059373834, shard (4) 135059373876, shard (5) 135059373785, shard (6) 135059373952,
+  shard (7) 135059373791 and collect 135096320193, each concluded success at `5429c406`.
+- **The zone and the toolchain of parts C and D.** Both parts' base runs set `TZ=UTC` (`base/run-part-c.py`,
+  `base/commands.txt`) beside the invariant culture, and ran under .NET SDK 10.0.404 and runtime
+  Microsoft.NETCore.App 10.0.15, as `base/commands.txt` records. Neither part's rule line nor the manifest's run line
+  ("the invariant culture") names a zone or a toolchain. Their after runs are taken with the same `TZ=UTC` and the
+  same SDK and runtime, so that neither differs between base and after; this note revises no line of the rule.
+- **For the owner: part D's corpus revision.** The note above reads "Each report is the whole corpus at the tree's
+  corpus revision, 43". Part D's population is "every vector of conformance/vectors/regexp/ at the corpus revision
+  bundle sjl-11-001 names" (`decision-rule.md:218`), and the rule's note of 2026-11-01 reads "The corpus revision
+  this part names is 32" (`decision-rule.md:242`). Revision 43's `regexp/` vectors have revision 32's ids, inputs
+  and `out` lines, but revision 39 reclassed 22 of them from `divergence` to `normative` and retired their
+  `divergence` fields (`git diff de8d7b54 5429c406 -- conformance/vectors/regexp`: 22 `class` lines changed, 23
+  `divergence.*` lines removed and one added). So each base report's verdict for those vectors, and its count
+  "divergence no longer holds", is read against revision 43's classes, not revision 32's. That reading was the base
+  stage's alone. Which one part D takes is the owner's: against revision 32's `class` lines, through a scratch
+  corpus pin like the one [`engine/commands.txt`](engine/commands.txt) describes, with the base reports read or taken
+  again that way; or against the tree's revision 43, with the equivalence above recorded. Part D's after runs take
+  the same choice as its base, and the MET clause's "the outcome its class expects" reads that revision's `class`
+  lines.
+- **For the owner: part B's base.** The rule reads "Every base run is taken there, before the merge"
+  (`decision-rule.md:107`) and "The after commit is that merge" (`:109`). Part B's arms are "B the base commit ... A
+  the after commit ... A-again the A arm measured a second time" (`:146`), and "in every repetition, B, A and A-again
+  each run once, in an order that rotates by repetition" (`:147`), so arm A, and with it every repetition, can run
+  only once the merge exists. If arm B's runs are base runs in the sense of `:107`, that line and `:147` cannot both
+  be met; whether they are is the owner's to read, and this note does not read it. The ways recorded so far are part
+  B taken in full on a controlled lane after the merge, or part B recorded void, which "leaves the question open for
+  this engine" (`:166`). Parts A, C and D's base runs have now been seen, so a dated revision that reconciled `:107`
+  with `:147` would be one the rule's section "Revisions" describes: "A rule revised after any run it judges has been
+  seen is a new dated file in this directory, quoting this one whole and saying it was written afterwards; its
+  decision is then weaker evidence" (`:272-273`).
+
 *2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
 
 *2026-11-01, at corpus revision 32:* **part D names revision 32**, the revision that classifies both engines' first
