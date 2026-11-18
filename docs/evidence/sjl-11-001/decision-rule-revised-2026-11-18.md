@@ -14,6 +14,14 @@ them; and the evidence workflow's runs for this repository's other bundles, on `
 **Owner:** the Broiler.JS maintainer. **Reviewer:** none; every role is one person (the programme's EX-30), and this
 revision does not claim that anyone independent has read it.
 
+*(Changed 2026-11-18, at review, before this revision merged and before any run, so no rule it files is rewritten
+after a run: "How it reads" restates row M28's own limit on the `split` half, where it read "as row M28 records that
+SJL-11.5 moves them, is read as the row says" and "This revision admits it under no class", and "What it decides"
+follows it, where it read "a row that half moves is read as the row says"; item 2 says that JSD-0081's decision D23
+list leaves that half out; "Why it is written" attributes Broiler.VM's words to its area revision's record of
+JSD-0083's note, where it gave them as from "its revision of 2026-11-10"; and two paragraphs are rewrapped. Nothing
+else changes.)*
+
 **Whose decision.** This revision is filed by the owner's order of 2026-11-18, an answer of the owner's own, not one
 taken under the owner's direction of 2026-10-18. Asked: "SJL-11.5's base in Broiler.JS needs two things only you can
 order. First, its inputs commits (24fe7cba, 189d65ff) and a new dated rule revision must land on main by a merge
@@ -77,7 +85,8 @@ the default branch at `aecc5f89` still carries it. The commits that later change
 notes, from `4d1ed7b2` to its last change `de8d7b54`, already carry `fc382297`, so "this file's commit" could be read
 as either blob; read as the rule commit, a run dispatched with the default branch's file is not the configuration the
 line fixes. Broiler.VM's rule for its own half met the same change of its own workflow on 2026-10-30 and left it to the
-owner ("only a new dated rule file here, written before any run, can admit that change", its revision of 2026-11-10).
+owner: its area revision of 2026-11-10 records, from JSD-0083's note of 2026-11-01 on its decision D37, "that only a
+new dated rule file here, written before any run, can admit that change".
 
 ## What changed
 
@@ -97,12 +106,14 @@ owner ("only a new dated rule file here, written before any run, can admit that 
      separator whose `@@split` is `undefined` or `null` to `JSRegExp.Split`, which splits by the pattern where the text
      converts the separator with ToString and splits on that string. Clause 7 reads it as part A's "How it is read"
      reads a listed correction that SJL-11.5 does not make: the bundle records it "as a correction SJL-11.5 did not
-     make, which clause 7 then reads".
+     make, which clause 7 then reads". JSD-0081's decision D23 list, which the section's heading cites, leaves this
+     half out; this list names it only as a correction not made, so that the row reads as the row has it.
 
    Neither half names a test262 file. As the list's other rows are, the row is to be listed by its row in
-   `Broiler.JS/CHANGELOG.md` at SJL-11.5 (decision SJL-D-16 (a)), whose entry on the branch `sjl-11-5` names the change
-   "A change no row names" and is the cut-over's to update; clause 7 reads it with the list. Nothing wider than the row's two halves is listed: not row M5, which
-   holds the protocol methods' sticky answers, and no other member or flag.
+   `Broiler.JS/CHANGELOG.md` at SJL-11.5 (decision SJL-D-16 (a)), whose entry on the branch `sjl-11-5` names the
+   change "A change no row names" and is the cut-over's to update; clause 7 reads it with the list. Nothing wider than
+   the row's two halves is listed: not row M5, which holds the protocol methods' sticky answers, and no other member
+   or flag.
 3. **Part A's workflow.** In the configuration line quoted above, "by .github/workflows/test262-evidence.yml as this
    file's commit carries it" now reads "by .github/workflows/test262-evidence.yml as the default branch carries it at
    the base commit, the file the rule commit carries with `3b4b6860`'s move of its three jobs from `ubuntu-latest` to
@@ -119,11 +130,14 @@ owner ("only a new dated rule file here, written before any run, can admit that 
   them, so no test262 file is expected to move for this half; the rule's expectation that the files it names move is
   unchanged.
 - **A part A row whose verdict moves only because the `split` half's answers move**, as row M28 records that SJL-11.5
-  moves them, is read as the row says. It is explained by row M28, which the list now names, so it is not "a C1 row that
-  no row of the list explains", and it is not recorded as a finding against JSD-0081 for want of a row; the bundle
-  lists it with its path, its variant and the row's second half. This revision admits it under no class: that half is
-  a correction SJL-11.5 does not make, and the row says that neither answer is the text's in general, so such a row is
-  no C1 row, and part A's line "every other difference is a regression" reads it as that line stands.
+  moves them (for a sticky pattern that was routed to Broiler.Regex at the branch's first parent `6fda6ca4`, from
+  anchored at each step to every position), is read as the row says. It is explained by row M28, which the list now
+  names, so it is not "a C1 row that no row of the list explains", and it is not recorded as a finding against
+  JSD-0081 for want of a row; the bundle lists it with its path, its variant and the row's second half. A row that the
+  `split` half's answers move in any other way is not explained by row M28 and reads as the rule reads it. This
+  revision admits either under no class: that half is a correction SJL-11.5 does not make, and the row says that
+  neither answer is the text's in general, so such a row is no C1 row, and part A's line "every other difference is a
+  regression" reads it as that line stands.
 - **The runs' workflow.** The base run and the after run are both taken by that one file, blob `fc382297`, whatever
   the after commit carries.
 - **Clause 7** reads `Broiler.JS/CHANGELOG.md` against the list as revised by the earlier revision and here.
@@ -131,10 +145,9 @@ owner ("only a new dated rule file here, written before any run, can admit that 
 ## What it decides, and what it does not
 
 - **It decides** that part A's list names row M28; that a part A row its first half explains is a C1 correction; that
-  its `split` half is named as a correction SJL-11.5 does not make, and a row that half moves is read as the row says,
-  with no class; and that part A's runs
-  are taken by the evidence workflow as the default branch carries it at the base commit, `3b4b6860`'s change and no
-  other admitted.
+  its `split` half is named as a correction SJL-11.5 does not make, and a row that half moves as the row records is
+  read as the row says, with no class; and that part A's runs are taken by the evidence workflow as the default branch
+  carries it at the base commit, `3b4b6860`'s change and no other admitted.
 - **It does not change** any other line of the rule or of the earlier revision: the definitions of the rule commit,
   the inputs commit, the base commit and the after commit, and the voiding of the base runs if the after commit's first
   parent is not the commit they were taken at; the hold under which every base run is taken (decision D16); every
