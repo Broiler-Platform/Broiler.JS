@@ -39,9 +39,10 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
 - `measurement/` - part I's runs, void on a lane that is not controlled (decision D48); *(Noted 2026-11-18: this
   line reads "`measurement/` - part I's runs, void on a lane that is not controlled". Part I is to be taken as written
   on the controlled lane [`win-x64-r7-5800x`](../lanes/win-x64-r7-5800x/README.md), by the owner's choice of
-  2026-11-18 (the note under "Clause 6" below). That run goes to a new sub-bundle named for the lane, as bundle
-  `sjl-3-001`'s part B run on that lane went to its own `measurement-win-x64-r7-5800x/`. `measurement/` stays for
-  runs on a lane that is not controlled. No run of part I exists.)*
+  2026-11-18 (the note under "Clause 6" below). That run is retained inside `measurement/`, in a folder named for the
+  lane, `measurement/win-x64-r7-5800x/`, since the bundle's inputs retain no figure of part I anywhere but in
+  `measurement/` ([`inputs/README.md`](inputs/README.md), [`inputs/workloads/README.md`](inputs/workloads/README.md)).
+  The folder's name is this note's, not the rule's. No run of part I exists.)*
 - `fuzz/` - part J's session;
 - `manifest.json` (decision D56), written by the bundle's collector at the evidence step.
 
@@ -220,8 +221,8 @@ taken is to take them in this stage. Part C's verdict reads only the runs at the
   "Clause 6 stays unmet. It is still listed under trigger (b), and nothing is run." This is the owner's own dated
   choice, not one taken under the owner's direction of 2026-10-18. **Part I is to be taken as written on that lane, and
   not yet**: its arms are "B the base commit's build; A the after commit's", and neither commit exists. W2, the after
-  commit, is held for SJL-11.5 (the commits above), so part I is taken after W2 merges. Until then part I has no run
-  and stays void as recorded here, and clause 6 is unmet. Part I names no RID: it is judged "on the lane the bundle
+  commit, is held for SJL-11.5 (the commits above), so part I is not taken before W2 merges. Until then part I has no
+  run, and stays as recorded here (void on a lane that is not controlled), and clause 6 is unmet. Part I names no RID: it is judged "on the lane the bundle
   names with its effective configuration". [`decision-rule.md`](decision-rule.md) is not edited.)*
 - **Exclusions:** none.
 
