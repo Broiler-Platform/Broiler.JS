@@ -227,6 +227,33 @@ base is taken. Until that merge they are not default-branch commits, and the mer
 after it merges. No base commit is named, the hold of decision D16 has not started, and no run the rule judges has
 been taken; nothing here is a verdict.
 
+*Dated note, 2026-11-18, on branch `sjl-11-5`, the hold's start; the list "The commits named so far", the line "No
+other commit is named yet." and the two notes above are not rewritten.* The second note above ends "the merge that
+lands them is named here after it merges. No base commit is named, the hold of decision D16 has not started, and no
+run the rule judges has been taken". That change, Broiler-Platform/Broiler.JS#1125, merged on 2026-11-18 as
+`5429c4065e8b273e5c7965598b8a2f5490a8ad98`, a merge commit whose first parent is the default branch's `aecc5f89` and
+whose second is `20f1cbbb`, the head of `sjl-11-5-inputs`. So the inputs commit `24fe7cba` and the rule's revisions
+`189d65ff`, `45a15487` and `909532bd` are default-branch commits from that merge on.
+- **The hold starts.** By the owner's order of 2026-11-18, quoted in the first note above ("Allow both" — "... Then
+  the hold starts and the base runs are taken at main's head."), the hold of decision D16 starts on 2026-11-18, at
+  `5429c4065e8b273e5c7965598b8a2f5490a8ad98`, Broiler-Platform/Broiler.JS#1125's merge, which is the default branch's
+  head when it starts. Nothing else merges to the default branch until the merge that lands SJL-11.5: the rule holds
+  merges to `Broiler.JS/Broiler.JavaScript.*/` and `Broiler.ECMAScript/`, and any other merge would move the default
+  branch's head too, so that the merge landing SJL-11.5 would not have the base runs' commit as its first parent.
+- **The rule's words.** It reads "**The base commit** is the default-branch commit that the merge landing SJL-11.5
+  has as its first parent. It descends from the inputs commit. Every base run is taken there, before the merge, while
+  merges to `Broiler.JS/Broiler.JavaScript.*/` and `Broiler.ECMAScript/` are held (decision D16)." and "**The after
+  commit** is that merge. If its first parent is not the commit the base runs were taken at, the base runs are void
+  and are taken again before any after run is seen." Neither revision changes them: the second says it does not
+  change "the definitions of the rule commit, the inputs commit, the base commit and the after commit, and the
+  voiding of the base runs if the after commit's first parent is not the commit they were taken at".
+- **What it means here.** Every base run is taken at `5429c4065e8b273e5c7965598b8a2f5490a8ad98`. That commit is the
+  base commit only if the merge landing SJL-11.5 has it as its first parent; if the default branch moves before that
+  merge, the runs taken there are void, as the rule says. This branch merged the default branch at that commit into
+  itself on 2026-11-18; that merge is this branch's and moves no default-branch commit.
+
+Nothing here names the after commit, and no run here is a verdict.
+
 *2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
 
 *2026-11-01, at corpus revision 32:* **part D names revision 32**, the revision that classifies both engines' first
