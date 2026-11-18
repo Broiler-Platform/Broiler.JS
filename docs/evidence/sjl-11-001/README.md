@@ -98,13 +98,15 @@ before they exist, and its revisions, are named here by all forty digits, as thi
   after the default branch's `6fda6ca4`.
 - **The rule's second revision**, [`decision-rule-revised-2026-11-18.md`](decision-rule-revised-2026-11-18.md), is
   `45a15487308eafb8c92d5325ffc22ee66e0a6475`, the one dated revision the owner's answer of 2026-11-18 orders ("Allow
-  both", which the revision quotes whole, with the alternatives not taken). It names Broiler.VM's row M28 in part A's
-  list, in the row's two halves, and has part A's runs taken by the evidence workflow as the default branch carries it
-  at the base commit, admitting `3b4b6860`'s move of its jobs from `ubuntu-latest` to `ubuntu-24.04` and no other
-  change. The note of 2026-11-17 above on the rule reads "`decision-rule.md` is not edited; the two are read
-  together"; with this revision the three are, and none of them is edited.
+  both", which the revision quotes whole, with the alternatives not taken); the same branch's
+  `909532bd2b2157eaf4364c4e8f6dfd0ff5e33f03` revised it that day, at review, before it merged and before any run, as
+  its note of 2026-11-18 says, restating row M28's own limit on the `split` half. It names Broiler.VM's row M28 in
+  part A's list, in the row's two halves, and has part A's runs taken by the evidence workflow as the default branch
+  carries it at the base commit, admitting `3b4b6860`'s move of its jobs from `ubuntu-latest` to `ubuntu-24.04` and
+  no other change. The note of 2026-11-17 above on the rule reads "`decision-rule.md` is not edited; the two are read
+  together"; with this revision the three are, and none of them edits another.
 
-The three commits are on the branch `sjl-11-5-inputs` with the default branch at `aecc5f89` merged into them
+These commits are on the branch `sjl-11-5-inputs` with the default branch at `aecc5f89` merged into them
 (`2d2ffed7ceb7c5380341df806b39545a4f65181c`), and are filed to land on the default branch by a merge commit before the
 base is taken. Until that merge they are not default-branch commits, and the merge that lands them is named here
 after it merges. No base commit is named, the hold of decision D16 has not started, and no run the rule judges has

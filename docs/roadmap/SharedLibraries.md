@@ -1521,7 +1521,8 @@ admits the ubuntu-24.04 workflow. Then the hold starts and the base runs are tak
 (`24fe7cba2dadbadb5917cf20e6c884d1ddabec85`) and the rule's first revision
 (`189d65ffc84c3943338a5fab5be5e178fc4d3092`), both made on SJL-11.5's branch `sjl-11-5`, and that one dated revision,
 [`decision-rule-revised-2026-11-18.md`](../evidence/sjl-11-001/decision-rule-revised-2026-11-18.md)
-(`45a15487308eafb8c92d5325ffc22ee66e0a6475`), are on the branch `sjl-11-5-inputs` with the default branch merged in,
+(`45a15487308eafb8c92d5325ffc22ee66e0a6475`, revised at review before it merged by
+`909532bd2b2157eaf4364c4e8f6dfd0ff5e33f03`), are on the branch `sjl-11-5-inputs` with the default branch merged in,
 filed to land by a merge commit before the base is taken. The revision names Broiler.VM's row M28 (merged in
 Broiler-Platform/Broiler.VM#220, `79d728052f85bfc87da5a7510c2cf4ee667e72e0`) in part A's list, its `IsMatch` and
 public `Replace` half as the cut-over's correction and its `split` half as a correction the cut-over does not make,
