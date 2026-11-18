@@ -67,3 +67,36 @@ nothing here has been read by anyone but its author.
 **What this repository's half leaves to Broiler.VM.** The column and the deletion list reach Broiler.VM's bundle
 `sjl-15-001` and JSD-0088 by a dated note in a Broiler.VM change of its own (decision D-x2), which this change does not
 make; until it merges, JSD-0088 records no row's class across both engines, and no SJL-15.2 code merges.
+
+*(Noted 2026-11-18, before any run of the rule and before any SJL-15.2 code.)* The paragraph above, after its lead-in,
+reads "The column and the deletion list reach Broiler.VM's bundle `sjl-15-001` and JSD-0088 by a dated note in a
+Broiler.VM change of its own (decision D-x2), which this change does not make; until it merges, JSD-0088 records no
+row's class across both engines, and no SJL-15.2 code merges." That change has merged:
+**Broiler-Platform/Broiler.VM#217, merged as `450c785fd7773bf761c8bd857f9e4bc3dedd9869`** (first parent `5e90bfe4`) on
+Broiler.VM's default branch, observed in Broiler.VM's history at `32b0fad0`. It fills the column "Broiler.JS" of
+Broiler.VM's bundle `sjl-15-001`'s `correspondence.md` from this bundle's
+[`correspondence-broiler-js.md`](correspondence-broiler-js.md), by the dated note of 2026-11-17 in Broiler.VM's
+`correspondence.md`, and adds JSD-0088's dated note completing X2 and X6, which reads "No row's class is unknown" and
+"Both engines' halves of X2 and X6 are then filed; this note meets no clause and moves no gate." This bundle's own
+change had merged before it, in Broiler-Platform/Broiler.JS#1120 as `e4e45d38`.
+
+**What that merge unblocks, by the rule's words.** The rule's revision of 2026-11-17, matter 1, says of a model commit
+that "**it lands after** Broiler.VM's SJL-15.1 rule has merged (Broiler-Platform/Broiler.VM#214, `0ddc146f`,
+observed) **and after** the Broiler.VM change that carries this engine's column and JSD-0088's dated note completing X2
+and X6 has merged (decision D-x2), each merge observed and named, with its commit, in this bundle's README before any
+run at the model commit is taken." The first merge is named in this README's opening paragraph; this note names the
+second, with its commit. A merge of SJL-15.2 that lands from now on lands after both, and the paragraph above's "until
+it merges" has passed.
+
+**What it does not unblock.** It lets no SJL-15.2 code merge by itself. The eval-code inputs come first: this README's
+note above reads "The `semantics` vectors do not yet hold the eval-code inputs of probes V029, V030 and V046, which the
+probes show and revision 43 did not carry: they are next, by decision D-js-revisions' note of 2026-11-17", and that
+note, in `docs/roadmap/SharedLibraries.md`, puts them in "a later corpus revision of the area, classified on both
+engines' runs as revision 43's additions were, before any SJL-15.2 code merges". Broiler.VM's bundle `sjl-15-001`'s
+README, as Broiler-Platform/Broiler.VM#217 left it, lists the same in "What waits, in order": "Broiler.JS's later
+corpus revision with the eval-code inputs of probes V029, V030 and V046, classified on both engines' runs, before any
+SJL-15.2 code". No such revision exists yet: `conformance/vectors/REVISIONS.md` ends at revision 43. SJL-11.5's hold
+binds as well: the rule reads "None lands while SJL-11.5's bases are held (bundle `sjl-11-001`'s README, decision
+D16)", and its revision leaves it: "The rest of the definition (W2, the dark windows of bundle `sjl-14-001`, SJL-11.5's
+hold) is unchanged." No SJL-15.2 merge lands while those bases are held. This note names a merge and judges nothing;
+the paragraph above is left as written.
