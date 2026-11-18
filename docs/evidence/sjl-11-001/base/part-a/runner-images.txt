@@ -1,0 +1,210 @@
+# runner-images.txt: the runner image of each of the nine jobs that ran a shard or the merge (job collect), as the head of
+# the job's own log reads it (GitHub's job logs, read 2026-11-18T20:11Z), copied verbatim from its first line to the end of its "Runner Image" group.
+# Added at import; not a file of the artifact.
+
+## job: shard (0)
+2026-11-18T19:07:56.3857375Z Current runner version: '2.338.2'
+2026-11-18T19:07:56.3874019Z ##[group]Runner Image Provisioner
+2026-11-18T19:07:56.3874637Z Hosted Compute Agent
+2026-11-18T19:07:56.3875134Z Version: 20261103.629
+2026-11-18T19:07:56.3875598Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-18T19:07:56.3876306Z Build Date: 2026-11-03T17:26:59Z
+2026-11-18T19:07:56.3876806Z Worker ID: {4476054c-cd69-4ca3-ae0d-3b5e2342939b}
+2026-11-18T19:07:56.3877302Z Region: us-west-2
+2026-11-18T19:07:56.3877714Z Cloud: AWS
+2026-11-18T19:07:56.3878086Z ##[endgroup]
+2026-11-18T19:07:56.3879028Z ##[group]Operating System
+2026-11-18T19:07:56.3879458Z Ubuntu
+2026-11-18T19:07:56.3879827Z 24.04.5
+2026-11-18T19:07:56.3880491Z LTS
+2026-11-18T19:07:56.3880937Z ##[endgroup]
+2026-11-18T19:07:56.3881359Z ##[group]Runner Image
+2026-11-18T19:07:56.3881796Z Image: ubuntu-24.04
+2026-11-18T19:07:56.3882198Z Version: 20261111.127.1
+2026-11-18T19:07:56.3883119Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261111.127/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-18T19:07:56.3884220Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261111.127
+2026-11-18T19:07:56.3884909Z ##[endgroup]
+
+## job: shard (1)
+2026-11-18T19:07:55.0895440Z Current runner version: '2.338.2'
+2026-11-18T19:07:55.0917487Z ##[group]Runner Image Provisioner
+2026-11-18T19:07:55.0918107Z Hosted Compute Agent
+2026-11-18T19:07:55.0918496Z Version: 20261103.629
+2026-11-18T19:07:55.0919264Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-18T19:07:55.0920042Z Build Date: 2026-11-03T17:26:59Z
+2026-11-18T19:07:55.0920520Z Worker ID: {13a32cd9-d731-432f-b669-996a35248935}
+2026-11-18T19:07:55.0921020Z Region: centralus
+2026-11-18T19:07:55.0921386Z Cloud: Azure
+2026-11-18T19:07:55.0921765Z ##[endgroup]
+2026-11-18T19:07:55.0922805Z ##[group]Operating System
+2026-11-18T19:07:55.0923193Z Ubuntu
+2026-11-18T19:07:55.0923603Z 24.04.5
+2026-11-18T19:07:55.0923946Z LTS
+2026-11-18T19:07:55.0924310Z ##[endgroup]
+2026-11-18T19:07:55.0924688Z ##[group]Runner Image
+2026-11-18T19:07:55.0925123Z Image: ubuntu-24.04
+2026-11-18T19:07:55.0925533Z Version: 20261111.370.1
+2026-11-18T19:07:55.0926387Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261111.370/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-18T19:07:55.0927411Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261111.370
+2026-11-18T19:07:55.0928019Z ##[endgroup]
+
+## job: shard (2)
+2026-11-18T19:07:55.8872145Z Current runner version: '2.338.2'
+2026-11-18T19:07:55.8895086Z ##[group]Runner Image Provisioner
+2026-11-18T19:07:55.8895933Z Hosted Compute Agent
+2026-11-18T19:07:55.8896444Z Version: 20261103.629
+2026-11-18T19:07:55.8897524Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-18T19:07:55.8898152Z Build Date: 2026-11-03T17:26:59Z
+2026-11-18T19:07:55.8898714Z Worker ID: {1cf1c866-41aa-4992-826a-6babd7df0d58}
+2026-11-18T19:07:55.8899371Z Region: westus2
+2026-11-18T19:07:55.8899854Z Cloud: Azure
+2026-11-18T19:07:55.8900341Z ##[endgroup]
+2026-11-18T19:07:55.8901614Z ##[group]Operating System
+2026-11-18T19:07:55.8902195Z Ubuntu
+2026-11-18T19:07:55.8902726Z 24.04.5
+2026-11-18T19:07:55.8903184Z LTS
+2026-11-18T19:07:55.8903652Z ##[endgroup]
+2026-11-18T19:07:55.8904178Z ##[group]Runner Image
+2026-11-18T19:07:55.8904694Z Image: ubuntu-24.04
+2026-11-18T19:07:55.8905266Z Version: 20261111.370.1
+2026-11-18T19:07:55.8906402Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261111.370/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-18T19:07:55.8907900Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261111.370
+2026-11-18T19:07:55.8908708Z ##[endgroup]
+
+## job: shard (3)
+2026-11-18T19:07:56.1063394Z Current runner version: '2.338.2'
+2026-11-18T19:07:56.1080234Z ##[group]Runner Image Provisioner
+2026-11-18T19:07:56.1080871Z Hosted Compute Agent
+2026-11-18T19:07:56.1081349Z Version: 20261103.629
+2026-11-18T19:07:56.1081803Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-18T19:07:56.1082530Z Build Date: 2026-11-03T17:26:59Z
+2026-11-18T19:07:56.1083063Z Worker ID: {633b793d-c2a3-42f0-9e75-7bc175304ce8}
+2026-11-18T19:07:56.1083577Z Region: us-west-2
+2026-11-18T19:07:56.1083995Z Cloud: AWS
+2026-11-18T19:07:56.1084368Z ##[endgroup]
+2026-11-18T19:07:56.1085261Z ##[group]Operating System
+2026-11-18T19:07:56.1085705Z Ubuntu
+2026-11-18T19:07:56.1086095Z 24.04.5
+2026-11-18T19:07:56.1086470Z LTS
+2026-11-18T19:07:56.1086838Z ##[endgroup]
+2026-11-18T19:07:56.1087531Z ##[group]Runner Image
+2026-11-18T19:07:56.1088019Z Image: ubuntu-24.04
+2026-11-18T19:07:56.1088447Z Version: 20261111.127.1
+2026-11-18T19:07:56.1089383Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261111.127/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-18T19:07:56.1090476Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261111.127
+2026-11-18T19:07:56.1091291Z ##[endgroup]
+
+## job: shard (4)
+2026-11-18T19:07:55.0049283Z Current runner version: '2.338.2'
+2026-11-18T19:07:55.0068594Z ##[group]Runner Image Provisioner
+2026-11-18T19:07:55.0069397Z Hosted Compute Agent
+2026-11-18T19:07:55.0069943Z Version: 20261103.629
+2026-11-18T19:07:55.0070834Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-18T19:07:55.0071662Z Build Date: 2026-11-03T17:26:59Z
+2026-11-18T19:07:55.0072221Z Worker ID: {c814edaf-a12f-41c8-ac76-11ca7497aa50}
+2026-11-18T19:07:55.0072884Z Region: eastus2
+2026-11-18T19:07:55.0073352Z Cloud: Azure
+2026-11-18T19:07:55.0073826Z ##[endgroup]
+2026-11-18T19:07:55.0074988Z ##[group]Operating System
+2026-11-18T19:07:55.0075502Z Ubuntu
+2026-11-18T19:07:55.0076010Z 24.04.5
+2026-11-18T19:07:55.0076495Z LTS
+2026-11-18T19:07:55.0076956Z ##[endgroup]
+2026-11-18T19:07:55.0077466Z ##[group]Runner Image
+2026-11-18T19:07:55.0078038Z Image: ubuntu-24.04
+2026-11-18T19:07:55.0078560Z Version: 20261111.370.1
+2026-11-18T19:07:55.0079619Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261111.370/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-18T19:07:55.0080934Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261111.370
+2026-11-18T19:07:55.0081898Z ##[endgroup]
+
+## job: shard (5)
+2026-11-18T19:07:56.3543434Z Current runner version: '2.338.2'
+2026-11-18T19:07:56.3561800Z ##[group]Runner Image Provisioner
+2026-11-18T19:07:56.3562537Z Hosted Compute Agent
+2026-11-18T19:07:56.3562987Z Version: 20261111.635
+2026-11-18T19:07:56.3563436Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+2026-11-18T19:07:56.3564147Z Build Date: 2026-11-11T01:49:01Z
+2026-11-18T19:07:56.3564638Z Worker ID: {c968f7e9-613d-432e-a587-7f79b5286667}
+2026-11-18T19:07:56.3565140Z Region: us-west-2
+2026-11-18T19:07:56.3565550Z Cloud: AWS
+2026-11-18T19:07:56.3565948Z ##[endgroup]
+2026-11-18T19:07:56.3566946Z ##[group]Operating System
+2026-11-18T19:07:56.3567389Z Ubuntu
+2026-11-18T19:07:56.3567743Z 24.04.5
+2026-11-18T19:07:56.3568357Z LTS
+2026-11-18T19:07:56.3568741Z ##[endgroup]
+2026-11-18T19:07:56.3569133Z ##[group]Runner Image
+2026-11-18T19:07:56.3569568Z Image: ubuntu-24.04
+2026-11-18T19:07:56.3569984Z Version: 20261116.133.1
+2026-11-18T19:07:56.3570909Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261116.133/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-18T19:07:56.3572003Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261116.133
+2026-11-18T19:07:56.3572703Z ##[endgroup]
+
+## job: shard (6)
+2026-11-18T19:07:55.3763300Z Current runner version: '2.338.2'
+2026-11-18T19:07:55.3790142Z ##[group]Runner Image Provisioner
+2026-11-18T19:07:55.3791179Z Hosted Compute Agent
+2026-11-18T19:07:55.3791780Z Version: 20261103.629
+2026-11-18T19:07:55.3793126Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-18T19:07:55.3793935Z Build Date: 2026-11-03T17:26:59Z
+2026-11-18T19:07:55.3794762Z Worker ID: {45f98141-a5b1-45fe-a80c-ac35ea1becce}
+2026-11-18T19:07:55.3795560Z Region: northcentralus
+2026-11-18T19:07:55.3796202Z Cloud: Azure
+2026-11-18T19:07:55.3796934Z ##[endgroup]
+2026-11-18T19:07:55.3798387Z ##[group]Operating System
+2026-11-18T19:07:55.3799165Z Ubuntu
+2026-11-18T19:07:55.3800065Z 24.04.5
+2026-11-18T19:07:55.3800645Z LTS
+2026-11-18T19:07:55.3801305Z ##[endgroup]
+2026-11-18T19:07:55.3801924Z ##[group]Runner Image
+2026-11-18T19:07:55.3802582Z Image: ubuntu-24.04
+2026-11-18T19:07:55.3803277Z Version: 20261111.370.1
+2026-11-18T19:07:55.3804655Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261111.370/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-18T19:07:55.3806320Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261111.370
+2026-11-18T19:07:55.3807337Z ##[endgroup]
+
+## job: shard (7)
+2026-11-18T19:07:56.3352403Z Current runner version: '2.338.2'
+2026-11-18T19:07:56.3371608Z ##[group]Runner Image Provisioner
+2026-11-18T19:07:56.3372297Z Hosted Compute Agent
+2026-11-18T19:07:56.3372721Z Version: 20261103.629
+2026-11-18T19:07:56.3373171Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-18T19:07:56.3373867Z Build Date: 2026-11-03T17:26:59Z
+2026-11-18T19:07:56.3374349Z Worker ID: {f2341039-9a50-490e-917f-f94fcf9f6ad4}
+2026-11-18T19:07:56.3374887Z Region: us-west-2
+2026-11-18T19:07:56.3375282Z Cloud: AWS
+2026-11-18T19:07:56.3375646Z ##[endgroup]
+2026-11-18T19:07:56.3376719Z ##[group]Operating System
+2026-11-18T19:07:56.3377183Z Ubuntu
+2026-11-18T19:07:56.3377789Z 24.04.5
+2026-11-18T19:07:56.3378189Z LTS
+2026-11-18T19:07:56.3378556Z ##[endgroup]
+2026-11-18T19:07:56.3378944Z ##[group]Runner Image
+2026-11-18T19:07:56.3379432Z Image: ubuntu-24.04
+2026-11-18T19:07:56.3379884Z Version: 20261111.127.1
+2026-11-18T19:07:56.3380805Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261111.127/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-18T19:07:56.3381898Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261111.127
+2026-11-18T19:07:56.3382626Z ##[endgroup]
+
+## job: collect
+2026-11-18T20:07:12.9833275Z Current runner version: '2.338.2'
+2026-11-18T20:07:12.9854004Z ##[group]Runner Image Provisioner
+2026-11-18T20:07:12.9854820Z Hosted Compute Agent
+2026-11-18T20:07:12.9855382Z Version: 20261103.629
+2026-11-18T20:07:12.9855963Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-18T20:07:12.9856578Z Build Date: 2026-11-03T17:26:59Z
+2026-11-18T20:07:12.9857213Z Worker ID: {cb8c52f3-1874-41e1-8631-7be0d79f08ab}
+2026-11-18T20:07:12.9857814Z Region: westus2
+2026-11-18T20:07:12.9858272Z Cloud: Azure
+2026-11-18T20:07:12.9858873Z ##[endgroup]
+2026-11-18T20:07:12.9859971Z ##[group]Operating System
+2026-11-18T20:07:12.9860580Z Ubuntu
+2026-11-18T20:07:12.9861036Z 24.04.5
+2026-11-18T20:07:12.9861465Z LTS
+2026-11-18T20:07:12.9861964Z ##[endgroup]
+2026-11-18T20:07:12.9862635Z ##[group]Runner Image
+2026-11-18T20:07:12.9863229Z Image: ubuntu-24.04
+2026-11-18T20:07:12.9863734Z Version: 20261111.370.1
+2026-11-18T20:07:12.9864832Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261111.370/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-18T20:07:12.9866062Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261111.370
+2026-11-18T20:07:12.9866913Z ##[endgroup]

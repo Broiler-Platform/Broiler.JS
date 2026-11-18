@@ -1,0 +1,48 @@
+Bundle sjl-11-001's local base runs, parts C and D, at the base commit 5429c4065e8b273e5c7965598b8a2f5490a8ad98
+(Broiler-Platform/Broiler.JS#1125's merge), 2026-11-18 UTC. Every command as it was run, in order.
+
+Host: Ubuntu 24.04.5 LTS; Linux 6.18.44 x86_64; 4 logical CPUs; ICU 74.2 (libicu74 74.2-1ubuntu3.1, the only ICU
+installed); .NET SDK 10.0.404, runtime Microsoft.NETCore.App 10.0.15. The machine is a container shared with other
+work, so no run here is a timing. Each step ran through a wrapper (run.sh) that takes an exclusive lock, waits until
+the one-minute load average is 1.0 or less and no other dotnet, testhost, VBCSCompiler, MSBuild or Broiler.* process
+runs (logs/gate.log), records the machine before and after (logs/<step>.machine.txt, logs/<step>.machine-sh.txt),
+times the step (logs/<step>.time.txt: wall-clock and peak RSS) and keeps its exit code, standard output and standard
+error (logs/<step>.exit.txt, .out.txt, .err.txt). The wrapper exports PATH=/root/.dotnet:$PATH, DOTNET_ROOT=/root/.dotnet,
+DOTNET_CLI_TELEMETRY_OPTOUT=1, DOTNET_NOLOGO=1, MSBUILDDISABLENODEREUSE=1, DOTNET_CLI_USE_MSBUILD_SERVER=0 and
+UseSharedCompilation=false. logs/commands.log and logs/runs.tsv are the wrapper's own records of each step.
+
+W=/home/user/js-115b-build/base        # the clean tree, removed afterwards
+O=<this directory>                     # the outputs, written to a scratch folder and copied here unchanged
+
+# ---- the clean tree: git archive of the base commit, on disk (archive.txt: commit, tree, file count)
+git archive --format=tar 5429c4065e8b273e5c7965598b8a2f5490a8ad98 | tar -x -C $W
+
+# ---- the builds, in Release, from clean (no warning, no error: logs/build-*.out.txt)
+cd $W && dotnet build Broiler.JS/Broiler.JavaScript -c Release --disable-build-servers -nologo
+cd $W && dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers -nologo
+# the shell's and the vector runner's assemblies by SHA-256: shell-binaries.sha256, vectors-binaries.sha256
+
+# ---- part D: the engine-level vector runner, three cultures, one evaluating process each (BROILER_VECTORS_WORKERS
+#      unset), the whole test project (the corpus test and the negative control), as engine/commands.txt's runs were
+cd $W && env -u LANG -u LANGUAGE -u LC_ALL TZ=UTC BROILER_VECTORS_REPORT=$O/part-d/run-invariant.tsv \
+  dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --nologo --logger "console;verbosity=normal"
+cd $W && env -u LANG -u LANGUAGE -u LC_ALL LANG=tr_TR.UTF-8 LC_ALL=tr_TR.UTF-8 TZ=UTC BROILER_VECTORS_REPORT=$O/part-d/run-tr-TR.tsv \
+  dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --nologo --logger "console;verbosity=normal"
+cd $W && env -u LANG -u LANGUAGE -u LC_ALL LANG=lt_LT.UTF-8 LC_ALL=lt_LT.UTF-8 TZ=UTC BROILER_VECTORS_REPORT=$O/part-d/run-lt-LT.tsv \
+  dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --nologo --logger "console;verbosity=normal"
+#   exit 0 (invariant), 1 (tr-TR), 1 (lt-LT). Each report is the whole corpus at the base commit's revision 43; each
+#   run's negative control wrote run-*.negative-control.tsv beside it. The reports are kept gzip-compressed
+#   (gzip -9 -n), part-d/run-*.tsv.gz. The culture took effect: the tr-TR run's dotnet test messages are in Turkish,
+#   and both runs' intl/ lines differ from the invariant run's.
+
+# ---- part C: every case of docs/evidence/sjl-11-001/inputs/adversarial/manifest.tsv, one process each, through
+#      run-part-c.py (kept here), which reads each program from the clean tree, checks it against the manifest's
+#      SHA-256, and runs it under the manifest header's wall-clock limit with LANG, LANGUAGE and every LC_* variable
+#      removed (the invariant culture) and TZ=UTC:
+cd $W && python3 -I run-part-c.py $W $W/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll $O/part-c
+#   per case: dotnet $W/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll --script-host <program>
+#   exit 0. part-c/results.tsv: one row per case (the SHA-256 check, exit, wall-clock, outcome, whether it is the
+#   declared outcome); part-c/cases/<id>.out.txt: each process's command, exit and whole standard output and error.
+#   A case past the limit was killed by the script, which started it (exit -9).
+
+rm -rf $W
