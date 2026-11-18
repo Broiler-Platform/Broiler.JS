@@ -1542,12 +1542,13 @@ This repository's part of it:
     recorded in the bundle's README as a finding for Broiler.VM's correspondence, whose row is Broiler.VM's to add.
 - *(Noted 2026-11-18, on branch `sjl-11-5`; the notes above are left as written.)* **Broiler.RegEx's candidate reading
   is taken, part A has been read a second time, and the owner has ruled on what part A blocks and answered three
-  questions on the cut-overs; the merge still waits on the inputs landing on the default branch, the hold and the base
-  runs.** The note of 2026-11-17 above reads "**Its merge waits** on Broiler.RegEx's candidate reading, on the hold
-  under which every base is taken (decision D16), and on the base runs, taken at the first parent of the merge that
-  lands it; no run of bundle [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s rule has been taken." By Broiler.RegEx's
-  records (its `docs/roadmap.md`, the dated records of 2026-11-18 on task 4.2, and its bundle `sjl-11-001`'s README, at
-  its default branch's `ba7ac8cf`):
+  questions on the cut-overs; the merge still waits on the inputs landing on the default branch, the hold, the base runs
+  and the owner's open items that Broiler.RegEx's records name.** The note of 2026-11-17 above reads "**Its merge
+  waits** on Broiler.RegEx's candidate reading, on the hold under which every base is taken (decision D16), and on the
+  base runs, taken at the first parent of the merge that lands it; no run of bundle
+  [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s rule has been taken." By Broiler.RegEx's records (its
+  `docs/roadmap.md`, the dated records of 2026-11-18 on task 4.2, and its bundle `sjl-11-001`'s README, at its default
+  branch's `ba7ac8cf`):
   - **The candidate reading** of Broiler.RegEx's bundle `sjl-11-001` was taken at `49d7be1f`, the merge of
     Broiler-Platform/Broiler.Regex#27 and the reading's commit, and its records merged in #28 as `662f3499`. Part A read
     NOT MET; parts B to E and the reference arms read MET on the retained runs. Its record reads "So by the rule, part
@@ -1609,7 +1610,7 @@ This repository's part of it:
 - *(Noted 2026-11-18, the same day; the two notes above are left as written.)* **What the merge still waits on, by the
   records' own words.** The first note of 2026-11-17 above reads "**Its merge waits** on Broiler.RegEx's candidate
   reading". The candidate reading is taken, and by the owner's ruling above part A's second reading lifts its block on
-  this cut-over as far as part A goes. The records name these, in this order:
+  this cut-over as far as part A goes. The records name these:
   - **The inputs on the default branch.** The inputs commit `24fe7cba` and the rule's revision `189d65ff`, with one new
     dated revision of the rule, land on the default branch by a merge commit before the base is taken (answer 3). By
     answer 3 that revision "lists the y-flag correction row and admits the ubuntu-24.04 workflow": the row is the one
