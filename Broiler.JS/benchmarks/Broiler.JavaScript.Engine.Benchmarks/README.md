@@ -73,6 +73,9 @@ Useful filters:
   below.
 - `*UnicodeBenchmarks*` for the shared JavaScript libraries' Unicode measurement:
   `normalize`, casing and identifier scanning, each with its control. See below.
+- `*RegExpBenchmarks*` for the shared JavaScript libraries' regular-expression measurement:
+  the six workloads of bundle `sjl-11-001`, each with its control, run verbatim from the
+  bundle's files. See below.
 - `*Phase5TieringBenchmarks*` for baseline versus promoted numeric reductions with
   numeric and mixed-type inputs; `*Phase5TaggedValueFeasibilityBenchmarks*` compares
   reference-backed `JSValue` scalar reads with the isolated eight-byte prototype.
@@ -138,3 +141,22 @@ engine's casing and normalization read the host's ICU until the cut-over, and it
 throws under invariant globalization, so a lane without ICU fails the answers. Each answer counts
 completed operations, for the same reason. **No figure from these workloads belongs anywhere but
 bundle `docs/evidence/sjl-7-001/`.**
+
+`RegExpBenchmarks` holds the workloads of milestone SJL-11's measurement: `Scan`, `Captures`,
+`Replace`, `Split`, `Unicode` and `Backtrack`, each with its control, `ScanControl` to
+`BacktrackControl`. Their programs are not written in the class: they are the files of
+`docs/evidence/sjl-11-001/inputs/workloads/`, committed with their rule,
+`docs/evidence/sjl-11-001/decision-rule.md` part B, at SJL-11.1, and embedded in the assembly byte
+for byte by the project file. Each file is checked against the SHA-256 the workloads' README gives
+before it runs, and a file that differs stops the run.
+
+```bash
+DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 dotnet Broiler.JavaScript.Engine.Benchmarks.dll --regexp-answers
+BROILER_BENCHMARK_PROFILE=baseline dotnet Broiler.JavaScript.Engine.Benchmarks.dll --filter '*RegExpBenchmarks*' --buildTimeout 1800
+```
+
+`--regexp-answers` prints each workload's answer, its program's completion value, which counts
+the operations that completed rather than their results; each file's SHA-256; and the
+configuration, as `--unicode-answers` does, with the current culture and UI culture. The rule
+runs the process under the invariant culture. **No figure from these workloads belongs anywhere
+but bundle `docs/evidence/sjl-11-001/`'s `measurement/` sub-bundle.**

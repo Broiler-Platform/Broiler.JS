@@ -15,6 +15,13 @@ adversarial corpus in this engine, and this engine's measurement.
 Clause 7, every correction listed, is read from `Broiler.JS/CHANGELOG.md` against the parts' C1 rows and the rule's
 list of this engine's corrections. The rule names it and does not decide it.
 
+*Dated note, 2026-11-17, on branch `sjl-11-5`; the paragraphs above are not rewritten.* The rule is revised, before
+any run it judges, by [`decision-rule-revised-2026-11-17.md`](decision-rule-revised-2026-11-17.md), which quotes it
+whole: part A's list of this engine's corrections names rows S12 to S15 and M8 to M27 of the correspondence, the
+corrections of Broiler.JS that Broiler.VM's JSD-0081 added by its decisions D-jsrows, D-jsexec and D-jsrest of
+2026-11-16, and says how a row the list names "with Broiler.Regex 0.1.0-preview.4" reads now that the base routes
+through `0.1.0-preview.6`. `decision-rule.md` is not edited; the two are read together.
+
 **Area verdict:** [`SharedLibraries.md`](../../roadmap/SharedLibraries.md), "Area verdicts", "Regular expressions
 (SJL-11.1)", with Broiler.VM's JSD-0081,
 `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0081-regular-expressions-move-to-broiler-regex-under-its-owner-conditions.md`,
@@ -56,11 +63,54 @@ paragraph names the `0.1.0-preview.4` restored when it was written. The filed ru
   engine's and the shared folder's code are held (decision D16).
 - The after runs follow that merge.
 
+*Dated note, 2026-11-17, at the inputs commit, on branch `sjl-11-5`; the block above is not rewritten.* It reads
+"**State, 2026-10-25, at SJL-11.1: rules only. Nothing here is a verdict, and nothing has been taken.**" Since
+2026-11-01, [`engine/`](engine/) holds both engines' first runs on the regular-expression vectors at corpus
+revisions 31 and 32, with each engine's negative control and this engine's three cultures, as the note of that day
+below says; they are retained and read, not judged, and none of them is taken at a commit the rule names. So
+"nothing has been taken" no longer holds as written: **no run the rule judges has been taken** (no base, no after,
+no control and no measurement), and nothing here is a verdict. This commit is the inputs commit the block names:
+it adds `RegExpBenchmarks` (`Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/RegExpBenchmarks.cs`) and
+the benchmark `Program.cs`'s `--regexp-answers`, which read the files of [`inputs/workloads/`](inputs/workloads/)
+verbatim, embedded in the benchmark assembly byte for byte and each checked against its SHA-256 there before it
+runs. It changes only `Broiler.JS/benchmarks/` and `docs/`. It is made on the branch of SJL-11.5, `sjl-11-5`
+(decision D35), where the rule asks for "the default-branch commit"; the rule's base commit "descends from the
+inputs commit", so this commit reaches the default branch before the base is taken, or the base does not satisfy
+the rule. That is the owner's to order; nothing here merges it.
+
 **The commits named so far:**
 - **The rule commit** carries [`decision-rule.md`](decision-rule.md) and the inputs. It is named here, by all forty
   digits, when the change that carries it has merged.
 
 No other commit is named yet.
+
+*Dated note, 2026-11-18, on the branch `sjl-11-5-inputs`; the list and the line above are not rewritten.* They read
+"**The rule commit** carries [`decision-rule.md`](decision-rule.md) and the inputs. It is named here, by all forty
+digits, when the change that carries it has merged." and "No other commit is named yet." The commits the rule names
+before they exist, and its revisions, are named here by all forty digits, as this branch holds them:
+- **The rule commit**, the commit that adds `decision-rule.md` and the inputs, is
+  `0f21a84c4cc1bdfc001778833607aeb320669936`; the same change's `1cf69b998eff3638ef9840bdac9c0a0ebca92ddf` revised the
+  rule that day, after review, as its note of 2026-10-25 says. The change merged on 2026-10-25 as
+  Broiler-Platform/Broiler.JS#1069, `f918b040f4992b8a230b8b6d9a0f2c03000632be`.
+- **The inputs commit** is `24fe7cba2dadbadb5917cf20e6c884d1ddabec85`, and **the rule's revision before any of its
+  runs**, which files [`decision-rule-revised-2026-11-17.md`](decision-rule-revised-2026-11-17.md), is
+  `189d65ffc84c3943338a5fab5be5e178fc4d3092`. Both were made on SJL-11.5's branch `sjl-11-5`, its first two commits
+  after the default branch's `6fda6ca4`.
+- **The rule's second revision**, [`decision-rule-revised-2026-11-18.md`](decision-rule-revised-2026-11-18.md), is
+  `45a15487308eafb8c92d5325ffc22ee66e0a6475`, the one dated revision the owner's answer of 2026-11-18 orders ("Allow
+  both", which the revision quotes whole, with the alternatives not taken); the same branch's
+  `909532bd2b2157eaf4364c4e8f6dfd0ff5e33f03` revised it that day, at review, before it merged and before any run, as
+  its note of 2026-11-18 says, restating row M28's own limit on the `split` half. It names Broiler.VM's row M28 in
+  part A's list, in the row's two halves, and has part A's runs taken by the evidence workflow as the default branch
+  carries it at the base commit, admitting `3b4b6860`'s move of its jobs from `ubuntu-latest` to `ubuntu-24.04` and
+  no other change. The note of 2026-11-17 above on the rule reads "`decision-rule.md` is not edited; the two are read
+  together"; with this revision the three are, and none of them edits another.
+
+These commits are on the branch `sjl-11-5-inputs` with the default branch at `aecc5f89` merged into them
+(`2d2ffed7ceb7c5380341df806b39545a4f65181c`), and are filed to land on the default branch by a merge commit before the
+base is taken. Until that merge they are not default-branch commits, and the merge that lands them is named here
+after it merges. No base commit is named, the hold of decision D16 has not started, and no run the rule judges has
+been taken; nothing here is a verdict.
 
 *2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
 

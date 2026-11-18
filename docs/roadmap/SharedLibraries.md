@@ -1511,6 +1511,27 @@ None of it is accepted: no second holder exists to review it. Broiler.VM's claus
 their own bundles of the same name, and SJL-11 may not meet its gate before SJL-7 meets SJL-7's, and so not before
 SJL-3 meets SJL-3's.
 
+*(Noted 2026-11-18, on the branch `sjl-11-5-inputs`; the section above is left as written.)* **The rule's inputs
+commit and its two revisions are filed for landing on the default branch, and have not landed.** The section reads
+that part B runs "over a new benchmark class, `RegExpBenchmarks`, that a later inputs commit adds" and "Every base is
+taken at the first parent of the merge that lands SJL-11.5, under a hold (decision D16)." The owner ordered the
+landing on 2026-11-18, by an answer of the owner's own, not one taken under the direction of 2026-10-18: "Allow both"
+— "The inputs land on main by a merge commit with one dated revision. The revision lists the y-flag correction row and
+admits the ubuntu-24.04 workflow. Then the hold starts and the base runs are taken at main's head." The inputs commit
+(`24fe7cba2dadbadb5917cf20e6c884d1ddabec85`) and the rule's first revision
+(`189d65ffc84c3943338a5fab5be5e178fc4d3092`), both made on SJL-11.5's branch `sjl-11-5`, and that one dated revision,
+[`decision-rule-revised-2026-11-18.md`](../evidence/sjl-11-001/decision-rule-revised-2026-11-18.md)
+(`45a15487308eafb8c92d5325ffc22ee66e0a6475`, revised at review before it merged by
+`909532bd2b2157eaf4364c4e8f6dfd0ff5e33f03`), are on the branch `sjl-11-5-inputs` with the default branch merged in,
+filed to land by a merge commit before the base is taken. The revision names Broiler.VM's row M28 (merged in
+Broiler-Platform/Broiler.VM#220, `79d728052f85bfc87da5a7510c2cf4ee667e72e0`) in part A's list, its `IsMatch` and
+public `Replace` half as the cut-over's correction and its `split` half as a correction the cut-over does not make,
+and has part A's runs taken by the evidence workflow as the default branch carries it at the base commit, admitting
+`3b4b6860`'s move of its jobs to `ubuntu-24.04` and nothing else. Bundle
+[`sjl-11-001`](../evidence/sjl-11-001/README.md)'s README names the commits; the merge that lands them is named after
+it merges. No base is named and the hold has not started; no run of the rule has been taken, every clause of this
+engine's, 4 to 7, is unmet, and none of it is accepted.
+
 **Locale data and the Intl algorithms (SJL-9.1), filed 2026-10-26: all five sub-areas accepted, plural ranges and
 display-name naming adopted, decisions SJL-D-22 and SJL-D-24 recorded, and the owner's decisions of 2026-10-26
 recorded.**

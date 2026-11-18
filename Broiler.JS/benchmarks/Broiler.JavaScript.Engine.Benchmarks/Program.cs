@@ -195,6 +195,12 @@ public static class Program
             return;
         }
 
+        if (args.Length == 1 && args[0] == "--regexp-answers")
+        {
+            RegExpBenchmarks.WriteAnswers();
+            return;
+        }
+
         BenchmarkSwitcher
             .FromTypes([
                 typeof(ContextStartupBenchmarks),
@@ -220,6 +226,7 @@ public static class Program
                 typeof(JIntSmokeBenchmarks),
                 typeof(NumberConversionBenchmarks),
                 typeof(UnicodeBenchmarks),
+                typeof(RegExpBenchmarks),
             ])
             .Run(args, BenchmarkConfiguration.Create());
     }
