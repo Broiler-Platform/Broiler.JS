@@ -1,0 +1,28 @@
+# Part A's completeness conditions for each run, read from the files the workflow wrote:
+# every expected shard reported, no configuration failure, one suite revision, one shell, every
+# shard in the zone, includeNegative true. The merged results' summary of totals is not copied:
+# totals decide nothing.
+
+## base: docs/evidence/sjl-11-001/base/part-a/
+tested commit (run.txt): 5429c4065e8b273e5c7965598b8a2f5490a8ad98
+workflow run (run.txt): https://github.com/Broiler-Platform/Broiler.JS/actions/runs/44377139618 (attempt 1)
+runner (run.txt): ubuntu24 20261111.370.1; Linux X64; logical processors 4; dotnetVersion 11.0.100
+expected shards: [0, 1, 2, 3, 4, 5, 6, 7]; reported: [0, 1, 2, 3, 4, 5, 6, 7]; incomplete: []; retried: []; status files: 8; their (phase, exit code): [('full', 1)]
+configuration failures: []
+suite revisions (suiteRefs): ['ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e']
+includeNegative: run.txt True; merged results True; re-run True
+selection: all-script-host-verifiable; workers 4; timeout 30.0 s; memory limit 0; minifier terser 5.50.0
+shell: shards: 8; distinct lists: 1; the re-run's shell hashes as the shards' did
+zone: expected: TZ: unset; expected: 2021-01-15T12:00:00Z: UTC +0000; expected: 2021-07-15T12:00:00Z: UTC +0000; expected: tzdata: 2026e; shards: 8; in the expected zone: 8
+
+## after: docs/evidence/sjl-11-001/after/part-a/
+tested commit (run.txt): b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1
+workflow run (run.txt): https://github.com/Broiler-Platform/Broiler.JS/actions/runs/44496119000 (attempt 1)
+runner (run.txt): ubuntu24 20261111.370.1; Linux X64; logical processors 4; dotnetVersion 11.0.100
+expected shards: [0, 1, 2, 3, 4, 5, 6, 7]; reported: [0, 1, 2, 3, 4, 5, 6, 7]; incomplete: []; retried: []; status files: 8; their (phase, exit code): [('full', 1)]
+configuration failures: []
+suite revisions (suiteRefs): ['ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e']
+includeNegative: run.txt True; merged results True; re-run True
+selection: all-script-host-verifiable; workers 4; timeout 30.0 s; memory limit 0; minifier terser 5.50.0
+shell: shards: 8; distinct lists: 1; the re-run's shell hashes as the shards' did
+zone: expected: TZ: unset; expected: 2021-01-15T12:00:00Z: UTC +0000; expected: 2021-07-15T12:00:00Z: UTC +0000; expected: tzdata: 2026e; shards: 8; in the expected zone: 8
