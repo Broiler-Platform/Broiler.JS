@@ -1731,6 +1731,45 @@ and part E has no base run. `5429c406` is the base commit only if the merge land
 parent; if the default branch moves before that merge, the base runs are void, as the rule says. No after run has been
 taken, every clause of this engine's, 4 to 7, is unmet, and none of it is accepted.
 
+*(Noted 2026-11-19, the same day; the notes above are left as written.)* **The owner's answers of 2026-11-19, quoted
+verbatim.** Each is the owner's own, not a choice taken under the owner's direction of 2026-10-18, and they are
+numbered as the answers of 2026-11-18 above continue.
+- **4.** Asked: "SJL-11.5's part B (the RegExpBenchmarks measurement) runs arm B (base commit) and arm A (the merge)
+  interleaved in every repetition, so it can only run after SJL-11.5 merges, and the rule judges it only on a
+  controlled lane. Its 'every base run is taken there, before the merge' cannot hold for arm B as written. What should
+  happen to part B?" Chosen: "On your lane after merge" — "After the merge, a local session on win-x64-r7-5800x builds
+  arm B from 5429c406 and arm A from the merge and runs part B as written, as SJL-3's part B was run. A dated note reads
+  arm B as built from the base commit, not as a run taken before the merge." Not taken: "Record it void" — "No part B
+  run. It is recorded void, which by the rule leaves the measurement question open for this engine. It does not block
+  anything."
+- **5.** Asked: "Part D's base runs read the corpus at revision 43, but the rule names revision 32. The regexp vectors'
+  ids, inputs and expected outputs are the same in both; only 22 class lines and the divergence lines changed, at
+  revision 39. How should part D be read, at both the base and the after runs?" Chosen: "Read revision 32" — "As the
+  rule says: the base reports are read again against revision 32's class lines through a scratch pin, with no new runs
+  needed, and the after runs are read the same way." Not taken: "Read revision 43" — "Read the tree's revision 43 at
+  both, with the equivalence of ids, inputs and outputs recorded. This departs from the rule's named revision."
+- **6.** Asked: "Decision D35 orders both cut-overs "after SJL-12's after runs and after the candidate reading". The
+  candidate reading is taken and merged (Broiler.Regex #28, #29, #30), but Regex task 4.2 stays open until the scratch
+  branch sjl-11-2-control-b is deleted. Is D35 met for SJL-11.5's merge?" Chosen: "Yes, the reading is taken" — "D35
+  asks only that the candidate reading come first, and it has. SJL-11.5 may merge once its PR's CI is green and the hold
+  still holds." Not taken: "No, close task 4.2 first" — "SJL-11.5 waits until you delete the scratch branch and task
+  4.2 is recorded closed. The hold stays on meanwhile."
+- **How they bear here.** Bundle [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s README records all three in a
+  dated note with the rule's lines each reads. **Part B** is taken after the merge, on the controlled lane
+  [`win-x64-r7-5800x`](../evidence/lanes/win-x64-r7-5800x/README.md), by a local session on the owner's workstation:
+  arm B built from `5429c406`, arm A and A-again from the merge. The README reads the rule's "Every base run is taken
+  there, before the merge" (`decision-rule.md:107`) for part B's arm B as an arm built from the base commit, beside
+  `:109-110`, `:146` and `:147`, and revises no rule line. **Part D** is read at corpus revision 32 at the base and
+  after: its base reports are read again against revision 32's class lines through a scratch pin, with no new run,
+  and the reading is retained in the bundle's `base/part-d/`. **Decision D35**, which Broiler.VM's JSD-0081 reads
+  "Both after SJL-12's after runs and after the candidate reading; either first; both in one release train; SJL-11.5's
+  branch exists early for decision D14", is read as met for SJL-11.5's merge by the candidate reading's having been
+  taken, which answers the second note of 2026-11-18 above, "Whether D35 asks more of the candidate reading than that
+  it has been taken, such as task 4.2's close, ... no record read here says". Answer 6 does not name D35's "both in
+  one release train", and this note reads nothing into it. By answer 6 "SJL-11.5 may merge once its PR's CI is green
+  and the hold still holds"; Broiler.RegEx's task 4.2 stays open there, Broiler.RegEx's to record. No after run has
+  been taken, every clause of this engine's, 4 to 7, is unmet, and none of it is accepted.
+
 **Locale data and the Intl algorithms (SJL-9.1), filed 2026-10-26: all five sub-areas accepted, plural ranges and
 display-name naming adopted, decisions SJL-D-22 and SJL-D-24 recorded, and the owner's decisions of 2026-10-26
 recorded.**
