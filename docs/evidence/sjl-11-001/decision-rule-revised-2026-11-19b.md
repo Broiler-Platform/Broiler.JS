@@ -11,6 +11,14 @@ after run, and each of those parts' readings in the bundle's README. No part B a
 had run. **Owner:** the Broiler.JS maintainer. **Reviewer:** none; every role is one person (the programme's EX-30),
 and this revision does not claim that anyone independent has read it.
 
+*(Changed 2026-11-19, the day it was written, before this revision merged and before any run, so that its own text
+holds no figure, as the rule says of itself ("It holds no figure. Where a count or an allowance matters, it names the
+file that fixes it."): "Why it is written" read that N05's program "compiles a pattern of" a number of "nested
+capturing groups", that "The manifest's header states the wall-clock limit" followed by the header's line with its
+number, and N05's exit at the base and after by their numbers; it now names the kind of nesting, the manifest's header
+and how each process ended, and the files that hold the numbers. The owner's answer, quoted verbatim, is not changed.
+Nothing else changes.)*
+
 **Whose decision.** This revision is filed by the owner's answer of 2026-11-19, an answer of the owner's own, not one
 taken under the owner's direction of 2026-10-18, quoted verbatim. Asked (2026-11-19): "SJL-11.5 part C (the
 adversarial corpus) reads NOT MET on one case alone, N05. At the base, the old .NET-translated engine ran N05 past
@@ -52,14 +60,14 @@ abnormal end, or past the wall-clock limit", four, and its MET line keeps the la
 
 **Case N05** is the class N case of [`inputs/adversarial/manifest.tsv`](inputs/adversarial/manifest.tsv) whose program,
 `N05.js` (SHA-256 `34d3fa80fa3a5825275f29651519051f7cd97eb6aaab562a5439d0f6afa6c61d`, as the manifest names it),
-compiles a pattern of 1,000,000 nested capturing groups, and whose declared outcome is "threw SyntaxError". The
-manifest's header states the wall-clock limit, `wall-clock-limit-seconds: 300`.
+compiles a pattern of nested capturing groups, the deepest of that kind in the manifest, and whose declared outcome
+is "threw SyntaxError". The manifest's header states the wall-clock limit.
 - **At the base** its process passed the wall-clock limit and was killed: [`base/part-c/results.tsv`](base/part-c/results.tsv)
   (SHA-256 `710aa4f2296fcc8643adb6b0bb6125a9ed222ce149f81a4177cb73d2c6eb761c`) reads its outcome "past the wall-clock
-  limit", exit -9, and `base/part-c/cases/N05.out.txt` (`0cc162d1c9d44749493ed8fd76cba1fb1ac419bcb84bc5bf43c1effde877b701`)
+  limit", with the process killed at the limit, and `base/part-c/cases/N05.out.txt` (`0cc162d1c9d44749493ed8fd76cba1fb1ac419bcb84bc5bf43c1effde877b701`)
   reads "timed-out: True", with no line of standard output.
 - **After** it gives its declared outcome: [`after/part-c/results.tsv`](after/part-c/results.tsv)
-  (`e87ca5b437a016c11c97dcabc01cc4ac1f9172ae0354c975e6b3b429237da466`) reads "threw SyntaxError", exit 0, "matches-declared
+  (`e87ca5b437a016c11c97dcabc01cc4ac1f9172ae0354c975e6b3b429237da466`) reads "threw SyntaxError", the process ending normally, "matches-declared
   yes", and `after/part-c/cases/N05.out.txt` (`209fda347ee7fee16bd551c4052d59f30365c1b78717c49b812c8ff269c4eddd`) reads
   "adversarial-outcome N05 threw SyntaxError".
 
