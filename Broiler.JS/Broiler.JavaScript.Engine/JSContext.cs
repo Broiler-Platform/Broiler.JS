@@ -943,26 +943,46 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     /// </summary>
     internal int DirectEvalCodeDepth => directEvalCodeDepth;
 
+    // Whether the eval code DirectEvalSupport.Execute is compiling now inherits its caller's strictness; false at any other time.
+    private bool directEvalCodeIsStrict;
+
     /// <summary>
-    /// Sets <see cref="DirectEvalCodeDepth"/> to <paramref name="depth"/> until the returned scope is
-    /// disposed. <c>DirectEvalSupport.Execute</c> holds it around the compile of the eval code alone, not
-    /// around its evaluation, so a compilation that code starts as it runs reads 0.
+    /// Whether the direct eval code being compiled now is strict from its start because its caller is strict: the
+    /// compiler passes it to the bridge as the library's forced strictness and compiles the code as strict code
+    /// (window W2 of milestone SJL-14; decision D44, as Broiler.VM's JSD-0083 revised it). False for every other
+    /// compilation. Until W2, <c>DirectEvalSupport.Execute</c> put a <c>"use strict";</c> directive before the code
+    /// instead.
     /// </summary>
-    internal IDisposable CompileDirectEvalCodeAt(int depth) => new DirectEvalCodeDepthScope(this, depth);
+    internal bool DirectEvalCodeIsStrict => directEvalCodeIsStrict;
+
+    /// <summary>
+    /// Sets <see cref="DirectEvalCodeDepth"/> to <paramref name="depth"/> and <see cref="DirectEvalCodeIsStrict"/> to
+    /// <paramref name="strict"/> until the returned scope is disposed. <c>DirectEvalSupport.Execute</c> holds it around
+    /// the compile of the eval code alone, not around its evaluation, so a compilation that code starts as it runs reads
+    /// 0 and false.
+    /// </summary>
+    internal IDisposable CompileDirectEvalCodeAt(int depth, bool strict = false) => new DirectEvalCodeDepthScope(this, depth, strict);
 
     private sealed class DirectEvalCodeDepthScope : IDisposable
     {
         private readonly JSContext context;
         private readonly int previous;
+        private readonly bool previousStrict;
 
-        public DirectEvalCodeDepthScope(JSContext context, int depth)
+        public DirectEvalCodeDepthScope(JSContext context, int depth, bool strict)
         {
             this.context = context;
             previous = context.directEvalCodeDepth;
+            previousStrict = context.directEvalCodeIsStrict;
             context.directEvalCodeDepth = depth;
+            context.directEvalCodeIsStrict = strict;
         }
 
-        public void Dispose() => context.directEvalCodeDepth = previous;
+        public void Dispose()
+        {
+            context.directEvalCodeDepth = previous;
+            context.directEvalCodeIsStrict = previousStrict;
+        }
     }
 
     public bool UsesDirectEvalLocalVarEnvironment => directEvalLocalVarEnvironmentDepth > 0;

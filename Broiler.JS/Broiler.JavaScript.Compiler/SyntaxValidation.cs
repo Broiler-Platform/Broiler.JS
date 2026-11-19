@@ -12,15 +12,15 @@ internal static class SyntaxValidation
 {
 /// <summary>
 /// The early errors the parser does not check, over a program it parsed under <paramref name="options"/>:
-/// a top-level <c>await</c> the options do not permit, legacy octal literals in strict code, the eval
-/// and module declaration conflicts, and the control-flow and strict-mode rules.
+/// a top-level <c>await</c> the options do not permit, the eval and module declaration conflicts, and the
+/// control-flow and strict-mode rules. Until window W2 of milestone SJL-14 it also scanned the source again for
+/// legacy octal literals in strict code; W2 deletes that re-scan (decision D41, as Broiler.VM's JSD-0083 revised it),
+/// since the shared library checks those rows at the parse, strict code's forced strictness included.
 /// </summary>
 /// <param name="program">The parsed program.</param>
-/// <param name="sourceText">Its source, which the octal check scans again under the same options.</param>
 /// <param name="options">The options the program was parsed under: its goal and its top-level-await permission.</param>
 public static void ValidateProgram(
     AstProgram program,
-    string sourceText,
     FastParserOptions options,
     bool inheritStrictMode = false,
     IEnumerable<string> directEvalLexicalBindings = null,
@@ -32,8 +32,6 @@ public static void ValidateProgram(
             throw new FastParseException(program.Start, "Unexpected await");
 
         var strictProgram = inheritStrictMode || HasUseStrictDirective(program.Statements);
-        if (strictProgram && ContainsLegacyOctalLiteral(sourceText, options))
-            throw new FastParseException(program.Start, "Unexpected legacy octal literal in strict mode");
 
         if (!strictProgram
             && directEvalLexicalBindings != null
@@ -362,49 +360,6 @@ public static void ValidateProgram(
         }
 
         return false;
-    }
-
-    // Scans the source again under the options it was parsed under, so that the tokens are the
-    // parse's own: in a module, `<!--` and `-->` are punctuators rather than comments.
-    private static bool ContainsLegacyOctalLiteral(string sourceText, FastParserOptions options)
-    {
-        if (string.IsNullOrEmpty(sourceText))
-            return false;
-
-        var pool = new FastPool();
-        var stream = new FastTokenStream(pool, sourceText, null, options);
-
-        while (stream.Current.Type != TokenTypes.EOF)
-        {
-            var token = stream.Current;
-            if (token.Type == TokenTypes.Number
-                && TryGetLegacyOctalToken(token.Span.Value))
-            {
-                return true;
-            }
-
-            if (token.Type == TokenTypes.String
-                && ContainsLegacyOctalEscapeInString(token.Span.Value))
-            {
-                return true;
-            }
-
-            stream.Consume();
-        }
-
-        return false;
-    }
-
-    private static bool TryGetLegacyOctalToken(string tokenText)
-    {
-        if (string.IsNullOrEmpty(tokenText) || tokenText.Length < 2 || tokenText[0] != '0')
-            return false;
-
-        var second = tokenText[1];
-        if (second is 'x' or 'X' or 'b' or 'B' or 'o' or 'O' or '.')
-            return false;
-
-        return second is >= '0' and <= '7';
     }
 
     /// <summary>
