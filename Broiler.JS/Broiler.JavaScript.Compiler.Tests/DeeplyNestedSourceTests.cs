@@ -17,37 +17,69 @@ namespace Broiler.JavaScript.Compiler.Tests;
 /// run. Sizes are chosen to sit above the depth an ordinary thread's stack survives
 /// (roughly 1 200 levels on a 1 MiB Windows thread, 9 700 on an 8 MiB Linux one) and well
 /// below what <c>CompilationStack</c> provides, so the fixtures are decisive on both.
+/// <para>
+/// <b>Revised at window W2 of milestone SJL-14</b> (bundle <c>sjl-14-001</c>'s corrections, rows R12 and R13 of K10;
+/// JSD-0080's decision D27, decision D47): the shared syntax library parses every compile, and it refuses a source that
+/// nests past its supported depth (<c>ParseLimits.MaximumSupportedNestingDepth</c>) or whose tree is deeper than its
+/// bound (<c>ParseLimits.MaximumTreeDepth</c>) with a SyntaxError, the implementation limit class C3 lists, where the
+/// old parser accepted them on a segmented stack. The fixtures that asserted acceptance past those bounds (they read
+/// 20 000 operators, 15 000 and 25 000 conditional levels, and 20 000 operators on a 1 MiB thread) now assert, at the
+/// same sizes, the refusal, a catchable SyntaxError and never an aborted host, and assert acceptance at a size within
+/// the bound. The fixture with 12 000 parentheses and the flat list are unchanged.
+/// </para>
 /// </remarks>
 public class DeeplyNestedSourceTests
 {
-    [Fact]
-    public void DeepBinaryExpressionChain_Compiles()
-    {
-        const int operators = 20_000;
+    // Within ParseLimits.MaximumTreeDepth (10 000): a left-nested chain of this many operators is this deep.
+    private const int OperatorsWithinTheBound = 9_000;
 
+    // Within ParseLimits.MaximumSupportedNestingDepth (512): each level nests a conditional in a parenthesis.
+    private const int LevelsWithinTheBound = 200;
+
+    private static string BinaryChain(int operators)
+    {
         var source = new StringBuilder("function f() { var a = 1", operators * 2 + 32);
         for (var i = 0; i < operators; i++)
             source.Append("+1");
         source.Append("; return a; } f();");
+        return source.ToString();
+    }
 
+    private static string ConditionalNesting(int levels)
+    {
+        // Right-nested, so the depth is in the parser's own recursive descent rather than
+        // only in the passes that walk the finished tree.
+        var source = new StringBuilder("function t(x) { return ", levels * 24 + 64);
+        for (var i = 0; i < levels; i++)
+            source.Append("x === ").Append(i).Append(" ? ").Append(i).Append(" : (");
+        source.Append('0').Append(new string(')', levels)).Append("; } t(7);");
+        return source.ToString();
+    }
+
+    private static void AssertRefusedForDepth(JSContext ctx, string source)
+    {
+        var error = Assert.ThrowsAny<Exception>(() => ctx.Eval(source));
+        Assert.Contains("too deep", error.Message);
+    }
+
+    [Fact]
+    public void DeepBinaryExpressionChain_Compiles()
+    {
         using var ctx = new JSContext();
-        Assert.Equal(operators + 1, ctx.Eval(source.ToString()).DoubleValue);
+        Assert.Equal(OperatorsWithinTheBound + 1, ctx.Eval(BinaryChain(OperatorsWithinTheBound)).DoubleValue);
+
+        // Row R13: past the library's tree-depth bound the source is refused, as class C3 lists it.
+        AssertRefusedForDepth(ctx, BinaryChain(20_000));
     }
 
     [Fact]
     public void DeepConditionalExpressionNesting_Compiles()
     {
-        // Right-nested, so the depth is in the parser's own recursive descent rather than
-        // only in the passes that walk the finished tree.
-        const int levels = 15_000;
-
-        var source = new StringBuilder("function t(x) { return ", levels * 24 + 64);
-        for (var i = 0; i < levels; i++)
-            source.Append("x === ").Append(i).Append(" ? ").Append(i).Append(" : (");
-        source.Append('0').Append(new string(')', levels)).Append("; } t(7);");
-
         using var ctx = new JSContext();
-        Assert.Equal(7, ctx.Eval(source.ToString()).DoubleValue);
+        Assert.Equal(7, ctx.Eval(ConditionalNesting(LevelsWithinTheBound)).DoubleValue);
+
+        // Row R12: past the library's supported nesting the source is refused, as class C3 lists it.
+        AssertRefusedForDepth(ctx, ConditionalNesting(15_000));
     }
 
     [Fact]
@@ -63,15 +95,13 @@ public class DeeplyNestedSourceTests
         // a soak: it is the smallest depth that was fatal, and it is decisive without touching
         // CompilationStack.SizeBytes — a process-wide static xUnit's parallel classes would
         // race on, which is why item 1-2's guard-alone row is a manual result and this is not.
+        //
+        // Row R12, at window W2: the library refuses this depth at the parse, on its own stack, with a SyntaxError,
+        // so the host is not aborted and the refusal is catchable.
         const int levels = 25_000;
 
-        var source = new StringBuilder("function t(x) { return ", levels * 24 + 64);
-        for (var i = 0; i < levels; i++)
-            source.Append("x === ").Append(i).Append(" ? ").Append(i).Append(" : (");
-        source.Append('0').Append(new string(')', levels)).Append("; } t(7);");
-
         using var ctx = new JSContext();
-        Assert.Equal(7, ctx.Eval(source.ToString()).DoubleValue);
+        AssertRefusedForDepth(ctx, ConditionalNesting(levels));
     }
 
     [Fact]
@@ -135,7 +165,9 @@ public class DeeplyNestedSourceTests
     [Fact]
     public void DeepBinaryExpressionChain_OnAOneMebibyteThread_Compiles()
     {
-        const int operators = 20_000;
+        // Row R13, at window W2: within the library's tree-depth bound (it read 20 000 operators, which the library
+        // now refuses, as the first fixture asserts).
+        const int operators = OperatorsWithinTheBound;
         const int oneMebibyteStack = 1024 * 1024;
 
         double result = 0;
@@ -146,13 +178,8 @@ public class DeeplyNestedSourceTests
             {
                 try
                 {
-                    var source = new StringBuilder("function f() { var a = 1", operators * 2 + 32);
-                    for (var i = 0; i < operators; i++)
-                        source.Append("+1");
-                    source.Append("; return a; } f();");
-
                     using var ctx = new JSContext();
-                    result = ctx.Eval(source.ToString()).DoubleValue;
+                    result = ctx.Eval(BinaryChain(operators)).DoubleValue;
                 }
                 catch (Exception ex)
                 {
