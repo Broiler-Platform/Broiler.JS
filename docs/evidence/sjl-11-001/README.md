@@ -728,6 +728,78 @@ What it means here:
 
 Nothing here is a verdict.
 
+*Dated note, 2026-11-19, later the same day, what the readings above rest on where they did not say, and four records
+they leave out; the notes above are not rewritten, no retained file changes and nothing is run again.*
+- **Part C's class C3, the evidence for each entry.** The table above reads, for M01 and M02, "C3: completed at the
+  base, after the RangeError its declaration names, a frame or trail ceiling (decisions D7 and D10)" and, for N02, N04,
+  N08, N10, N11, N14 and N16, "C3: completed at the base, after the SyntaxError its declaration names, the nesting limit
+  (decisions D7 and D10)", without naming the files that show which limit was reached. The retained outputs record only
+  the error's constructor (`after/part-c/cases/M01.out.txt`: "adversarial-outcome M01 threw RangeError"; the programs
+  print no message), so each entry rests on the following, all at the after commit, in
+  `Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.Broiler.cs` (blob `6bee5b8217f31b9c332de2eb4e5e5af8537a470a`,
+  SHA-256 `949c1c87f415febb6d7b554cb969642214537615c4a316f0674fcf355285c5e6`, the value
+  `controls/part-c/revert-check.txt` gives):
+  - **M01 and M02, on the control.** The adapter's match throws a RangeError only where Broiler.Regex reports
+    `LimitExceeded`, naming the trail or the frames (`:147-150`, under the ceilings `:28-29` passes, the policy `:19-21`
+    names as decisions D7 and D10). The control patch replaces exactly that throw with a no match
+    ([`controls/part-c/control.patch`](controls/part-c/control.patch),
+    `902626d4af0afd644be8dfbbe7ae05735056a7b2ed831f4e453080637a14ac23`), and with it both cases give "completed null"
+    (`controls/part-c/control/results.tsv`, `3fccd4c898996e2aea98a3c18a1baaaf7de469797286dd2c87e2c78a8527f096`);
+    reverted, both throw their RangeError again (`controls/part-c/reverted/results.tsv`,
+    `bc01a3374630f855142bf04d7dfae3e704aab0e52e2014e5c3a83c0d5a392a72`). So each RangeError is a ceiling Broiler.Regex
+    reported. Which of the two, frames or trail, nothing retained shows; the class names both.
+  - **The seven N cases, on the source and the cases' depths.** The adapter compiles every pattern under `NestingLimit`
+    (`:25`, `BroilerRegex.MaximumNestingLimit`; `:24` reads "511 nested groups compile, 512 are refused") and throws a
+    SyntaxError for every compile status but success (`:55-58`), so the source alone does not tell the nesting limit
+    from another refusal. The cases do. By their programs in [`inputs/adversarial/`](inputs/adversarial/), each run only
+    after its SHA-256 matched the manifest's, N02, N08 and N14 nest 512 capturing groups, non-capturing groups and
+    `v`-mode classes; N04, N10 and N16 nest 20,000 of the same; and N11 nests 1,000,000 non-capturing groups. Each
+    pattern is otherwise that of N01, N07 or N13, which nest 511 of the same kind and give their declared answers after
+    (`after/part-c/results.tsv`, `e87ca5b437a016c11c97dcabc01cc4ac1f9172ae0354c975e6b3b429237da466`). The flags differ
+    only by `g`, which the grammar does not read. A pattern that differs from one that compiles only by deeper nesting
+    of the same kind is refused for its depth, so each of the seven SyntaxErrors is the nesting limit. No retained file
+    shows an error's message.
+
+  This is the session's reading of those files. It changes no class and no reading: part C read NOT MET, on N05, stands.
+  If the owner admits N05 under C1, part C's MET rests on these nine C3 entries as evidenced here.
+- **Part B's check: the blank line.** The revision of 2026-11-19 defines the block as "the `if` statement whose
+  condition is `args.Length == 1 && args[0] == "--regex-tiering"`, which calls `RegexTieringMetrics.Write()`, and
+  nothing else". The difference the check accepts removes that statement and the blank line after it
+  (`after/part-b-arm-a/check.txt`: "the block: inputs lines 59 to 64 (6 lines, the last blank)"). The check reads that
+  blank line, which only separates the statement from the next, as part of the block, under answer 7's "only by the
+  removed --regex-tiering block". Read the other way, the two files would differ by one blank line besides the block,
+  and the part B run would refuse. The part B local session is told to apply the same reading, or the owner's if the
+  owner rules otherwise first. The revision is not edited.
+- **The host's kernel build.** `after/commands.txt` reads "Host: Ubuntu 24.04.5 LTS; Linux 6.18.44 x86_64; … .NET SDK
+  10.0.404, runtime Microsoft.NETCore.App 10.0.15, as at the base runs". The machine records name the kernel's build:
+  `Linux 6.18.44-fc-v595 x86_64` in every record in `base/logs/`, and `Linux 6.18.44-fc-v653 x86_64` in every record in
+  `after/logs/` and `controls/logs/`. Apart from the time, the load, the free disk and the process list, the base and
+  after records of each step differ in that line alone. The rule's parts C and D fix the zone, the cultures and the
+  toolchain, not the kernel, so no clause turns on it. "As at the base runs" holds up to the kernel's build.
+- **Part C's reverted control build's binaries.** `controls/part-c/reverted-binaries.sha256` gives
+  `Broiler.JavaScript.BuiltIns.dll` `deef16298400d2ef57aa100ffabf319ceb76bd759c170aaa00cdf4857f9b851f` and
+  `BroilerJS.dll` `b7c0b58f229b621c0669e927ffa7d479f1d0047d3f34605d5537145c6a51bef5`, and `after/shell-binaries.sha256`
+  gives `d88190432fed92d9cccfda10eb69528a4119a775c0c9e295a47902c438a2d6da` and
+  `abfeec98243586254a6a8df13e660b00afd14d14955507a5a11426369808e388`. The two are not expected to be equal, and the
+  control does not rest on them. It rests on the revert's check at source level (the file's SHA-256 as above, and the
+  whole copy equal to a clean archive but for `bin/` and `obj/`) and on the M cases' outcomes. The after build ran in
+  its own scratch directory and the control's builds in another (`after/part-c/cases/M01.out.txt` and
+  `controls/logs/ctl-c-build.out.txt` name both). Builds made off CI keep their build directory's paths in the
+  assemblies: the repository sets `ContinuousIntegrationBuild` only on CI (`eng/Broiler.Packaging.props:80`) and sets no
+  `PathMap`. That is the most likely cause. It was not confirmed by building twice in one directory. `BroilerJS.dll` is
+  the same in the control's build and the reverted build, both made in the control's directory, the second
+  incrementally.
+- **Part E's first E-2 run.** The run that `after/commands.txt` says was discarded is not retained in the bundle. Its
+  output, the wrapper's standard output of the first `e2-run` in `controls/logs/runs.tsv`, has SHA-256
+  `0020699221e06148e15c9ea6fd90113efe1e70ed326368c7addb4a34708e8cd5` and is kept only in the session's scratch. It
+  differs from `after/part-e/e2.txt` in two places only. The first is the BuiltIns assembly's E-2 scope line, whose
+  `found:` list was empty, under the type name `Broiler.JavaScript.BuiltIns.String.JSStringPrototype`. The second is the
+  E-4 support lines. In both runs every assembly's TypeRefs and MemberRefs into `System.Text.RegularExpressions` are the
+  same, none in the BuiltIns assembly. The first version of the tool was corrected in place and is not kept; only the
+  version in [`after/part-e/e2check/`](after/part-e/e2check/) is.
+
+Part A's after run is still not taken and part A has no reading, as the note above says. Nothing here is a verdict.
+
 *2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
 
 *2026-11-01, at corpus revision 32:* **part D names revision 32**, the revision that classifies both engines' first
