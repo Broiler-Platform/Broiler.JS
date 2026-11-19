@@ -352,6 +352,74 @@ no file in `base/` changes.*
   seen is a new dated file in this directory, quoting this one whole and saying it was written afterwards; its
   decision is then weaker evidence" (`:272-273`).
 
+*Dated note, 2026-11-19, on branch `sjl-11-5`, the owner's answers; the note above is not rewritten.* Its two items
+"For the owner" end "Which one part D takes is the owner's" and "whether they are is the owner's to read, and this note
+does not read it". The owner answered both on 2026-11-19, with a third question on decision D35, by answers of the
+owner's own, not taken under the owner's direction of 2026-10-18. They are quoted verbatim, numbered as the owner's
+answers of 2026-11-18 (1 to 3) continue:
+- **4.** Asked: "SJL-11.5's part B (the RegExpBenchmarks measurement) runs arm B (base commit) and arm A (the merge)
+  interleaved in every repetition, so it can only run after SJL-11.5 merges, and the rule judges it only on a controlled
+  lane. Its 'every base run is taken there, before the merge' cannot hold for arm B as written. What should happen to
+  part B?" Chosen: "On your lane after merge" — "After the merge, a local session on win-x64-r7-5800x builds arm B from
+  5429c406 and arm A from the merge and runs part B as written, as SJL-3's part B was run. A dated note reads arm B as
+  built from the base commit, not as a run taken before the merge." Not taken: "Record it void" — "No part B run. It is
+  recorded void, which by the rule leaves the measurement question open for this engine. It does not block anything."
+- **5.** Asked: "Part D's base runs read the corpus at revision 43, but the rule names revision 32. The regexp vectors'
+  ids, inputs and expected outputs are the same in both; only 22 class lines and the divergence lines changed, at
+  revision 39. How should part D be read, at both the base and the after runs?" Chosen: "Read revision 32" — "As the
+  rule says: the base reports are read again against revision 32's class lines through a scratch pin, with no new runs
+  needed, and the after runs are read the same way." Not taken: "Read revision 43" — "Read the tree's revision 43 at
+  both, with the equivalence of ids, inputs and outputs recorded. This departs from the rule's named revision."
+- **6.** Asked: "Decision D35 orders both cut-overs "after SJL-12's after runs and after the candidate reading". The
+  candidate reading is taken and merged (Broiler.Regex #28, #29, #30), but Regex task 4.2 stays open until the scratch
+  branch sjl-11-2-control-b is deleted. Is D35 met for SJL-11.5's merge?" Chosen: "Yes, the reading is taken" — "D35
+  asks only that the candidate reading come first, and it has. SJL-11.5 may merge once its PR's CI is green and the hold
+  still holds." Not taken: "No, close task 4.2 first" — "SJL-11.5 waits until you delete the scratch branch and task
+  4.2 is recorded closed. The hold stays on meanwhile."
+
+What they mean here:
+- **Part B, by answer 4.** Part B is taken after the merge that lands SJL-11.5, on the controlled lane
+  [`win-x64-r7-5800x`](../lanes/win-x64-r7-5800x/README.md), by a local session on the owner's workstation, as bundle
+  `sjl-3-001`'s part B was taken there on 2026-11-17
+  ([`measurement-win-x64-r7-5800x/`](../sjl-3-001/measurement-win-x64-r7-5800x/README.md)): arm B built from the base
+  commit `5429c4065e8b273e5c7965598b8a2f5490a8ad98`, and arm A, with A-again, from that merge. The rule's lines this
+  note reads are, whole: "**The base commit** is the default-branch commit that the merge landing SJL-11.5 has as its
+  first parent. It descends from the inputs commit. Every base run is taken there, before the merge, while merges to
+  `Broiler.JS/Broiler.JavaScript.*/` and `Broiler.ECMAScript/` are held (decision D16)." (`decision-rule.md:106-108`);
+  "**The after commit** is that merge. If its first parent is not the commit the base runs were taken at, the base runs
+  are void and are taken again before any after run is seen." (`:109-110`); "arms: B the base commit, with
+  RegExpBenchmarks.cs and the benchmark Program.cs as the inputs commit has them; A the after commit, with the same two
+  files; A-again the A arm measured a second time under another lane name, the A/A lane; each arm's benchmark and
+  engine assemblies named by hash in the manifest, which is written and made read-only before any lane runs" (`:146`);
+  and "configuration: in every repetition, B, A and A-again each run once, in an order that rotates by repetition; ..."
+  (`:147`). By the owner's answer this note reads `:107`'s "Every base run is taken there, before the merge", for part
+  B's arm B, as **an arm built from the base commit**, not as a run taken before the merge: arm B's runs are taken after
+  the merge, interleaved with arm A's in every repetition as `:147` asks, and are not base runs in `:107`'s sense, which
+  parts A, C and D's base runs above keep. Arm B is the base commit only while the merge's first parent is `5429c406`,
+  as `:109-110` say of every base run, and the local session checks that before it builds. The part is judged as
+  written: "an acceptance comparison when the lane is a controlled lane" (`:144`), by its MET line's clauses 1 to 5
+  (`:156-162`). This note revises no line of the rule and adds or edits no rule file; it records the owner's reading of
+  `:107` and is not a revision under "Revisions" (`:272-273`). Part B's sub-bundle will be a new folder named for the
+  lane, `measurement-win-x64-r7-5800x/`, as `sjl-3-001`'s is, where the list "What the bundle will hold" below names
+  `measurement/`; that list is not rewritten.
+- **Part D, by answer 5.** Part D is read against corpus revision 32's `class` lines, the revision the rule names
+  ("The corpus revision this part names is 32", `decision-rule.md:242`), at both the base and the after runs, through a
+  scratch pin of revision 32's `conformance/vectors/regexp/`; the base reports are read again with no new run. The note
+  after this one records that reading, and how the after runs are read the same way. The reading "against the tree's
+  revision 43" that the note above names as the other way is not taken.
+- **Decision D35, by answer 6.** Broiler.VM's JSD-0081 (at `79d72805`) reads: "**Decision D35 - the order of the
+  cut-overs.** Both after SJL-12's after runs and after the candidate reading; either first; both in one release
+  train; SJL-11.5's branch exists early for decision D14. The reason: risk D10's stop, and processes that host both
+  engines." [`SharedLibraries.md`](../../roadmap/SharedLibraries.md)'s SJL-11 section quotes it in its note of
+  2026-11-18 and reads "Whether D35 asks more of the candidate reading than that it has been taken, such as task 4.2's
+  close, ..., no record read here says, and this note reads nothing into either." By answer 6, D35 is read as met for
+  SJL-11.5's merge by the candidate reading's having been taken: SJL-12's after runs were taken (bundle
+  [`sjl-12-001`](../sjl-12-001/README.md)), and the candidate reading was taken and merged in Broiler.RegEx. Broiler.RegEx's
+  task 4.2 stays open there, its to record. Answer 6 does not name D35's "both in one release train", which the plan's
+  note leaves unread, and this note reads nothing into it.
+
+None of this names the after commit or takes a run; nothing here is a verdict.
+
 *2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
 
 *2026-11-01, at corpus revision 32:* **part D names revision 32**, the revision that classifies both engines' first
