@@ -11,13 +11,21 @@ after run, and each of those parts' readings in the bundle's README. No part B a
 had run. **Owner:** the Broiler.JS maintainer. **Reviewer:** none; every role is one person (the programme's EX-30),
 and this revision does not claim that anyone independent has read it.
 
-*(Changed 2026-11-19, the day it was written, before this revision merged and before any run, so that its own text
-holds no figure, as the rule says of itself ("It holds no figure. Where a count or an allowance matters, it names the
-file that fixes it."): "Why it is written" read that N05's program "compiles a pattern of" a number of "nested
-capturing groups", that "The manifest's header states the wall-clock limit" followed by the header's line with its
-number, and N05's exit at the base and after by their numbers; it now names the kind of nesting, the manifest's header
-and how each process ended, and the files that hold the numbers. The owner's answer, quoted verbatim, is not changed.
-Nothing else changes.)*
+*(Changed 2026-11-19, the day it was written, before this revision merged, with no run taken since it was written, so
+that its own text holds no figure, as the rule says of itself ("It holds no figure. Where a count or an allowance
+matters, it names the file that fixes it."): "Why it is written" read that N05's program "compiles a pattern of" a
+number of "nested capturing groups", that "The manifest's header states the wall-clock limit" followed by the header's
+line with its number, and N05's exit at the base and after by their numbers; it now names the kind of nesting, the
+manifest's header and how each process ended, and the files that hold the numbers. The owner's answer, quoted
+verbatim, is not changed. Nothing else changes.)*
+
+*(Changed again 2026-11-19, the same day, before this revision merged, with no run taken since it was written, after
+review: the note above read "before this revision merged and before any run", which was not true of this revision,
+written after the runs named above had been seen, and now reads "before this revision merged, with no run taken since
+it was written"; "Its configuration names a process's outcomes as" ended "or past the wall-clock limit", four, and its
+MET line", and the count is removed, since the quote lists the outcomes; and "Its name" named only Broiler.VM's form
+for a second revision of one day, and now also names this repository's. The decision and the two lines it changes are
+not changed. Nothing else changes.)*
 
 **Whose decision.** This revision is filed by the owner's answer of 2026-11-19, an answer of the owner's own, not one
 taken under the owner's direction of 2026-10-18, quoted verbatim. Asked (2026-11-19): "SJL-11.5 part C (the
@@ -40,7 +48,10 @@ earlier revisions**, [`decision-rule-revised-2026-11-17.md`](decision-rule-revis
 (blob `69245b95884052262e3d63c7968100dae481b53b`), are not edited, and they and their readings stand; this file is
 read beside all four. None of the earlier revisions changes part C. **Its name.** It is the bundle's second revision
 of 2026-11-19, and the bundle has no earlier one of a single day; its name adds `b` to the date, as Broiler.VM's
-bundle `sjl-13-001` names its second revision of 2026-11-09 `decision-rule-area-revised-2026-11-09b.md`.
+bundle `sjl-13-001` names its second revision of 2026-11-09 `decision-rule-area-revised-2026-11-09b.md`. This
+repository's own bundle [`sjl-13-001`](../sjl-13-001/) names its second revision of one day with a word instead,
+`decision-rule-revised-2026-11-02-second.md`, beside `decision-rule-revised-2026-11-02.md`; this file keeps the `b`
+form its work was given, and either name is the owner's to choose. The name decides nothing.
 
 ## Why it is written
 
@@ -56,7 +67,7 @@ MET if and only if, after, every case gives its declared outcome, no process end
 ```
 
 Its configuration names a process's outcomes as "completed with its answer, a thrown error with its constructor, an
-abnormal end, or past the wall-clock limit", four, and its MET line keeps the last two apart.
+abnormal end, or past the wall-clock limit", and its MET line keeps the last two apart.
 
 **Case N05** is the class N case of [`inputs/adversarial/manifest.tsv`](inputs/adversarial/manifest.tsv) whose program,
 `N05.js` (SHA-256 `34d3fa80fa3a5825275f29651519051f7cd97eb6aaab562a5439d0f6afa6c61d`, as the manifest names it),

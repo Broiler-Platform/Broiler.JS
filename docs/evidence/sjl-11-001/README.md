@@ -802,7 +802,7 @@ Part A's after run is still not taken and part A has no reading, as the note abo
 
 *Dated note, 2026-11-19, part A's after run and its reading; the notes above are not rewritten.* The note of the
 after runs reads "**Part A's after run is not taken here.** It is a dispatch of `.github/workflows/test262-evidence.yml`
-... This change dispatches nothing, and part A has no reading here.", and the note above ends "Part A's after run is
+... This change dispatches nothing, and part A has no reading here.", and the note above reads "Part A's after run is
 still not taken and part A has no reading, as the note above says." The run has been taken, and is read here.
 - **The run.** `.github/workflows/test262-evidence.yml` run
   [44496119000](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/44496119000) (attempt 1), dispatched on
@@ -838,12 +838,12 @@ still not taken and part A has no reading, as the note above says." The run has 
   11.0.100, as the base's does. The rule fixes the shell and the zone, which the records show, and not the image version.
 
 **Part A: read MET on the retained runs.** The rule, with its revisions of 2026-11-17 and 2026-11-18 (the workflow
-admitted as `fc382297`, and part A's list read with rows S12 to S15, M8 to M27 and row M28 in its two halves): "MET if
-and only if both runs are complete (every expected shard reported, no configuration failure, one suite revision, one
-shell, every shard in the zone, includeNegative true in both), the two runs' host-zone records read alike, line for
-line, the script finds them comparable, every duplicate-named-groups row passes at both commits, no row passing at the
-base fails, times out or is skipped after outside C3, of either kind, and every changed verdict is in C1, C3 or C5 and
-is listed." The comparison is `scripts/compliance/compare_test262_paths.py`, blob
+admitted as `fc382297`, and part A's list read with rows S12 to S15, M8 to M27 and row M28 in its two halves; the
+revision of 2026-11-19 changes only part B's arm A and nothing of part A): "MET if and only if both runs are complete
+(every expected shard reported, no configuration failure, one suite revision, one shell, every shard in the zone,
+includeNegative true in both), the two runs' host-zone records read alike, the script finds them comparable, every
+duplicate-named-groups row passes at both commits, no row passing at the base fails, times out or is skipped after
+outside C3, of either kind, and every changed verdict is in C1, C3 or C5 and is listed." The comparison is `scripts/compliance/compare_test262_paths.py`, blob
 `e951dd478a858ac06c4178c28164325b06506d00` at the rule commit, the base commit and the after commit (committed at
 SJL-0.9), over `base/part-a/test262-results.json.gz` (`f298d8b098c3ed2568254e51c894fa4df31b5057ca7a6e8e6c0f3efb99be5c64`)
 and `after/part-a/test262-results.json.gz` (`805c8609a5cfc43d1cb6c6eeb9340742714e881d481791519b890ba10a20980f`),
@@ -905,6 +905,15 @@ no other (`decision-rule.md`'s list of this engine's corrections, under "The lit
 These are part A's per-part reading only. No clause of SJL-11 (4 to 7), no exit reading and nothing of Broiler.VM's or
 Broiler.RegEx's is read here. Part B still has no reading. Nothing is declared met beyond the words above.
 
+*(Changed 2026-11-19, the same day, before this note merged, after review; the reading is not changed.)* The rule's MET
+line, quoted above, read "the two runs' host-zone records read alike, line for line, the script finds them
+comparable", which put the configuration line's words "line for line" into the MET line; it is now quoted as
+`decision-rule.md` has it, and the table's condition keeps "line for line", the configuration's wording. The words
+"with its revisions of 2026-11-17 and 2026-11-18 (... row M28 in its two halves)" now add that the revision of
+2026-11-19 changes nothing of part A; the revision of 2026-11-19 (b), filed after this reading, changes only part C.
+And the note's first sentence read "the note above ends", where that note goes on with "Nothing here is a verdict."; it
+now reads "the note above reads".
+
 *Dated note, 2026-11-19, the owner's answer 8, the rule's revision for case N05, and part C read a second time; the
 notes above are not rewritten, no retained file changes and nothing is run again.* The note of the after runs reads
 "**Part C: read NOT MET.**", "**N05 is in no class.**" and "**For the owner:** whether a case past the wall-clock
@@ -934,9 +943,17 @@ What it means here:
   every other part stand. It says it was written after part C's runs, its control and its first reading had been
   seen, so its decision is weaker evidence in the sense of the rule's section "Revisions". `decision-rule.md` and the
   three earlier revisions are not edited; the five are read together. Its name adds `b` to the date, the bundle's
-  second revision of one day. *(Added the same day, before the revision merged:)* `d5c3e1896b6d848e7d2effe0f2064cbe526a7005`
-  changed the revision's own text, before it merged and before any run, so that it holds no figure, as the rule says of
-  itself; its dated note says what each place read. Its decision and the two lines it changes are as above.
+  second revision of one day, as Broiler.VM's bundle `sjl-13-001` names one; this repository's bundle `sjl-13-001`
+  names its second revision of one day with `-second` instead, and the choice is the owner's. *(Added the same day,
+  before the revision merged:)* `d5c3e1896b6d848e7d2effe0f2064cbe526a7005` changed the revision's own text, before it
+  merged, with no run taken since it was written, so that it holds no figure, as the rule says of itself; its dated
+  note says what each place read. Its decision and the two lines it changes are as above. *(Changed the same day,
+  before the revision merged, after review:)* the sentence before read "changed the revision's own text, before it
+  merged and before any run", which is not true of this revision, written after the runs named in it had been seen;
+  and the sentence on its name ended "the bundle's second revision of one day." The revision's own second dated note,
+  of the same day, makes the same correction to its first, removes a count in words from its text and names this
+  repository's form beside Broiler.VM's, quoting what each place read. Its decision and the two lines it changes are
+  not changed.
 
 **Part C, read a second time, under the revision of 2026-11-19 (b): read MET on the retained runs.** It is read on
 the runs the first reading read, nothing rerun: [`base/part-c/results.tsv`](base/part-c/results.tsv)
