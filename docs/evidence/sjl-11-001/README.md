@@ -476,6 +476,36 @@ reports at that revision. They are now read again against revision 32's `class` 
 [`base/hashes.txt`](base/hashes.txt) and [`base/manifest.json`](base/manifest.json) list the three new files, which
 are added beside the retained reports and change none of them. Nothing here is a verdict.
 
+*Dated note, 2026-11-19, on branch `sjl-11-5`, after review of the two notes above; they are not rewritten, and no
+retained run output changes.*
+- **Part B's arm A, for the owner.** The note of the owner's answers reads "arm B built from the base commit
+  `5429c4065e8b273e5c7965598b8a2f5490a8ad98`, and arm A, with A-again, from that merge" and "The part is judged as
+  written". As the branch stands, arm A cannot be built as `decision-rule.md:146` words it, "A the after commit, with
+  the same two files", the two being "RegExpBenchmarks.cs and the benchmark Program.cs as the inputs commit has them".
+  `Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/RegExpBenchmarks.cs` is blob
+  `604dced1d4a4485e7fa01cac55630b21c0c72f59` at the inputs commit `24fe7cba` and on the branch, and
+  `BenchmarkConfiguration.cs` beside it is unchanged too; but the benchmark `Program.cs` is blob
+  `6074646340c64176f4c918b1c963dbd1347cdcff` at `24fe7cba` and at `5429c406`, and blob
+  `095db42675307de05e23cd22ba5c2b8e24c3241a` on the branch, where `d892dd0b` removes its `--regex-tiering` block,
+  which calls `RegexTieringMetrics.Write()`, with `RegexTieringMetrics.cs` and the `RegexTiering` type that file reads
+  (decisions D20 and D21). The inputs commit's `Program.cs` therefore does not build at the after commit, and
+  `:146`'s "with the same two files" cannot hold for arm A. How arm A is built is the owner's open question; it is not
+  built until the owner's reading is recorded here by a dated note. "The part is judged as written" in the note above
+  stands for part B's MET line, its clauses 1 to 5 (`:156-162`), only. This note revises no line of the rule and adds
+  or edits no rule file.
+- **Part D's clauses at the base.** The note above reads "and reads them in "How it is read" (`:226-228`); only
+  those are read here." What its first "Read at the base" then reads is `:219`'s reading of the base reports laid
+  against the terms of `:220`'s comparison, "the three after reports, byte for byte; and each vector's result after
+  against its class's expectation for broiler-js". That comparison is the after runs', and the rule judges it on the
+  after runs alone, as [`base/part-d/reading-revision-32.txt`](base/part-d/reading-revision-32.txt) says ("read at the
+  base (revision 32's class; the rule judges it on the after runs alone)"); nothing in it is judged at the base.
+- **The scratch pin.** The note above says [`base/part-d/revision-32.pin`](base/part-d/revision-32.pin) is written
+  "as [`engine/commands.txt`](engine/commands.txt) describes its scratch pins". It follows that procedure, the archive
+  written twice, byte for byte the same, the second extracted and hashed; its layout and its `content-sha256`
+  convention are its own, stated in its `content-sha256` line, and are not those of `engine/broiler-vm-revision-32.pin`.
+
+Nothing here is a verdict.
+
 *2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
 
 *2026-11-01, at corpus revision 32:* **part D names revision 32**, the revision that classifies both engines' first
