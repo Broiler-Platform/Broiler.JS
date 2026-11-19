@@ -400,8 +400,9 @@ What they mean here:
   written: "an acceptance comparison when the lane is a controlled lane" (`:144`), by its MET line's clauses 1 to 5
   (`:156-162`). This note revises no line of the rule and adds or edits no rule file; it records the owner's reading of
   `:107` and is not a revision under "Revisions" (`:272-273`). Part B's sub-bundle will be a new folder named for the
-  lane, `measurement-win-x64-r7-5800x/`, as `sjl-3-001`'s is, where the list "What the bundle will hold" below names
-  `measurement/`; that list is not rewritten.
+  lane, `measurement/win-x64-r7-5800x/`, inside the `measurement/` that the list "What the bundle will hold" below
+  names for it and that [`inputs/workloads/README.md`](inputs/workloads/README.md) names as the only place a figure
+  from the workloads is retained; neither is rewritten.
 - **Part D, by answer 5.** Part D is read against corpus revision 32's `class` lines, the revision the rule names
   ("The corpus revision this part names is 32", `decision-rule.md:242`), at both the base and the after runs, through a
   scratch pin of revision 32's `conformance/vectors/regexp/`; the base reports are read again with no new run. The note
