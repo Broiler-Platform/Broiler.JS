@@ -304,6 +304,7 @@ public class FastTokenStream
         return false;
     }
 
+    [System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
     public readonly struct Marker(FastTokenStream stream, FastToken index, bool linesSkipped)
     {
         public readonly bool LinesSkipped = linesSkipped;

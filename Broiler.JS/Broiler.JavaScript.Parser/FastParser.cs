@@ -79,6 +79,7 @@ public class FastParser(FastTokenStream stream) : IParser
         get => stream.Previous;
     }
 
+    [System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
     public readonly struct StreamLocation(FastParser parser, FastToken token)
     {
         public readonly FastToken Token = token;

@@ -11,6 +11,7 @@ public class FastPool
 {
     public void Dispose() => pools.Clear();
 
+    [System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
     public class Scope(FastPool pool) : DisposableList
     {
         public FastList<T> AllocateList<T>(int size = 0)

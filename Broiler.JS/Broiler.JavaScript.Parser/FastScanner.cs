@@ -100,6 +100,7 @@ public class FastScanner
     /// A state of the scanner: the offset, from the start of <see cref="Text"/>, it was pushed at. A commit makes a token
     /// of the text from there to where the scanner is.
     /// </summary>
+    [System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
     public struct State(FastScanner scanner, int start)
     {
         public FastToken Commit(TokenTypes type, string cooked, string flags) => Make(type, cooked, flags, 0, false);
