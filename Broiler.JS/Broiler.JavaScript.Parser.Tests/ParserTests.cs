@@ -416,7 +416,6 @@ public class ParserTests
     [InlineData(@"/\P{ASCII}/u;")]
     [InlineData(@"/[\p{Alphabetic}\P{ASCII_Hex_Digit}]/v;")]
     [InlineData(@"/^[[0-9]--\q{0|2|4|9\uFE0F\u20E3}]+$/v;")]
-    [InlineData(@"/[\q{/}--[a]]/v;")]
     public void ParseProgram_RegExpLiteral_Allows_UnicodePropertyEscapes(string source)
     {
         var stream = new FastTokenStream(new StringSpan(source));
@@ -425,6 +424,14 @@ public class ParserTests
 
         Assert.NotNull(program);
     }
+
+    // Row S8 of Broiler.VM's correspondence (the v flag's syntax characters): under v, `/` is a ClassSetSyntaxCharacter,
+    // which a class string may not hold unescaped, so the literal is no RegularExpressionLiteral. This engine admitted
+    // it until milestone SJL-11.5, a correction of Broiler.JS; the input was the theory's above.
+    [Theory]
+    [InlineData(@"/[\q{/}--[a]]/v;")]
+    public void ParseProgram_RegExpLiteral_Refuses_A_Syntax_Character_In_A_Class_String_Under_V(string source)
+        => Assert.Throws<FastParseException>(() => new FastParser(new FastTokenStream(new StringSpan(source))).ParseProgram());
 
     [Fact]
     public void ParseProgram_TemplateLiteral_WithSubstitution_DoesNotConsume_TemplateEnd_As_TaggedTemplate()

@@ -1506,6 +1506,189 @@ This repository's part of it:
   - E, the deletion list, by a search and a scoped metadata check, with a control (decision D34).
 
   Every base is taken at the first parent of the merge that lands SJL-11.5, under a hold (decision D16).
+- *(Noted 2026-11-17, at SJL-11.5; the bullets above are left as written.)* **SJL-11.5 is on its own branch,
+  `sjl-11-5`, in this repository, and is not merged.** The owner allowed the branch on 2026-11-17: "I push the SJL-11.5
+  cut-over to a new branch, sjl-11-5, in Broiler-Platform/Broiler.JS: fast-forward only, never force, opened as a PR
+  only when its merge is due." It is the branch decision D35 asks for early, which Broiler.RegEx's host job (its task
+  2.10) builds this engine's shell from. **Its merge waits** on Broiler.RegEx's candidate reading, on the hold under
+  which every base is taken (decision D16), and on the base runs, taken at the first parent of the merge that lands it;
+  no run of bundle [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s rule has been taken. The branch holds, in order:
+  - **the rule's inputs commit**, `RegExpBenchmarks` and the benchmark `Program.cs`'s `--regexp-answers`, which read
+    the bundle's workloads verbatim. The rule names "the default-branch commit" from which the base descends, so it
+    reaches the default branch before the base is taken; the bundle's README says so in a dated note;
+  - **a revision of the rule**, [`decision-rule-revised-2026-11-17.md`](../evidence/sjl-11-001/decision-rule-revised-2026-11-17.md),
+    filed before any of its runs under the owner's direction of 2026-10-18, which adds rows S12 to S15 and M8 to M27 to
+    part A's list of this engine's corrections and says how the rows the list names "with Broiler.Regex
+    0.1.0-preview.4" read now that the base routes through `0.1.0-preview.6`; `decision-rule.md` is not edited;
+  - **the cut-over**, as the bullets above list it: the translator, the routing, `RegExpValidator`, the prechecks and
+    both `CreateRegex` overloads deleted; `RegExpUnicodeValidator` a forwarder to the validate entry; the scanner's
+    check re-pointed to it, with the braced-escape decoding and the parenthesis-balance patch deleted and the division
+    fallback kept; the step out of a pair moving only the matcher's start (row M4); and every correction listed in
+    [`Broiler.JS/CHANGELOG.md`](../../Broiler.JS/CHANGELOG.md). `RegexTiering` and `RegexTieringDiagnostics`, which the
+    deletion list above names, and the tests and benchmarks that test only them, are kept on the branch, and the
+    records put that to the owner; part E's search finds them until they go.
+
+  The branch's own local runs are no runs of the rule and judge nothing. Every clause of this engine's, 4 to 7, is
+  unmet, and none of it is accepted.
+- *(Noted 2026-11-17, after review of branch `sjl-11-5`; the note above is left as written.)* The note above reads
+  "`RegexTiering` and `RegexTieringDiagnostics`, which the deletion list above names, and the tests and benchmarks
+  that test only them, are kept on the branch, and the records put that to the owner". **That departs from decision
+  D21's bullet**, which reads "`RegexTiering`, `RegexTieringDiagnostics` and both `CreateRegex` overloads: **(c),
+  removal**, with a consumer check" and "Their own tests are deleted with them", and from decision D20's list, which
+  names "`RegexTieringTests`", "`RegexTieringMetrics`, and `RegexProfileMetrics`' .NET rows or the whole file". The
+  branch keeps them because the instruction it is made under reads "Never weaken, skip or delete a test"; which of the
+  two governs is the owner's to rule, and the merge waits on that ruling as well. Nothing in the engine calls the two
+  types on the branch, since the .NET `Regex` they tier is deleted: `BROILER_JS_REGEX_TIERING` changes nothing,
+  `RegexTieringTests`' test of a hot pattern fails, and its other tests pass without reaching a race.
+  - **A record outside the area that goes stale at the merge:** `Broiler.ECMAScript/docs/frontend/early-errors.md`'s
+    table of moved paths and the rows that cite them (EE0183, EE0184, EE0186 to EE0190, EE0192, EE0193, EE0195,
+    EE0197 to EE0205, EE0210, EE0212 and EX0026) name
+    `Broiler.JavaScript.Ast/RegExpGroupNames.cs` and `Broiler.JavaScript.Ast/Unicode/JSUnicodePropertyNames.cs`,
+    which the branch deletes, and lines of `RegExpUnicodeValidator.cs`, which it makes a forwarder. That record is
+    Broiler.ECMAScript's, and its dated note is that owner's, after the merge; the branch changes nothing under
+    `Broiler.ECMAScript/`.
+- *(Noted 2026-11-17, on branch `sjl-11-5`; the two notes above are left as written.)* **The conflict the note above
+  puts to the owner is resolved by decisions D20 and D21, and `RegexTiering` and `RegexTieringDiagnostics` are deleted
+  on the branch with their tests.** The note above reads "The branch keeps them because the instruction it is made
+  under reads "Never weaken, skip or delete a test"; which of the two governs is the owner's to rule, and the merge
+  waits on that ruling as well", and the note before it "`RegexTiering` and `RegexTieringDiagnostics`, which the
+  deletion list above names, and the tests and benchmarks that test only them, are kept on the branch, and the
+  records put that to the owner; part E's search finds them until they go". The instruction's sentence was a guard
+  against weakening a test to make a run pass; it was never meant to override the programme's own deletion list, and
+  the session that wrote the instruction has corrected it so: decisions D20 and D21 govern. **This is a correction of
+  that session's own instruction, not a ruling of the owner's and not a choice taken under the owner's direction**,
+  so the merge no longer waits on a ruling on it. The branch deletes, as D20 and D21 list them, `RegexTiering` with
+  its environment switch `BROILER_JS_REGEX_TIERING`, `RegexTieringDiagnostics`, their own tests `RegexTieringTests`,
+  and the benchmark that measured only them, `RegexTieringMetrics` (its `--regex-tiering` emitter, and the
+  `regexRaces` fields `--specializing-tier` read from `RegexTieringDiagnostics`); the consumer check D21 asks for is in
+  [`docs/public-api.md`](../public-api.md), and the members are listed in
+  [`Broiler.JS/CHANGELOG.md`](../../Broiler.JS/CHANGELOG.md). D20's other test and benchmark entries,
+  `RegExpTranslatorFallbackTests`, the clamp parts of `Issue810RegExpLargeQuantifierTests` and `RegexProfileMetrics`'
+  .NET rows, are not touched by this change. Part E's search is a run of the rule and judges this; nothing here
+  declares it met.
+  - **A change no row names, a finding for Broiler.VM's correspondence.** Since `4e2e00ad` on this branch,
+    `IJSRegExp.IsMatch` and the public `JSRegExp.Replace` honour the `y` flag, as `RegExpBuiltinExec` from
+    `lastIndex` and `RegExp.prototype[@@replace]` do in the specification's text, and the public `JSRegExp.Split`
+    reads every position as `RegExp.prototype[@@split]`'s sticky splitter does; at the branch's first parent the
+    three honoured `y` only for a pattern routed to Broiler.Regex. No row of the correspondence names it, so it is
+    recorded in the bundle's README as a finding for Broiler.VM's correspondence, whose row is Broiler.VM's to add.
+- *(Noted 2026-11-18, on branch `sjl-11-5`; the notes above are left as written.)* **Broiler.RegEx's candidate reading
+  is taken, part A has been read a second time, and the owner has ruled on what part A blocks and answered three
+  questions on the cut-overs; the merge still waits on the inputs landing on the default branch, the hold, the base runs
+  and the owner's open items that Broiler.RegEx's records name.** The note of 2026-11-17 above reads "**Its merge
+  waits** on Broiler.RegEx's candidate reading, on the hold under which every base is taken (decision D16), and on the
+  base runs, taken at the first parent of the merge that lands it; no run of bundle
+  [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s rule has been taken." By Broiler.RegEx's records (its
+  `docs/roadmap.md`, the dated records of 2026-11-18 on task 4.2, and its bundle `sjl-11-001`'s README, at its default
+  branch's `ba7ac8cf`):
+  - **The candidate reading** of Broiler.RegEx's bundle `sjl-11-001` was taken at `49d7be1f`, the merge of
+    Broiler-Platform/Broiler.Regex#27 and the reading's commit, and its records merged in #28 as `662f3499`. Part A read
+    NOT MET; parts B to E and the reference arms read MET on the retained runs. Its record reads "**So by the rule, part
+    A's NOT MET blocks both cut-overs** (risk D10's stop; `decision-rule.md`: "A part NOT MET at the candidate reading
+    blocks both cut-overs")."
+  - **Part A's second reading**, at the same commit `49d7be1f` under a revision of 2026-11-18 of Broiler.RegEx's rule,
+    filed before its witness runs, merged in #29 as `ba7ac8cf`: "**Part A: read MET on the retained runs.**" The record
+    goes on: "The candidate reading's part A NOT MET stays on record as that reading's. Parts B to E and the reference
+    arms keep their candidate readings, MET on the retained runs, unchanged."
+  - **The owner's ruling of 2026-11-18 on the blocking line**, which Broiler.RegEx's records give as "the owner's own
+    ruling, not one taken under the owner's direction of 2026-10-18". The question's sentences after its first, which
+    counts the witnesses and is left out here because this plan holds no figure, read: "But the 2026-11-18 revision kept
+    the rule's line "A part NOT MET at the candidate reading blocks both cut-overs" unchanged, and the candidate
+    reading's part A NOT MET stays on record. Read strictly, the block would never lift. Should part A's MET at its
+    second reading lift that block for both cut-overs (SJL-11.5 in Broiler.JS, SJL-11.4 in Broiler.VM)?" The owner
+    answered "Yes, the second reading lifts it" — "A dated note records your reading: the block on both cut-overs is
+    lifted as far as part A goes. The cut-overs still wait on their own holds (H1, H2), their base runs, and your open
+    items." The records add: "that wording item is answered. Nothing else is decided: SJL-11.5 in Broiler.JS and
+    SJL-11.4 in Broiler.VM still wait on their own holds, H1 and H2, their base runs, and the owner's other open items."
+    The labels H1 and H2 are Broiler.RegEx's and no record defines them; this engine's records name its hold in decision
+    D16's words, "Broiler.JS's at the after merge's first parent, under a hold", and this note does not say which label
+    is which.
+  - **What Broiler.RegEx's task 4.2 waits on**, by its roadmap at `ba7ac8cf`. Just before the list the roadmap reads:
+    "SJL-11.5 in Broiler.JS and SJL-11.4 in Broiler.VM still wait on their own holds, H1 and H2, which this repository's
+    records do not decide, and on the owner's items below." The list reads: "1. **The owner on publication (D13).**
+    `0.1.0-preview.6` was published from `df5cfc2` before the candidate reading, which read its sources and not its
+    bytes. Whether to keep it, publish another version after a reading, or neither, is the owner's question. 2. **The
+    owner on the decisions and readings of the candidate reading**, any of which the owner can overturn: the reading's
+    commit, with its departure from `decision-rule.md`'s line "taken at the commit `0.1.0-preview.6` is packed from";
+    the rule commit; the session's reading of class (b)'s vector clause; and class (c)'s "both runs are retained", whose
+    pre-fix run is not retained. 3. **The scratch branch `sjl-11-2-control-b`**, for the owner to delete. 4. **The owner
+    may review this revision's wording**: the choice is the owner's own; the clause list, the tests named for each
+    clause and the two clauses read on their closest plant (A-4.4's Native AOT half, A-10.1's version) are this
+    record's. So are the review's items in the dated note below: A-11.3's row, which names a test of A-5.6's among its
+    own; the blocking line, which the revision lists as unchanged while pointing it, for part A, at the second reading;
+    the two attempts not counted, a reading stricter than the revision's text; the guarantees inside a clause that have
+    no plant of their own; and the revision's ..." The words cut at the end name a result in the revision's file, which
+    the item calls "a result in a file that holds no figure"; this plan holds no figure either, so they are left out
+    here. Of item 4's wording items, the owner's ruling above answers the blocking line alone ("that wording item is
+    answered"). Nothing here reads task 4.2 as done; that reading is Broiler.RegEx's.
+- *(Noted 2026-11-18, the same day; the note above is left as written.)* **The owner's answers of 2026-11-18, quoted
+  verbatim.** Each is the owner's own, not a choice taken under the owner's direction of 2026-10-18.
+  - **1.** Asked: "D13: Broiler.Regex 0.1.0-preview.6 was published from df5cfc2 before the candidate reading. The
+    reading judged its sources, which are identical to the reading's commit 49d7be1f, not the package bytes. Broiler.JS
+    pins preview.6, so a new version would have to be pinned before SJL-11.5's base runs. What should happen?" Chosen:
+    "Keep preview.6" — "No new Regex release. Both cut-overs use preview.6, whose library sources the reading judged."
+    Not taken: "Publish preview.7 first" — "You publish a new Regex version after the reading. Broiler.JS moves its pin
+    before the SJL-11.5 base is taken, and Broiler.VM admits that version."
+  - **2.** Asked: "The Broiler.Regex candidate reading rests on four session decisions that you can overturn: (1)
+    reading at 49d7be1f instead of the packed-from commit df5cfc2 (same library sources); (2) the rule commit e568b88;
+    (3) the session's reading of class (b)'s vector clause, made after the runs were seen; (4) class (c)'s pre-fix run
+    is not retained, and its rerun matches byte for byte. Do you confirm them?" Chosen: "Confirm all four" — "A dated
+    note records your confirmation, and task 4.2 then waits only on D13 and the scratch branch's deletion." Not taken:
+    "I want to look first" — "Nothing is recorded now. I send you a short summary of each one so you can rule on them
+    separately."
+  - **3.** Asked: "SJL-11.5's base in Broiler.JS needs two things only you can order. First, its inputs commits
+    (24fe7cba, 189d65ff) and a new dated rule revision must land on main by a merge commit before the base is taken.
+    Second, test262-evidence.yml moved from ubuntu-latest to ubuntu-24.04 in your dependency update of 2026-10-29
+    (3b4b6860), and the rule fixes the workflow "as this file's commit carries it". Only a dated rule revision filed
+    before any run can admit that change. Do you allow both?" Chosen: "Allow both" — "The inputs land on main by a merge
+    commit with one dated revision. The revision lists the y-flag correction row and admits the ubuntu-24.04 workflow.
+    Then the hold starts and the base runs are taken at main's head." Not taken: "Inputs only" — "The inputs land, but
+    the workflow change is not admitted. Part A's base can then only be taken with the workflow as the rule's commit
+    carries it."; "Not yet" — "Nothing lands on main for SJL-11.5. Its base and merge wait."
+  - **How they bear here.** Answers 1 and 2 are the owner's on items 1 and 2 of Broiler.RegEx's list above; recording
+    them under task 4.2 is Broiler.RegEx's, and at `ba7ac8cf` its records do not yet. By answer 1 this engine keeps the
+    pin it has, Broiler.Regex `0.1.0-preview.6` (`Directory.Packages.props`), which this branch does not move. Answer 3
+    is the order that the bundle's README puts to the owner: "the rule's base commit "descends from the inputs commit",
+    so this commit reaches the default branch before the base is taken, or the base does not satisfy the rule. That is
+    the owner's to order; nothing here merges it." The dated rule revision answer 3 names is not filed here, and no rule
+    file is added or edited here.
+- *(Noted 2026-11-18, the same day; the two notes above are left as written.)* **What the merge still waits on, by the
+  records' own words.** The first note of 2026-11-17 above reads "**Its merge waits** on Broiler.RegEx's candidate
+  reading". The candidate reading is taken, and by the owner's ruling above part A's second reading lifts its block on
+  this cut-over as far as part A goes. The records name these:
+  - **The inputs on the default branch.** The inputs commit `24fe7cba` and the rule's revision `189d65ff`, with one new
+    dated revision of the rule, land on the default branch by a merge commit before the base is taken (answer 3). By
+    answer 3 that revision "lists the y-flag correction row and admits the ubuntu-24.04 workflow": the row is the one
+    the bundle's README records as "**a finding for Broiler.VM's correspondence**, whose row is Broiler.VM's to add",
+    and the workflow is the one the rule's part A fixes "by .github/workflows/test262-evidence.yml as this file's commit
+    carries it", whose jobs `3b4b6860` of 2026-10-29 moved from `ubuntu-latest` to `ubuntu-24.04`.
+  - **The hold and the base runs, at the default branch's head.** The rule reads: "**The base commit** is the
+    default-branch commit that the merge landing SJL-11.5 has as its first parent. It descends from the inputs commit.
+    Every base run is taken there, before the merge, while merges to `Broiler.JS/Broiler.JavaScript.*/` and
+    `Broiler.ECMAScript/` are held (decision D16)." and "**The after commit** is that merge. If its first parent is not
+    the commit the base runs were taken at, the base runs are void and are taken again before any after run is seen."
+    Answer 3 reads "Then the hold starts and the base runs are taken at main's head."
+  - **The owner's open items that Broiler.RegEx's records name for the cut-overs.** Its bundle's README lists them as
+    "publication (D13); the departure from the rule's packed-from line (the reading's commit); the session's reading of
+    class (b)'s vector clause; class (c)'s unretained pre-fix run; and the scratch branch `sjl-11-2-control-b`'s
+    deletion". Its roadmap says the cut-overs "still wait on their own holds, H1 and H2, which this repository's records
+    do not decide, and on the owner's items below", and those items are task 4.2's list quoted in the first note above,
+    whose item 4, "**The owner may review this revision's wording**", names the record's own choices and the review's
+    wording items, which the README's list does not name. Answers 1 and 2 above are the owner's on the README's first
+    four items, and the owner's ruling above answers the blocking line, one of item 4's wording items. The owner's
+    answers do not name the scratch branch, which is still in Broiler.RegEx on this note's date, or item 4's other
+    wording items. Answer 2's chosen option reads "task 4.2 then waits only on D13 and the scratch branch's deletion";
+    Broiler.RegEx's records at `ba7ac8cf` do not record answer 2, whether it closes item 4 for task 4.2 is
+    Broiler.RegEx's to record, and this note reads nothing into it.
+
+  No other record read here names a further condition of this merge, save decision D35 of Broiler.VM's JSD-0081, which
+  reads of both cut-overs: "Both after SJL-12's after runs and after the candidate reading; either first; both in one
+  release train". SJL-12's after runs have been taken: bundle [`sjl-12-001`](../evidence/sjl-12-001/README.md)'s README
+  reads "Written 2026-10-26, at SJL-12's after evidence (work package 7.6), after every after run was taken." The
+  candidate reading has been taken, by Broiler.RegEx's records above. Whether D35 asks more of the candidate reading
+  than that it has been taken, such as task 4.2's close, and what "both in one release train" asks of this merge, no
+  record read here says, and this note reads nothing into either. No run of the rule has been taken. Every clause of
+  this engine's, 4 to 7, is unmet, and none of it is accepted.
 
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses and the component's are judged in
 their own bundles of the same name, and SJL-11 may not meet its gate before SJL-7 meets SJL-7's, and so not before
@@ -1531,6 +1714,77 @@ and has part A's runs taken by the evidence workflow as the default branch carri
 [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s README names the commits; the merge that lands them is named after
 it merges. No base is named and the hold has not started; no run of the rule has been taken, every clause of this
 engine's, 4 to 7, is unmet, and none of it is accepted.
+
+*(Noted 2026-11-19, on branch `sjl-11-5`; the note above is left as written.)* **The inputs landed, and the hold
+started.** The note above reads "The rule's inputs commit and its two revisions are filed for landing on the default
+branch, and have not landed." and "No base is named and the hold has not started; no run of the rule has been taken".
+They landed on 2026-11-18 in Broiler-Platform/Broiler.JS#1125, merged as `5429c4065e8b273e5c7965598b8a2f5490a8ad98`,
+a merge commit whose first parent is the default branch's `aecc5f89` and whose second is `20f1cbbb`, the head of
+`sjl-11-5-inputs`: the inputs commit `24fe7cba` and the rule's revisions `189d65ff`, `45a15487` and `909532bd` are
+default-branch commits from that merge on. The hold of decision D16 started there the same day, by the owner's order
+quoted above ("Then the hold starts and the base runs are taken at main's head."), at `5429c406`, the default branch's
+head when it started; nothing else merges to the default branch until the merge that lands SJL-11.5. The branch
+`sjl-11-5` merged the default branch at `5429c406` into itself (`fff4172c`), which moves no default-branch commit.
+The base runs of parts A, C and D were taken at `5429c406` during the hold and are retained in bundle
+[`sjl-11-001`](../evidence/sjl-11-001/README.md)'s `base/`, whose README names each run; part B is not taken there,
+and part E has no base run. `5429c406` is the base commit only if the merge landing SJL-11.5 has it as its first
+parent; if the default branch moves before that merge, the base runs are void, as the rule says. No after run has been
+taken, every clause of this engine's, 4 to 7, is unmet, and none of it is accepted.
+
+*(Noted 2026-11-19, the same day; the notes above are left as written.)* **The owner's answers of 2026-11-19, quoted
+verbatim.** Each is the owner's own, not a choice taken under the owner's direction of 2026-10-18, and they are
+numbered as the answers of 2026-11-18 above continue.
+- **4.** Asked: "SJL-11.5's part B (the RegExpBenchmarks measurement) runs arm B (base commit) and arm A (the merge)
+  interleaved in every repetition, so it can only run after SJL-11.5 merges, and the rule judges it only on a
+  controlled lane. Its 'every base run is taken there, before the merge' cannot hold for arm B as written. What should
+  happen to part B?" Chosen: "On your lane after merge" — "After the merge, a local session on win-x64-r7-5800x builds
+  arm B from 5429c406 and arm A from the merge and runs part B as written, as SJL-3's part B was run. A dated note reads
+  arm B as built from the base commit, not as a run taken before the merge." Not taken: "Record it void" — "No part B
+  run. It is recorded void, which by the rule leaves the measurement question open for this engine. It does not block
+  anything."
+- **5.** Asked: "Part D's base runs read the corpus at revision 43, but the rule names revision 32. The regexp vectors'
+  ids, inputs and expected outputs are the same in both; only 22 class lines and the divergence lines changed, at
+  revision 39. How should part D be read, at both the base and the after runs?" Chosen: "Read revision 32" — "As the
+  rule says: the base reports are read again against revision 32's class lines through a scratch pin, with no new runs
+  needed, and the after runs are read the same way." Not taken: "Read revision 43" — "Read the tree's revision 43 at
+  both, with the equivalence of ids, inputs and outputs recorded. This departs from the rule's named revision."
+- **6.** Asked: "Decision D35 orders both cut-overs "after SJL-12's after runs and after the candidate reading". The
+  candidate reading is taken and merged (Broiler.Regex #28, #29, #30), but Regex task 4.2 stays open until the scratch
+  branch sjl-11-2-control-b is deleted. Is D35 met for SJL-11.5's merge?" Chosen: "Yes, the reading is taken" — "D35
+  asks only that the candidate reading come first, and it has. SJL-11.5 may merge once its PR's CI is green and the hold
+  still holds." Not taken: "No, close task 4.2 first" — "SJL-11.5 waits until you delete the scratch branch and task
+  4.2 is recorded closed. The hold stays on meanwhile."
+- **How they bear here.** Bundle [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s README records all three in a
+  dated note with the rule's lines each reads. **Part B** is taken after the merge, on the controlled lane
+  [`win-x64-r7-5800x`](../evidence/lanes/win-x64-r7-5800x/README.md), by a local session on the owner's workstation:
+  arm B built from `5429c406`, arm A and A-again from the merge. The README reads the rule's "Every base run is taken
+  there, before the merge" (`decision-rule.md:107`) for part B's arm B as an arm built from the base commit, beside
+  `:109-110`, `:146` and `:147`, and revises no rule line. **Part D** is read at corpus revision 32 at the base and
+  after: its base reports are read again against revision 32's class lines through a scratch pin, with no new run,
+  and the reading is retained in the bundle's `base/part-d/`. **Decision D35**, which Broiler.VM's JSD-0081 reads
+  "Both after SJL-12's after runs and after the candidate reading; either first; both in one release train; SJL-11.5's
+  branch exists early for decision D14", is read as met for SJL-11.5's merge by the candidate reading's having been
+  taken, which answers the second note of 2026-11-18 above, "Whether D35 asks more of the candidate reading than that
+  it has been taken, such as task 4.2's close, ... no record read here says". Answer 6 does not name D35's "both in
+  one release train", and this note reads nothing into it. By answer 6 "SJL-11.5 may merge once its PR's CI is green
+  and the hold still holds"; Broiler.RegEx's task 4.2 stays open there, Broiler.RegEx's to record. No after run has
+  been taken, every clause of this engine's, 4 to 7, is unmet, and none of it is accepted.
+
+*(Noted 2026-11-19, the same day, after review; the two notes above are left as written.)* **Three corrections.**
+- **The note it answers.** The note above reads "which answers the second note of 2026-11-18 above". The words it
+  quotes, "Whether D35 asks more of the candidate reading than that it has been taken, such as task 4.2's close, ...
+  no record read here says", are in the third note of 2026-11-18 in this section, "What the merge still waits on".
+- **The rule's revisions.** The first of the two notes above reads "the rule's revisions `189d65ff`, `45a15487` and `909532bd`". The
+  rule has two revisions, `189d65ff` and `45a15487`, the second revised at review by `909532bd` before it merged, as
+  the note of 2026-11-18 on the inputs reads.
+- **Part B's arm A.** The note above reads "arm A and A-again from the merge". The rule's part B fixes arm A as "the
+  after commit, with the same two files", `RegExpBenchmarks.cs` and the benchmark `Program.cs` "as the inputs commit
+  has them" (`decision-rule.md:146`). On the branch, `d892dd0b` removes `Program.cs`'s `--regex-tiering` block with
+  the `RegexTieringMetrics` and the `RegexTiering` it calls (decisions D20 and D21), so the inputs commit's
+  `Program.cs` does not build at the merge. How arm A is built is the owner's open question, and arm A is not built
+  until the owner's reading is recorded; bundle [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s README says the
+  same in a dated note, with the files' blob ids, and revises no rule line. No after run has been taken, every clause
+  of this engine's, 4 to 7, is unmet, and none of it is accepted.
 
 **Locale data and the Intl algorithms (SJL-9.1), filed 2026-10-26: all five sub-areas accepted, plural ranges and
 display-name naming adopted, decisions SJL-D-22 and SJL-D-24 recorded, and the owner's decisions of 2026-10-26

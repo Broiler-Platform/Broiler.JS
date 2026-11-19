@@ -1,0 +1,36 @@
+  Determining projects to restore...
+  Restored /home/user/js-115b-build/base/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/Broiler.ECMAScript.Conformance.csproj (in 353 ms).
+  Restored /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.ModuleExtensions/Broiler.JavaScript.ModuleExtensions.csproj (in 306 ms).
+  Restored /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj (in 422 ms).
+  Restored /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Vectors.Tests/Broiler.JavaScript.Vectors.Tests.csproj (in 392 ms).
+  Restored /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Debugger/Broiler.JavaScript.Debugger.csproj (in 13 ms).
+  18 of 23 projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-115b-build/base/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Ast -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-115b-build/base/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-115b-build/base/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Storage -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.Parser -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.ECMAScript.Conformance -> /home/user/js-115b-build/base/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/bin/Release/net10.0/Broiler.ECMAScript.Conformance.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.Compiler -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Compiler/bin/Release/net10.0/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.BuiltIns -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Debugger -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Debugger/bin/Release/net10.0/Broiler.JavaScript.Debugger.dll
+  Broiler.JavaScript.Clr -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Clr/bin/Release/net10.0/Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.Modules -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Modules/bin/Release/net10.0/Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Globals -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Globals/bin/Release/net10.0/Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.ModuleExtensions -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.ModuleExtensions/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.dll
+  Broiler.JavaScript.All -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.All/bin/Release/net10.0/Broiler.JavaScript.All.dll
+  Broiler.JavaScript.Vectors.Tests -> /home/user/js-115b-build/base/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:20.07

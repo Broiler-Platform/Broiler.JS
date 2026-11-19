@@ -14,12 +14,11 @@ public interface IJSRegExp
     string Flags { get; }
 
     /// <summary>
-    /// True when the pattern matches anywhere in <paramref name="input"/>. Runs through
-    /// whichever engine the RegExp is bound to (the Broiler.Regex backend for a routed
-    /// gap pattern, the .NET translation otherwise), so callers see the same answer
-    /// <c>exec</c> would. Replaces the earlier <c>Regex Value</c> accessor, which exposed
-    /// the .NET engine directly and was wrong for a routed pattern (and null once a
-    /// pattern the translator cannot represent is routed).
+    /// True when the pattern matches in <paramref name="input"/> as <c>exec</c> from lastIndex 0
+    /// finds it: anywhere, or at index 0 alone when the pattern is sticky. Runs through
+    /// Broiler.Regex, which compiles and matches every RegExp since milestone SJL-11.5, so
+    /// callers see the same answer <c>exec</c> would. Replaces the earlier <c>Regex Value</c>
+    /// accessor, which exposed the .NET engine directly.
     /// </summary>
     bool IsMatch(string input);
 }

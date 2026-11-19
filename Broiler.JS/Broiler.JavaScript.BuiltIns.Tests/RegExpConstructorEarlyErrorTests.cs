@@ -11,7 +11,6 @@ public class RegExpConstructorEarlyErrorTests
     [Theory]
     [InlineData("new RegExp('(?<a>.)\\\\k')")]
     [InlineData("new RegExp('\\\\k(?<a>.)')")]
-    [InlineData("new RegExp('(?<a>.)[\\\\k]')")]
     [InlineData("new RegExp('(?<a>.)\\\\k<1>')")]
     [InlineData("new RegExp('(?<a>a)(?<a>b)')")]
     [InlineData("new RegExp('(?<42>a)')")]
@@ -29,6 +28,9 @@ public class RegExpConstructorEarlyErrorTests
     [InlineData("new RegExp('[a\\\\-\\\\d]', 'u')")]
     [InlineData("new RegExp('[\\\\p{Hex}-]', 'u')")]
     [InlineData("new RegExp('[^\\\\p{RGI_Emoji}&&a]', 'v')")]
+    // Row S5's class case (Broiler.VM's JSD-0081, decision D-s5): without u, B.1.2 reads `\k` in a class beside a
+    // named group as the letter, which this engine refused until milestone SJL-11.5, a correction of Broiler.JS.
+    [InlineData("new RegExp('(?<a>.)[\\\\k]')")]
     public void A_valid_pattern_is_built(string expression)
         => Assert.Equal("no error", ErrorName(expression));
 

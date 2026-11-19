@@ -8,10 +8,12 @@ namespace Broiler.JavaScript.BuiltIns.Tests;
 /// <summary>
 /// Action 4 of the Broiler.JS gaps roadmap, track 2: the legacy
 /// <c>String.prototype.split</c>/<c>replace</c> fallback (reached when a RegExp's
-/// <c>@@split</c>/<c>@@replace</c> is removed) and <c>assert.match</c> now drive matching
-/// through the same <c>RunMatch</c> abstraction <c>exec</c> uses, so a pattern routed to
-/// the Broiler.Regex backend answers every operation with the same match data — not the
-/// .NET translation, which is wrong for exactly the gap patterns that get routed.
+/// <c>@@split</c>/<c>@@replace</c> is removed) and <c>assert.match</c> drive matching
+/// through the same <c>RunMatch</c> abstraction <c>exec</c> uses, so every operation answers
+/// with the same match data. When these tests were written a pattern was routed to the
+/// Broiler.Regex backend only for a gap shape, the rest going to a .NET translation that was
+/// wrong for exactly those shapes; since milestone SJL-11.5 Broiler.Regex compiles and
+/// matches every pattern, and the tests' names keep the word "routed".
 ///
 /// The distinguishing pattern is <c>(a?b??)*</c> on "ab": ECMAScript's RepeatMatcher
 /// abandons an empty iteration and matches the whole "ab", while .NET keeps looping and
@@ -116,7 +118,8 @@ public class RegExpEngineConsistencyTests
         Assert.True(routed.IsMatch("ab"));
         Assert.False(routed.IsMatch("xb"));
 
-        // A non-routed pattern still answers through the .NET translation, unchanged.
+        // A pattern that was not routed, which the .NET translation answered before SJL-11.5,
+        // answers the same through Broiler.Regex.
         var plain = (IJSRegExp)ctx.Eval("/\\d+/");
         Assert.True(plain.IsMatch("x42"));
         Assert.False(plain.IsMatch("abc"));
@@ -125,10 +128,55 @@ public class RegExpEngineConsistencyTests
     [Fact]
     public void NonRoutedReplace_IsUnchanged()
     {
-        // A pattern with no gap keeps using the .NET translation; the abstraction must not
-        // change its result. Global replace with a capture substitution.
+        // A pattern with no gap, which the .NET translation answered before SJL-11.5; the
+        // abstraction must not change its result. Global replace with a capture substitution.
         Assert.Equal("[a]1[b]2", Eval("'a1b2'.replace(/([a-z])(\\d)/g, '[$1]$2');"));
         Assert.Equal("X.X.X", Eval("'a.b.c'.replace(/[a-z]/g, 'X');"));
         Assert.Equal("[\"a\",\"b\",\"c\"]", Eval("JSON.stringify('a,b,c'.split(/,/));"));
+    }
+
+    [Fact]
+    public void IJSRegExp_IsMatch_HonoursTheStickyFlag()
+    {
+        // IsMatch answers as exec from lastIndex 0 does, and exec tries index 0 alone for a
+        // sticky pattern (ECMA-262 22.2.7.2, step 13.a), with u and without it.
+        Load();
+        using var ctx = new JSContext();
+
+        Assert.False(((IJSRegExp)ctx.Eval("/a/uy")).IsMatch("ba"));
+        Assert.True(((IJSRegExp)ctx.Eval("/a/uy")).IsMatch("ab"));
+        Assert.False(((IJSRegExp)ctx.Eval("/a/y")).IsMatch("ba"));
+        Assert.True(((IJSRegExp)ctx.Eval("/a/y")).IsMatch("ab"));
+        Assert.True(((IJSRegExp)ctx.Eval("/a/u")).IsMatch("ba"));
+        Assert.Equal("false,true", Eval("[/a/y.test('ba'), /a/y.test('ab')].join();"));
+    }
+
+    [Fact]
+    public void PublicReplace_HonoursTheStickyFlag_AsSymbolReplaceDoes()
+    {
+        // RegExp.prototype[@@replace] finds a sticky pattern's matches through exec, each at
+        // its start alone: a global sticky pattern replaces the leading run and stops at the
+        // first gap, and a non-global one replaces nothing when index 0 does not match.
+        Load();
+        using var ctx = new JSContext();
+
+        Assert.Equal("XXbaa", Eval("'aabaa'.replace(/a/gy, 'X');"));
+        Assert.Equal("XXbaa", new JSRegExp("a", "gy").Replace("aabaa", "X"));
+        Assert.Equal("baa", Eval("'baa'.replace(/a/y, 'X');"));
+        Assert.Equal("baa", new JSRegExp("a", "y").Replace("baa", "X"));
+    }
+
+    [Fact]
+    public void LegacySplit_IgnoresTheStickyFlag_AsSymbolSplitDoes()
+    {
+        // RegExp.prototype[@@split] builds its splitter sticky whatever the flags and tries every
+        // position, so y changes nothing there; the fallback split reads it the same way.
+        var viaSymbol = Eval("JSON.stringify('bab'.split(/a/y));");
+        var viaFallback = Eval(@"
+            delete RegExp.prototype[Symbol.split];
+            JSON.stringify('bab'.split(/a/y));
+        ");
+        Assert.Equal("[\"b\",\"b\"]", viaSymbol);
+        Assert.Equal(viaSymbol, viaFallback);
     }
 }

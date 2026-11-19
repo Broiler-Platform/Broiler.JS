@@ -343,8 +343,10 @@ public class Issue849Tests
     // named-group GroupSpecifier may contain \uXXXX / \u{…} escapes whose decoded
     // code points form the runtime group name. The captureMap stored the raw source
     // (`_‌`), so `groups[name]` — whose key is the JS-decoded identifier (the
-    // single character "_" + U+200C) — found nothing. RewriteCaptureGroups now runs
-    // DecodeGroupName on every GroupSpecifier AND on every \k<name> backreference.
+    // single character "_" + U+200C) — found nothing. The fix ran DecodeGroupName on every
+    // GroupSpecifier and on every \k<name> backreference in the translator's
+    // RewriteCaptureGroups; since milestone SJL-11.5 Broiler.Regex, which keeps the names
+    // native, decodes them.
     [Theory]
     [InlineData("/(?<\\u03C0>a)/.exec('bab').groups['\\u03C0']", "a")]
     [InlineData("/(?<_\\u200C>a)/.exec('bab').groups['_\\u200C']", "a")]

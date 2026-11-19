@@ -207,8 +207,11 @@ public class SharedUnicodeTests
     public void Katakana_Or_Hiragana_is_an_empty_set(string expression, string expected)
         => Assert.Equal(expected, Eval(expression));
 
-    // P2 and P4 on the .NET translator's path, which CreateRegex builds beside Broiler.Regex: the empty set
-    // matches nothing, and a v-mode set operation takes General_Category.
+    // P2 and P4 through the RegExp constructor, which compiles every pattern with Broiler.Regex since milestone SJL-11.5:
+    // the empty set matches nothing, and a v-mode set operation takes General_Category. Until SJL-11.5 these inputs
+    // were run on the .NET translator's path, which the constructor's helper built beside Broiler.Regex and SJL-11.5 deleted
+    // (Broiler.VM's JSD-0081, decision D21: "SharedUnicodeTests.cs:204-235 is rewritten"); the inputs and the
+    // answers are the same.
     [Theory]
     [InlineData("\\p{sc=Hrkt}", "u", "", false)]
     [InlineData("\\p{sc=Hrkt}", "u", "\\u3042", false)]
@@ -217,28 +220,32 @@ public class SharedUnicodeTests
     [InlineData("[\\p{Lu}&&\\p{Script=Greek}]", "v", "\\u03A9", true)]
     [InlineData("[\\p{Lu}&&\\p{Script=Greek}]", "v", "\\u03C9", false)]
     [InlineData("\\p{Lu}", "u", "A", true)]
-    public void The_translator_resolves_names_exactly(string pattern, string flags, string input, bool expected)
-    {
-        Load();
-        using var ctx = new JSContext();
-        var (regex, _, _, _, _, _, _, _, _) = RegExp.JSRegExp.CreateRegex(pattern, flags, out _);
-        Assert.NotNull(regex);
-        Assert.Equal(expected, regex.IsMatch(Unescape(input)));
-    }
+    public void The_constructor_resolves_names_exactly(string pattern, string flags, string input, bool expected)
+        => Assert.Equal(expected ? "true" : "false", Eval($"new RegExp('{pattern.Replace("\\", "\\\\")}', '{flags}').test('{input}')"));
 
-    // The translator's in-class General_Category table chooses .NET's spelling for names Broiler.Unicode's
-    // lookup has admitted, and holds no name it would refuse.
+    // Every General_Category name and alias ECMA-262's table writes, 80 in all, is admitted under u, as a value of
+    // General_Category and alone: the 78 the translator's in-class table spelled until milestone SJL-11.5 deleted it
+    // with the translator, and LC (Cased_Letter), which that table left out because it had no .NET form.
+    private static readonly string[] GeneralCategoryNames =
+    [
+        "L", "Letter", "LC", "Cased_Letter", "Lu", "Uppercase_Letter", "Ll", "Lowercase_Letter", "Lt",
+        "Titlecase_Letter", "Lm", "Modifier_Letter", "Lo", "Other_Letter", "M", "Mark", "Combining_Mark", "Mn",
+        "Nonspacing_Mark", "Mc", "Spacing_Mark", "Me", "Enclosing_Mark", "N", "Number", "Nd", "Decimal_Number", "digit",
+        "Nl", "Letter_Number", "No", "Other_Number", "P", "Punctuation", "punct", "Pc", "Connector_Punctuation", "Pd",
+        "Dash_Punctuation", "Ps", "Open_Punctuation", "Pe", "Close_Punctuation", "Pi", "Initial_Punctuation", "Pf",
+        "Final_Punctuation", "Po", "Other_Punctuation", "S", "Symbol", "Sm", "Math_Symbol", "Sc", "Currency_Symbol",
+        "Sk", "Modifier_Symbol", "So", "Other_Symbol", "Z", "Separator", "Zs", "Space_Separator", "Zl",
+        "Line_Separator", "Zp", "Paragraph_Separator", "C", "Other", "Cc", "Control", "cntrl", "Cf", "Format", "Cs",
+        "Surrogate", "Co", "Private_Use", "Cn", "Unassigned",
+    ];
+
     [Fact]
-    public void Every_general_category_name_the_translator_spells_is_admitted()
+    public void Every_general_category_name_is_admitted()
     {
-        var field = typeof(RegExp.JSRegExp).GetField("GeneralCategoryNames", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        var names = Assert.IsType<Dictionary<string, string>>(field!.GetValue(null));
-        Assert.Equal(78, names.Count);
-        foreach (var name in names.Keys)
+        Assert.Equal(80, GeneralCategoryNames.Distinct(StringComparer.Ordinal).Count());
+        foreach (var name in GeneralCategoryNames)
             Assert.Equal("true", Eval($"/\\p{{General_Category={name}}}/u instanceof RegExp && /\\p{{{name}}}/u instanceof RegExp"));
     }
-
-    private static string Unescape(string text) => System.Text.RegularExpressions.Regex.Unescape(text);
 
     // ---- segmentation (rows G1 to G4) ------------------------------------------------------------------
 

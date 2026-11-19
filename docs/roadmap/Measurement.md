@@ -1514,6 +1514,15 @@ BROILER_JS_SPECULATIVE_NUMERIC_LOCALS=1 dotnet $DLL --specializing-tier /path/to
 BROILER_JS_REGEX_TIERING=1 dotnet $DLL --specializing-tier /path/to/octane baseline counters
 ```
 
+*(Noted 2026-11-17, on branch `sjl-11-5`, at milestone SJL-11.5; the block above is not rewritten.)* The block's last
+command no longer does what its comment says. SJL-11.5 deletes `RegexTiering`, with its environment switch
+`BROILER_JS_REGEX_TIERING`, and `RegexTieringDiagnostics`, as decisions D20 and D21 of Broiler.VM's JSD-0081 list them:
+no `RegExp` has a .NET `Regex` left to tier, so setting the switch changes nothing; `--regex-tiering` is deleted with
+them; and `--specializing-tier … counters` no longer reports the `regexPatternsBuilt`, `regexRaces`,
+`regexRacesPromoted`, `regexVerdictsReused`, `regexVerdictsReusedPromoted`, `regexRaceRounds` and `regexRaceDetail`
+fields it read from `RegexTieringDiagnostics`. See [`Broiler.JS/CHANGELOG.md`](../../Broiler.JS/CHANGELOG.md),
+"Regular expressions move to Broiler.Regex", "Where they were" and "Removed public members".
+
 **`--specializing-tier … counters` also reports item 3-9's population, and the counter that makes
 its zero readable.** `importedOuterNumericCandidates` is how many locals would be numeric if an
 identifier resolving to a numeric local of an ENCLOSING function were typed rather than classified
@@ -1700,6 +1709,14 @@ dotnet $DLL --regex-profile
 dotnet $DLL --regex-tiering
 dotnet $DLL --regex-call-envelope
 ```
+
+*(Noted 2026-11-17, on branch `sjl-11-5`, at milestone SJL-11.5; the paragraph and the block above are not
+rewritten.)* Two emitters remain, `--regex-profile` and `--regex-call-envelope`. SJL-11.5 deletes `--regex-tiering`
+and the benchmark behind it, `RegexTieringMetrics`, with `RegexTiering`, its environment switch
+`BROILER_JS_REGEX_TIERING` and `RegexTieringDiagnostics`, as decisions D20 and D21 of Broiler.VM's JSD-0081 list them,
+since no `RegExp` has a .NET `Regex` left to tier. The benchmark no longer handles the `--regex-tiering` argument, and
+the switch changes nothing. See [`Broiler.JS/CHANGELOG.md`](../../Broiler.JS/CHANGELOG.md), "Regular expressions move
+to Broiler.Regex", "Where they were".
 
 **These probes now have a permanent home** — `HotPathProbeBenchmarks` in
 `Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks`, wired into all three

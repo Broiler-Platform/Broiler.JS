@@ -56,12 +56,6 @@ public static class Program
             return;
         }
 
-        if (args.Length == 1 && args[0] == "--regex-tiering")
-        {
-            RegexTieringMetrics.Write();
-            return;
-        }
-
         if (args.Length == 1 && args[0] == "--regex-call-envelope")
         {
             RegexCallEnvelopeMetrics.Write();
