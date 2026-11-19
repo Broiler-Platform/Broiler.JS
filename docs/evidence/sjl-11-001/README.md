@@ -905,6 +905,74 @@ no other (`decision-rule.md`'s list of this engine's corrections, under "The lit
 These are part A's per-part reading only. No clause of SJL-11 (4 to 7), no exit reading and nothing of Broiler.VM's or
 Broiler.RegEx's is read here. Part B still has no reading. Nothing is declared met beyond the words above.
 
+*Dated note, 2026-11-19, the owner's answer 8, the rule's revision for case N05, and part C read a second time; the
+notes above are not rewritten, no retained file changes and nothing is run again.* The note of the after runs reads
+"**Part C: read NOT MET.**", "**N05 is in no class.**" and "**For the owner:** whether a case past the wall-clock
+limit at the base is read under C1 is the owner's; this note does not read it, and a revision that admitted it now
+would be written after these runs were seen, which the rule's section "Revisions" calls weaker evidence." That first
+reading stays on record as it stands. The owner answered on 2026-11-19, an answer of the owner's own, not taken under
+the owner's direction of 2026-10-18, quoted verbatim and numbered as the answers above continue:
+- **8.** Asked (2026-11-19): "SJL-11.5 part C (the adversarial corpus) reads NOT MET on one case alone, N05. At the
+  base, the old .NET-translated engine ran N05 past the 300 s wall-clock limit and it was killed. After the cut-over,
+  N05 throws its declared SyntaxError, which is the outcome the corpus asks for. The rule has no class for that change:
+  C1's base outcomes don't include "past the wall-clock limit", and C3 needs the case to have completed at the base.
+  The other nine changed cases are C3. What should happen?" Chosen: "Admit N05 by revision" — "A dated revision admits
+  exactly this change for N05: past the wall-clock limit at the base, the declared outcome after. It is recorded as
+  weaker evidence, because it was written after the runs were seen. Part C is then read again on the same retained
+  runs, with nothing rerun." Not taken: "Keep part C NOT MET" — "The reading stands as taken. SJL-11's part C clause
+  stays unmet for Broiler.JS until a later dated choice."
+
+What it means here:
+- **The revision.** [`decision-rule-revised-2026-11-19b.md`](decision-rule-revised-2026-11-19b.md), filed by
+  `a77bdb7966452266d39024ab1f3a9a6f9800c6d4`, quotes
+  `decision-rule.md` whole, as the earlier revisions do, and changes only part C: it adds, after class C3, "**the
+  exception for case N05** - case N05 of the manifest alone, whose outcome at the base is past the wall-clock limit
+  and whose outcome after is its declared one, threw SyntaxError; listed with this revision", which is not a class
+  and admits nothing else, and part C's MET line's "every case whose outcome differs from the base's is in C1 or C3 and
+  is listed" reads "every case whose outcome differs from the base's is in C1 or C3, or is case N05 under its
+  exception, and is listed". The classes C1 and C3, "no other class" for every other case, the wall-clock limit and
+  every other part stand. It says it was written after part C's runs, its control and its first reading had been
+  seen, so its decision is weaker evidence in the sense of the rule's section "Revisions". `decision-rule.md` and the
+  three earlier revisions are not edited; the five are read together. Its name adds `b` to the date, the bundle's
+  second revision of one day.
+
+**Part C, read a second time, under the revision of 2026-11-19 (b): read MET on the retained runs.** It is read on
+the runs the first reading read, nothing rerun: [`base/part-c/results.tsv`](base/part-c/results.tsv)
+(`710aa4f2296fcc8643adb6b0bb6125a9ed222ce149f81a4177cb73d2c6eb761c`), [`after/part-c/results.tsv`](after/part-c/results.tsv)
+(`e87ca5b437a016c11c97dcabc01cc4ac1f9172ae0354c975e6b3b429237da466`) and the control in
+[`controls/part-c/`](controls/part-c/). The MET line, as the revision reads it: "MET if and only if, after, every case
+gives its declared outcome, no process ends abnormally and none passes the wall-clock limit; every case whose outcome
+differs from the base's is in C1 or C3, or is case N05 under its exception, and is listed; and the control is reported
+as stated."
+- **After, every case gives its declared outcome**, no process ends abnormally and none passes the wall-clock limit:
+  every program was checked against the manifest's SHA-256 first, every exit is 0 and every row reads
+  "matches-declared yes", as the first reading found (`after/part-c/results.tsv`).
+- **Every case whose outcome differs from the base's is admitted and listed.** The same ten cases differ, and no
+  other; every other case gives the same outcome at both:
+
+  | Case | At the base | After (its declared outcome) | Admitted by |
+  | --- | --- | --- | --- |
+  | M01, M02 | completed, with an answer | threw RangeError | C3, a frame or trail ceiling (decisions D7 and D10), as the first reading lists them, on the evidence the note "what the readings above rest on" gives |
+  | N02, N04, N08, N10, N11, N14, N16 | completed null | threw SyntaxError | C3, the nesting limit (decisions D7 and D10), as the first reading lists them, on the same note's evidence |
+  | N05 | past the wall-clock limit (`base/part-c/cases/N05.out.txt`, `0cc162d1c9d44749493ed8fd76cba1fb1ac419bcb84bc5bf43c1effde877b701`: exit -9, "timed-out: True") | threw SyntaxError (`after/part-c/cases/N05.out.txt`, `209fda347ee7fee16bd551c4052d59f30365c1b78717c49b812c8ff269c4eddd`) | the exception for case N05, `decision-rule-revised-2026-11-19b.md`; not C1 and not C3 |
+
+  No case is in C1, as at the first reading. N05's change is exactly the one the exception names: past the
+  wall-clock limit at the base, "threw SyntaxError" after. No other case was past the wall-clock limit at the base.
+  N05's program nests 1,000,000 capturing groups, the kind of N01, N02 and N04, whose 511 compile after and whose 512
+  and 20,000 are refused; the exception does not ask which refusal N05's SyntaxError is, and this reading does not
+  class it.
+- **The control is reported as stated**, as the first reading found: with the patch, M01 and M02 each give "completed
+  null" where their declared outcome is "threw RangeError" ([`controls/part-c/control/results.tsv`](controls/part-c/control/results.tsv),
+  `3fccd4c898996e2aea98a3c18a1baaaf7de469797286dd2c87e2c78a8527f096`); reverted and the revert checked, both give
+  their declared outcome again (`controls/part-c/reverted/results.tsv`,
+  `bc01a3374630f855142bf04d7dfae3e704aab0e52e2014e5c3a83c0d5a392a72`; `controls/part-c/revert-check.txt`,
+  `6d3051877e3e183f164f2dfeee7e0e47722327932c695f1cda853dc5a233487c`).
+
+This second reading rests on a revision written after the runs were seen, and is weaker evidence for that, as the
+revision says. The first reading, "read NOT MET", is not withdrawn; both stand on record, the second under the
+revision. These are per-part readings only. No clause of SJL-11 (4 to 7), no exit reading and nothing of Broiler.VM's
+or Broiler.RegEx's is read here, and nothing is declared met beyond the words above.
+
 *2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
 
 *2026-11-01, at corpus revision 32:* **part D names revision 32**, the revision that classifies both engines' first
