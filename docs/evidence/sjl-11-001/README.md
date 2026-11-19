@@ -420,6 +420,61 @@ What they mean here:
 
 None of this names the after commit or takes a run; nothing here is a verdict.
 
+*Dated note, 2026-11-19, on branch `sjl-11-5`, part D's base read at corpus revision 32, by answer 5 above; the notes
+above are not rewritten, and no retained run output changes.* The note of the base runs reads "Each report is the whole
+corpus at the tree's corpus revision, 43", and [`base/part-d/reading.txt`](base/part-d/reading.txt) reads the three
+reports at that revision. They are now read again against revision 32's `class` lines, with no new run:
+- **The scratch pin**, [`base/part-d/revision-32.pin`](base/part-d/revision-32.pin): `git archive` of
+  `conformance/vectors/regexp/` at `b2c2e2243a086285d806866a64b83297791a8ec5`, Broiler-Platform/Broiler.JS#1089's
+  merge, the first default-branch commit that holds revision 32 (its `regexp/` tree is that of `de8d7b54`, revision
+  32's last change), written twice, byte for byte the same, the second extracted and each file hashed, as
+  [`engine/commands.txt`](engine/commands.txt) describes its scratch pins. Nothing is run from it: its `class` and
+  `divergence` lines are read against the reports.
+- **The reading**, [`base/part-d/reading-revision-32.txt`](base/part-d/reading-revision-32.txt), written with the pin
+  by [`base/part-d/read-revision-32.py`](base/part-d/read-revision-32.py) (`python3 -I
+  docs/evidence/sjl-11-001/base/part-d/read-revision-32.py --repo . --scratch <an empty directory> --out
+  docs/evidence/sjl-11-001/base/part-d`), which reads only git objects and the three retained reports; run twice into
+  two directories, it wrote both files byte for byte the same. It checks that revision 32's and revision 43's
+  `regexp/` hold the same 1,420 vectors, 18 of them status vectors, with every field but `class` and `divergence.*`
+  the same, and the expected outcome the comparison uses for `broiler-js` (`per-engine` on an `impl-defined` vector,
+  otherwise `out`) the same for every vector; that 22 `class` lines differ, `divergence` at revision 32 and
+  `normative` at 43 (row M2a's 20 vectors and `regexp/literals/s9b-literal-grammar/0001` and `0002`), and that 22
+  `divergence.*` fields of revision 32 are retired at 43 and one has other text there. Each report's `regexp/` line
+  is checked against revision 43's vector, the corpus the run read, and its verdict is computed again under revision
+  32's vector as the runner's comparison does (`VectorRun.Compare`, the corpus's SCHEMA.md section 8): the rendered
+  outcome is the report's own, so whether it matches is the report's own, and a difference is classified or not by
+  revision 32's `class` and `divergence.broiler-js` lines.
+- **What it reads.** In each of the three reports, 1,402 `regexp/` lines, one for each of revision 32's non-status
+  vectors and none for the 18 status vectors; at revision 32 the verdicts are the ones revision 43 gave, 169 classified
+  divergences and 1,233 matches, and no difference. 22 lines read differently, the same in all three: row M2a's 20
+  vectors read `divergence` and "match (divergence no longer holds)", where revision 43 reads them `normative` and
+  "match", and the two `s9b-literal-grammar` vectors read `divergence` and "match", carrying no
+  `divergence.broiler-js` field. The count "divergence no longer holds" over `regexp/` is 20 in each report at
+  revision 32, where it is none at 43.
+- **Part D's clauses at the base.** The rule takes the base runs "retained and read, not judged" (`decision-rule.md:219`),
+  and reads them in "How it is read" (`:226-228`); only those are read here. **Read at the base**, at revision 32: the
+  three reports' `regexp/` lines, read again, are byte-identical across the invariant culture, `tr-TR` and `lt-LT`; and,
+  against revision 32's classes, every `normative` vector's result is its `out`, every `impl-defined` vector's is its
+  `per-engine.broiler-js` outcome or a difference its `divergence.broiler-js` field classifies, and every `divergence`
+  vector's is its `out` or a difference its field classifies, row M2a's 20 fields reporting that they no longer hold.
+  **Read at the base** for "How it is read", "the base runs show it (row M2a, under `tr-TR` and under `lt-LT`), and the
+  after runs must not": at revision 32 the base runs do not show it; row M2a's vectors match under all three cultures,
+  as the note of 2026-11-17 on rows M2a and M15 says (`RegexOptions.CultureInvariant` since `0705e80b`). The MET line,
+  "the three after reports are byte-identical and every vector's result after is the outcome its class expects", is
+  the after runs', and the base alone decides nothing that needs them.
+- **How the after runs will be read, the same way.** Part D's three after runs at the after commit are retained under
+  `after/part-d/` with the same report names, and the same script reads them against the same pin's revision 32:
+  `--runs after --tree-commit <the after commit> --out <that folder>`. It stops if the after commit's `regexp/`
+  vectors differ from revision 32's in any field but `class` and `divergence.*`, or in the expected outcome, and
+  otherwise writes the after reports' lines read again and the part's clauses on them. Its reading of each vector's
+  result against "the outcome its class expects" takes revision 32's class: `normative`, its `out`; `impl-defined`, its
+  `per-engine.broiler-js`; and a `divergence.broiler-js` field that the cut-over answers reports that it no longer holds.
+  The MET line is then read on those lines; the reading at revision 43 in [`base/part-d/reading.txt`](base/part-d/reading.txt)
+  is retained and is not part D's.
+
+[`base/hashes.txt`](base/hashes.txt) and [`base/manifest.json`](base/manifest.json) list the three new files, which
+are added beside the retained reports and change none of them. Nothing here is a verdict.
+
 *2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
 
 *2026-11-01, at corpus revision 32:* **part D names revision 32**, the revision that classifies both engines' first

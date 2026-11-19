@@ -52,7 +52,15 @@
     "lt-LT": 1
    },
    "corpusRevisionOfTheTree": 43,
-   "folder": "part-d"
+   "folder": "part-d",
+   "readAtCorpusRevision32": {
+    "by": "the owner's answer 5 of 2026-11-19, \"Read revision 32\"",
+    "taken": "no run: the three reports above read again against corpus revision 32's class lines",
+    "scratchPin": "part-d/revision-32.pin",
+    "pinCommit": "b2c2e2243a086285d806866a64b83297791a8ec5",
+    "script": "part-d/read-revision-32.py",
+    "reading": "part-d/reading-revision-32.txt"
+   }
   },
   "partB": "not taken here: this machine is not a controlled lane",
   "partE": "no base run: the rule's part E reads the after commit only"
@@ -179,7 +187,10 @@
   "part-c/cases/W01.out.txt": "c9b08c17745a5364134f576e8f4a95ebb637888198ef2a43dbe5983e821ef411",
   "part-c/cases/W02.out.txt": "4d08cdaaa8d7fc03c8bd279e06ec50e37a5e41fb7a658c6d34959011a625b776",
   "part-c/results.tsv": "710aa4f2296fcc8643adb6b0bb6125a9ed222ce149f81a4177cb73d2c6eb761c",
+  "part-d/read-revision-32.py": "2147faf59e728e8284ee4f6f722805b81d051f4554ba2ae9b3ef6c384dd981ac",
+  "part-d/reading-revision-32.txt": "524dfba8b68cf0a2752c51aedc1bf33fc04de015463beb121726c23c8561baed",
   "part-d/reading.txt": "92925c40c1c54fadec8e2ba60e3b3de175a4e97c113d844da47dfe38a9cd872b",
+  "part-d/revision-32.pin": "35fad111993a5eafc170eeb125e71d6413686b93f1f24db2ba17f6c5109c534a",
   "part-d/run-invariant.negative-control.tsv": "b2ebb93c3cb58401132c1fb5a5c843b48e9c3e11d4ebc6724f005a6f2612b0d8",
   "part-d/run-invariant.tsv.gz": "a803cbed18b3b0fad14d2f02251b27bd1a5a1a63203af04afefe845933e70536",
   "part-d/run-lt-LT.negative-control.tsv": "b2ebb93c3cb58401132c1fb5a5c843b48e9c3e11d4ebc6724f005a6f2612b0d8",

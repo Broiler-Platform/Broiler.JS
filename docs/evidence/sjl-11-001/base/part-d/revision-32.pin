@@ -1,0 +1,20 @@
+# A scratch pin of corpus revision 32's regular-expression vectors, for part D's reading (answer 5 of 2026-11-19).
+# Not a pin any runner reads, and nothing is run from it: read-revision-32.py reads the extracted files' class and
+# divergence lines against the retained base reports. Written by that script, from git, as engine/commands.txt
+# describes its scratch pins: the archive written twice, byte for byte the same, the second extracted and hashed.
+
+corpus revision 32 (conformance/vectors/REVISIONS.md row 32)
+commit b2c2e2243a086285d806866a64b83297791a8ec5 (Broiler-Platform/Broiler.JS#1089's merge, the first default-branch commit holding revision 32)
+tree conformance/vectors/regexp 5c8a74a3326d5fc15023cc97ccc753aaab3eaa23 (the same tree as de8d7b54, revision 32's last change)
+archive git archive --format=tar.gz b2c2e2243a086285d806866a64b83297791a8ec5 -- conformance/vectors/regexp
+archive-sha256 015a0d8715d11c97ff5367afba03fed856c0697fda5718532ad6e5e7c8707874
+content-sha256 403f8b2c8d8851cbbb33d2574a12be92a5effcdbc9cb78f5e4830971bb51d493 (the SHA-256 of the lines below, each "<sha256>  <path>\n", in byte order of path)
+files 8
+1726b9f08ffae85f210eb32cd2ffa33ca4041ff95e62f8206db8c866e19645db  conformance/vectors/regexp/budget.vectors
+43e0e9141928432cd755cdc80485909813475ef3a319a9b4f6a6a0d6a374bf64  conformance/vectors/regexp/case-insensitive.vectors
+0468645f946c9699773ddec4e974a0e78ab9a30ed35e9bcdf8dadd582119d630  conformance/vectors/regexp/last-index.vectors
+6d4491cc6c6dd48ae890bcc74c40714bd84ac63f566a3107cfcc3ed9711362e0  conformance/vectors/regexp/literals.vectors
+348d7c0d6806ab2c51fc0b5f313d93f8b52a894db31972932331825a0a88650a  conformance/vectors/regexp/matching.vectors
+351e6f00d75da2b3b9f9d7c4daf5b01693632d26b00ac0042a85a41deb2d72a6  conformance/vectors/regexp/properties.vectors
+8c843a29136c4fc901767287eacb5fe35a4791f44cfdff645faa8a08431e93cf  conformance/vectors/regexp/syntax.vectors
+00ba6f921c5aaa57d81e07d4f18b3bcaac81e52487df14eaee07e3fa2e33f634  conformance/vectors/regexp/text.vectors
