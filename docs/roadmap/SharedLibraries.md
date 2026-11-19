@@ -1715,6 +1715,22 @@ and has part A's runs taken by the evidence workflow as the default branch carri
 it merges. No base is named and the hold has not started; no run of the rule has been taken, every clause of this
 engine's, 4 to 7, is unmet, and none of it is accepted.
 
+*(Noted 2026-11-19, on branch `sjl-11-5`; the note above is left as written.)* **The inputs landed, and the hold
+started.** The note above reads "The rule's inputs commit and its two revisions are filed for landing on the default
+branch, and have not landed." and "No base is named and the hold has not started; no run of the rule has been taken".
+They landed on 2026-11-18 in Broiler-Platform/Broiler.JS#1125, merged as `5429c4065e8b273e5c7965598b8a2f5490a8ad98`,
+a merge commit whose first parent is the default branch's `aecc5f89` and whose second is `20f1cbbb`, the head of
+`sjl-11-5-inputs`: the inputs commit `24fe7cba` and the rule's revisions `189d65ff`, `45a15487` and `909532bd` are
+default-branch commits from that merge on. The hold of decision D16 started there the same day, by the owner's order
+quoted above ("Then the hold starts and the base runs are taken at main's head."), at `5429c406`, the default branch's
+head when it started; nothing else merges to the default branch until the merge that lands SJL-11.5. The branch
+`sjl-11-5` merged the default branch at `5429c406` into itself (`fff4172c`), which moves no default-branch commit.
+The base runs of parts A, C and D were taken at `5429c406` during the hold and are retained in bundle
+[`sjl-11-001`](../evidence/sjl-11-001/README.md)'s `base/`, whose README names each run; part B is not taken there,
+and part E has no base run. `5429c406` is the base commit only if the merge landing SJL-11.5 has it as its first
+parent; if the default branch moves before that merge, the base runs are void, as the rule says. No after run has been
+taken, every clause of this engine's, 4 to 7, is unmet, and none of it is accepted.
+
 **Locale data and the Intl algorithms (SJL-9.1), filed 2026-10-26: all five sub-areas accepted, plural ranges and
 display-name naming adopted, decisions SJL-D-22 and SJL-D-24 recorded, and the owner's decisions of 2026-10-26
 recorded.**
