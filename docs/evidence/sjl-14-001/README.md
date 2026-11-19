@@ -106,10 +106,57 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
     is marked `product` and `Broiler.JS/CHANGELOG.md` `other`, and the lists above follow the same marks. A read at the
     default branch's head, `e4b6b49e`, outside part B and not judged, finds the switch-off rows of part B's runs the same
     as W1's ([`bridge/README.md`](bridge/README.md)).
+
+    *(Noted 2026-11-19, after SJL-11.5's merge and before W2's base: the lists above stop at the default branch's head
+    of 2026-11-15, and read "Every other first-parent merge since W1 changes no product path (#1103, #1106, #1109,
+    #1111, #1112, #1113, #1116)". Through `fefb4f9c9331b7d16349ed2a1721285f2fb69fef`, the merge of
+    Broiler-Platform/Broiler.JS#1127 and the default branch's head on 2026-11-19, the first-parent commits after
+    `e4b6b49e` add these, marked by the same list of the product paths. None changes
+    `Broiler.ECMAScript/Broiler.ECMAScript.Frontend*/`, so the merges to it since W1 are still #1104 and #1105 alone.*
+    - *The product commits, which change no `Frontend*/` path and so are no dark commit by any reading:*
+      - *`2f012739cfc4d99e91b22d28a09941c49d8bd646`, Broiler-Platform/Broiler.JS#1118 (SJL-17.5):
+        `Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests`, and `Broiler.JS/Broiler.JavaScript.BuiltIns`, its
+        `.BuiltIns.Tests` and `.Integration.Tests`.*
+      - *`cdf5559d5b69113c536f734e9a6ab305a3c71430`, "Update dependencies", a commit made on the default branch
+        directly and not a merge (its only parent is `2f012739`): the project files of `Broiler.JS/Broiler.JavaScript`
+        and of its projects `.All`, `.Ast`, `.BuiltIns`, `.Clr`, `.Compiler`, `.Debugger`, `.Engine`,
+        `.ExpressionCompiler`, `.Expressions`, `.Extensions`, `.Globals`, `.LinqExpressions`, `.Minimal`,
+        `.ModuleExtensions`, `.Modules`, `.Parser`, `.Portable`, `.Portable.Compiler`, `.Runtime` and `.Storage`, and the
+        root's `Directory.Packages.props`.*
+      - *`6fda6ca44c041cea348dd5302c91ff90a0fe67bc`, Broiler-Platform/Broiler.JS#1119: `.BuiltIns`
+        (`RegExp/JSRegExp.Broiler.cs`).*
+      - *`96cbe4ce39f03e17e061277104898e4071b99cb2`, Broiler-Platform/Broiler.JS#1122: `.BuiltIns.Tests`, `.Runtime`,
+        `.Runtime.Tests` and `.Storage`.*
+      - *`b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1`, Broiler-Platform/Broiler.JS#1126 (SJL-11.5): `.Ast`, `.BuiltIns`,
+        `.BuiltIns.Tests`, `.Integration.Tests`, `.Parser` (`Bridge/BridgeRegularExpressions.cs`,
+        `Bridge/BridgeTreeBuilder.Expressions.cs`, `FastScanner.cs` and the project file, and `RegExpValidator.cs`
+        deleted), `.Parser.Tests` and `.Runtime`. It is the one first-parent commit after W1 that changes
+        `Parser/Bridge/`; how the rule's conditions read it is reading B1 in "Before W2's base, read on 2026-11-19"
+        below.*
+    - *No product path: #1117, #1120, #1121, #1123, #1124, #1125 and #1127.*
+
+    *Each is in [`bridge/merges-since-w1-paths.txt`](bridge/merges-since-w1-paths.txt), extended to `fefb4f9c` by the
+    same command form as its first lines (each first-parent commit's paths against its first parent, renames as git
+    detects them), whose lines through #1116 are unchanged; the direct commit's header names it `direct` where a
+    merge's names its pull request. No first-parent commit after `e4b6b49e` changes, in a product path, a line that
+    names `SharedSyntaxBridge`, `ParseThroughBridge`, `BridgeByDefault` or `BROILER_PARSE_THROUGH_BRIDGE`; two records
+    merges, #1117 and #1123, change lines of this bundle and of the plan's tables that name them. The lists above are
+    left as written.)* *(Changed the same day, before this note merged, after review: the sentence before the last read
+    "No first-parent commit after `e4b6b49e` changes `SharedSyntaxBridge`, `ParseThroughBridge`, `BridgeByDefault` or
+    `BROILER_PARSE_THROUGH_BRIDGE`.", which holds only for product paths.)*
   - **W2 and the base commit** do not exist yet: W2 is held for SJL-11.5 (decision D51's recommended order;
     [`docs/roadmap/SharedLibraries.status.md`](../../roadmap/SharedLibraries.status.md)'s SJL-14 row). The rule's dark
     commits run to the base commit, so their set is still open, and part B's verdict below holds only at the commits
-    taken.
+    taken. *(Noted 2026-11-19, after SJL-11.5's merge: this bullet reads "W2 is held for SJL-11.5 (decision D51's
+    recommended order". SJL-11.5 merged on 2026-11-19 as Broiler-Platform/Broiler.JS#1126,
+    `b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1`, and bundle [`sjl-11-001`](../sjl-11-001/README.md) records with it
+    that "The hold of decision D16 ended" with that merge; its after records merged as Broiler-Platform/Broiler.JS#1127,
+    `fefb4f9c`. That merge is the end of what held W2: W2 is no longer held for SJL-11.5 (reading B2 in "Before W2's
+    base, read on 2026-11-19" below). W2 and the base commit still do not exist, and no dark commit has merged since
+    #1105. From the first base run until W2 merges, the default branch is held for W2 by the owner's answer 9 of
+    2026-11-19 (the same section); that hold has not started. The rest of this bullet stands.)* *(Changed the same
+    day, before this note merged, after review: it read "From the first part C base run until W2 merges", the
+    question's words; the chosen answer reads "The hold then starts at the first base run".)*
 
 ## Part B, judged on 2026-11-15
 
@@ -165,6 +212,16 @@ written" (void). The ruling also decides what a later library merge that touches
 accepted: no second holder exists to review it, and part B is no clause; every clause of this engine's, 1 to 6, is
 unmet.
 
+*(Noted 2026-11-19, before W2's base: the optional ruling above also takes a second question, reading B1 in "Before
+W2's base, read on 2026-11-19" below: whether SJL-11.5's merge `b2b226cd`, which changed `Parser/Bridge/` and deleted
+three items of SJL-14.5's deletion list, is read with decision D51 ("Read with D51", taken: W1's condition holds
+through `fefb4f9c`, W2's is checked at W2, and part B's verdict above stands) or by the rule's words alone ("The
+rule's words": W1's condition fails, part B, judged at W1, is void, and so is every part judged at the base commit or
+W2). The ruling stays optional and blocks nothing; the paragraph above is left as written.)* *(Changed the same day,
+before this note merged, after review: the taken reading's parenthesis read "taken: W1's and W2's conditions hold, and
+part B's verdict above stands", which says W2's condition holds before W2 exists, and the other's read "W1's condition
+fails, part B is void, and so is every part judged at W1 or W2", worded as reading B1 now words it.)*
+
 **The switch-on outputs**, read and not judged (part C judges them at the base commit): the side-by-side tool's B and
 K-on rows are the same at #1104's first parent, at #1104, at #1105, and at W1. Neither library merge moved a switch-on
 outcome, message or tree over the corpus.
@@ -192,10 +249,257 @@ each run names its tested commit, so they can be taken at W1 at any time. The ch
 of 2026-10-18, is to leave them to a later stage, before or with part C's runs at the base commit; the alternative not
 taken is to take them in this stage. Part C's verdict reads only the runs at the base commit, so none waits on them.
 
+## Before W2's base, read on 2026-11-19
+
+**Written:** 2026-11-19, after SJL-11.5's merge (`b2b226cd`) and its after records (`fefb4f9c`, the default branch's
+head), before W2, its base commit or any of their runs exists. [`decision-rule.md`](decision-rule.md) is not edited,
+and nothing here revises a line of it. Nothing is judged, met or accepted here.
+
+### The owner's answer 9 of 2026-11-19: the hold for W2
+
+The owner's own answer, quoted verbatim, and not one taken under the owner's direction of 2026-10-18. Asked (2026-11-19):
+"SJL-14's W2 cut-over (the frontend switch removed, the re-scans and facades deleted, the division fallback deleted)
+needs its base runs taken at Broiler.JS main's head, with W2 as the very next merge. Any merge in between, including
+docs-only ones, voids those base runs. For SJL-11.5 you ordered that hold yourself. May I hold Broiler.JS main the same
+way for W2, from the first part C base run until W2 merges? That is expected to take a day or two." Chosen: "Allow the
+W2 hold" — "Records and the W2 branch are prepared first, with nothing held. The hold then starts at the first base
+run, and nothing merges to Broiler.JS main until W2 merges. I record the hold's start and end, and I dispatch
+test262-evidence.yml for part A once at the base and once at the after commit, as for SJL-11.5." Not taken: "Prepare
+only, hold later" — "I prepare the records and the W2 branch but take no base run. The hold waits until you say it can
+start."
+
+What it means here:
+- **W2's hold begins at the first base run and ends with W2's merge.** The question put it as "from the first part C
+  base run"; the chosen answer reads "The hold then starts at the first base run", so it starts at the first base run
+  of any part, a dispatch of part A's included if one comes first. Nothing merges to the default branch meanwhile,
+  records included, so that W2's first parent is the commit the base runs were taken at, as the rule's definition of
+  the base commit, W2's first parent, and its void sentence need. Its start and its end are recorded in this bundle
+  when each happens. **It has not started**: this record and the W2 branch come first, with nothing held. *(Changed
+  the same day, before this record merged, after review: the bold sentence read "W2's hold begins at the first part C
+  base run and ends with W2's merge.", the question's words and not the answer's.)*
+- **Part A's base and after runs are taken by dispatches of `test262-evidence.yml`**, once at the base commit and once
+  at the after commit, as for SJL-11.5, with the inputs part A names; the workflow is not changed.
+- The freeze of the default branch for the base is thereby the owner's own order, as SJL-11.5's was; no choice is
+  taken for it under the direction of 2026-10-18.
+
+### The session's readings, under the owner's direction of 2026-10-18
+
+Each is taken as recommended under the owner's direction of 2026-10-18, "Please do all recommended decisions and skip
+waiting for review.", which changes no rule; each is a dated reading filed before any base run, with the alternative
+not taken, and none revises a line of the rule.
+
+**B1. The rule's commit conditions, read against SJL-11.5's merge.** The rule reads: "W1 is the only first-parent
+commit that carries any part of the bridge or the switch"; "W2 is the only first-parent commit that carries any part of
+SJL-14.3 to SJL-14.5 (the switch's removal, the adapter packages, the portable compiler's and the module analysis's
+move, the deletions)"; and "A part whose base was taken at any other commit, or whose commits fail those conditions, is
+void." SJL-11.5's merge `b2b226cd` changed `Parser/Bridge/BridgeRegularExpressions.cs`, whose `Validate` now calls
+`FastScanner.IsValidRegularExpressionLiteral`, Broiler.Regex's validate entry, in place of the parenthesis-balance patch,
+the braced-escape decoding and `RegExpValidator`, and `Bridge/BridgeTreeBuilder.Expressions.cs`, whose literal token now
+carries the body as written; and it deleted `RegExpValidator`, `DecodeBracedUnicodeEscapes` and the parenthesis-balance
+patch, three items of SJL-14.5's deletion list ([`dispositions.md`](dispositions.md)). Decision D51
+([`docs/roadmap/SharedLibraries.md`](../../roadmap/SharedLibraries.md)) reads: "**W2 after SJL-11.5**: the provider then
+wraps Broiler.Regex's validate entry, and SJL-14 deletes the division fallback only." Broiler.VM's milestone file reads:
+"**"`RegExpValidator`"** is deleted if SJL-11.5 has landed when the cut-over merges." `dispositions.md` reads, for
+`RegExpValidator`: "deleted if SJL-11.5 has landed, else relocated behind the request's regular-expression provider
+(decision D51)".
+- **Taken: the conditions read with D51.** The provider change and the deletions `b2b226cd` made are the ones D51's
+  order gives SJL-11.5 to make, not a part of SJL-14.2's bridge or of SJL-14.3 to SJL-14.5. W1 is then still the only
+  first-parent commit that carries any part of SJL-14.2's bridge or switch, through `fefb4f9c`, and W2's condition is
+  checked at W2, with the division fallback the only regular-expression item SJL-14 deletes. Part K, at the after
+  commit, finds the three items absent, as its population allows ("each deleted, or relocated behind the provider as
+  decision D51 allows and dispositions.md records"). Of [`corrections.md`](corrections.md)'s rows, K9 ("only if the
+  provider wraps Broiler.Regex's validate entry") applies and K6 ("only if SJL-11.5 has not landed at the cut-over
+  (decision D51)") does not. Part B's verdict above stands at the commits taken.
+- **Not taken: the rule's words alone.** `b2b226cd` is a first-parent commit that carries part of the bridge, so W1's
+  condition fails; it also carries deletions SJL-14.5 lists, so W2's condition fails before W2 exists. By the void
+  sentence, part B, judged at W1, is void, and so is every part judged at the base commit or W2.
+- **Added to the owner's optional ruling** in "Part B, judged on 2026-11-15" above, by its note of today.
+
+*(Changed the same day, before this reading merged, after review; the reading taken is not changed.)* K6's quotation
+read "only if SJL-11.5 has not landed (D51)", the plan's summary of the row and not `corrections.md`'s words, and it was
+attributed to "the corrections"; the alternative's last sentence read "it also carries deletions SJL-14.5 lists, so W2's
+condition would fail before W2 exists, and every part judged at the base commit and W2 would be void", and its first
+"so W1's condition fails, and by the void sentence part B, judged at W1, is void;", now worded one way here, in the note
+on the owner's ruling above and in the plan.
+
+**B2. The hold that held W2 has ended.** The plan's order of SJL-14's work reads "(each merge outside SJL-11.5's span
+and SJL-9.5's window)" and "**W2**, preferably after SJL-11.5", and this bundle's commits read "W2 is held for
+SJL-11.5". SJL-9.5's window is past: it merged as `a5f2692e` (#1110, the commits above).
+- **Taken:** "SJL-11.5's span", which no record defines, is read as the hold of decision D16 under which SJL-11.5's
+  bases were taken, which bundle `sjl-11-001` records ended with SJL-11.5's merge `b2b226cd`. The hold that held W2 has
+  ended, and W2 may be written, its base taken and W2 merged under the owner's answer 9 above. SJL-11.5's part B, still
+  to be taken on the owner's lane, builds arm B from the base commit `5429c406` and arm A from the merge
+  (bundle `sjl-11-001`'s README, "Part B, by answer 4"), so it needs no hold of the default branch.
+- **Not taken:** reading SJL-11.5's span as lasting until SJL-11.5's part B is taken on the lane, so that W2 waits
+  for that run.
+
+**B3** is not a reading here: the freeze of the default branch for the base is the owner's answer 9 above.
+
+**B4. W2 before any merge of SJL-15.2's model.**
+- **Taken:** W2 merges before any SJL-15.2 model merge. None can merge yet in any case: decision D-js-revisions' note
+  of 2026-11-17 puts the eval-code inputs of probes V029, V030 and V046 in "a later corpus revision of the area,
+  classified on both engines' runs as revision 43's additions were, before any SJL-15.2 code merges", and no such
+  revision exists; and from the first base run until W2 merges, nothing merges (answer 9). With W2 first, no
+  model merge is a dark commit of this rule, and the base commit's `Broiler.ECMAScript/` is the published
+  `0.1.0-preview.12`'s (below) unless a dark merge changes it. *(Changed the same day, before this reading merged,
+  after review: "from the first base run" read "from the first part C base run", as answer 9's question and not its
+  answer has it.)*
+- **Not taken:** model merges before W2, each a dark window of SJL-14 under decision D52 ("The same holds for SJL-15's
+  model stages"), each with part B against its own first parent, its switch-on outputs judged by part C at the base
+  commit.
+
+**B9. Part C's open items, and K10 rows, before the base run.** "The side-by-side run at W1, read on 2026-11-15" above
+lists the open items: "the outcome moves the corrections do not list, those three inputs among them, and the
+`both-agree` span differences, each to be classified or found unclassified there".
+The rule reads, of the rows it classifies by: "The corrections this rule classifies by are `corrections.md`'s K1 to
+K10, each with its rows of Broiler.VM's `docs/evidence/sjl-13-001/correspondence.md`, or of this bundle's
+inherited-context probes (`inherited-context/`, rows IC1 to IC7 of K10), and its test262 paths". Part C's "How it is
+read" reads: "The run at W1 is retained so that a library fix found there can be traced to its dark merge. An
+unclassified difference is a bridge or library defect, fixed as a dark merge and run again before W2 merges."
+- **Taken:** they are classified at the base commit, from part C's runs there. Any row of K10 they need, found from the
+  retained run at W1, is added to [`corrections.md`](corrections.md) (and its generated tables by
+  [`tools/records/`](tools/records/write_records.py)) before the first part C base run, as K10's rows W1a to W1c were
+  added after W1's run. Such a row goes beyond the rule's words above: it is a row neither of the correspondence nor of
+  the inherited-context probes, but SJL-14's own, as `corrections.md`'s note of 2026-11-03 says of W1a to W1c ("K10
+  stays "the rows SJL-14's correspondence adds" as filed; these three are SJL-14's own, found by its first run."). It
+  is also chosen after the run it classifies was seen: the side-by-side run at W1, whose switch-on outputs part C judges
+  at the base commit, has been read (above), and part B's runs were judged on 2026-11-15; no run at the base commit
+  exists. This reading revises no line of the rule, so the sentence of its section "Revisions" does not apply to it,
+  but a row written after its run was seen is chosen knowing what it admits: it is weaker evidence than a row filed
+  before any run, and each such row names its inputs and its cause, as W1a to W1c do, so that it can be checked
+  against both texts. An item no class admits at the base commit is unclassified, and by part C's "How it is read" is
+  "fixed as a dark merge and run again before W2 merges". From the first base run nothing merges (answer 9), so a fix
+  by a dark merge ends the base taken: the dark merge is read by part B against its own first parent, and the base
+  runs are taken again at it. Whether such a fix may go inside W2 instead is not read here.
+- **Not taken:** a dated revision of the rule that classifies them, which its section "Revisions" makes weaker
+  evidence: "A rule revised after any run it judges has been seen ... its decision is then weaker evidence", and runs
+  it judges have been seen. Nor the rule's words alone, under which no row beyond the correspondence's and the probes'
+  is added and every item none of their rows admits is unclassified.
+- **For the owner, an optional ruling** among the three: "Rows from W1's run" (taken), "A dated revision" or "The rule's
+  words". It blocks nothing; a ruling given before the first part C base run decides how the open items are classified
+  there.
+
+*(Changed the same day, before this reading merged, after review.)* The reading quoted neither the rule's sentence on
+the rows it classifies by nor part C's "How it is read", and its taken bullet read, after "as K10's rows W1a to W1c were
+added after W1's run", "; no part C, D or A run has been judged. An item no class admits at the base commit is
+unclassified, which part C's "How it is read" sends to a fix before W2 merges."; that hid that the rows go beyond the
+rule's words, that they are chosen after W1's run was seen, and that a fix by a dark merge ends a base taken under the
+hold. The alternative read "a dated revision of the rule that classifies them, which its section "Revisions" makes
+weaker evidence once any run it judges has been seen." The optional ruling is new.
+
+**B10. Part I's protocol, filed before any part I run.** Part I reads: "configuration: the harness
+Broiler.JS/docs/roadmap/Measurement.md names, on the lane the bundle names with its effective configuration;
+interleaved arms; repetitions and warm-up as Measurement.md fixes them". Part I is the owner's run on the lane
+`win-x64-r7-5800x`, taken after W2 merges (the note of 2026-11-18 under "What it does not claim"); these points go into
+the brief for it:
+- **The harness and its path.** No `Broiler.JS/docs/roadmap/Measurement.md` exists; the harness is the one
+  [`docs/roadmap/Measurement.md`](../../roadmap/Measurement.md) names, the benchmark project's `--compile-phases`, over
+  the real corpora of `CompilePhaseMetrics` that [`inputs/workloads/README.md`](inputs/workloads/README.md) names.
+- **Repetitions and their order:** nine, and in each, B, A and A-again each run once, in an order that rotates by
+  repetition: B, A, A-again; then A, A-again, B; then A-again, B, A; and again. Measurement.md's acceptance gate, which
+  it calls "the single normative acceptance protocol", reads in its item 1: "run candidate and control on the same
+  controlled host in a balanced, process-isolated order such as ABBA/BABA; use enough independent pairs for the
+  predeclared analysis and repeat a provisionally qualifying result in a fresh confirmation run before acceptance;".
+  The order is balanced: with a count that is a multiple of three, each arm runs first, second and third in a third of
+  the repetitions. It is process-isolated: each arm's run in each repetition is its own process, over one corpus
+  (below). Its item 4 reads: "include every configured repetition in the analysis. Two repetitions are the current
+  wiring minimum, not proof that a lane or effect is decision-grade"; every repetition is in Q. Bundle `sjl-3-001`'s
+  part B on the same lane took seven ("Seven repetitions. In each, B, A and A-again each run once, in an order that
+  rotates by repetition",
+  [`measurement-win-x64-r7-5800x/`](../sjl-3-001/measurement-win-x64-r7-5800x/README.md)), under which B runs first in
+  the first, fourth and seventh and the others in two each, which is not balanced; nine, the next multiple of three,
+  is the session's choice.
+- **The harness's own repetitions:** `--compile-phases` takes repetitions as its third argument (Measurement.md:
+  "Third argument is repetitions.") and reports each column as the median of that process's repetitions
+  (`CompilePhaseMetrics`' `Repeat`); it is passed five, as Measurement.md's example passes it
+  (`--compile-phases /path/to/octane 5 codeload-jquery`), the session's choice. **Q**, part I's "the median per
+  workload and arm", is the median, over an arm's nine processes, of each process's reported median for that workload;
+  N and D are read from those Q as the rule writes them.
+- **A fresh confirmation run**, as item 1 asks: if the first run would read part I MET, the whole protocol is taken a
+  second time, in fresh processes on the same lane, before part I is read; both runs are retained, and a reading that
+  differs between them goes to the owner.
+- **Warm-up:** the harness's own order. Measurement.md fixes no warm-up for this harness beyond "`--compile-phases`
+  takes its end-to-end check first, and that ordering is the measurement.", and none is added.
+- **One corpus per process**, `--compile-phases`' rule as the workloads' README and Measurement.md state it.
+- **The manifest**, written before the first run, names the lane's folder and the SHA-256 of its `machine.txt`, as the
+  [lane's record](../lanes/win-x64-r7-5800x/README.md) asks: "A sub-bundle measured on the lane names the folder and
+  the SHA-256 of its `machine.txt` in its own manifest, written before its first run".
+- **Each arm runs its own commit's harness**: arm B the benchmark project at the base commit, arms A and A-again at the
+  after commit. How the after commit's harness reaches the quantity part I names after the cut-over is W2's own change
+  to record.
+- **Not weaker evidence, by the rule's words.** Its section "Revisions" reads: "A rule revised after any run it judges
+  has been seen is a new dated file in this directory. It quotes this one whole and says it was written afterwards, and
+  its decision is then weaker evidence." These points revise no line of the rule, so that sentence does not apply. Runs
+  the rule judges have been seen (part B's, judged on 2026-11-15, and the side-by-side run at W1, read), so a revision
+  filed now would be weaker evidence; these points are not one. Filing them before any part I run is what
+  Measurement.md's "predeclared analysis" asks. Where Measurement.md fixes a floor or nothing, the choice above is the
+  session's, recorded as one.
+- **Not taken:** putting each point to the owner before the run; and seven repetitions, as bundle `sjl-3-001`'s part B
+  took them. The owner may override any point before part I's first run.
+
+*(Changed the same day, before this record merged, after review.)* The repetitions read "seven, and in each, B, A and
+A-again each run once, in an order that rotates by repetition, as bundle `sjl-3-001`'s part B was taken on the same
+lane (...). Measurement.md fixes only a floor: "Two repetitions are the current wiring minimum, not proof that a lane or
+effect is decision-grade"", which quoted Measurement.md's item 4 alone and not its item 1, and seven in rotation over
+three arms is not balanced; the harness's own repetitions, which median Q is, and the confirmation run were not named.
+The sentence on weight read "These points revise no line of the rule, and they are filed before any part I run exists,
+so neither condition of that sentence holds.", which read the sentence's "any run it judges" as a part I run, where
+the rule judges every part and runs it judges have been seen; the conclusion rests on the first condition alone.
+
+### Part G's commits, named before the base commit exists
+
+Part G reads: "population: Broiler.JSeal's test suites and Broiler.HtmlBridge's, at the commits the bundle names, read
+before the base commit exists". The commits, named and read on 2026-11-19, before the base commit exists, each the head
+of its repository's default branch `main` that day (read from read-only clones, and the same head by `git ls-remote`):
+- **Broiler.JSeal**: `a1216a80034e185d69d0d76d9ef855105698c00b`.
+- **Broiler.HtmlBridge**: `334974f90c655181bba2ea6587ebb65336154c5a`.
+
+What part G asks, as it says it: "evidence class: consumer parity (not a measurement)"; "configuration: two candidate
+feeds, packed by eng/pack.ps1 at the base commit and at the after commit; Broiler.JSeal's eng/test-package-consumer.ps1
+with -CandidateFeed and -CandidateVersion for each, its pins unchanged; Broiler.HtmlBridge in a scratch copy whose
+package source and Broiler.JavaScript versions are overridden for each candidate, never committed; every test's result
+retained"; "comparison: per test, its result against the base candidate and against the after candidate"; "admitted
+difference classes: none"; "MET if and only if both suites ran against both candidates, and every test that passes
+against the base candidate passes against the after candidate (decision D49)."; and "NOT MET otherwise; and the part is
+not judged while either suite has not been run against both candidates." Its "How it is read" adds: "A test that fails
+against both candidates is recorded with its cause; the JSeal module adapter's reflection on members SJL-12.5 removed
+is such a cause, and a finding of SJL-12.5's." *(Changed the same day, before this record merged, after review: the
+evidence class was not quoted, the comparison, the classes and the last line were paraphrased, and "How it is read"'s
+sentence was given in part and unattributed, as "A test that fails against both candidates is recorded with its
+cause.")* At the commit named, Broiler.JSeal's `eng/test-package-consumer.ps1` takes `-CandidateFeed` and
+`-CandidateVersion`, the second as "Family=version", and says "Default pins are never edited". Both suites run at these
+two commits against both candidates; no later commit of either repository is part G's population.
+
+### The shared stream's published version
+
+The shared stream's `0.1.0-preview.12` (its packages, `Broiler.ECMAScript.Frontend` among them) is published on
+nuget.org (2026-11-16) from `2f012739`, the merge of Broiler-Platform/Broiler.JS#1118: its tag
+`ecmascript-v0.1.0-preview.12` and the Frontend package's repository record both name that commit, and `git diff ecmascript-v0.1.0-preview.12 fefb4f9c -- Broiler.ECMAScript` is empty, so the default
+branch's `Broiler.ECMAScript/` is that version's sources. Decision D30 (Broiler.VM's JSD-0083) reads: "Broiler.JS packs
+the frontend for SJL-14's pristine consumer from its own commit; a Broiler.JS release that carries the bridge waits for
+a published version. The publication itself is the owner's own choice, not taken here." W2's merge waits for no
+publication, and a published version whose sources equal the default branch's exists while `Broiler.ECMAScript/` does
+not change. The source's version suffix still reads `preview.8` (`Broiler.ECMAScript/Directory.Build.props`); the
+version W2's packages name is W2's own change to record.
+
+Two texts of [`docs/public-api.md`](../../public-api.md) no longer hold: the heading of SJL-11.5's section, "on branch
+`sjl-11-5`, not merged" (SJL-11.5 merged as `b2b226cd`, #1126, with that section as written), and W1's item on the
+package dependencies, "which has no published version yet" (of `Broiler.ECMAScript.Frontend`). Both are left as
+written here: `docs/public-api.md` is outside CI's list of records, and the plan lists it among W2's own changes, so
+W2 corrects each by a dated note.
+
+*(Changed the same day, before this section merged, after review: its first sentence began "`Broiler.ECMAScript`
+`0.1.0-preview.12` is published on nuget.org", naming a package id nuget.org does not have, and read "its package's
+repository record"; and the paragraph on `docs/public-api.md` is new, the notes that an earlier commit of this change
+added to that file having been taken out of it.)*
+
 ## What it does not claim
 
 - **No figure.** No count, timing, ratio or score is written in this README; the bundle's runs hold their own. No
-  test262 suite total is written here at any step (rule H5).
+  test262 suite total is written here at any step (rule H5). *(Noted 2026-11-19, before W2's base: reading B10 in
+  "Before W2's base, read on 2026-11-19" names, in words, the numbers of repetitions part I's protocol takes; they are
+  the protocol's parameters, fixed before any part I run, and not a figure of any run. The sentence above is read of
+  measured figures, and is left as written.)*
 - **No manifest yet.** The bundle has no `manifest.json` (decision D56); it is written at the evidence step by the
   bundle's collector, so part B's and the side-by-side run's folders are named instead by their `hashes.txt`.
   *(Added 2026-11-15, at SJL-14.2's tail.)*
@@ -223,7 +527,12 @@ taken is to take them in this stage. Part C's verdict reads only the runs at the
   not yet**: its arms are "B the base commit's build; A the after commit's", and neither commit exists. W2, the after
   commit, is held for SJL-11.5 (the commits above), so part I is not taken before W2 merges. Until then part I has no
   run, and stays as recorded here (void on a lane that is not controlled), and clause 6 is unmet. Part I names no RID: it is judged "on the lane the bundle
-  names with its effective configuration". [`decision-rule.md`](decision-rule.md) is not edited.)*
+  names with its effective configuration". [`decision-rule.md`](decision-rule.md) is not edited.)* *(Noted
+  2026-11-19, after SJL-11.5's merge: the note above reads "W2, the after commit, is held for SJL-11.5 (the commits
+  above), so part I is not taken before W2 merges." SJL-11.5 has merged, as `b2b226cd`, and W2 is no longer held for
+  it (the commits above). Part I is still not taken before W2 merges, since its arms are the base commit's build and
+  the after commit's and neither exists; its protocol points are filed before any part I run by reading B10 in "Before
+  W2's base, read on 2026-11-19" above. Clause 6 is unmet. [`decision-rule.md`](decision-rule.md) is not edited.)*
 - **Exclusions:** none.
 
 | Exclusion | What | Why |
