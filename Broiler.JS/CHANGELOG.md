@@ -154,6 +154,13 @@ pattern or a gap shape) and ignored it for one the translator answered: `assert.
 it passed, and `"bab".split(/a/uy)` with `@@split` removed is `["b", "b"]`, where it was `["bab"]`. That `split`
 fallback is not the specification's either, which converts the separator with ToString when no `@@split` applies (as
 row M6 reads `search`); it is not on the deletion list (decision D20), and is left as it is, for a later change.
+*(Noted 2026-11-19: "A change no row names" held until Broiler.VM's correspondence gained row M28, "The `y` flag on
+the members of Broiler.JS that answer without `RegExpBuiltinExec`", merged in Broiler-Platform/Broiler.VM#220 as
+`79d72805`, a correction of Broiler.JS in two halves: `IsMatch` and the public `Replace`, which this change corrects,
+and the `split` fallback, a correction it does not make. The rule's revision of 2026-11-18,
+[`decision-rule-revised-2026-11-18.md`](../docs/evidence/sjl-11-001/decision-rule-revised-2026-11-18.md), lists row
+M28 in part A's list of this engine's corrections in those two halves, so the change is now listed by row M28; the
+heading and the paragraph are left as written.)*
 
 `\0` before a non-ASCII digit is Broiler.Regex's alone and not observable here (row S4); B4, uncharged alternation, is
 not observable here, since this engine passes no meter; and an invalid literal read as a division stays SJL-14's (row
