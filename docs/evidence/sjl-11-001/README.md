@@ -523,6 +523,164 @@ the base runs are void and are taken again before any after run is seen":
 
 The after runs follow in the next note. Nothing here is a verdict.
 
+*Dated note, 2026-11-19, the after runs of parts C, D and E, their controls, and each part's reading; the notes above
+and the list "What the bundle will hold" below are not rewritten.* The list reads "`after/`: the after runs of every
+part, each comparison's report, and the table of every C1, C3 and C5 row" and "`controls/`: each control's patch and
+its output, and its revert". The after runs of parts C, D and E were taken on 2026-11-19 at the after commit
+`b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1` and are retained in [`after/`](after/), with
+[`after/hashes.txt`](after/hashes.txt) (SHA-256 `ff541d5c633fd161146f493a06824d3f8086fec74dae2494d11e09e2262a1f46`)
+and [`after/manifest.json`](after/manifest.json); the controls of parts C and E are in [`controls/`](controls/), with
+[`controls/hashes.txt`](controls/hashes.txt) (`2d4079c15993899e086a480f00ac15ee5e6dfd12a9cbaa5c89497bd75c01de2e`) and
+its manifest. Every file named below is named by its SHA-256 in its folder's `hashes.txt`. Each folder's
+`.gitattributes` keeps its files' bytes as committed and has git's whitespace checks skip them, as run outputs keep the
+whitespace they were written with.
+- **How they were taken.** Locally, from a clean `git archive` of the after commit on disk, behind the same gate and
+  wrapper as the base runs, with the base runs' commands and scripts: part C by
+  [`base/run-part-c.py`](base/run-part-c.py), byte for byte, and part D by the same three `dotnet test` runs, under the
+  invariant culture, `tr-TR` and `lt-LT`. Both parts ran with `TZ=UTC` and under .NET SDK 10.0.404 and runtime
+  Microsoft.NETCore.App 10.0.15, as the note of 2026-11-18 on the zone and the toolchain says the after runs would.
+  Both builds had no warning and no error. [`after/commands.txt`](after/commands.txt) gives every command,
+  [`after/archive.txt`](after/archive.txt) the commit, its parents and tree, and `git ls-remote origin refs/heads/main`
+  before and after the runs (the after commit both times), and `after/logs/` each step's records. Part C ran before
+  part D here, after it at the base.
+- **Part A's after run is not taken here.** It is a dispatch of `.github/workflows/test262-evidence.yml` (blob
+  `fc38229782ee1b2e93ecca9e990d182f5e44dbf2` at the after commit, the blob the rule's revision of 2026-11-18 admits)
+  on `main` with commit `b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1` and the base run's other inputs, suite_ref
+  `ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e`, max_workers 4, test_timeout_seconds 30, rerun_timeouts true, time_zone
+  empty and include_negative true (base run 44377139618's own record, `base/manifest.json`). This change dispatches
+  nothing, and part A has no reading here.
+- **Part B** is not taken here; the next note records its arm A by the owner's answer 7.
+
+**Part C: read NOT MET.** The rule: "MET if and only if, after, every case gives its declared outcome, no process ends
+abnormally and none passes the wall-clock limit; every case whose outcome differs from the base's is in C1 or C3 and is
+listed; and the control is reported as stated", with the classes C1 ("a case whose outcome at the base is a wrong
+answer, a no match where the specification matches, a shorter match, a flipped look-around, or an abnormal end, and
+whose outcome after is its declared one"), C3 ("a case that completed at the base and after throws the RangeError or
+SyntaxError its declaration names, for a limit of decisions D7 and D10") and "no other class".
+- **After, every case gives its declared outcome**, no process ends abnormally and none passes the wall-clock limit:
+  [`after/part-c/results.tsv`](after/part-c/results.tsv) (`e87ca5b437a016c11c97dcabc01cc4ac1f9172ae0354c975e6b3b429237da466`),
+  every program checked against the manifest's SHA-256 first, every exit 0, every row "matches-declared yes".
+- **The control is reported as stated**: with the adapter answering no match where Broiler.Regex reports
+  `LimitExceeded` ([`controls/part-c/control.patch`](controls/part-c/control.patch),
+  `902626d4af0afd644be8dfbbe7ae05735056a7b2ed831f4e453080637a14ac23`), M01 and M02, the M cases, each give "completed
+  null" where their declared outcome is "threw RangeError" ([`controls/part-c/control/results.tsv`](controls/part-c/control/results.tsv),
+  `3fccd4c898996e2aea98a3c18a1baaaf7de469797286dd2c87e2c78a8527f096`). Reverted, the file is the after commit's blob and
+  the copy matches a clean archive but for `bin/` and `obj/` (`controls/part-c/revert-check.txt`,
+  `6d3051877e3e183f164f2dfeee7e0e47722327932c695f1cda853dc5a233487c`), and the reverted build gives both their
+  declared outcome (`controls/part-c/reverted/results.tsv`,
+  `bc01a3374630f855142bf04d7dfae3e704aab0e52e2014e5c3a83c0d5a392a72`).
+- **Against the base** ([`base/part-c/results.tsv`](base/part-c/results.tsv),
+  `710aa4f2296fcc8643adb6b0bb6125a9ed222ce149f81a4177cb73d2c6eb761c`), ten cases' outcomes differ, the ten the base-run
+  note names; every other case gives the same outcome at both:
+
+  | Case | At the base | After (its declared outcome) | Class |
+  | --- | --- | --- | --- |
+  | M01, M02 | completed, with an answer | threw RangeError | C3: completed at the base, after the RangeError its declaration names, a frame or trail ceiling (decisions D7 and D10) |
+  | N02, N04, N08, N10, N11, N14, N16 | completed null | threw SyntaxError | C3: completed at the base, after the SyntaxError its declaration names, the nesting limit (decisions D7 and D10) |
+  | N05 | past the wall-clock limit | threw SyntaxError | none: it did not complete at the base, so it is not C3; and its base outcome is none of C1's |
+
+  No case is in C1. **N05 is in no class.** The rule's configuration names a process's outcomes as "completed with its
+  answer, a thrown error with its constructor, an abnormal end, or past the wall-clock limit", four outcomes, and its
+  MET line keeps the last two apart ("no process ends abnormally and none passes the wall-clock limit"), so a case past
+  the wall-clock limit at the base is not C1's "an abnormal end"; and C3 asks that the case "completed at the base". The
+  rule admits "no other class", so "every case whose outcome differs from the base's is in C1 or C3" does not hold for
+  N05, and part C reads NOT MET on that case alone. N05 is a case of class N, the nesting the rule's "How it is read"
+  places under rows S3 and S3b ("after, they throw the SyntaxError of the nesting limit, under C3 or under C1 with row
+  S3b"). **For the owner:** whether a case past the wall-clock limit at the base is read under C1 is the owner's; this
+  note does not read it, and a revision that admitted it now would be written after these runs were seen, which the
+  rule's section "Revisions" calls weaker evidence.
+
+**Part D: read MET on the retained runs.** The rule: "MET if and only if the three after reports are byte-identical
+and every vector's result after is the outcome its class expects (normative: out; impl-defined: per-engine.broiler-js,
+row M4's empty match among them by JSD-0081 decision D41; a divergence.broiler-js field that the cut-over answers
+reports that it no longer holds)", over the population its note of 2026-11-01 gives ("the non-status vectors", "The
+three after reports are compared byte for byte over them") at corpus revision 32, by the owner's answer 5.
+- **The reports**: [`after/part-d/`](after/part-d/), `run-invariant.tsv.gz`
+  (`7bc9bde2dae7fe9b3f9b4eab58448f8dbad4d6936bd7045c25eac24a39261398`), `run-tr-TR.tsv.gz`
+  (`ff13bce63804984a3e6d297e5795618f28a3665c53d55bdb47416e1b45179cae`) and `run-lt-LT.tsv.gz`
+  (`31cb3079873eb3d36c2c72a6fb4424d414d9d739b4868cb7229681e015dfd603`), each the whole corpus at the tree's revision
+  43, with exits 0, 1 and 1, as at the base: every line that differs between the cultures is an `intl/` vector,
+  outside part D's population ([`after/part-d/reading.txt`](after/part-d/reading.txt), which reads them at revision 43
+  as [`base/part-d/reading.txt`](base/part-d/reading.txt) does, and is not part D's reading). Each run's negative
+  control is byte for byte the base's.
+- **The reading at revision 32**: [`after/part-d/reading-revision-32.txt`](after/part-d/reading-revision-32.txt)
+  (`1892820387a2e0191a79876bed628d459adf6f2c31809d26677a1bf1abf26bdc`), written by
+  [`base/part-d/read-revision-32.py`](base/part-d/read-revision-32.py) with `--runs after --tree-commit
+  b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1`, as the note of 2026-11-19 on part D's base says the after runs would be
+  read, run twice into two directories with both outputs byte for byte the same, through the scratch pin
+  [`after/part-d/revision-32.pin`](after/part-d/revision-32.pin)
+  (`35fad111993a5eafc170eeb125e71d6413686b93f1f24db2ba17f6c5109c534a`), byte for byte
+  [`base/part-d/revision-32.pin`](base/part-d/revision-32.pin). The after commit's `regexp/` vectors are revision
+  32's in every field but `class` and `divergence.*`, with the same expected outcome for `broiler-js`, so the script
+  did not stop.
+- **Byte-identical**: in each of the three reports, 1,402 `regexp/` lines, one for each of revision 32's non-status
+  vectors and none for the 18 status vectors; read again at revision 32 the three are byte-identical (each set's
+  SHA-256 `f8c5eb26fd8c9308b06989c015823951bc20353a196f1d5a68f4ecf5759f143c`), as they are as written.
+- **Every vector's outcome is its class's**: every line is a match, none a classified divergence, a difference or
+  not implemented: every `normative` vector's result is its `out`, every `impl-defined` vector's its
+  `per-engine.broiler-js`, and every `divergence` vector's its `out`; and every `divergence.broiler-js` field of
+  revision 32 reports that it no longer holds, 189 in each report (the 169 that revision 43 still carries, and row
+  M2a's 20, which revision 39 retired). The two `s9b-literal-grammar` vectors, `divergence` at revision 32 with no `divergence.broiler-js` field,
+  match.
+- **"How it is read"**, "the after runs must not" show row M2a's culture dependence: they do not; row M2a's vectors
+  match under all three cultures, as at the base.
+
+**Part E: read MET on the retained runs.** The rule: "MET if and only if E-1 to E-4 find nothing outside their
+exceptions and the control is reported."
+- **E-1**, [`after/part-e/e1.txt`](after/part-e/e1.txt) (`e97447ccbaa4e1719b13b0549cda0b55db0e6f54cbfcd006c313c139ebe54534`):
+  `git grep -w -n` at the after commit over `Broiler.JS/` but `CHANGELOG.md`, one name at a time. No name but
+  `HexValue` has a hit, and `JSRegExp.UnicodeSets.cs` is absent. `HexValue`'s hits are the rule's exception "a hit the
+  bundle lists with the declaration that shows it is another type's member of the same name": the declaration
+  `internal static int HexValue(this char ch)` of `CharExtensions`, `Broiler.JS/Broiler.JavaScript.Parser/CharExtensions.cs:17`,
+  an extension the scanner calls for its string and identifier escapes (`FastScanner.cs:975` in `ScanHexEscape`,
+  `:1020` in `ScanUnicodeCodePointEscape`, `:1669` and `:1690` in `ReadIdentifierEscape`), not the translator's
+  `private static int HexValue(char c)` of `JSRegExp` (`JSRegExp.cs:4966` at the base commit), which is gone.
+  `RegExpUnicodeValidator`, the forwarder the list keeps (decision D21, SJL-D-25 (a)), is no hit of a word search for
+  any name above; its body, `Broiler.JS/Broiler.JavaScript.Ast/RegExpUnicodeValidator.cs:37-39`, is one call of
+  `BroilerRegex.Validate`.
+- **E-2**, [`after/part-e/e2.txt`](after/part-e/e2.txt) (`e073b0c6d9250750271d8fcdde6a49bfbed8e044d4b03e5fbfd20c3a80104349`):
+  the metadata reader in [`after/part-e/e2check/`](after/part-e/e2check/) (System.Reflection.Metadata; it runs no code
+  of what it reads) over the after commit's Release assemblies, by SHA-256 in
+  [`after/part-e/assemblies.sha256`](after/part-e/assemblies.sha256). It reads every TypeRef and MemberRef, and every
+  type's and member's signatures, IL operand tokens, local signatures and attributes, widely enough that it can only
+  over-report. The Parser and Ast assemblies hold no reference into `System.Text.RegularExpressions`; the BuiltIns
+  assembly holds none at all, so none from the types of `Broiler.JavaScript.BuiltIns.RegExp` or from JSStringPrototype's
+  `search`, `match`, `matchAll`, `replace`, `replaceAll` and `split` members (in metadata the members `Search`, `Match`,
+  `MatchAll`, `Replace`, `ReplaceAll` and `Split` of the partial class `Broiler.JavaScript.BuiltIns.String.JSString`,
+  which `JSStringPrototype*.cs` declare); and in the Runtime assembly `LegacyRegExpState` holds none, the assembly's
+  references being `DateParser`'s alone. A first run of the reader looked for JSStringPrototype's members under a type
+  of that name, which metadata does not have; it was corrected and run again, and only the second run is retained
+  (`after/commands.txt`). Both found no such reference in the BuiltIns assembly.
+- **E-3**, [`after/part-e/sources.txt`](after/part-e/sources.txt) (`6c53a91e5723113b78328f2f808650d0910d8cdf6b56197d4d872f490bf7e0b7`),
+  which gives every line read here from git at the after commit: `FastScanner.IsValidRegularExpressionLiteral`
+  (`Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1048-1050`) is one call of `Broiler.Regex.BroilerRegex.Validate`,
+  and the regular-expression scan calls it (`:1363`); `DecodeBracedUnicodeEscapes`, `TryDecodeBracedUnicodeEscapes`
+  and the parenthesis-balance patch (its `sawBracedUnicodeEscape` mark and its depth count, `FastScanner.cs:1442` and
+  `:1495-1496` at the base commit) are absent; and the division fallback stays: a scan that fails is read as `/` or
+  `/=` (`:1218-1234`).
+- **E-4**, the same file: JSStringPrototype's `Search` (`Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Search.cs:185-218`)
+  reaches a regular expression only through `new JSRegExp(search.StringValue, "")` (`:212`, step 4's RegExpCreate) and
+  an Invoke of `@@search` (`:213` and `:217`), with no call of a `JSRegExp` member that matches; E-2's reader finds
+  the constructor the only `Broiler.JavaScript.BuiltIns.RegExp` member `JSString::Search` names.
+- **The control is reported**: with `JSRegExp`'s `BuildFlagsString`, as the base commit has it, re-added to a scratch
+  copy ([`controls/part-e/control.patch`](controls/part-e/control.patch),
+  `b0a7fd233c36278cdf4ee2aed18c56f8b084dafd4cca043f628678c1c35b423b`), E-1 reports it, at `JSRegExp.cs:453` of the
+  copy ([`controls/part-e/e1-control.txt`](controls/part-e/e1-control.txt),
+  `3c7206ea0cc3386c1576f917c1113d0d8311bb56b04cb528db4a992b42c80c45`). Reverted, the file is the after commit's blob,
+  the copy matches a clean archive, and E-1 over it is byte for byte E-1 over the clean archive
+  (`controls/part-e/revert-check.txt`, `191400d682d5e8c1625ad597cec401eaa12a4685a10b90c44299de3f1863661d`;
+  `e1-reverted.txt` and `e1-clean-archive.txt`, both `3fc886cf5afb5a2727ba3f365dd60421d13f03a39fc83ddc157623002e9ede2f`),
+  whose lines are those of `after/part-e/e1.txt`.
+- **Findings for their owners**, as the rule's "How it is read" lists .NET `Regex` outside ECMAScript matching, outside
+  E-2's population and not judged: at the after commit `DateParser.cs` (the Runtime assembly's references above) and
+  `FastCompiler.DeferredBody.cs` (the Compiler assembly) still use it; `JSIntl.cs` keeps a
+  `using System.Text.RegularExpressions;` that no reference in the BuiltIns assembly's metadata follows; and two files
+  the rule does not name use it too, the shell's REPL (`Broiler.JS/Broiler.JavaScript/REPL/InteractivePrompt.cs`) and
+  the source generator (`Broiler.JS/Broiler.JavaScript.JSClassGenerator/ITypeSymbolExtensions.cs`).
+
+These are per-part readings only. No clause of SJL-11 (4 to 7), no exit reading and nothing of Broiler.VM's or
+Broiler.RegEx's is read here; part A and part B have no reading; nothing is declared met beyond the words above.
+
 *2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
 
 *2026-11-01, at corpus revision 32:* **part D names revision 32**, the revision that classifies both engines' first
