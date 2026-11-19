@@ -1,4 +1,5 @@
 using Broiler.JavaScript.Ast.Misc;
+using Broiler.JavaScript.Parser.Bridge;
 using Broiler.JavaScript.Runtime;
 using System;
 using System.Globalization;
@@ -7,70 +8,25 @@ using System.Runtime.CompilerServices;
 namespace Broiler.JavaScript.Parser;
 
 /// <summary>
-/// This class will provide stream of tokens, we are using this instead of
-/// scanner directly as we can move scanning process in different thread
-/// in future.
+/// The token stream's facade over the bridge's token chain (window W2 of milestone SJL-14; decision D50,
+/// <c>facade-obsolete</c> in bundle <c>sjl-14-001</c>'s <c>dispositions.md</c>): it keeps every public member, and its tokens
+/// are the shared syntax library's, as the bridge makes them into this engine's <see cref="FastToken"/>s, linked in source
+/// order with a line-terminator token where a line terminator stands between two (<see cref="SharedSyntaxBridge.TokenChain"/>).
 /// </summary>
-
+/// <remarks>
+/// Until W2 it drove the old scanner and kept the high-water mark of a parse for the old parser's reports; W2
+/// deletes both (SJL-14.5's deletion list). The tokens are made the first time one is read, by a parse of the whole text
+/// under the options' goal: <c>FastParser</c>'s facade parses the text itself and reads no token, and a text the library
+/// refuses throws the refusal, a <see cref="FastParseException"/>, at the first read.
+/// </remarks>
 [System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class FastTokenStream
 {
-    private readonly FastScanner scanner;
+    private readonly StringSpan text;
     public readonly FastPool Pool;
 
-    /// <summary>The text the stream reads, which <see cref="FastParser"/>'s facade parses through the bridge (window W2).</summary>
-    internal StringSpan Text => scanner.Text;
-
-    internal Exception Unexpected()
-    {
-        var c = Current;
-        return new FastParseException(c, $"Unexpected token {c.Type}: {c.Span} at {c.Start}");
-    }
-
-    /// <summary>
-    /// Reports a statement that could not be parsed, naming both its first token and the
-    /// point the parse actually reached.
-    /// </summary>
-    /// <remarks>
-    /// A production that gives up by returning false (rather than throwing) rewinds the
-    /// stream to where it started, so the only token left to blame is the one the
-    /// statement began with. On a minified bundle — one statement per file, starting at
-    /// character 1 — that turned every such failure into the same unusable report,
-    /// "Unexpected token Negate: ! at 1, 1", pointing at the `!` of a `!function(){…}()`
-    /// wrapper hundreds of kilobytes away from the actual problem. <see cref="Furthest"/>
-    /// survives the rewind and says where the parser really stopped.
-    /// </remarks>
-    internal Exception UnexpectedStatement()
-    {
-        var c = Current;
-        var stopped = furthest;
-
-        if (stopped == null || ReferenceEquals(stopped, c))
-            return Unexpected();
-
-        // The EOF token is the scanner's own placeholder, with no source position, so it can
-        // only be named, not located — and naming it is the important case: it is what a
-        // truncated script (a response that ended early) looks like from in here.
-        var where = stopped.Type == TokenTypes.EOF
-            ? "the end of the script"
-            : stopped.Span.Offset > c.Span.Offset
-                ? $"{stopped.Type} at {stopped.Start}"
-                : null;
-
-        if (where == null)
-            return Unexpected();
-
-        return new FastParseException(c,
-            $"Unexpected token {c.Type}: {c.Span} at {c.Start}"
-            + $" — the statement starting here could not be parsed; the parse stopped at {where}");
-    }
-
-    /// <summary>
-    /// The furthest token the parser has advanced to. Backtracking rewinds
-    /// <see cref="Current"/> through the already-scanned token list, so this high-water
-    /// mark is the only surviving record of how far a failed parse got.
-    /// </summary>
-    private FastToken furthest;
+    /// <summary>The text the stream reads, which <see cref="FastParser"/>'s facade parses through the bridge.</summary>
+    internal StringSpan Text => text;
 
     public override string ToString() => $"{Current} {Next}";
 
@@ -78,7 +34,7 @@ public class FastTokenStream
     FastToken current;
 
     /// <summary>
-    /// The options the stream's scanner was made with, which a parser over the stream parses with.
+    /// The options the stream was made with, which a parser over the stream parses with.
     /// </summary>
     public FastParserOptions Options { get; }
 
@@ -99,15 +55,6 @@ public class FastTokenStream
     {
     }
 
-    internal bool LineTerminator()
-    {
-        var m = SkipNewLines();
-        if (m.LinesSkipped)
-            return true;
-        m.Undo();
-        return false;
-    }
-
     /// <summary>
     /// A stream over <paramref name="text"/> drawing on <paramref name="pool"/>, with
     /// <see cref="FastParserOptions.Script"/>: a script without top-level <c>await</c>, over the
@@ -120,7 +67,7 @@ public class FastTokenStream
 
     /// <summary>
     /// A stream over <paramref name="text"/> drawing on <paramref name="pool"/>, with
-    /// <paramref name="options"/>, which its scanner reads its first two tokens under.
+    /// <paramref name="options"/>, whose goal the bridge parses the text under for its tokens.
     /// </summary>
     /// <exception cref="ArgumentNullException"><paramref name="options"/> is null.</exception>
     public FastTokenStream(FastPool pool, in StringSpan text, FastKeywordMap keywords, FastParserOptions options)
@@ -129,21 +76,22 @@ public class FastTokenStream
         Pool = pool;
         Keywords = keywords ?? FastKeywordMap.Instance;
         Options = options;
-        scanner = new FastScanner(pool, text, Keywords, options);
+        this.text = text;
     }
 
     /// <summary>
-    /// Forwards the parser's generator / async context to the scanner so it can
-    /// decide whether a <c>/</c> following <c>yield</c> / <c>await</c> begins a
-    /// regular-expression literal (keyword form) or is division (identifier form).
+    /// Kept as a facade member: the library decides whether a <c>/</c> after <c>yield</c> begins a regular-expression
+    /// literal from the parse's own context, so the value is read by nothing.
     /// </summary>
-    public bool YieldIsKeyword { set => scanner.YieldIsKeyword = value; }
+    public bool YieldIsKeyword { set { } }
 
-    public FastToken Current => current ??= scanner.Token;
+    /// <summary>The current token.</summary>
+    /// <exception cref="FastParseException">The library refused the text.</exception>
+    public FastToken Current => current ??= SharedSyntaxBridge.TokenChain(text, FastParser.RequestFor(Options));
 
-    public FastToken Next => current.Next;
+    public FastToken Next => Current.Next;
 
-    public FastToken Previous => current.Previous ?? current;
+    public FastToken Previous => Current.Previous ?? Current;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public FastToken Expect(TokenTypes type)
@@ -409,20 +357,9 @@ public class FastTokenStream
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public FastToken Consume()
     {
-        if (current == scanner.Token)
-        {
-            scanner.ConsumeToken();
-            current = scanner.Token;
-        }
-        else
-        {
-            current = current.Next;
-            current ??= scanner.Token;
-        }
-
-        if (furthest == null || current.Span.Offset > furthest.Span.Offset)
-            furthest = current;
-
+        var c = Current;
+        if (c.Type != TokenTypes.EOF && c.Next != null)
+            current = c.Next;
         return current;
     }
 

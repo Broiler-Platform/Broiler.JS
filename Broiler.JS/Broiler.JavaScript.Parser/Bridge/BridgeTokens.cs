@@ -118,7 +118,7 @@ internal sealed class BridgeTokens
     }
 
     /// <summary>
-    /// An identifier name's token: its keyword facts as <c>FastScanner.CommitIdentifier</c> gives them, the cooked
+    /// An identifier name's token: its keyword facts as the old scanner gave them, the cooked
     /// name where it is written with an escape.
     /// </summary>
     internal FastToken Name(int start, int count, string name, bool escaped)
@@ -434,7 +434,7 @@ internal sealed class BridgeTokens
         return builder.ToString();
     }
 
-    /// <summary>The facts <c>FastScanner.CommitIdentifier</c> gives a name's token.</summary>
+    /// <summary>The facts the old scanner gave a name's token (until window W2 of milestone SJL-14, which deletes it).</summary>
     internal static (TokenTypes Type, bool IsKeyword, FastKeywords Keyword, FastKeywords Contextual, bool EscapedReserved) NameFacts(string name, bool escaped)
     {
         var known = Enum.TryParse<FastKeywords>(name, ignoreCase: false, out var keyword)
@@ -467,8 +467,98 @@ internal sealed class BridgeTokens
         };
     }
 
+    /// <summary>
+    /// The old scanner's token stream over an accepted source, made from the library's (window W2, milestone SJL-14.5):
+    /// every token of <paramref name="tokens"/>, the request's <see cref="ParseResult.Tokens"/>, as this engine's
+    /// <see cref="FastToken"/> with the kind, keyword facts, cooked value, number and flags the old scanner gave it, one
+    /// line-terminator token before each token a line terminator precedes, and the end-of-file token, linked in source
+    /// order. A private name is the old scanner's two tokens, <c>#</c> and the name. Returns the first token.
+    /// </summary>
+    internal FastToken Chain(IReadOnlyList<Broiler.ECMAScript.Syntax.Token> tokens)
+    {
+        var made = new List<FastToken>(tokens.Count + 8);
+        var previousEnd = baseOffset;
+        foreach (var token in tokens)
+        {
+            if (token.Kind == Broiler.ECMAScript.Syntax.TokenKind.EndOfInput)
+                continue;
+
+            var start = baseOffset + token.Start;
+            var count = token.End - token.Start;
+            if (token.NewLineBefore)
+            {
+                var at = FirstLineTerminator(previousEnd, start);
+                var width = at + 1 < source.Length && source[at] == '\r' && source[at + 1] == '\n' ? 2 : 1;
+                made.Add(new FastToken(TokenTypes.LineTerminator, source, null, null, at, width, Location(at), Location(at + width)));
+            }
+
+            var raw = source.AsSpan(start, count);
+            switch (token.Kind)
+            {
+                case Broiler.ECMAScript.Syntax.TokenKind.IdentifierName:
+                    made.Add(Name(start, count, token.Value ?? raw.ToString(), token.IsEscaped));
+                    break;
+                case Broiler.ECMAScript.Syntax.TokenKind.PrivateIdentifier:
+                    made.Add(Make(TokenTypes.Hash, start, 1));
+                    made.Add(Name(start + 1, count - 1, (token.Value ?? raw.ToString()).TrimStart('#'), token.IsEscaped));
+                    break;
+                case Broiler.ECMAScript.Syntax.TokenKind.NumericLiteral:
+                    made.Add(raw[^1] switch
+                    {
+                        'n' => Make(TokenTypes.BigInt, start, count),
+                        'm' => Make(TokenTypes.Decimal, start, count),
+                        _ => Make(TokenTypes.Number, start, count, number: token.Number),
+                    });
+                    break;
+                case Broiler.ECMAScript.Syntax.TokenKind.StringLiteral:
+                    made.Add(Make(TokenTypes.String, start, count, cooked: token.Value));
+                    break;
+                case Broiler.ECMAScript.Syntax.TokenKind.NoSubstitutionTemplate:
+                case Broiler.ECMAScript.Syntax.TokenKind.TemplateTail:
+                    made.Add(Make(TokenTypes.TemplateEnd, start, count, cooked: token.Value ?? string.Empty, cookedInvalid: token.Value == null));
+                    break;
+                case Broiler.ECMAScript.Syntax.TokenKind.TemplateHead:
+                    made.Add(Make(TokenTypes.TemplateBegin, start, count, cooked: token.Value ?? string.Empty, cookedInvalid: token.Value == null));
+                    break;
+                case Broiler.ECMAScript.Syntax.TokenKind.TemplateMiddle:
+                    made.Add(Make(TokenTypes.TemplatePart, start, count, cooked: token.Value ?? string.Empty, cookedInvalid: token.Value == null));
+                    break;
+                case Broiler.ECMAScript.Syntax.TokenKind.RegularExpressionLiteral:
+                    var slash = raw.LastIndexOf('/');
+                    made.Add(Make(TokenTypes.RegExLiteral, start, count, cooked: raw[1..slash].ToString(), flags: raw[(slash + 1)..].ToString()));
+                    break;
+                default:
+                    made.Add(Make(Punctuator(raw), start, count));
+                    break;
+            }
+
+            previousEnd = start + count;
+        }
+
+        made.Add(Eof);
+        for (var i = 1; i < made.Count; i++)
+        {
+            made[i - 1].Next = made[i];
+            made[i].Previous = made[i - 1];
+        }
+
+        return made[0];
+    }
+
+    // The first ECMAScript line terminator in [from, to), white space and comments between two tokens; from when none.
+    private int FirstLineTerminator(int from, int to)
+    {
+        for (var i = from; i < to; i++)
+        {
+            if (source[i] is '\n' or '\r' or '\u2028' or '\u2029')
+                return i;
+        }
+
+        return from;
+    }
+
     // FastScanner's punctuators, by their text; None for any other text.
-    private static TokenTypes Punctuator(ReadOnlySpan<char> text) => text switch
+    internal static TokenTypes Punctuator(ReadOnlySpan<char> text) => text switch
     {
         ">>>=" => TokenTypes.AssignUnsignedRightShift,
         "..." => TokenTypes.TripleDots,

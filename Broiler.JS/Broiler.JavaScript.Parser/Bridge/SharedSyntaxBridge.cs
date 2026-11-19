@@ -124,8 +124,29 @@ internal static class SharedSyntaxBridge
         }
     }
 
+    /// <summary>
+    /// The old scanner's token stream over <paramref name="code"/> under <paramref name="request"/>'s goal, made from the
+    /// library's (window W2, milestone SJL-14.5; <see cref="BridgeTokens.Chain"/>): its first token, linked to the end of
+    /// file. <c>FastScanner</c>'s and <c>FastTokenStream</c>'s facades read it. The parse runs on the library's stack.
+    /// </summary>
+    /// <exception cref="FastParseException">The library refused the source, which has no token stream then.</exception>
+    internal static FastToken TokenChain(in StringSpan code, BridgeRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var span = code;
+        return OnParseThread(() =>
+        {
+            var tokens = new BridgeTokens(span);
+            var result = SyntaxParser.Parse(Request(span, request, retainTokens: true));
+            if (result.Outcome != ParseOutcome.Accepted)
+                throw Refusal(result, span, request, tokens);
+
+            return tokens.Chain(result.Tokens);
+        });
+    }
+
     /// <summary>The library's request for <paramref name="request"/> over <paramref name="code"/>.</summary>
-    internal static ParseRequest Request(in StringSpan code, BridgeRequest request)
+    internal static ParseRequest Request(in StringSpan code, BridgeRequest request, bool retainTokens = false)
     {
         var goal = request.Goal switch
         {
@@ -158,6 +179,7 @@ internal static class SharedSyntaxBridge
                 }
                 : null,
             Proposals = Proposals,
+            RetainTokens = retainTokens,
             Extensions = LexerExtensions.DecimalSuffix,
             Limits = ParseLimits.Default,
             FunctionKind = goal is ParseGoal.FormalParameters or ParseGoal.FunctionBody
