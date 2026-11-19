@@ -506,6 +506,23 @@ retained run output changes.*
 
 Nothing here is a verdict.
 
+*Dated note, 2026-11-19, the merge that lands SJL-11.5, and the hold's end; the notes above and the list "The commits
+named so far" are not rewritten.* The note of the hold's start reads "That commit is the base commit only if the merge
+landing SJL-11.5 has it as its first parent; if the default branch moves before that merge, the runs taken there are
+void, as the rule says" and ends "Nothing here names the after commit, and no run here is a verdict." SJL-11.5 merged
+to the default branch on 2026-11-19 as Broiler-Platform/Broiler.JS#1126, `b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1`,
+a merge commit whose first parent is `5429c4065e8b273e5c7965598b8a2f5490a8ad98` and whose second is
+`ce908940a3e6cb98dbf0246ca0993ff199412644`, the head of `sjl-11-5` (`git log -1 --format=%P b2b226cd`). So, by the
+rule's words, "**The after commit** is that merge. If its first parent is not the commit the base runs were taken at,
+the base runs are void and are taken again before any after run is seen":
+- **The after commit** is `b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1`.
+- **The base commit** is `5429c4065e8b273e5c7965598b8a2f5490a8ad98`, the after commit's first parent, and the base
+  runs in [`base/`](base/), all taken there, stand.
+- **The hold of decision D16 ended** with that merge: it held merges "until the merge that lands SJL-11.5", as the
+  note of its start says.
+
+The after runs follow in the next note. Nothing here is a verdict.
+
 *2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
 
 *2026-11-01, at corpus revision 32:* **part D names revision 32**, the revision that classifies both engines' first
