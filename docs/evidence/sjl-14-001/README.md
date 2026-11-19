@@ -106,6 +106,40 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
     is marked `product` and `Broiler.JS/CHANGELOG.md` `other`, and the lists above follow the same marks. A read at the
     default branch's head, `e4b6b49e`, outside part B and not judged, finds the switch-off rows of part B's runs the same
     as W1's ([`bridge/README.md`](bridge/README.md)).
+
+    *(Noted 2026-11-19, after SJL-11.5's merge and before W2's base: the lists above stop at the default branch's head
+    of 2026-11-15, and read "Every other first-parent merge since W1 changes no product path (#1103, #1106, #1109,
+    #1111, #1112, #1113, #1116)". Through `fefb4f9c9331b7d16349ed2a1721285f2fb69fef`, the merge of
+    Broiler-Platform/Broiler.JS#1127 and the default branch's head on 2026-11-19, the first-parent commits after
+    `e4b6b49e` add these, marked by the same list of the product paths. None changes
+    `Broiler.ECMAScript/Broiler.ECMAScript.Frontend*/`, so the merges to it since W1 are still #1104 and #1105 alone.*
+    - *The product commits, which change no `Frontend*/` path and so are no dark commit by any reading:*
+      - *`2f012739cfc4d99e91b22d28a09941c49d8bd646`, Broiler-Platform/Broiler.JS#1118 (SJL-17.5):
+        `Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests`, and `Broiler.JS/Broiler.JavaScript.BuiltIns`, its
+        `.BuiltIns.Tests` and `.Integration.Tests`.*
+      - *`cdf5559d5b69113c536f734e9a6ab305a3c71430`, "Update dependencies", a commit made on the default branch
+        directly and not a merge (its only parent is `2f012739`): the project files of `Broiler.JS/Broiler.JavaScript`
+        and of its projects `.All`, `.Ast`, `.BuiltIns`, `.Clr`, `.Compiler`, `.Debugger`, `.Engine`,
+        `.ExpressionCompiler`, `.Expressions`, `.Extensions`, `.Globals`, `.LinqExpressions`, `.Minimal`,
+        `.ModuleExtensions`, `.Modules`, `.Parser`, `.Portable`, `.Portable.Compiler`, `.Runtime` and `.Storage`, and the
+        root's `Directory.Packages.props`.*
+      - *`6fda6ca44c041cea348dd5302c91ff90a0fe67bc`, Broiler-Platform/Broiler.JS#1119: `.BuiltIns`
+        (`RegExp/JSRegExp.Broiler.cs`).*
+      - *`96cbe4ce39f03e17e061277104898e4071b99cb2`, Broiler-Platform/Broiler.JS#1122: `.BuiltIns.Tests`, `.Runtime`,
+        `.Runtime.Tests` and `.Storage`.*
+      - *`b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1`, Broiler-Platform/Broiler.JS#1126 (SJL-11.5): `.Ast`, `.BuiltIns`,
+        `.BuiltIns.Tests`, `.Integration.Tests`, `.Parser` (`Bridge/BridgeRegularExpressions.cs`,
+        `Bridge/BridgeTreeBuilder.Expressions.cs`, `FastScanner.cs` and the project file, and `RegExpValidator.cs`
+        deleted), `.Parser.Tests` and `.Runtime`. It is the one first-parent commit after W1 that changes
+        `Parser/Bridge/`; how the rule's conditions read it is reading B1 in "Before W2's base, read on 2026-11-19"
+        below.*
+    - *No product path: #1117, #1120, #1121, #1123, #1124, #1125 and #1127.*
+
+    *Each is in [`bridge/merges-since-w1-paths.txt`](bridge/merges-since-w1-paths.txt), extended to `fefb4f9c` by the
+    same command form as its first lines (each first-parent commit's paths against its first parent, renames as git
+    detects them), whose lines through #1116 are unchanged; the direct commit's header names it `direct` where a
+    merge's names its pull request. No first-parent commit after `e4b6b49e` changes `SharedSyntaxBridge`,
+    `ParseThroughBridge`, `BridgeByDefault` or `BROILER_PARSE_THROUGH_BRIDGE`. The lists above are left as written.)*
   - **W2 and the base commit** do not exist yet: W2 is held for SJL-11.5 (decision D51's recommended order;
     [`docs/roadmap/SharedLibraries.status.md`](../../roadmap/SharedLibraries.status.md)'s SJL-14 row). The rule's dark
     commits run to the base commit, so their set is still open, and part B's verdict below holds only at the commits
