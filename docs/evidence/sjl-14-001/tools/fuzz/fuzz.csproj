@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Bundle sjl-14-001's part J (decision-rule.md: "a seeded mutation session, committed to the bundle, compiling each
+    mutant through CoreScript.Compile at the after commit in Release"), committed with window W2's change before any run
+    of part J. It references the product by relative path, so a build at a commit runs that commit's engine. README.md
+    beside this file says how it runs.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>sjl-14-fuzz</AssemblyName>
+    <RootNamespace>Sjl14Fuzz</RootNamespace>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj" />
+  </ItemGroup>
+</Project>
