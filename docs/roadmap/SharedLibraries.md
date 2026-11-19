@@ -1798,11 +1798,11 @@ owner's open question, and arm A is not built until the owner's reading is recor
 - **The after runs.** Parts C, D and E's after runs were taken at the after commit, from a clean archive, with the base
   runs' commands, zone, cultures and toolchain, and are retained in bundle
   [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s `after/`, with part C's and part E's controls in its `controls/`;
-  the bundle's README names each file by its SHA-256 and reads each part by the rule. **Part C reads NOT MET**: one
+  the bundle's README names each file by its SHA-256 and reads each part by the rule. **Part C: read NOT MET.** One
   case, N05, passes the wall-clock limit at the base and throws its declared `SyntaxError` after, and neither class C1,
   whose base outcomes do not include passing the limit, nor C3, which asks that the case completed at the base, admits
-  it; whether such a case reads under C1 is the owner's. **Part D reads MET on the retained runs**, at corpus revision
-  32 by the owner's answer 5. **Part E reads MET on the retained runs.** Part A's after run, a dispatch of the evidence
+  it; whether such a case reads under C1 is the owner's. **Part D: read MET on the retained runs**, at corpus revision
+  32 by the owner's answer 5. **Part E: read MET on the retained runs.** Part A's after run, a dispatch of the evidence
   workflow at the after commit with the base run's inputs, has not been taken, and part A has no reading.
 - **The owner's answer 7 of 2026-11-19, quoted verbatim**, the owner's own, not taken under the owner's direction of
   2026-10-18. Asked (2026-11-19): "SJL-11.5 part B's arm A is "the after commit, with the same two files"

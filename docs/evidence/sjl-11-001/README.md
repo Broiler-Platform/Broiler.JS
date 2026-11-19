@@ -584,7 +584,7 @@ SyntaxError its declaration names, for a limit of decisions D7 and D10") and "no
   MET line keeps the last two apart ("no process ends abnormally and none passes the wall-clock limit"), so a case past
   the wall-clock limit at the base is not C1's "an abnormal end"; and C3 asks that the case "completed at the base". The
   rule admits "no other class", so "every case whose outcome differs from the base's is in C1 or C3" does not hold for
-  N05, and part C reads NOT MET on that case alone. N05 is a case of class N, the nesting the rule's "How it is read"
+  N05, and part C read NOT MET, on that case alone. N05 is a case of class N, the nesting the rule's "How it is read"
   places under rows S3 and S3b ("after, they throw the SyntaxError of the nesting limit, under C3 or under C1 with row
   S3b"). **For the owner:** whether a case past the wall-clock limit at the base is read under C1 is the owner's; this
   note does not read it, and a revision that admitted it now would be written after these runs were seen, which the
