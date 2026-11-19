@@ -711,30 +711,20 @@ public static class DirectEvalSupport
 
         try
         {
-            // With the test-only switch of milestone SJL-14.2 on (decision D43), the bridge parses the eval code as eval
-            // code, with the context it inherits from its caller (decision D44): the caller's strictness (the directive
-            // above it carries it too), the function, method, derived-constructor and field-initialiser flags, and the
-            // private names visible at the call, which this engine checks at the parse of eval code.
-            AstProgram parsed;
-            if ((JSEngine.Current as JSContext)?.CompilationOptions.ParsesThroughBridge ?? JSCompilationOptions.BridgeByDefault)
+            // The bridge parses the eval code as eval code (milestone SJL-14.3, window W2, which removes SJL-14.2's
+            // test-only switch), with the context it inherits from its caller (decision D44): the caller's strictness
+            // (the directive above it carries it too), the function, method, derived-constructor and field-initialiser
+            // flags, and the private names visible at the call, which this engine checks at the parse of eval code.
+            var parsed = Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge.Parse(text, new Broiler.JavaScript.Parser.Bridge.BridgeRequest
             {
-                parsed = Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge.Parse(text, new Broiler.JavaScript.Parser.Bridge.BridgeRequest
-                {
-                    Goal = Broiler.JavaScript.Parser.Bridge.BridgeGoal.Eval,
-                    ForcedStrict = inheritStrictMode,
-                    InFunction = !rejectNewTarget,
-                    InMethod = allowSuperProperty,
-                    InDerivedConstructor = allowSuperCall,
-                    InClassFieldInitializer = rejectArguments,
-                    VisiblePrivateNames = privateNamesInScope,
-                });
-            }
-            else
-            {
-                var pool = new FastPool();
-                var parser = new FastParser(new FastTokenStream(pool, text, null, options), options);
-                parsed = parser.ParseProgram();
-            }
+                Goal = Broiler.JavaScript.Parser.Bridge.BridgeGoal.Eval,
+                ForcedStrict = inheritStrictMode,
+                InFunction = !rejectNewTarget,
+                InMethod = allowSuperProperty,
+                InDerivedConstructor = allowSuperCall,
+                InClassFieldInitializer = rejectArguments,
+                VisiblePrivateNames = privateNamesInScope,
+            });
 
             // The for-loop pass prepares the tree before any check reads it, as FastCompiler does.
             var program = ForLoopPreparation.Prepare(parsed, directEvalDepth);

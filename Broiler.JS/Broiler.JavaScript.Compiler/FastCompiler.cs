@@ -191,20 +191,10 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
 
         // add top level...
 
-        AstProgram jScript;
-        if (options.ParsesThroughBridge)
-        {
-            // The test-only switch of milestone SJL-14.2 (decision D43): the bridge parses with the shared syntax
-            // library and builds the tree the parser below builds. Off by default.
-            jScript = Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge.Parse(code, BridgeRequestFor(options, context, isDirectEvalCompilation, directEvalPrivateNames));
-        }
-        else
-        {
-            var parserPool = new FastPool();
-            var parser = new FastParser(new FastTokenStream(parserPool, code, null, parserOptions), parserOptions);
-            jScript = parser.ParseProgram();
-            parserPool.Dispose();
-        }
+        // The bridge parses with the shared syntax library and builds the tree this compiler reads (milestone
+        // SJL-14.3, window W2; Broiler.VM's JSD-0083, decision D41). Until W2 it did so only behind the test-only switch
+        // of SJL-14.2 (decision D43), which W2 removes; the old parser no longer parses any compile.
+        var jScript = Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge.Parse(code, BridgeRequestFor(options, context, isDirectEvalCompilation, directEvalPrivateNames));
         // The parser builds every loop as written; the for-loop pass rewrites the let/const/using
         // heads into the shapes the rest of the compiler lowers, before validation reads the tree. Its
         // temporaries are named by the direct-eval depth this compilation is at (decision D22).

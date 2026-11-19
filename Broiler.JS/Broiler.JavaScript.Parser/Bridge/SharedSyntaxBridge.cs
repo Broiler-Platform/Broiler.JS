@@ -16,9 +16,9 @@ namespace Broiler.JavaScript.Parser.Bridge;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>Behind a test-only switch</b> (decision D43): the compiler parses through the bridge only when its options'
-/// internal switch is on, which tests set and the shell's hidden flag sets; it is off by default, and with it off no
-/// product path reaches this class. Window W2 turns it on and removes it.
+/// <b>Every compile parses through it</b> from window W2 (milestone SJL-14.3), which removes the test-only switch of
+/// SJL-14.2 (decision D43): until W2 the compiler parsed through the bridge only when its options' internal switch was
+/// on, which tests and the shell's hidden flag set.
 /// </para>
 /// <para>
 /// <b>The request</b> carries what the old parser's options carried (the goal and the permission to await at the top
