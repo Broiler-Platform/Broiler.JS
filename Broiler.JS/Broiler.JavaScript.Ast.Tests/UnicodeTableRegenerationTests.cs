@@ -155,7 +155,8 @@ internal static class UnicodeArchive
     internal const string PinPath = "data/unicode/pins/unicode.pin";
 
     /// <summary>The embedded tables' C# source, relative to the repository root.</summary>
-    internal const string TableSourcePath = "Broiler.JS/Broiler.JavaScript.Ast/Unicode/JSUnicodeTableData.g.cs";
+    // In Broiler.JavaScript.Expressions since window W2 of milestone SJL-14 (decision D50); this test stays in Ast's.
+    internal const string TableSourcePath = "Broiler.JS/Broiler.JavaScript.Expressions/Unicode/JSUnicodeTableData.g.cs";
 
     /// <summary>Set to <c>1</c> to make the regeneration test write rather than assert.</summary>
     internal const string WriteVariable = "BROILER_JS_UNICODE_WRITE";

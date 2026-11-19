@@ -2,15 +2,31 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using Broiler.JavaScript.Ast;
-using Broiler.JavaScript.Ast.Expressions;
-using Broiler.JavaScript.Ast.Misc;
-using Broiler.JavaScript.Ast.Statements;
-using Broiler.JavaScript.Parser;
+using Broiler.ECMAScript.Syntax;
+using Broiler.JavaScript.ExpressionCompiler;
+using Broiler.JavaScript.Runtime.Unicode;
 
 namespace Broiler.JavaScript.Portable;
 
 /// <summary>Offline compiler for the documented numeric statement subset.</summary>
+/// <remarks>
+/// <para>
+/// <b>It reads the shared tree</b> (milestone SJL-14.3, window W2; Broiler.VM's JSD-0083, decision D41): the source is
+/// parsed by the shared syntax library, <c>Broiler.ECMAScript.Frontend</c>, as a script without top-level <c>await</c>,
+/// and the compiler walks the library's tree. Until W2 it parsed with <c>FastParser</c> and walked this engine's
+/// <c>AstNode</c> tree, and it ran none of the early errors the engine's compiler checks after the parse
+/// (<c>SyntaxValidation</c>); <b>it now reports every early error the library checks at the parse</b>, as a
+/// <see cref="FormatException"/> naming the library's diagnostic and its position.
+/// </para>
+/// <para>
+/// <b>What it references</b> (decision D53): the library and <c>Broiler.JavaScript.Portable</c>, and
+/// <c>Broiler.JavaScript.Expressions</c> for the one non-tree part that moved there, this engine's Unicode tables, over
+/// which the library reads identifiers and Broiler.Regex checks a regular-expression literal, as the engine's own
+/// parse does; it references neither <c>Broiler.JavaScript.Ast</c> nor <c>Broiler.JavaScript.Parser</c>. The parse runs
+/// on a thread with the stack the library documents (decision D47 (a), <c>CompilationStack</c>), the hop skipped on a
+/// compile worker that has it.
+/// </para>
+/// </remarks>
 public sealed class PortableCompiler
 {
     private readonly List<PortableInstruction> instructions = [];
@@ -30,47 +46,68 @@ public sealed class PortableCompiler
         stackDepth = 0;
         maximumStack = 0;
 
-        AstProgram program;
-        var pool = new FastPool();
-        try
-        {
-            // A script without top-level await, over the engine's own Unicode tables.
-            var options = FastParserOptions.Script;
-            var parser = new FastParser(new FastTokenStream(pool, source, null, options), options);
-            program = parser.ParseProgram();
-        }
-        finally
-        {
-            pool.Dispose();
-        }
-        var topLevel = ToList(program.Statements);
-        if (topLevel.Count != 1
-            || topLevel[0] is not AstExpressionStatement { Expression: AstFunctionExpression function })
-        {
+        var program = Parse(source);
+        if (program.Body.Count != 1 || FunctionOf(program.Body[0]) is not { } function)
             throw Unsupported("exactly one top-level function declaration");
-        }
-        if (function.Async || function.Generator || function.IsArrowFunction || function.Body is not AstBlock body)
+        if (function.IsAsync || function.IsGenerator || function.IsArrow || function.ExpressionBody != null)
             throw Unsupported("an ordinary function with a block body");
 
-        var parameterEnumerator = function.Params.GetFastEnumerator();
-        while (parameterEnumerator.MoveNext(out var parameter))
+        foreach (var parameter in function.Parameters)
         {
-            if (parameter.Init != null || parameter.Identifier is not AstIdentifier identifier)
+            if (parameter is not BindingIdentifier identifier)
                 throw Unsupported("simple identifier parameters");
-            if (!parameters.TryAdd(identifier.Name.Value, parameters.Count))
+            if (!parameters.TryAdd(identifier.Name, parameters.Count))
                 throw Unsupported("unique parameter names");
         }
 
-        CompileBlock(body);
+        CompileStatements(function.Body);
         if (instructions.Count == 0 || instructions[^1].OpCode != PortableOpCode.Return)
             throw Unsupported("an explicit return on every compiled path");
 
         return new PortableProgram(
-            function.Id?.Name.Value ?? "anonymous",
+            function.Name?.Name ?? "anonymous",
             parameters.Count,
             locals.Count,
             Math.Max(1, maximumStack),
             [.. instructions]);
+    }
+
+    // A script without top-level await, over the engine's own Unicode tables, on the library's documented stack
+    // (decision D47 (a)); the library's first diagnostic is the refusal.
+    private static ProgramNode Parse(string source)
+    {
+        var request = new ParseRequest(new SourceText(source, string.Empty, 0), ParseGoal.Script, JSUnicode.Tables, RegularExpressions.Instance)
+        {
+            Limits = ParseLimits.Default,
+        };
+        var result = CompilationStack.CurrentWorkerStackBytes >= ParseLimits.StackBytes
+            ? SyntaxParser.Parse(request)
+            : CompilationStack.RunOnFreshStack(() => SyntaxParser.Parse(request), ParseLimits.StackBytes);
+        if (result.Outcome == ParseOutcome.Accepted && result.Tree is { } tree)
+            return tree;
+
+        if (result.Diagnostics.Count == 0)
+            throw new FormatException("The source is not a script the shared syntax library accepts (" + result.Outcome + ").");
+
+        var diagnostic = result.Diagnostics[0];
+        throw new FormatException(string.Create(CultureInfo.InvariantCulture,
+            $"SyntaxError at {diagnostic.Span.Line}:{diagnostic.Span.Column}: {diagnostic.MessageId} ({diagnostic.Code})."));
+    }
+
+    // The one function the source holds: a declaration, or, as the compiler read before window W2, an expression
+    // statement whose expression is a (parenthesised) function expression.
+    private static FunctionNode? FunctionOf(Statement statement) => statement switch
+    {
+        FunctionDeclaration declaration => declaration.Function,
+        ExpressionStatement { Expression: var expression } => Unparenthesized(expression) is FunctionExpression function ? function.Function : null,
+        _ => null,
+    };
+
+    private static Expression Unparenthesized(Expression expression)
+    {
+        while (expression is ParenthesizedExpression parenthesized)
+            expression = parenthesized.Expression;
+        return expression;
     }
 
     public static string EmitCSharp(
@@ -115,64 +152,62 @@ public sealed class PortableCompiler
         return output.ToString();
     }
 
-    private void CompileBlock(AstBlock block)
+    private void CompileStatements(IReadOnlyList<Statement> statements)
     {
-        var enumerator = block.Statements.GetFastEnumerator();
-        while (enumerator.MoveNext(out var statement))
+        foreach (var statement in statements)
             CompileStatement(statement);
     }
 
-    private void CompileStatement(AstStatement statement)
+    private void CompileStatement(Statement statement)
     {
         switch (statement)
         {
-            case AstBlock block:
-                CompileBlock(block);
+            case BlockStatement block:
+                CompileStatements(block.Body);
                 return;
-            case AstVariableDeclaration declaration:
+            case VariableDeclaration declaration:
                 CompileVariableDeclaration(declaration);
                 return;
-            case AstExpressionStatement expressionStatement:
+            case ExpressionStatement expressionStatement:
                 CompileExpression(expressionStatement.Expression);
                 Emit(PortableOpCode.Pop);
                 return;
-            case AstReturnStatement { Argument: { } argument }:
+            case ReturnStatement { Argument: { } argument }:
                 CompileExpression(argument);
                 Emit(PortableOpCode.Return);
                 return;
-            case AstWhileStatement whileStatement:
+            case WhileStatement whileStatement:
                 CompileWhile(whileStatement);
                 return;
-            case AstForStatement forStatement:
+            case ForStatement forStatement:
                 CompileFor(forStatement);
                 return;
-            case AstIfStatement ifStatement:
+            case IfStatement ifStatement:
                 CompileIf(ifStatement);
                 return;
             default:
-                throw Unsupported(statement.Type.ToString());
+                throw Unsupported(statement.Kind.ToString());
         }
     }
 
-    private void CompileVariableDeclaration(AstVariableDeclaration declaration)
+    private void CompileVariableDeclaration(VariableDeclaration declaration)
     {
-        if (declaration.Using || declaration.AwaitUsing || declaration.Kind != FastVariableKind.Var)
+        if (declaration.DeclarationKind != DeclarationKind.Var)
             throw Unsupported("var numeric variables");
-        var enumerator = declaration.Declarators.GetFastEnumerator();
-        while (enumerator.MoveNext(out var declarator))
+        foreach (var declarator in declaration.Declarations)
         {
-            if (declarator.Identifier is not AstIdentifier identifier)
+            if (declarator.Target is not BindingIdentifier identifier)
                 throw Unsupported("identifier variable declarations");
-            var index = GetOrAddLocal(identifier.Name.Value);
-            if (declarator.Init == null)
+            var index = GetOrAddLocal(identifier.Name);
+            if (declarator.Initializer == null)
                 Emit(PortableOpCode.PushConstant, number: 0);
             else
-                CompileExpression(declarator.Init);
+                CompileExpression(declarator.Initializer);
             Emit(PortableOpCode.StoreLocal, index);
         }
     }
 
-    private void CompileWhile(AstWhileStatement statement)
+    private void CompileWhile(WhileStatement statement)
     {
         var start = instructions.Count;
         CompileExpression(statement.Test);
@@ -182,21 +217,26 @@ public sealed class PortableCompiler
         Patch(exit, instructions.Count);
     }
 
-    private void CompileFor(AstForStatement statement)
+    private void CompileFor(ForStatement statement)
     {
-        if (statement.Init is AstStatement initStatement)
+        if (statement.Init is Statement initStatement)
             CompileStatement(initStatement);
-        else if (statement.Init is AstExpression initExpression && initExpression.Type != FastNodeType.EmptyExpression)
+        else if (statement.Init is Expression initExpression)
         {
             CompileExpression(initExpression);
             Emit(PortableOpCode.Pop);
         }
+        else if (statement.Init != null)
+            throw Unsupported(statement.Init.Kind.ToString());
 
+        // A for statement without a test was unsupported before window W2 too (its test read as an empty expression).
         var start = instructions.Count;
+        if (statement.Test == null)
+            throw Unsupported("a for statement with a test");
         CompileExpression(statement.Test);
         var exit = EmitPlaceholder(PortableOpCode.JumpIfFalse);
         CompileStatement(statement.Body);
-        if (statement.Update.Type != FastNodeType.EmptyExpression)
+        if (statement.Update != null)
         {
             CompileExpression(statement.Update);
             Emit(PortableOpCode.Pop);
@@ -205,12 +245,12 @@ public sealed class PortableCompiler
         Patch(exit, instructions.Count);
     }
 
-    private void CompileIf(AstIfStatement statement)
+    private void CompileIf(IfStatement statement)
     {
         CompileExpression(statement.Test);
         var falseJump = EmitPlaceholder(PortableOpCode.JumpIfFalse);
-        CompileStatement(statement.True);
-        if (statement.False == null)
+        CompileStatement(statement.Consequent);
+        if (statement.Alternate == null)
         {
             Patch(falseJump, instructions.Count);
             return;
@@ -218,56 +258,59 @@ public sealed class PortableCompiler
 
         var endJump = EmitPlaceholder(PortableOpCode.Jump);
         Patch(falseJump, instructions.Count);
-        CompileStatement(statement.False);
+        CompileStatement(statement.Alternate);
         Patch(endJump, instructions.Count);
     }
 
-    private void CompileExpression(AstExpression expression)
+    private void CompileExpression(Expression expression)
     {
         switch (expression)
         {
-            case AstLiteral { TokenType: TokenTypes.Number } literal:
-                Emit(PortableOpCode.PushConstant, number: literal.NumericValue);
+            case ParenthesizedExpression parenthesized:
+                CompileExpression(parenthesized.Expression);
                 return;
-            case AstIdentifier identifier:
-                EmitLoad(identifier.Name.Value);
+            case NumericLiteral literal when (literal.Flags & (NumericLiteralFlags.BigInt | NumericLiteralFlags.DecimalSuffix)) == 0:
+                Emit(PortableOpCode.PushConstant, number: literal.Value);
                 return;
-            case AstUnaryExpression unary when unary.Operator is UnaryOperator.Increment or UnaryOperator.Decrement:
-                CompileUpdate(unary);
+            case Identifier identifier:
+                EmitLoad(identifier.Name);
                 return;
-            case AstBinaryExpression binary when IsAssignment(binary.Operator):
-                CompileAssignment(binary);
+            case UpdateExpression update:
+                CompileUpdate(update);
                 return;
-            case AstBinaryExpression binary:
+            case AssignmentExpression assignment:
+                CompileAssignment(assignment);
+                return;
+            case BinaryExpression binary:
                 CompileExpression(binary.Left);
                 CompileExpression(binary.Right);
                 Emit(BinaryOpCode(binary.Operator));
                 return;
             default:
-                throw Unsupported(expression.Type.ToString());
+                throw Unsupported(expression.Kind.ToString());
         }
     }
 
-    private void CompileAssignment(AstBinaryExpression assignment)
+    private void CompileAssignment(AssignmentExpression assignment)
     {
-        if (assignment.Left is not AstIdentifier identifier || !locals.TryGetValue(identifier.Name.Value, out var index))
+        if (AssignedName(assignment.Target) is not { } name || !locals.TryGetValue(name, out var index))
             throw Unsupported("assignments to declared locals");
 
-        if (assignment.Operator == TokenTypes.Assign)
+        if (assignment.Operator == AssignmentOperator.Assign)
         {
-            CompileExpression(assignment.Right);
+            CompileExpression(assignment.Value);
         }
         else
         {
             Emit(PortableOpCode.LoadLocal, index);
-            CompileExpression(assignment.Right);
+            CompileExpression(assignment.Value);
             Emit(assignment.Operator switch
             {
-                TokenTypes.AssignAdd => PortableOpCode.Add,
-                TokenTypes.AssignSubtract => PortableOpCode.Subtract,
-                TokenTypes.AssignMultiply => PortableOpCode.Multiply,
-                TokenTypes.AssignDivide => PortableOpCode.Divide,
-                TokenTypes.AssignMod => PortableOpCode.Remainder,
+                AssignmentOperator.AddAssign => PortableOpCode.Add,
+                AssignmentOperator.SubtractAssign => PortableOpCode.Subtract,
+                AssignmentOperator.MultiplyAssign => PortableOpCode.Multiply,
+                AssignmentOperator.DivideAssign => PortableOpCode.Divide,
+                AssignmentOperator.RemainderAssign => PortableOpCode.Remainder,
                 _ => throw Unsupported(assignment.Operator.ToString()),
             });
         }
@@ -276,17 +319,25 @@ public sealed class PortableCompiler
         Emit(PortableOpCode.StoreLocal, index);
     }
 
-    private void CompileUpdate(AstUnaryExpression update)
+    // The name a simple assignment's target names: an identifier, parenthesised or not.
+    private static string? AssignedName(SyntaxNode target) => target switch
     {
-        if (update.Argument is not AstIdentifier identifier || !locals.TryGetValue(identifier.Name.Value, out var index))
+        Expression expression when Unparenthesized(expression) is Identifier identifier => identifier.Name,
+        TargetPattern { Target: var expression } when Unparenthesized(expression) is Identifier identifier => identifier.Name,
+        _ => null,
+    };
+
+    private void CompileUpdate(UpdateExpression update)
+    {
+        if (Unparenthesized(update.Operand) is not Identifier identifier || !locals.TryGetValue(identifier.Name, out var index))
             throw Unsupported("updates of declared locals");
 
         Emit(PortableOpCode.LoadLocal, index);
-        if (!update.Prefix)
+        if (!update.IsPrefix)
             Emit(PortableOpCode.Duplicate);
         Emit(PortableOpCode.PushConstant, number: 1);
-        Emit(update.Operator == UnaryOperator.Increment ? PortableOpCode.Add : PortableOpCode.Subtract);
-        if (update.Prefix)
+        Emit(update.Operator == UpdateOperator.Increment ? PortableOpCode.Add : PortableOpCode.Subtract);
+        if (update.IsPrefix)
             Emit(PortableOpCode.Duplicate);
         Emit(PortableOpCode.StoreLocal, index);
     }
@@ -313,23 +364,19 @@ public sealed class PortableCompiler
         return index;
     }
 
-    private static bool IsAssignment(TokenTypes token)
-        => token is TokenTypes.Assign or TokenTypes.AssignAdd or TokenTypes.AssignSubtract
-            or TokenTypes.AssignMultiply or TokenTypes.AssignDivide or TokenTypes.AssignMod;
-
-    private static PortableOpCode BinaryOpCode(TokenTypes token) => token switch
+    private static PortableOpCode BinaryOpCode(BinaryOperator token) => token switch
     {
-        TokenTypes.Plus => PortableOpCode.Add,
-        TokenTypes.Minus => PortableOpCode.Subtract,
-        TokenTypes.Multiply => PortableOpCode.Multiply,
-        TokenTypes.Divide => PortableOpCode.Divide,
-        TokenTypes.Mod => PortableOpCode.Remainder,
-        TokenTypes.Less => PortableOpCode.LessThan,
-        TokenTypes.LessOrEqual => PortableOpCode.LessThanOrEqual,
-        TokenTypes.Greater => PortableOpCode.GreaterThan,
-        TokenTypes.GreaterOrEqual => PortableOpCode.GreaterThanOrEqual,
-        TokenTypes.Equal or TokenTypes.StrictlyEqual => PortableOpCode.Equal,
-        TokenTypes.NotEqual or TokenTypes.StrictlyNotEqual => PortableOpCode.NotEqual,
+        BinaryOperator.Add => PortableOpCode.Add,
+        BinaryOperator.Subtract => PortableOpCode.Subtract,
+        BinaryOperator.Multiply => PortableOpCode.Multiply,
+        BinaryOperator.Divide => PortableOpCode.Divide,
+        BinaryOperator.Remainder => PortableOpCode.Remainder,
+        BinaryOperator.LessThan => PortableOpCode.LessThan,
+        BinaryOperator.LessThanOrEqual => PortableOpCode.LessThanOrEqual,
+        BinaryOperator.GreaterThan => PortableOpCode.GreaterThan,
+        BinaryOperator.GreaterThanOrEqual => PortableOpCode.GreaterThanOrEqual,
+        BinaryOperator.Equal or BinaryOperator.StrictEqual => PortableOpCode.Equal,
+        BinaryOperator.NotEqual or BinaryOperator.StrictNotEqual => PortableOpCode.NotEqual,
         _ => throw Unsupported(token.ToString()),
     };
 
@@ -365,16 +412,20 @@ public sealed class PortableCompiler
         _ => 0,
     };
 
-    private static List<AstStatement> ToList(
-        Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<AstStatement> values)
-    {
-        var result = new List<AstStatement>(values.Count);
-        var enumerator = values.GetFastEnumerator();
-        while (enumerator.MoveNext(out var value))
-            result.Add(value);
-        return result;
-    }
-
     private static NotSupportedException Unsupported(string feature)
         => new($"The portable compiler does not support {feature}.");
+
+    // Broiler.Regex's validate entry over this engine's tables, under the nesting limit the engine compiles under, as
+    // the engine's own parse checks a literal (Broiler.VM's JSD-0081, decision D22). A literal the compiler cannot run is
+    // refused after the parse as unsupported; one Broiler.Regex refuses is an early error the parse reports.
+    private sealed class RegularExpressions : IRegularExpressionValidator
+    {
+        internal static RegularExpressions Instance { get; } = new();
+
+        public RegularExpressionVerdict Validate(string pattern, string flags)
+            => Broiler.Regex.BroilerRegex.Validate(pattern, flags, JSUnicode.Tables, Broiler.Regex.BroilerRegex.MaximumNestingLimit,
+                out _, out _) == Broiler.Regex.RegexStatus.Success
+                ? RegularExpressionVerdict.Valid
+                : RegularExpressionVerdict.Invalid("regexp.literal.invalid", "/" + pattern + "/" + flags, 0, 0, inFlags: false);
+    }
 }

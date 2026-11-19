@@ -253,10 +253,12 @@ public class Phase2ValidationTests
     {
         // The model is the bottom of the engine's graph: it references no other engine assembly,
         // only the shared algorithms library, whose Number::exponentiate every emitted ** calls
-        // (SJL-4.5) and which references nothing of the engine (rule SL1).
-        // The emitter sits directly above it and references exactly one — the model.
+        // (SJL-4.5) and which references nothing of the engine (rule SL1), and, since window W2 of
+        // milestone SJL-14 (decision D50), the Unicode area's code package, whose types read this
+        // engine's Unicode tables, which moved here from Ast with their readers. Neither is an engine
+        // assembly. The emitter sits directly above it and references exactly one — the model.
         var modelAssembly = typeof(ExpressionCompiler.Expressions.BExpression).Assembly;
-        Assert.Equal(["Broiler.ECMAScript.Algorithms"], BroilerReferencesOf(modelAssembly));
+        Assert.Equal(["Broiler.ECMAScript.Algorithms", "Broiler.Unicode.Algorithms"], BroilerReferencesOf(modelAssembly));
 
         var emitterAssembly = typeof(ExpressionCompiler.Runtime.RuntimeAssembly).Assembly;
         Assert.Equal(

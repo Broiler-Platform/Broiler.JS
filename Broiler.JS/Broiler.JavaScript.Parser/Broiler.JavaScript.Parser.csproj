@@ -33,6 +33,8 @@
     <InternalsVisibleTo Include="Broiler.JavaScript.Compiler" />
     <InternalsVisibleTo Include="Broiler.JavaScript.BuiltIns" />
     <InternalsVisibleTo Include="Broiler.JavaScript.Parser.Tests" />
+    <!-- The module analysis reads the shared tree through the bridge's request (window W2, decision D41). -->
+    <InternalsVisibleTo Include="Broiler.JavaScript.Modules" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="Microsoft.CodeAnalysis.BannedApiAnalyzers">

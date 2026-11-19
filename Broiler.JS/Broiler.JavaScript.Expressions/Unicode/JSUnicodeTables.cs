@@ -19,9 +19,11 @@ namespace Broiler.JavaScript.Runtime.Unicode;
 /// in its shape for this engine). A change belongs in the generator or the pin, never in the file.
 /// </para>
 /// <para>
-/// The tables are held by <c>Broiler.JavaScript.Ast</c>, below the runtime and the parser, so that the
-/// parser reads them without referencing the runtime (milestone SJL-12.5, Broiler.VM's JSD-0080,
-/// decision D20); they moved here from <c>Broiler.JavaScript.Runtime</c> with their namespace. They are
+/// The tables are held by <c>Broiler.JavaScript.Expressions</c>, below the runtime, the parser and the portable
+/// compiler, which references neither <c>Ast</c> nor the parser (window W2 of milestone SJL-14, decisions D50 and
+/// D53); they moved here from <c>Broiler.JavaScript.Ast</c>, which held them from milestone SJL-12.5 (Broiler.VM's
+/// JSD-0080, decision D20) so that the parser read them without referencing the runtime, and there from
+/// <c>Broiler.JavaScript.Runtime</c>, each time with their namespace. They are
 /// the default provider of the parser's options: a <c>FastParserOptions</c> whose provider is null scans
 /// over them.
 /// </para>

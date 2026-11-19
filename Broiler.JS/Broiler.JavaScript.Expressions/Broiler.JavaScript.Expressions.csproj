@@ -21,6 +21,16 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
   </ItemGroup>
+
+  <!-- The Unicode area's algorithms (milestone SJL-7.5), over the tables this assembly embeds
+       (Unicode/JSUnicodeTableData.g.cs), for the parser, the built-ins and the portable compiler. The tables moved
+       here from Broiler.JavaScript.Ast at window W2 of milestone SJL-14 (decision D50: the non-tree types' new home is
+       this assembly, and the tables move with their readers), when the portable compiler, which references neither
+       Ast nor Parser (decision D53), became one of their readers; they moved to Ast from Broiler.JavaScript.Runtime at
+       milestone SJL-12.5 (Broiler.VM's JSD-0080, decision D20). They are internal, as they were there. -->
+  <ItemGroup>
+    <PackageReference Include="Broiler.Unicode.Algorithms" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Update="Microsoft.CodeAnalysis.BannedApiAnalyzers">
       <IncludeAssets>build; analyzers; buildtransitive</IncludeAssets>

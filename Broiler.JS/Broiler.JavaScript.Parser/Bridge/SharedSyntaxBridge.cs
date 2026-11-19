@@ -74,6 +74,31 @@ internal static class SharedSyntaxBridge
     }
 
     /// <summary>
+    /// Parses <paramref name="code"/> under <paramref name="request"/> and returns the shared library's own tree, with no
+    /// tree of this engine's built: for the readers that read the shared tree directly from window W2 (milestone SJL-14.3,
+    /// decision D41), the module analysis among them. The parse runs on the library's documented stack (decision D47 (a)),
+    /// as <see cref="Parse"/>'s does.
+    /// </summary>
+    /// <exception cref="FastParseException">The library refused the source.</exception>
+    internal static ProgramNode ParseSharedTree(string code, BridgeRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(code);
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.Goal is BridgeGoal.FormalParameters or BridgeGoal.FunctionBody)
+            throw new ArgumentException("The dynamic function's goals are checked by CheckDynamicFunction, not parsed to a tree.", nameof(request));
+
+        return OnParseThread(() =>
+        {
+            var span = new StringSpan(code);
+            var result = SyntaxParser.Parse(Request(span, request));
+            if (result.Outcome != ParseOutcome.Accepted || result.Tree is null)
+                throw Refusal(result, span, request, new BridgeTokens(span));
+
+            return result.Tree;
+        });
+    }
+
+    /// <summary>
     /// CreateDynamicFunction's two parses (ECMA-262 clause 20.2.1.1.1, steps 18 to 20): the parameter text under the
     /// FormalParameters goal and the body text under the FunctionBody goal, each alone, with the function's kind.
     /// </summary>
