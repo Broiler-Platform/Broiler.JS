@@ -101,10 +101,6 @@ next", and its third cell ended at "`BigIntText` and `BigIntPolicy`".*
 
 ## Public API changes, 2026-11-17 (regular expressions move to Broiler.Regex, milestone SJL-11.5, on branch `sjl-11-5`, not merged)
 
-*(Noted 2026-11-19: this heading reads "on branch `sjl-11-5`, not merged". SJL-11.5 merged to the default branch on
-2026-11-19 as Broiler-Platform/Broiler.JS#1126, `b2b226cd`, with this section as written; its records are in
-[`docs/evidence/sjl-11-001/`](evidence/sjl-11-001/README.md). The heading is left as written.)*
-
 Milestone SJL-11.5 compiles and matches every regular expression with Broiler.Regex and deletes the .NET translator,
 its routing and the validators (Broiler.VM's JSD-0081, decisions D20 to D22). It applies decision SJL-D-25 to each
 public member the move changes (decision D21). The observable corrections are in
@@ -243,11 +239,7 @@ overload are internal. Two things a consumer could notice, neither a contract:
   privately (`PrivateAssets="all"`), so its package, and every package that depends on it, the portable compiler's
   closure included, carries no dependency on `Broiler.ECMAScript.Frontend`, which has no published version yet
   (decision D30). No product path loads that assembly while the switch is off. A release whose package depends on it
-  waits for a published Frontend: that is W2's. *(Noted 2026-11-19: this item reads "which has no published version
-  yet". `Broiler.ECMAScript.Frontend` has published versions on nuget.org, the shared stream's; its `0.1.0-preview.12`
-  was published on 2026-11-16 from `2f012739`, and the default branch's `Broiler.ECMAScript/` is unchanged since
-  (bundle [`sjl-14-001`](evidence/sjl-14-001/README.md)'s README, "Before W2's base, read on 2026-11-19"). At W1 the
-  package still carries no dependency on it, as the item says; W2's package is W2's to record.)*
+  waits for a published Frontend: that is W2's.
 - **`JSCompilationOptions`, a public record struct, gains an internal property.** Its synthesized `GetHashCode` folds
   in one more `bool`, so hash values differ from the previous release's for every instance; equality, `ToString` and
   the code cache's keys are unchanged while the switch is off.
