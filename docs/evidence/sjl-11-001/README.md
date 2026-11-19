@@ -800,6 +800,111 @@ they leave out; the notes above are not rewritten, no retained file changes and 
 
 Part A's after run is still not taken and part A has no reading, as the note above says. Nothing here is a verdict.
 
+*Dated note, 2026-11-19, part A's after run and its reading; the notes above are not rewritten.* The note of the
+after runs reads "**Part A's after run is not taken here.** It is a dispatch of `.github/workflows/test262-evidence.yml`
+... This change dispatches nothing, and part A has no reading here.", and the note above ends "Part A's after run is
+still not taken and part A has no reading, as the note above says." The run has been taken, and is read here.
+- **The run.** `.github/workflows/test262-evidence.yml` run
+  [44496119000](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/44496119000) (attempt 1), dispatched on
+  2026-11-19 at 09:24:27Z on `main` with commit `b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1`, suite_ref
+  `ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e`, max_workers 4, test_timeout_seconds 30, rerun_timeouts true, time_zone
+  empty and include_negative true, base run 44377139618's inputs but for the commit (its own `run.txt`'s inputs line;
+  time_zone empty is not echoed there, as at the base). This change dispatched nothing: the run was dispatched
+  outside it. Its head commit, its `run.txt`'s dispatched ref and tested commit all read `b2b226cd`; it completed at
+  10:30:50Z, and its conclusion is success, and so is every job's: prepare 135463615714, shard (0) 135463766058,
+  shard (1) 135463766082, shard (2) 135463766213, shard (3) 135463766128, shard (4) 135463766081, shard (5)
+  135463766184, shard (6) 135463766194, shard (7) 135463766222 and collect 135497106809, the step "Require a complete
+  run" among collect's; the steps skipped are those the base run skipped (GitHub's record of the run and its jobs,
+  read 2026-11-19T10:34Z). The workflow is blob `fc38229782ee1b2e93ecca9e990d182f5e44dbf2` at the after commit, the
+  blob the rule's revision of 2026-11-18 admits and the base run ran, and nothing under `.github/` or `scripts/`
+  differs between the base commit and the after commit (`git diff 5429c406 b2b226cd -- .github/ scripts/` is empty).
+- **Retained** in [`after/part-a/`](after/part-a/imported.txt) as `base/part-a/` retains the base run: every file of
+  the artifact `test262-evidence` (id 14520196133), 26 entries, each compared with its entry in the zip, unchanged;
+  the zip's SHA-256, `2b641877918f2e3dd8e1020df5d01659fb2ea67d0d51ce42ef21411218c04185`, equals the digest GitHub
+  records for it, and the zip is named by that digest and not committed. [`imported.txt`](after/part-a/imported.txt)
+  (`9075235084696661520ddaa12d3b2f48a2f1cb418a46c610fe8bf5932f391e5c`), `runner-images.txt` (copied from each job's
+  own log by the procedure that wrote the base's, which it reproduces byte for byte from the base's logs) and
+  `part-a-artifacts.txt` (`1fa09419d85457c0445bb5393c95680f7cb310f52860de9aaeac21bd013d2fab`; the run's 18
+  artifacts, each downloaded and equal to GitHub's digest) are added, with
+  [`after/part-a/hashes.txt`](after/part-a/hashes.txt) (`c7bdadebb9f7dcbdbbe061e6f504656e2aeb16f31c9192e4e68508a07f441cd7`)
+  over the folder and `comparison/`, the rule's comparison. [`after/hashes.txt`](after/hashes.txt), now
+  `8aa93fc70d1a711a370cf48508756c5d947edd47748b1a05a70e00b80184ed9c`, and `after/manifest.json` list them; no file they
+  listed changes. The manifest's `runs.partA` read "not taken here: its after run is a dispatch of
+  .github/workflows/test262-evidence.yml at the after commit with the base run's inputs, which this change does not
+  make"; it now records the run, and keeps that value under a key that says it is replaced.
+- **Its runners.** Every job ran on `ubuntu-24.04`, on three image versions, as at the base: 20261116.133.1 for shards
+  0, 2 and 7, 20261111.127.1 for shards 1 and 6, and 20261111.370.1 for shards 3, 4 and 5 and collect
+  (`runner-images.txt`); `run.txt` reads "ubuntu24 20261111.370.1; Linux X64; logical processors 4" and dotnetVersion
+  11.0.100, as the base's does. The rule fixes the shell and the zone, which the records show, and not the image version.
+
+**Part A: read MET on the retained runs.** The rule, with its revisions of 2026-11-17 and 2026-11-18 (the workflow
+admitted as `fc382297`, and part A's list read with rows S12 to S15, M8 to M27 and row M28 in its two halves): "MET if
+and only if both runs are complete (every expected shard reported, no configuration failure, one suite revision, one
+shell, every shard in the zone, includeNegative true in both), the two runs' host-zone records read alike, line for
+line, the script finds them comparable, every duplicate-named-groups row passes at both commits, no row passing at the
+base fails, times out or is skipped after outside C3, of either kind, and every changed verdict is in C1, C3 or C5 and
+is listed." The comparison is `scripts/compliance/compare_test262_paths.py`, blob
+`e951dd478a858ac06c4178c28164325b06506d00` at the rule commit, the base commit and the after commit (committed at
+SJL-0.9), over `base/part-a/test262-results.json.gz` (`f298d8b098c3ed2568254e51c894fa4df31b5057ca7a6e8e6c0f3efb99be5c64`)
+and `after/part-a/test262-results.json.gz` (`805c8609a5cfc43d1cb6c6eeb9340742714e881d481791519b890ba10a20980f`),
+decompressed, each run's timed-out rows replaced by its re-run (`--base-rerun base/part-a/rerun-timeouts.json`,
+`cd39ed5336b188e1e46a1abefa63d14f9ce714289cc6c01f7e798d9904648450`; `--after-rerun after/part-a/rerun-timeouts.json`,
+`1a8e6ff9d77b1ca9368b10f5ecc3c96579174ea1938ea2ec6f7dcc686f108a49`), with the classification file beside its report,
+[`comparison/classifications.json`](after/part-a/comparison/classifications.json)
+(`26e886506c4abde1469df7819cf46f95978fced53cfa36450b2b50b592b06d67`). The script decides no class; the classification
+file is this note's, one entry per changed row, written only after a first look at the comparison without it, which
+reported the same rows, every one unclassified, and is not retained.
+
+| Part A's condition | The retained runs |
+| --- | --- |
+| Both runs complete: every expected shard reported, no configuration failure, one suite revision | Eight of eight expected shards reported in each run, none incomplete and none retried, every status file phase `full`, exit code 1, for failing tests; no configuration failure; `ccaac100` alone in each ([`comparison/completeness.log`](after/part-a/comparison/completeness.log), `db53c9e3883f1464c9a54abb2e22e777fc65ab6b1c2beed43bad824c29b54a9a`, read from each run's own files; `after/part-a/merge.log`, `b929864c7416568c160e44d35763a6cdf4e1055c4cd1a2c73158c7ec4924bcdb`) |
+| One shell | In each run every shard and the re-run hash the shell's binaries alike: one distinct list, `4ff7c231…` after and `4d744985…` at the base (`after/part-a/shell-hashes.log`, `725446de8b7230688f26b43d3155bab67e0ae39a6ff1d7ffb46d4f541d29cdae`); the two differ, as they must, each built from its run's commit |
+| Every shard in the zone; `includeNegative` true in both | All eight in the runner's zone, UTC, in each run; `includeNegative` true in `run.txt`, the merged results and the re-run, in each (`completeness.log`) |
+| The two runs' host-zone records read alike, line for line | Yes, and byte for byte: `after/part-a/host-zone.log` and `base/part-a/host-zone.log` are both `b4cebfcad5e8d2108521538f2033a51275353b258f445f7cdd0240af148d736b`, `TZ` unset, UTC +0000 at both instants and tzdata 2026e ([`comparison/zone-records.log`](after/part-a/comparison/zone-records.log), `8892a8cde0d20d8f29dadafd80016f32671c174bf1b4512f17c0af052ed6110b`); so the rule's clause for a moved record does not apply |
+| The script finds them comparable | Yes, exit 0 ([`comparison/comparison.log`](after/part-a/comparison/comparison.log), `e1277dfe176393c0f5e8b92eab3d7429b9e73d9db91801407630944bd39f1303`; [`comparison/comparison.json`](after/part-a/comparison/comparison.json), `d481c1d733be59a2a877edcbdac0edda65b8344c670262193d835f22a13fa3a6`). Its checks ([`comparison/compare-checks.log`](after/part-a/comparison/compare-checks.log), `f631ac1bb56a069cc831186deeffb54d73c31f82f94aa3e6d3755e3164094611`): the after run against itself changes nothing, and a copy with one passing row turned to failed is one regression, exit 1. The fields it records and does not compare are the same in both runs |
+| Every duplicate-named-groups row passes at both commits | Yes: every row whose features, the runner's reading of the file's front matter, list `regexp-duplicate-named-groups` passed at both, in both variants ([`comparison/duplicate-named-groups.log`](after/part-a/comparison/duplicate-named-groups.log), `9927506a56f0e4bf983d392e6afceaf81ecdb4644f906b7ac5f9235b2c505593`) |
+| No row passing at the base fails, times out or is skipped after outside C3 | None: no row passing at the base changed; the script reports no regression |
+| Every changed verdict in C1, C3 or C5, and listed | Yes: every changed row is a C1 row the rule's list names with its file, listed below and in the classification file; the script reports every one admitted and none unclassified, and no classification unused |
+
+**Timeouts and their re-runs.** As at the base, one path timed out in both variants,
+`test/staging/sm/regress/regress-1507322-deep-weakmap.js` (`after/part-a/timed-out-paths.txt`, the base's byte for
+byte, `2eed8d54df5970a25649d4edd4705ff69fae80b8c2356465f8822c304c289a68`); the workflow ran it again alone, with one
+worker, at the same commit and with the same shell, and it timed out again in both variants, as at the base. The
+script took each run's re-run and replaced the two rows on each side, so they compare timed out against timed out
+(the report's `replacedByRerun`). Both the runs and the re-runs are retained.
+
+**The C1 table.** Every changed row moves from failed at the base to passed after, in the variant `original`; each is
+a negative-metadata test whose literal the base's scanner accepted, so the statement the test forbids ran ("negative
+test expected SyntaxError but got different error"), and after is the early `SyntaxError` the test expects, the
+scanner checking every literal with Broiler.Regex's validate entry (decision D22). The `terser` variant of each is
+skipped in both runs, "parse, early, and resolution negative tests cannot be minified before execution", and does not
+change. Each is listed in `Broiler.JS/CHANGELOG.md` by its row, under "The literal check".
+
+| Row | Paths (each `original`, failed at the base, passed after) | Correction |
+| --- | --- | --- |
+| S7 | `test/language/literals/regexp/invalid-optional-lookbehind.js`, `invalid-optional-negative-lookbehind.js`, `invalid-range-lookbehind.js` and `invalid-range-negative-lookbehind.js` | a quantified look-behind accepted without `u`; Annex B's grammar admits a quantifier after a look-ahead only |
+| S8 | `test/built-ins/RegExp/prototype/unicodeSets/breaking-change-from-u-to-v-01.js` to `breaking-change-from-u-to-v-28.js` but `-03.js` | the `v` flag's reserved syntax accepted |
+| S11 | `test/language/literals/regexp/early-err-modifiers-code-point-repeat-i-1.js`, `-code-point-repeat-i-2.js`, `-other-code-point-uppercase-I.js`, `-should-not-case-fold-i.js`, `-should-not-case-fold-m.js` and `-should-not-case-fold-s.js`, and every `early-err-arithmetic-modifiers-` file the rule's list names for the row, from `add-remove-i.js` to `should-not-case-fold-s.js` | a literal's errors reported only when it is evaluated, not early |
+
+The rows and the files are exactly those of the rule's list for rows S7, S8 and S11, every file it names for them and
+no other (`decision-rule.md`'s list of this engine's corrections, under "The literal check"). So:
+- **The files the list names moved**, each from failing at the base to passing after, as the rule's "How it is read"
+  expects; none still fails after, so no correction is recorded as one SJL-11.5 did not make for want of a move.
+  `breaking-change-from-u-to-v-03.js`, which the list leaves out, passes at both.
+- **No row is in C3 or C5**, and no C1 row is explained by a row other than S7, S8 or S11, so no row is a finding
+  against JSD-0081.
+- **Rows S12 to S15, M8 to M27 and row M28** (the revisions of 2026-11-17 and 2026-11-18) explain no row: no row other
+  than the table's changed. No row moves for M28's half for `IsMatch` and the public `Replace`, and **no row moves
+  through the `split` fallback**, as row M28 records it or in any other way, so the revision of 2026-11-18's reading
+  of that half is not reached.
+- **No row of row S9**, an invalid literal read as division, changed.
+- **The rows that can show no move.** The list's rows that already follow the specification at the base, through
+  Broiler.Regex `0.1.0-preview.6`, move no row, as the revision of 2026-11-17 says of them ("a correction the runs
+  cannot show, not a regression"); this reading names none of them as made or not made, which clause 7 reads.
+
+These are part A's per-part reading only. No clause of SJL-11 (4 to 7), no exit reading and nothing of Broiler.VM's or
+Broiler.RegEx's is read here. Part B still has no reading. Nothing is declared met beyond the words above.
+
 *2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
 
 *2026-11-01, at corpus revision 32:* **part D names revision 32**, the revision that classifies both engines' first
