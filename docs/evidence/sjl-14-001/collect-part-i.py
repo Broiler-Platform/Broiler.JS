@@ -29,18 +29,22 @@ WHAT IT RUNS, and where each point comes from (the rule's part I; inputs/workloa
   * repetitions: --repetitions launches per workload and arm (nine by default), in an order that rotates by
     repetition: B, A, A-again; then A, A-again, B; then A-again, B, A; and again; each launch takes the harness's
     in-process median over --inner repetitions (five by default, as Measurement.md's example passes it);
-  * the condition: every workload parses to the outcome the base gives, checked before the first run and after the
-    last, for every arm: a launch with one in-process repetition whose row is present for the workload is an accepted
-    parse, and one that exits non-zero or prints no row is not;
+  * the condition: every workload parses to the outcome the base gives, checked before and after every measured launch,
+    as collect-lane.py checks its answers before and after each repetition and lane: a launch of that arm with one
+    in-process repetition for that workload, whose outcome (accepted, the row present for the workload; or refused,
+    with the exception type its standard error names, or its exit code) is compared with arm B's first outcome for the
+    workload, taken once before the first run; conditions.tsv holds each check with "equal to B's first";
   * Q is the median over the launches of the harness's `parseMs`, per workload and arm; N = |Q(A) - Q(A-again)|;
     D = Q(A) - Q(B). summary.tsv holds them; the README compares D with N.
 The repetitions, the inner count and the order are the points of part I's protocol the bundle README files before any
 part I run (its reading B10 of 2026-11-19, under the owner's direction of 2026-10-18): nine repetitions in the rotating
 order, five in each process, the harness's own warm-up, one corpus per process, each arm its own commit's harness, and
 a fresh confirmation run of the whole protocol when the first would read MET, taken into a folder of its own
-(--folder, for example win-x64-r7-5800x-confirmation). The condition's schedule, before the first run and after the
-last, is this draft's; the owner may override any point before the first run, and the script takes them as arguments
-so that the brief, not this file, fixes them.
+(--folder, for example win-x64-r7-5800x-confirmation). The condition's schedule, around every launch against B's first
+outcome, is this draft's, modelled on collect-lane.py's (revised 2026-11-19, in review of W2, before any part I run: the
+draft read "The condition's schedule, before the first run and after the last, is this draft's" and recorded only
+accepted or not, compared with nothing); the owner may override any point before the first run, and the script takes
+the counts as arguments so that the brief, not this file, fixes them.
 
 The manifest, written and made read-only before the first run, names the commits, the identity checks, every assembly
 of each arm by SHA-256, the Octane revision and each workload's SHA-256, the protocol, and the lane with the SHA-256 of
@@ -59,6 +63,7 @@ import hashlib
 import json
 import os
 import platform
+import re
 import statistics
 import subprocess
 import sys
@@ -211,6 +216,15 @@ class PartICollector:
         return result, report
 
     @staticmethod
+    def outcome(result: subprocess.CompletedProcess, report: dict | None, workload: str) -> str:
+        # Accepted when the harness printed the workload's row; refused otherwise, by the exception type its standard
+        # error names first, or by its exit code when it names none.
+        if PartICollector.row(report, workload) is not None:
+            return "accepted"
+        match = re.search(r"\b([A-Z]\w*(?:\.[A-Z]\w*)*Exception)\b", result.stderr + result.stdout)
+        return f"refused: {match.group(1)}" if match else f"refused: exit {result.returncode}"
+
+    @staticmethod
     def row(report: dict | None, workload: str) -> dict | None:
         if not report:
             return None
@@ -254,7 +268,8 @@ class PartICollector:
             identity += [f"  {sha256(p)}  {p.name}" for p in sorted((tree / BENCH_DLL).parent.glob("*.dll"))]
         identity.append(f"protocol: --compile-phases <octane> {self.inner} <workload>, one workload per launch; "
                         f"{self.repetitions} repetitions per workload and arm; arms B, A, A-again rotated by repetition; "
-                        f"the condition checked for every arm and workload before the first run and after the last; "
+                        f"the condition checked before and after every launch, by a launch of the same arm and workload "
+                        f"with one in-process repetition, against arm B's first outcome for the workload; "
                         f"Q the median of the launches' parseMs")
         facts = dict(line.split(": ", 1) for line in machine.read_text(encoding="utf-8").splitlines() if ": " in line)
         identity.append(f"lane: {self.lane}, the controlled lane recorded in docs/evidence/lanes/{self.lane}/ before this "
@@ -267,16 +282,18 @@ class PartICollector:
 
         self.window("window-start.txt", "window start")
         names = [row["workload"] for row in rows]
-        conditions = ["when\tarm\tworkload\texit\taccepted"]
+        conditions = ["repetition\tarm\tworkload\twhen\texit\toutcome\tequal to B's first"]
+        reference: dict[str, str] = {}
+        for workload in names:
+            result, report = self.launch("B", workload, 1)
+            reference[workload] = self.outcome(result, report, workload)
+            conditions.append(f"-\tB\t{workload}\tfirst check\t{result.returncode}\t{reference[workload]}\tTrue")
 
-        def condition(when: str) -> None:
-            for arm in ARMS:
-                for workload in names:
-                    result, report = self.launch(arm, workload, 1)
-                    accepted = self.row(report, workload) is not None
-                    conditions.append(f"{when}\t{arm}\t{workload}\t{result.returncode}\t{accepted}")
+        def condition(repetition: int, arm: str, workload: str, when: str) -> None:
+            result, report = self.launch(arm, workload, 1)
+            found = self.outcome(result, report, workload)
+            conditions.append(f"{repetition}\t{arm}\t{workload}\t{when}\t{result.returncode}\t{found}\t{found == reference[workload]}")
 
-        condition("before")
         runs = ["repetition\tarm\tworkload\texit\tparseMs\tparseStubMs\tendToEndMs"]
         window_runs = ["repetition\tarm\tworkload\tstarted\tbuild processes alive before the run"]
         for repetition in range(self.repetitions):
@@ -287,12 +304,13 @@ class PartICollector:
                     started = utc()
                     window_runs.append(f"{repetition}\t{arm}\t{workload}\t{started}\t{' '.join(alive) or 'none'}")
                     print(f"   r{repetition} {arm} {workload}: started {started}", flush=True)
+                    condition(repetition, arm, workload, "before")
                     result, report = self.launch(arm, workload, self.inner)
+                    condition(repetition, arm, workload, "after")
                     self.write_gz(f"runs/r{repetition}-{arm}-{workload}.txt.gz", result.stdout + "\n# stderr\n" + result.stderr)
                     found = self.row(report, workload) or {}
                     runs.append("\t".join(str(v) for v in (repetition, arm, workload, result.returncode, found.get("parseMs", ""),
                                                           found.get("parseStubMs", ""), found.get("endToEndMs", ""))))
-        condition("after")
         self.window("window-end.txt", "window end")
         self.write("window-runs.tsv", "\n".join(window_runs) + "\n")
         self.write("conditions.tsv", "\n".join(conditions) + "\n")

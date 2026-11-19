@@ -60,6 +60,21 @@ internal static class Session
     internal static int RunAll(Arguments arguments)
     {
         var (header, lines) = ReadSeeds(arguments.Seeds);
+        // The inputs before any seed (added in review of window W2, 2026-11-19): the corpus manifest against the SHA-256
+        // the seed list's header pins, and every seed's text against its own, so that an input that differs stops the
+        // session here, as an input error, and is never recorded as a finding of a seed's process.
+        try
+        {
+            header.VerifyManifest();
+            foreach (var line in lines)
+                Load(header, line, arguments);
+        }
+        catch (Exception e) when (e is InvalidDataException or IOException)
+        {
+            Console.Error.WriteLine("the session's inputs are not the ones its seed list names; nothing ran: " + e.Message);
+            return 2;
+        }
+
         Directory.CreateDirectory(arguments.Out);
         var self = Environment.ProcessPath ?? throw new InvalidOperationException("no process path");
         var selfArgs = Environment.GetCommandLineArgs()[0].EndsWith(".dll", StringComparison.Ordinal) ? Environment.GetCommandLineArgs()[0] : null;
@@ -269,6 +284,7 @@ internal sealed class SeedHeader(string seedsDirectory)
 {
     private Dictionary<string, CorpusRow>? rows;
     private string? manifest;
+    private string? manifestSha256;
 
     internal int BoundMs { get; private set; } = 10_000;
 
@@ -283,11 +299,27 @@ internal sealed class SeedHeader(string seedsDirectory)
             case "corpus":
                 // The manifest's path is the repository's; the seed list sits in docs/evidence/sjl-14-001/inputs/.
                 manifest = System.IO.Path.GetFullPath(System.IO.Path.Combine(seedsDirectory, "..", "..", "..", "..", fields[1]));
+                manifestSha256 = fields.Length > 2 ? fields[2] : null;
                 break;
             case "time-bound-per-compile-ms":
                 BoundMs = int.Parse(fields[1], CultureInfo.InvariantCulture);
                 break;
         }
+    }
+
+    /// <summary>
+    /// Checks the corpus manifest against the SHA-256 the header pins (its third field), when the header names a manifest.
+    /// </summary>
+    /// <exception cref="InvalidDataException">The header names a manifest with no SHA-256, or the manifest differs.</exception>
+    internal void VerifyManifest()
+    {
+        if (manifest == null)
+            return;
+        if (string.IsNullOrEmpty(manifestSha256))
+            throw new InvalidDataException("the seed list's corpus line pins no SHA-256 for " + manifest);
+        var actual = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(manifest)));
+        if (!string.Equals(actual, manifestSha256, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException($"{manifest}: SHA-256 {actual}, the seed list pins {manifestSha256}");
     }
 
     internal CorpusRow Corpus(string id)

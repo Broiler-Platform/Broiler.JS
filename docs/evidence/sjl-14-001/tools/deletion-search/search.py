@@ -17,6 +17,9 @@ the part's reading, not this script, says whether each hit is a facade member ov
 allows, the other member of the same name dispositions.md names (FastCompiler.EarlyErrors' own ContainsLegacyOctalLiteral,
 which stays until SJL-15.5), or a finding. The script judges nothing.
 
+The members FastParser's partial files declared at 33d3093b are read from that commit's blobs in --repository and each
+is searched by name in the parser's folder, as well as each partial file's absence (added in review of W2, 2026-11-19).
+
 --control is the rule's control: in the scratch copy it declares one deleted member again (DirectEvalSupport's
 ContainsStrictReservedWordUsage), runs the search for that name and expects a hit, reverts the file from the commit's own
 blob and runs the search again expecting none; it prints both and exits 1 if either expectation fails.
@@ -39,6 +42,19 @@ PARTIALS = ["ArrayExpression", "AssignmentLeftPattern", "Block", "Class", "Decor
             "NonDeclarativeStatement", "ObjectLiteral", "Parameters", "Program", "PropertyName", "SingleExpression",
             "SingleMemberExpression", "SinglePostfixPrefixExpression", "Statement", "Switch", "Template",
             "VariableDeclaration", "WhileStatement", "WithStatement"]
+
+# The commit the deletion list's members are read at (dispositions.md's line numbers are 33d3093b's).
+LISTED_AT = "33d3093b"
+
+# A member declaration of class FastParser in one of its partial files at LISTED_AT: a line indented once (the files use
+# a file-scoped namespace) that declares a method, a property or a field, by its name. Added 2026-11-19, in review of
+# window W2: the search had checked only that the partial files are absent, so that a member of theirs declared again in
+# another file would have gone unseen, though the rule searches "each listed member's declarations and references" and
+# dispositions.md's row reads "every member they declare".
+MEMBER = re.compile(r"^(?: {4}|\t)(?!return\b|var\b|throw\b|new\b|case\b|else\b|goto\b|await\b|yield\b|using\b|if\b|for\b"
+                    r"|foreach\b|while\b|switch\b|do\b|break\b|continue\b|//|\[)"
+                    r"(?:(?:public|private|protected|internal|static|readonly|override|virtual|unsafe|async|new|sealed|ref|extern|const)\s+)*"
+                    r"[\w\.]+(?:<[^>()]*>)?(?:\[\])?\??\s+(\w+)\s*(?:<[^>()]*>)?\s*(?:\(|=|;|\{|=>)")
 
 # (item, names, scope): scope None is both trees; otherwise the file that declared the member at 33d3093b.
 ITEMS: list[tuple[str, list[str], str | None]] = [
@@ -67,8 +83,11 @@ ITEMS: list[tuple[str, list[str], str | None]] = [
     ("The two token re-scans and the direct-eval prefix", ["ContainsLegacyOctalLiteral", "ContainsStrictReservedWordUsage",
                                                            "IsStrictReservedWord", "injectedStrictDirective",
                                                            "TryGetLegacyOctalToken"], None),
+    # parseThroughBridge and ParseThroughBridgeFlag, the shell's field and constant at fefb4f9c, added in review of W2: the
+    # word search is case-sensitive, so the field was found only through the flag's text.
     ("The test-only switch", ["ParseThroughBridge", "ParsesThroughBridge", "BridgeByDefault", "BROILER_PARSE_THROUGH_BRIDGE",
-                              "BroilerParseThroughBridge", "BroilerBridgeBuild", "parse-through-bridge"], None),
+                              "BroilerParseThroughBridge", "BroilerBridgeBuild", "parse-through-bridge", "parseThroughBridge",
+                              "ParseThroughBridgeFlag"], None),
 ]
 
 # The direct-eval prefix as DirectEvalSupport.cs:127-128 wrote it at 33d3093b, and the parenthesis-balance patch's marker
@@ -98,13 +117,34 @@ def grep(tree: Path, name: str, scope: str | None, fixed: bool = False) -> list[
     return sorted(result.stdout.splitlines())
 
 
-def search(tree: Path, commit: str) -> list[str]:
+def partial_members(repository: Path) -> dict[str, list[str]]:
+    """Each member name FastParser's partial files declared at LISTED_AT, with the partials that declared it."""
+    names: dict[str, set[str]] = {}
+    for partial in PARTIALS:
+        source = subprocess.run(["git", "-C", str(repository), "show", f"{LISTED_AT}:{PARSER}/FastParser.{partial}.cs"],
+                                capture_output=True, text=True)
+        if source.returncode != 0:
+            raise SystemExit(f"FastParser.{partial}.cs is not at {LISTED_AT} in {repository}: {source.stderr}")
+        for line in source.stdout.splitlines():
+            match = MEMBER.match(line)
+            if match:
+                names.setdefault(match.group(1), set()).add(partial)
+    return {name: sorted(partials) for name, partials in sorted(names.items())}
+
+
+def search(tree: Path, commit: str, repository: Path) -> list[str]:
     lines = [f"# Part K's deletion search at {commit}, over {tree} (a tree of that commit), by search.py.",
              "# A word search (git grep --no-index -w -n -I), one name at a time; each section names its scope.", ""]
     lines.append("== FastParser's partial files: each absent")
     for partial in PARTIALS:
         path = Path(tree, PARSER, f"FastParser.{partial}.cs")
         lines.append(f"{path.relative_to(tree).as_posix()}: {'PRESENT' if path.exists() else 'absent'}")
+    lines.append("")
+    lines.append(f"== The members FastParser's partial files declared at {LISTED_AT}, each by name (scope: {PARSER})")
+    for name, partials in partial_members(repository).items():
+        hits = grep(tree, name, PARSER)
+        lines.append(f"-- {name} (FastParser.{', FastParser.'.join(partials)}.cs): {len(hits)} hit(s)")
+        lines += [f"   {hit}" for hit in hits]
     lines.append("")
     for item, names, scope in ITEMS:
         lines.append(f"== {item} (scope: {scope or ' and '.join(ROOTS) + ' outside docs/'})")
@@ -154,7 +194,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--tree", required=True, help="a tree of the after commit (for --control, a scratch copy)")
     parser.add_argument("--commit", required=True, help="the after commit's forty-digit identifier")
     parser.add_argument("--repository", default=str(Path(__file__).resolve().parents[5]),
-                        help="a clone holding the commit, for --control's revert")
+                        help="a clone holding the commit and 33d3093b, for --control's revert and the partials' members")
     parser.add_argument("--out", required=True)
     parser.add_argument("--control", action="store_true")
     args = parser.parse_args(argv)
@@ -162,7 +202,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.control:
         lines, ok = control(tree, args.commit, Path(args.repository))
     else:
-        lines, ok = search(tree, args.commit), True
+        lines, ok = search(tree, args.commit, Path(args.repository)), True
     Path(args.out).write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     return 0 if ok else 1
 
