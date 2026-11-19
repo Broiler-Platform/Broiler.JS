@@ -4,6 +4,7 @@ using Broiler.JavaScript.ExpressionCompiler.Core;
 namespace Broiler.JavaScript.Ast.Statements;
 
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstImportStatement(FastToken token, AstIdentifier? defaultIdentifier, AstIdentifier? all, IFastEnumerable<(StringSpan, StringSpan)>? members, AstLiteral source, 
     IFastEnumerable<(StringSpan, AstLiteral)>? attributes = null) : AstStatement(token, FastNodeType.ImportStatement, source.End)
 {

@@ -53,11 +53,12 @@ public class M6ValidationTests
             (typeof(VirtualMemory<>), "Broiler.JavaScript.Storage"),
             (typeof(PropertySequence), "Broiler.JavaScript.Storage"),
 
-            // → Ast
-            (typeof(StringSpan), "Broiler.JavaScript.Ast"),
+            // → Ast; StringSpan and TokenTypes, non-tree types, moved to Expressions with their namespace at window W2 of
+            // milestone SJL-14 (decision D50), Ast keeping a forwarder for each
+            (typeof(StringSpan), "Broiler.JavaScript.Expressions"),
             (typeof(FastToken), "Broiler.JavaScript.Ast"),
             (typeof(FastNodeType), "Broiler.JavaScript.Ast"),
-            (typeof(TokenTypes), "Broiler.JavaScript.Ast"),
+            (typeof(TokenTypes), "Broiler.JavaScript.Expressions"),
 
             // → Parser
             (typeof(FastParser), "Broiler.JavaScript.Parser"),
@@ -225,7 +226,8 @@ public class M6ValidationTests
         // After refactoring, types live directly in their target assemblies
         // (no forwarding needed since Core was merged into Engine).
         Assert.Equal("Broiler.JavaScript.Runtime", typeof(JSValue).Assembly.GetName().Name);
-        Assert.Equal("Broiler.JavaScript.Ast", typeof(StringSpan).Assembly.GetName().Name);
+        // StringSpan moved to Expressions at window W2 of milestone SJL-14 (decision D50); Ast forwards to it.
+        Assert.Equal("Broiler.JavaScript.Expressions", typeof(StringSpan).Assembly.GetName().Name);
         Assert.Equal("Broiler.JavaScript.Parser", typeof(FastParser).Assembly.GetName().Name);
     }
 

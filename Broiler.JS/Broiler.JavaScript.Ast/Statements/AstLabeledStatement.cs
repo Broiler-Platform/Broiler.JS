@@ -3,6 +3,7 @@
 namespace Broiler.JavaScript.Ast.Statements;
 
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstLabeledStatement(FastToken id, AstStatement statement) : AstStatement(id, FastNodeType.LabeledStatement, statement.End)
 {
     public readonly FastToken Label = id;

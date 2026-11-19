@@ -10,6 +10,7 @@ using Broiler.JavaScript.ExpressionCompiler.Core;
 namespace Broiler.JavaScript.Ast;
 
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstIdentifierReplacer : AstReduce
 {
     private readonly IFastEnumerable<(string from, AstIdentifier temp)> changes;
@@ -40,6 +41,7 @@ public class AstIdentifierReplacer : AstReduce
 // it deliberately does not distinguish a reference from a property key or a binding
 // position, because the answer is only ever used to keep a name SAFE, and naming one
 // name too many costs a scope rather than a wrong resolution.
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public sealed class IdentifierNameCollector : AstReduce
 {
     private readonly HashSet<string> names = new(StringComparer.Ordinal);
@@ -67,6 +69,7 @@ public sealed class IdentifierNameCollector : AstReduce
 
 // Reports whether a subtree contains a function/arrow expression, i.e. a closure
 // whose binding identity (which loop-iteration variable it captures) is observable.
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public sealed class ClosureDetector : AstReduce
 {
     public bool Found { get; private set; }
@@ -79,6 +82,7 @@ public sealed class ClosureDetector : AstReduce
     }
 }
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public abstract class AstReduce : AstMapVisitor<AstNode>
 {
 

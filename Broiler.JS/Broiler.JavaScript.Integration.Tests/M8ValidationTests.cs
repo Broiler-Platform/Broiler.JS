@@ -176,7 +176,8 @@ public class M8ValidationTests
         Assert.Equal("Broiler.JavaScript.Runtime", typeof(JSValue).Assembly.GetName().Name);
         Assert.Equal("Broiler.JavaScript.Runtime", typeof(Arguments).Assembly.GetName().Name);
         Assert.Equal("Broiler.JavaScript.Storage", typeof(KeyString).Assembly.GetName().Name);
-        Assert.Equal("Broiler.JavaScript.Ast", typeof(StringSpan).Assembly.GetName().Name);
+        // StringSpan moved to Expressions at window W2 of milestone SJL-14 (decision D50); Ast forwards to it.
+        Assert.Equal("Broiler.JavaScript.Expressions", typeof(StringSpan).Assembly.GetName().Name);
         Assert.Equal("Broiler.JavaScript.Parser", typeof(FastParser).Assembly.GetName().Name);
     }
 

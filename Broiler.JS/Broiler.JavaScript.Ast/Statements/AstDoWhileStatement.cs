@@ -3,6 +3,7 @@ using Broiler.JavaScript.Ast.Misc;
 
 namespace Broiler.JavaScript.Ast.Statements;
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstDoWhileStatement(FastToken start, FastToken end, AstExpression test, AstStatement statement) : AstStatement(start, FastNodeType.DoWhileStatement, end)
 {
     public readonly AstExpression Test = test;

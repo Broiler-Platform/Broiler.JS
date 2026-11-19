@@ -6,6 +6,7 @@ namespace Broiler.JavaScript.Ast.Expressions;
 // Unlike a static import declaration this is an expression that evaluates to a Promise.
 // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstImportCall(FastToken token, AstExpression source, AstExpression options, FastToken end)
     : AstExpression(token, FastNodeType.ImportCall, end)
 {

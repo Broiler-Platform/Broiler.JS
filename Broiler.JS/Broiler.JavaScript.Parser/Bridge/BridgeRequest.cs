@@ -86,4 +86,10 @@ internal sealed record BridgeRequest
 
     /// <summary>The kind of the dynamic function whose pieces the two dynamic-function goals parse.</summary>
     internal BridgeFunctionKind FunctionKind { get; init; }
+
+    /// <summary>
+    /// The Unicode provider the parse reads identifiers over; null for this engine's own tables. <c>FastParser</c>'s facade
+    /// passes its options' provider (window W2, decision D50), as the old parser's scanner read it.
+    /// </summary>
+    internal Broiler.Unicode.Algorithms.IUnicodeTables? UnicodeTables { get; init; }
 }

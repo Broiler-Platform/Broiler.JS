@@ -2,6 +2,7 @@
 
 namespace Broiler.JavaScript.Parser;
 
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public static class CharExtensions
 {
 

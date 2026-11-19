@@ -7,18 +7,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <!-- The Unicode area's algorithms (milestone SJL-7.5): FastParserOptions' provider and RegExpUnicodeValidator name
-         its types. The tables it reads moved on to Broiler.JavaScript.Expressions at window W2 of milestone SJL-14
-         (decision D50), which references this package too; they and this reference moved here from
-         Broiler.JavaScript.Runtime at milestone SJL-12.5 (Broiler.VM's JSD-0080, decision D20). -->
-    <PackageReference Include="Broiler.Unicode.Algorithms" />
-    <!-- Broiler.Regex's validate entry (milestone SJL-11.5; Broiler.VM's JSD-0081, decisions D21 and D22):
-         RegExpUnicodeValidator forwards to it. Its compile assets stay private (PrivateAssets="compile"), so that its
-         namespace, Broiler.Regex, does not reach the projects that reference this one, where it would hide .NET's
-         Regex inside every namespace under Broiler; its runtime assets and the package dependency still flow. -->
-    <PackageReference Include="Broiler.Regex" PrivateAssets="compile" />
-  </ItemGroup>
+  <!-- No package reference since window W2 of milestone SJL-14 (decision D50): the Unicode tables, which read
+       Broiler.Unicode.Algorithms, and RegExpUnicodeValidator, which forwards to Broiler.Regex's validate entry, moved to
+       Broiler.JavaScript.Expressions with both references (the tables at W2's stage 2, the validator with the other
+       non-tree types at its stage 4); this assembly keeps a type forwarder for each public type that moved. The two
+       references came here from Broiler.JavaScript.Runtime at milestone SJL-12.5 (Broiler.VM's JSD-0080, decision D20)
+       and milestone SJL-11.5 (JSD-0081, decisions D21 and D22). -->
 
   <ItemGroup>
     <!-- StringSpan's obsolete trims forward to the shared white-space set (milestone SJL-7.5). -->

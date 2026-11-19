@@ -7,6 +7,7 @@ namespace Broiler.JavaScript.Ast.Expressions;
 // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=5; Fingerprint=TBF
 // Broiler-Falsified-If: a statement-level `function f(){}` is stored with IsStatement false, so the compiler binds `f` only inside its own body instead of hoisting it into the enclosing scope
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstFunctionExpression(FastToken token, FastToken previousToken, bool isArrow, bool isAsync, bool generator, AstIdentifier? id,
     IFastEnumerable<VariableDeclarator> declarators, AstStatement body, bool isStatement = false) : AstExpression(token, FastNodeType.FunctionExpression, previousToken)
 {

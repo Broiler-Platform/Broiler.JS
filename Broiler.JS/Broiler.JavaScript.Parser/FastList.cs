@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.Parser;
 
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class FastList<T> : IList<T>, IDisposable
 {
     private T[] items = null;

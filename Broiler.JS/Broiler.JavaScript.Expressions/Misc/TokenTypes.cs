@@ -1,15 +1,9 @@
-﻿using System.Runtime.CompilerServices;
+﻿// Moved from Broiler.JavaScript.Ast with its namespace at window W2 of milestone SJL-14 (decision D50: a non-tree type,
+// whose new home is Broiler.JavaScript.Expressions); Ast keeps a type forwarder to it, and it is not marked obsolete. It is
+// compiled in a nullable context, as Ast compiled it, so that its public signatures read as they did.
+#nullable enable
 
 namespace Broiler.JavaScript.Ast.Misc;
-
-public static class TokenTypesExtensions
-{
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsOperator(this TokenTypes type) => type > TokenTypes.BeginOperators && type < TokenTypes.EndOperators;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsAssignmentOperator(this TokenTypes type) => type > TokenTypes.BeginAssignTokens && type < TokenTypes.EndAssignTokens;
-}
 
 /// <summary>
 /// Tokens should be arranged in order of precedence

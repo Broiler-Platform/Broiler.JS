@@ -2,6 +2,7 @@
 
 namespace Broiler.JavaScript.Parser;
 
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public readonly struct FastStack<T>(FastPool pool)
 {
     private readonly FastList<T> list = new(pool);

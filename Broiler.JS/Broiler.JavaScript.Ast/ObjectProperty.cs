@@ -2,6 +2,7 @@
 
 namespace Broiler.JavaScript.Ast;
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public readonly struct ObjectProperty(AstExpression left, AstExpression right, AstExpression init, bool spread = false, bool computed = false)
 {
     public readonly AstExpression Key = left;

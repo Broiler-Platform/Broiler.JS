@@ -9,6 +9,7 @@ namespace Broiler.JavaScript.Ast;
 // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
 // Broiler-Falsified-If: a whole-number computed key of 4294967295 or more, such as `{ [1e55]: 1 }`, is folded to a uint constant and collides with an array-index key
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public static class AstExpressionExtensions
 {
     // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF

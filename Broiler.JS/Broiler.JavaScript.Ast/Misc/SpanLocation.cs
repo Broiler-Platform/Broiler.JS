@@ -9,6 +9,7 @@ namespace Broiler.JavaScript.Ast.Misc;
 /// </summary>
 // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public readonly struct SpanLocation(int line, int column)
 {
     public readonly int Line = line;

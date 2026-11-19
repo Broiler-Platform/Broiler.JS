@@ -1,5 +1,6 @@
-﻿// Moved from Broiler.JavaScript.Runtime with its namespace, which keeps a type forwarder to it, and
-// compiled as it was there, outside a nullable context, so its public signatures read as they did.
+﻿// Moved from Broiler.JavaScript.Runtime with its namespace, which keeps a type forwarder to it, to Broiler.JavaScript.Ast
+// at milestone SJL-12.5, and on to Broiler.JavaScript.Expressions at window W2 of milestone SJL-14 (decision D50), Ast
+// keeping a forwarder too; it is not marked obsolete. It is compiled as it was there, outside a nullable context, so its public signatures read as they did.
 #nullable disable
 
 using System;

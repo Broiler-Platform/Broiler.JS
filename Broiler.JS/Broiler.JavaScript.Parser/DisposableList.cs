@@ -4,6 +4,7 @@ using Broiler.JavaScript.ExpressionCompiler.Core;
 
 namespace Broiler.JavaScript.Parser;
 
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class DisposableList : IDisposable
 {
     private Sequence<IDisposable>? list;

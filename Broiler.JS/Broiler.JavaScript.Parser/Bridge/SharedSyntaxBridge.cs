@@ -144,7 +144,7 @@ internal static class SharedSyntaxBridge
         };
 
         var source = new SourceText(code.Value ?? string.Empty, string.Empty, code.Offset);
-        return new ParseRequest(source, goal, JSUnicodeTables.Instance, BridgeRegularExpressions.Instance)
+        return new ParseRequest(source, goal, request.UnicodeTables ?? JSUnicodeTables.Instance, BridgeRegularExpressions.Instance)
         {
             Switches = switches,
             Context = goal == ParseGoal.Eval

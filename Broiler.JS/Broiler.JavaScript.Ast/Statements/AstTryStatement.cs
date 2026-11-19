@@ -3,6 +3,7 @@ using Broiler.JavaScript.Ast.Misc;
 
 namespace Broiler.JavaScript.Ast.Statements;
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstTryStatement(FastToken token, FastToken previousToken, AstStatement body, AstExpression catchParam, AstStatement @catch, AstStatement @finally) :
     AstStatement(token, FastNodeType.TryStatement, previousToken)
 {

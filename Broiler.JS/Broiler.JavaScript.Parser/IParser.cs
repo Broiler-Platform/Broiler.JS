@@ -8,6 +8,7 @@ namespace Broiler.JavaScript.Parser;
 /// Implementations take a token stream and produce an <see cref="AstProgram"/>
 /// representing the parsed JavaScript program.
 /// </summary>
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public interface IParser
 {
     /// <summary>

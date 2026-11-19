@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.Parser;
 
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public static class QueueExtensions
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

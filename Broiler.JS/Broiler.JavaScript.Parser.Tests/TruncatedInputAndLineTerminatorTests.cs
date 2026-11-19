@@ -98,9 +98,13 @@ public class TruncatedInputAndLineTerminatorTests
     [Theory]
     [InlineData("a = 1;\nb = 2;\nc = \"abc\nd\";", "Unterminated string literal", 3)]
     [InlineData("a = 1;\n\nc = 'abc", "Unterminated string literal", 3)]
-    [InlineData("a = 1;\nb = `abc\n\ndef", "Unterminated template literal", 4)]
-    [InlineData("a = 1;\n/* abc\n\nx", "Unterminated comment", 4)]
-    [InlineData("a = 1;\r/* abc\u2028x", "Unterminated comment", 3)]
+    [InlineData("a = 1;\nb = `abc\n\ndef", "Unterminated template literal", 2)]
+    [InlineData("a = 1;\n/* abc\n\nx", "Unterminated comment", 2)]
+    [InlineData("a = 1;\r/* abc\u2028x", "Unterminated comment", 2)]
+    // Window W2 of milestone SJL-14 (decision D46, class M: a position move): the shared syntax library reports an
+    // unterminated comment or template where it begins, where the old scanner reported the line it had reached when the
+    // input ran out (the three cases read 4, 4 and 3 until then); the texts are kept, and so is an unterminated string's
+    // line, which is the line the string begins on.
     public void UnterminatedTokensAreReportedWhereScanningStopped(string source, string message, int line)
     {
         var error = ParseError(source);

@@ -12,10 +12,14 @@ namespace Broiler.JavaScript.Parser;
 /// in future.
 /// </summary>
 
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class FastTokenStream
 {
     private readonly FastScanner scanner;
     public readonly FastPool Pool;
+
+    /// <summary>The text the stream reads, which <see cref="FastParser"/>'s facade parses through the bridge (window W2).</summary>
+    internal StringSpan Text => scanner.Text;
 
     internal Exception Unexpected()
     {

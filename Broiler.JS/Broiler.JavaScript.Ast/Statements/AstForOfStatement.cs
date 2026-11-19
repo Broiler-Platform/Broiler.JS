@@ -4,6 +4,7 @@ using Broiler.JavaScript.ExpressionCompiler.Core;
 
 namespace Broiler.JavaScript.Ast.Statements;
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstForOfStatement(FastToken token, FastToken previousToken, AstNode beginNode, AstExpression target, AstStatement statement, bool isAwait = false) : 
     AstStatement(token, FastNodeType.ForOfStatement, previousToken)
 {

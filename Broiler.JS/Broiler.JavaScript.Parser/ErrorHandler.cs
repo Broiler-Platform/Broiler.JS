@@ -8,6 +8,7 @@ using System.Collections.Generic;
 
 namespace Broiler.JavaScript.Parser;
 
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class Error(string message) : Exception(message)
 {
     public string Name;
@@ -17,6 +18,7 @@ public class Error(string message) : Exception(message)
     public string Description;
 }
 
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class ErrorHandler
 {
     public readonly List<Error> Errors;

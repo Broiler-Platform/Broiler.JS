@@ -4,6 +4,7 @@ namespace Broiler.JavaScript.Ast.Expressions;
 
 // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=5; Fingerprint=TBF
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstConditionalExpression(AstExpression previous, AstExpression @true, AstExpression @false) : AstExpression(previous.Start, FastNodeType.ConditionalExpression, @false.End)
 {
     public readonly AstExpression Test = previous;

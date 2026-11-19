@@ -7,6 +7,7 @@ namespace Broiler.JavaScript.Ast;
 // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=5; Fingerprint=TBF
 // Broiler-Falsified-If: a class element rewritten through Reduce loses IsAutoAccessor, IsPrivate or IsStatic, so a static private `accessor #x` is lowered as an instance public field
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstClassProperty(FastToken begin, FastToken last, AstPropertyKind propertyKind, bool isPrivate, bool isStatic, AstExpression propertyName, bool computed,
     AstExpression init, bool usesColon = false, bool usesAssign = false, bool isAutoAccessor = false) : AstNode(begin, FastNodeType.ClassProperty, last)
 {

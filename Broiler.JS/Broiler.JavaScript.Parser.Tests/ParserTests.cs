@@ -231,7 +231,7 @@ public class ParserTests
     [Fact]
     public void ParseProgram_ClassBody_Allows_StaticBlocks()
     {
-        var stream = new FastTokenStream(new StringSpan("class C { static { let value = 1; let await; await; } }"));
+        var stream = new FastTokenStream(new StringSpan("class C { static { let value = 1; } }"));
         var parser = new FastParser(stream);
         var program = parser.ParseProgram();
 
@@ -245,6 +245,13 @@ public class ParserTests
         var function = Assert.IsType<AstFunctionExpression>(property.Init);
         Assert.IsType<AstBlock>(function.Body);
     }
+
+    // Window W2 of milestone SJL-14: the shared syntax library refuses `await` as an identifier in a class static
+    // block, as the specification does (ClassStaticBlockStatementList); the old parser admitted it, and the fixture
+    // above read "let await; await;" in the block until then.
+    [Fact]
+    public void ParseProgram_ClassStaticBlock_Refuses_AwaitAsAnIdentifier()
+        => Assert.Throws<FastParseException>(() => new FastParser(new FastTokenStream(new StringSpan("class C { static { let await; } }"))).ParseProgram());
 
     [Theory]
     [InlineData("class C { static *#m([]) { return 1; } }", false)]
@@ -519,7 +526,6 @@ public class ParserTests
     [Theory]
     [InlineData("async function f() { return class { x = await; }; }")]
     [InlineData("var await = 1; async function f() { return class { x = await; }; }")]
-    [InlineData("function* g() { return class { x = yield; }; }")]
     public void ParseProgram_ClassFieldInitializer_AwaitYieldAreIdentifiers(string source)
     {
         var stream = new FastTokenStream(new StringSpan(source));
@@ -527,6 +533,13 @@ public class ParserTests
         var program = parser.ParseProgram();
         Assert.NotNull(program);
     }
+
+    // Window W2 of milestone SJL-14: a class body is strict code, where `yield` is a reserved word, so the shared
+    // syntax library refuses it as an identifier in a field initializer, as the specification does; the old parser
+    // admitted it, and the theory above read it among its cases until then.
+    [Fact]
+    public void ParseProgram_ClassFieldInitializer_Refuses_YieldAsAnIdentifier()
+        => Assert.Throws<FastParseException>(() => new FastParser(new FastTokenStream(new StringSpan("function* g() { return class { x = yield; }; }"))).ParseProgram());
 
     // The computed ClassElementName keeps the surrounding [+Await], so `[await]` is an
     // AwaitExpression (with no operand) — a SyntaxError.
@@ -1003,8 +1016,9 @@ public class ParserTests
 
         var error = Assert.ThrowsAny<FastParseException>(() => parser.ParseProgram());
 
-        Assert.Contains("Unexpected token Negate: ! at 1, 1", error.Message);
-        Assert.Contains("the end of the script", error.Message);
+        // Window W2 of milestone SJL-14 (decision D46, class M): the shared syntax library reports the token where the
+        // parse stopped, the end of the script here, with its position; the old parser named the statement's first token too.
+        Assert.Equal("Unexpected token EOF at 1, 2", error.Message);
     }
 
     /// <summary>
@@ -1019,8 +1033,8 @@ public class ParserTests
 
         var error = Assert.ThrowsAny<FastParseException>(() => parser.ParseProgram());
 
-        Assert.Contains("Unexpected token Negate: ! at 1, 1", error.Message);
-        Assert.Contains("SemiColon at 1, 2", error.Message);
+        // Window W2 (class M): the token the parse stopped at, with its position, as the library reports it.
+        Assert.Equal("Unexpected token ; at 1, 2", error.Message);
     }
 
     /// <summary>
@@ -1098,7 +1112,7 @@ public class ParserTests
     /// </summary>
     [Theory]
     [InlineData("var $ = 1, _ = 2, $_a = 3;")]
-    [InlineData("var a = b % c ^ d | e & f ~ 0;")]
+    [InlineData("var a = b % c ^ d | e & ~f;")]
     [InlineData("var \u00e9 = 1, \u4e2d = 2;")]
     [InlineData("var a = '\u2022 \u2013 \u20AC';")]
     [InlineData("// \u2022 \u2013\nvar a = 1;")]

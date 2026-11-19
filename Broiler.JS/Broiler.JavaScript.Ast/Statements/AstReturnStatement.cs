@@ -4,6 +4,7 @@ using Broiler.JavaScript.Ast.Misc;
 namespace Broiler.JavaScript.Ast.Statements;
 
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstReturnStatement(FastToken token, FastToken previousToken, AstExpression? target = null) : AstStatement(token, FastNodeType.ReturnStatement, previousToken)
 {
     public readonly AstExpression? Argument = target;

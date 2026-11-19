@@ -5,6 +5,7 @@ namespace Broiler.JavaScript.Parser;
 /// <summary>
 /// Allocation-free classifier for ECMAScript and parser-contextual keywords.
 /// </summary>
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class FastKeywordMap
 {
     public static FastKeywordMap Instance { get; } = new();

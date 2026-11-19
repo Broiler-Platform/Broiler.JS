@@ -33,6 +33,7 @@ namespace Broiler.JavaScript.Parser;
 ///     responsibility of the Parser to detect end of program.
 /// 
 /// </summary>
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class FastScanner
 {
     private readonly FastPool pool;

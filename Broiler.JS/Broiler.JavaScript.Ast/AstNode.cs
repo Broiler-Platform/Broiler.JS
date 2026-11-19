@@ -2,6 +2,7 @@
 
 namespace Broiler.JavaScript.Ast;
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public abstract class AstNode(FastToken start, FastNodeType type, FastToken end, bool isStatement = false, bool isBinding = false)
 {
     public readonly FastNodeType Type = type;
