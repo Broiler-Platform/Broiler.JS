@@ -73,12 +73,19 @@ public sealed class PortableCompiler
     }
 
     // A script without top-level await, over the engine's own Unicode tables, on the library's documented stack
-    // (decision D47 (a)); the library's first diagnostic is the refusal.
+    // (decision D47 (a)); the library's first diagnostic is the refusal. The proposals' forms and the lexer's extension
+    // are the engine's (the bridge's request, decision D17), so a source the engine parses is parsed here too and a form
+    // outside the subset is refused after the parse as unsupported, not as a SyntaxError (found in review of window W2).
+    private const ProposalFlags EngineProposals = ProposalFlags.Decorators | ProposalFlags.AutoAccessors
+        | ProposalFlags.ImportSourceCalls | ProposalFlags.ImportDeferCalls;
+
     private static ProgramNode Parse(string source)
     {
         var request = new ParseRequest(new SourceText(source, string.Empty, 0), ParseGoal.Script, JSUnicode.Tables, RegularExpressions.Instance)
         {
             Limits = ParseLimits.Default,
+            Proposals = EngineProposals,
+            Extensions = LexerExtensions.DecimalSuffix,
         };
         var result = CompilationStack.CurrentWorkerStackBytes >= ParseLimits.StackBytes
             ? SyntaxParser.Parse(request)

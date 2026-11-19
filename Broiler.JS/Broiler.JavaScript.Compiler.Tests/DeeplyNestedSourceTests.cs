@@ -1,5 +1,7 @@
 using System.Text;
 using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.Compiler.Tests;
 
@@ -58,7 +60,8 @@ public class DeeplyNestedSourceTests
 
     private static void AssertRefusedForDepth(JSContext ctx, string source)
     {
-        var error = Assert.ThrowsAny<Exception>(() => ctx.Eval(source));
+        var error = Assert.Throws<JSException>(() => ctx.Eval(source));
+        Assert.Equal("SyntaxError", error.Error[KeyStrings.constructor][KeyStrings.name].ToString());
         Assert.Contains("too deep", error.Message);
     }
 

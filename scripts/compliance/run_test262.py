@@ -194,9 +194,10 @@ QUOTED_SOURCE_NEIGHBOURHOOD = 48
 POST_TERMINATION_TIMEOUT_SECONDS = 5.0
 INTERNAL_EXEC_WITH_LIMITS = "--_exec-with-test262-limits"
 
-# Extra arguments every test's shell command carries after its host option, from --shell-arg: how a run passes the
-# shell's hidden test-only flag (--parse-through-bridge, milestone SJL-14.2; bundle sjl-14-001's rule, part C). Empty
-# by default, so a run without --shell-arg runs the command it always ran.
+# Extra arguments every test's shell command carries after its host option, from --shell-arg: how a run passed the
+# shell's hidden test-only flag (--parse-through-bridge, milestone SJL-14.2; bundle sjl-14-001's rule, part C) at the
+# commits before window W2, which removes the flag; a shell from W2 on does not recognise it and reads it as an ignored
+# argument. Empty by default, so a run without --shell-arg runs the command it always ran.
 SHELL_ARGS: tuple[str, ...] = ()
 # The engine consulted about a FAILING minified case before it is attributed to Broiler.
 # Node is already a hard requirement of the Terser variant (it runs the minifier), so this
@@ -3423,8 +3424,9 @@ def main() -> int:
         default=[],
         help=(
             "An extra argument for the shell, placed after its host option in every test's command; repeatable. "
-            "Bundle sjl-14-001's part C runs the suite with --shell-arg=--parse-through-bridge, the shell's hidden "
-            "test-only switch. The summary records the arguments as shellArgs when any is given."
+            "Bundle sjl-14-001's part C ran the suite with --shell-arg=--parse-through-bridge, the shell's hidden "
+            "test-only switch, at the commits before window W2, which removes it; a later shell ignores it. "
+            "The summary records the arguments as shellArgs when any is given."
         ),
     )
     parser.add_argument(

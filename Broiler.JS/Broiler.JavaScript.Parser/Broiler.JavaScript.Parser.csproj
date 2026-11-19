@@ -7,8 +7,9 @@
   </PropertyGroup>
 
   <!-- No reference to Broiler.JavaScript.Runtime (milestone SJL-12.5, Broiler.VM's JSD-0080, decision
-       D20): the Unicode tables and the regular-expression checks the parser reads are Ast's, and
-       Broiler.Unicode.Algorithms, whose IUnicodeTables types the options' provider, comes with Ast. -->
+       D20): the Unicode tables the parser reads are Expressions' (moved there from Ast at window W2 of milestone SJL-14,
+       decision D50), its regular-expression check is Broiler.Regex's validate entry, referenced below, and
+       Broiler.Unicode.Algorithms, whose IUnicodeTables types the options' provider, comes with Expressions. -->
   <!-- The bridge (milestone SJL-14.2, window W1; Broiler.VM's JSD-0083, decisions D41 and D44) parses with the shared
        syntax library and builds this assembly's tree from the library's. It is internal: the compiler reaches it for
        every compile (window W2, milestone SJL-14.3, which removes SJL-14.2's test-only switch, decision D43), the
@@ -24,8 +25,8 @@
     <ProjectReference Include="..\Broiler.JavaScript.Expressions\Broiler.JavaScript.Expressions.csproj" />
   </ItemGroup>
   <!-- Broiler.Regex's validate entry checks a regular-expression literal (milestone SJL-11.5; Broiler.VM's JSD-0081,
-       decision D22). Its compile assets stay private here too, as in Ast, so that its namespace does not reach the
-       projects that reference the parser. -->
+       decision D22). Its compile assets stay private here, as in Expressions (Ast referenced it so until window W2), so
+       that its namespace does not reach the projects that reference the parser. -->
   <ItemGroup>
     <PackageReference Include="Broiler.Regex" PrivateAssets="compile" />
   </ItemGroup>

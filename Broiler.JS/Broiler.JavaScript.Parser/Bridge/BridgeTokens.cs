@@ -471,8 +471,8 @@ internal sealed class BridgeTokens
     /// The old scanner's token stream over an accepted source, made from the library's (window W2, milestone SJL-14.5):
     /// every token of <paramref name="tokens"/>, the request's <see cref="ParseResult.Tokens"/>, as this engine's
     /// <see cref="FastToken"/> with the kind, keyword facts, cooked value, number and flags the old scanner gave it, one
-    /// line-terminator token before each token a line terminator precedes, and the end-of-file token, linked in source
-    /// order. A private name is the old scanner's two tokens, <c>#</c> and the name. Returns the first token.
+    /// line-terminator token before each token a line terminator precedes, the end of file among them, and the end-of-file
+    /// token, linked in source order. A private name is the old scanner's two tokens, <c>#</c> and the name. Returns the first token.
     /// </summary>
     internal FastToken Chain(IReadOnlyList<Broiler.ECMAScript.Syntax.Token> tokens)
     {
@@ -533,6 +533,15 @@ internal sealed class BridgeTokens
             }
 
             previousEnd = start + count;
+        }
+
+        // A line terminator between the last token and the end of the text is a line-terminator token before the end of
+        // file, as the old scanner gave it (found in review of window W2): "a\n" is a, a line terminator and the end.
+        var last = FirstLineTerminator(previousEnd, EndOffset);
+        if (last < EndOffset && source[last] is '\n' or '\r' or '\u2028' or '\u2029')
+        {
+            var width = last + 1 < EndOffset && source[last] == '\r' && source[last + 1] == '\n' ? 2 : 1;
+            made.Add(new FastToken(TokenTypes.LineTerminator, source, null, null, last, width, Location(last), Location(last + width)));
         }
 
         made.Add(Eof);

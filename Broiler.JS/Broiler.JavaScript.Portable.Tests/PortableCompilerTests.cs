@@ -119,4 +119,12 @@ public sealed class PortableCompilerTests
 
         Assert.Contains("does not support", error.Message);
     }
+
+    // Found in review of window W2: the compiler's request reads the engine's proposals and its decimal suffix, so a
+    // source the engine parses is refused as unsupported, not as a SyntaxError.
+    [Theory]
+    [InlineData("function f() { return 1m; }")]
+    [InlineData("function f() { return class { @d m() {} }; }")]
+    public void ASourceTheEngineParsesIsUnsupportedNotASyntaxError(string source)
+        => Assert.Throws<NotSupportedException>(() => new PortableCompiler().Compile(source));
 }

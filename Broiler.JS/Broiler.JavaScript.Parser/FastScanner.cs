@@ -97,11 +97,12 @@ public class FastScanner
     }
 
     /// <summary>
-    /// A state of the scanner: the offset, from the start of <see cref="Text"/>, it was pushed at. A commit makes a token
-    /// of the text from there to where the scanner is.
+    /// A state of the scanner: the offset, from the start of <see cref="Text"/>, it was pushed at (its constructor's
+    /// <c>position</c>, the parameter's name as it was before window W2). A commit makes a token of the text from there to
+    /// where the scanner is.
     /// </summary>
     [System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
-    public struct State(FastScanner scanner, int start)
+    public struct State(FastScanner scanner, int position)
     {
         public FastToken Commit(TokenTypes type, string cooked, string flags) => Make(type, cooked, flags, 0, false);
 
@@ -110,7 +111,7 @@ public class FastScanner
         /// <summary>The source text from where this state was pushed to where the scanner is.</summary>
         public readonly ReadOnlySpan<char> Scanned()
         {
-            var from = scanner.Text.Offset + start;
+            var from = scanner.Text.Offset + position;
             return scanner.Text.Source.AsSpan(from, Math.Max(0, scanner.Offset - from));
         }
 
@@ -118,14 +119,14 @@ public class FastScanner
             => Make(type, builder?.ToString(), null, 0, cookedInvalid);
 
         /// <summary>Moves the state to where the scanner is.</summary>
-        public void Reset() => start = scanner.Offset - scanner.Text.Offset;
+        public void Reset() => position = scanner.Offset - scanner.Text.Offset;
 
         /// <summary>Returns the scanner to the state's offset.</summary>
-        public void Dispose() => scanner.ResetTo(scanner.Text.Offset + start);
+        public void Dispose() => scanner.ResetTo(scanner.Text.Offset + position);
 
         private readonly FastToken Make(TokenTypes type, string cooked, string flags, double number, bool cookedInvalid)
         {
-            var from = scanner.Text.Offset + start;
+            var from = scanner.Text.Offset + position;
             var to = Math.Max(from, scanner.Offset);
             return new FastToken(type, scanner.Text.Source, cooked, flags, from, to - from, scanner.At(from), scanner.At(to),
                 number: number, cookedInvalid: cookedInvalid);
