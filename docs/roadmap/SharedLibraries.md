@@ -1786,6 +1786,44 @@ numbered as the answers of 2026-11-18 above continue.
   same in a dated note, with the files' blob ids, and revises no rule line. No after run has been taken, every clause
   of this engine's, 4 to 7, is unmet, and none of it is accepted.
 
+*(Noted 2026-11-19, after SJL-11.5's merge; the notes above are left as written.)* **SJL-11.5 merged, the hold
+ended, and the after runs of parts C, D and E were taken.** The notes above end "No after run has been taken, every
+clause of this engine's, 4 to 7, is unmet, and none of it is accepted", and the last reads "How arm A is built is the
+owner's open question, and arm A is not built until the owner's reading is recorded".
+- **The merge.** SJL-11.5 merged to the default branch on 2026-11-19 as Broiler-Platform/Broiler.JS#1126,
+  `b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1`, a merge commit whose first parent is the base commit
+  `5429c4065e8b273e5c7965598b8a2f5490a8ad98` and whose second is `ce908940`, the head of `sjl-11-5`. It is the rule's
+  after commit, `5429c406` is its base commit, and the base runs taken there stand. The hold of decision D16 ended with
+  that merge.
+- **The after runs.** Parts C, D and E's after runs were taken at the after commit, from a clean archive, with the base
+  runs' commands, zone, cultures and toolchain, and are retained in bundle
+  [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s `after/`, with part C's and part E's controls in its `controls/`;
+  the bundle's README names each file by its SHA-256 and reads each part by the rule. **Part C reads NOT MET**: one
+  case, N05, passes the wall-clock limit at the base and throws its declared `SyntaxError` after, and neither class C1,
+  whose base outcomes do not include passing the limit, nor C3, which asks that the case completed at the base, admits
+  it; whether such a case reads under C1 is the owner's. **Part D reads MET on the retained runs**, at corpus revision
+  32 by the owner's answer 5. **Part E reads MET on the retained runs.** Part A's after run, a dispatch of the evidence
+  workflow at the after commit with the base run's inputs, has not been taken, and part A has no reading.
+- **The owner's answer 7 of 2026-11-19, quoted verbatim**, the owner's own, not taken under the owner's direction of
+  2026-10-18. Asked (2026-11-19): "SJL-11.5 part B's arm A is "the after commit, with the same two files"
+  (RegExpBenchmarks.cs and the benchmark Program.cs "as the inputs commit has them"). RegExpBenchmarks.cs is unchanged
+  at the merge. But the inputs commit's Program.cs calls the RegexTiering metrics that the cut-over deletes (D20/D21),
+  so it cannot build at the merge. How should arm A be built?" Chosen: "Merge's own Program.cs" — "A dated revision,
+  filed before any part B run, reads arm A's Program.cs as the merge's own. That file differs from the inputs commit's
+  only by the removed --regex-tiering block, which part B never invokes. Its --regexp-answers path and the benchmark
+  entry must be byte-identical; if they aren't, the run stops and comes back to you." Not taken: "Inputs file minus
+  the block" — "Arm A uses the inputs commit's Program.cs with only the --regex-tiering block cut out, as a patched file
+  named by hash in the manifest. It stays closer to the rule's words, but arm A then builds from a file no commit
+  has."; "Record part B void" — "No part B run. The rule then leaves the measurement question open for this engine. It
+  blocks nothing." The bundle's
+  [`decision-rule-revised-2026-11-19.md`](../evidence/sjl-11-001/decision-rule-revised-2026-11-19.md) is that
+  revision, filed before any part B run and written after other parts' runs were seen, which the rule calls weaker
+  evidence; its condition holds at the after commit, as the bundle's README records. Part B's run on the lane
+  `win-x64-r7-5800x` is still to be taken, by a local session on the owner's workstation.
+
+No clause reading and no exit reading is taken here: no clause of this engine's, 4 to 7, has been read, and none of
+it is accepted.
+
 **Locale data and the Intl algorithms (SJL-9.1), filed 2026-10-26: all five sub-areas accepted, plural ranges and
 display-name naming adopted, decisions SJL-D-22 and SJL-D-24 recorded, and the owner's decisions of 2026-10-26
 recorded.**
