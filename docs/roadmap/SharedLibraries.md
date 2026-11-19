@@ -1770,6 +1770,22 @@ numbered as the answers of 2026-11-18 above continue.
   and the hold still holds"; Broiler.RegEx's task 4.2 stays open there, Broiler.RegEx's to record. No after run has
   been taken, every clause of this engine's, 4 to 7, is unmet, and none of it is accepted.
 
+*(Noted 2026-11-19, the same day, after review; the two notes above are left as written.)* **Three corrections.**
+- **The note it answers.** The note above reads "which answers the second note of 2026-11-18 above". The words it
+  quotes, "Whether D35 asks more of the candidate reading than that it has been taken, such as task 4.2's close, ...
+  no record read here says", are in the third note of 2026-11-18 in this section, "What the merge still waits on".
+- **The rule's revisions.** The first of the two notes above reads "the rule's revisions `189d65ff`, `45a15487` and `909532bd`". The
+  rule has two revisions, `189d65ff` and `45a15487`, the second revised at review by `909532bd` before it merged, as
+  the note of 2026-11-18 on the inputs reads.
+- **Part B's arm A.** The note above reads "arm A and A-again from the merge". The rule's part B fixes arm A as "the
+  after commit, with the same two files", `RegExpBenchmarks.cs` and the benchmark `Program.cs` "as the inputs commit
+  has them" (`decision-rule.md:146`). On the branch, `d892dd0b` removes `Program.cs`'s `--regex-tiering` block with
+  the `RegexTieringMetrics` and the `RegexTiering` it calls (decisions D20 and D21), so the inputs commit's
+  `Program.cs` does not build at the merge. How arm A is built is the owner's open question, and arm A is not built
+  until the owner's reading is recorded; bundle [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s README says the
+  same in a dated note, with the files' blob ids, and revises no rule line. No after run has been taken, every clause
+  of this engine's, 4 to 7, is unmet, and none of it is accepted.
+
 **Locale data and the Intl algorithms (SJL-9.1), filed 2026-10-26: all five sub-areas accepted, plural ranges and
 display-name naming adopted, decisions SJL-D-22 and SJL-D-24 recorded, and the owner's decisions of 2026-10-26
 recorded.**
