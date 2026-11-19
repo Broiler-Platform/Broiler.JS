@@ -1824,6 +1824,44 @@ owner's open question, and arm A is not built until the owner's reading is recor
 No clause reading and no exit reading is taken here: no clause of this engine's, 4 to 7, has been read, and none of
 it is accepted.
 
+*(Noted 2026-11-19, later the same day, part A's after run and its reading, the owner's answer 8, and part C read a
+second time; the notes above are left as written.)* **Part A: read MET on the retained runs; part C, read a second
+time under a revision for case N05: read MET on the retained runs.** The note above reads "Part A's after run, a
+dispatch of the evidence workflow at the after commit with the base run's inputs, has not been taken, and part A has
+no reading" and, of part C's case N05, "whether such a case reads under C1 is the owner's".
+- **Part A's after run** is a run of `.github/workflows/test262-evidence.yml`, which the bundle's README names,
+  dispatched on 2026-11-19 on `main` at the after commit `b2b226cd` with the base run's inputs but for the commit, by
+  the workflow blob the rule's revision of 2026-11-18 admits; every job concluded success, and its evidence artifact is retained unchanged in bundle
+  [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s `after/part-a/`, named by the zip's digest, with the rule's
+  comparison of it with the base beside it. The bundle's README reads part A by the rule's MET line, each condition
+  with the file and digest that shows it: both runs complete, one shell each, every shard in the zone, the two
+  host-zone records the same, every duplicate-named-groups row passing at both commits, no row that passed at the base
+  changed, and every changed verdict a C1 row of rows S7, S8 and S11, exactly the test262 files the rule's list names
+  for them, each listed. No row moved for row M28's first half or through the `split` fallback, and no row is a
+  finding against JSD-0081. **Part A: read MET on the retained runs.**
+- **The owner's answer 8 of 2026-11-19**, the owner's own, not taken under the owner's direction of 2026-10-18,
+  "Admit N05 by revision", is quoted verbatim, with the alternative not taken ("Keep part C NOT MET"), in the bundle's
+  README and in the revision it orders,
+  [`decision-rule-revised-2026-11-19b.md`](../evidence/sjl-11-001/decision-rule-revised-2026-11-19b.md). That
+  revision quotes the rule whole and changes only part C: one named exception admits case N05 alone, past the
+  wall-clock limit at the base and its declared `SyntaxError` after, and part C's MET line reads with it; the classes
+  C1 and C3 and "no other class" stand for every other case. It was written after part C's runs and first reading had
+  been seen, so its decision is weaker evidence under the rule's section "Revisions".
+- **Part C, read a second time** on the same retained runs, with nothing rerun: after, every case gives its declared
+  outcome; every case whose outcome differs from the base's is C3, as the first reading lists it, or is case N05 under
+  its exception; and the control is reported as stated. **Part C, under the revision: read MET on the retained runs.**
+  The first reading, "Part C: read NOT MET", stays on record beside it.
+- **The rule's two revisions of 2026-11-19** are
+  [`decision-rule-revised-2026-11-19.md`](../evidence/sjl-11-001/decision-rule-revised-2026-11-19.md), by answer 7,
+  for part B's arm A, filed before any part B run, and `decision-rule-revised-2026-11-19b.md`, by answer 8, for case
+  N05. Each was written after runs the rule judges were seen, and each is weaker evidence for that. The second changes
+  nothing in part B.
+- **Part B** is still to be taken, on the lane `win-x64-r7-5800x` by a local session on the owner's workstation, and
+  has no reading.
+
+No clause reading and no exit reading is taken here: no clause of this engine's, 4 to 7, has been read, and none of
+it is accepted.
+
 **Locale data and the Intl algorithms (SJL-9.1), filed 2026-10-26: all five sub-areas accepted, plural ranges and
 display-name naming adopted, decisions SJL-D-22 and SJL-D-24 recorded, and the owner's decisions of 2026-10-26
 recorded.**

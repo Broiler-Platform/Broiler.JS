@@ -934,7 +934,9 @@ What it means here:
   every other part stand. It says it was written after part C's runs, its control and its first reading had been
   seen, so its decision is weaker evidence in the sense of the rule's section "Revisions". `decision-rule.md` and the
   three earlier revisions are not edited; the five are read together. Its name adds `b` to the date, the bundle's
-  second revision of one day.
+  second revision of one day. *(Added the same day, before the revision merged:)* `d5c3e1896b6d848e7d2effe0f2064cbe526a7005`
+  changed the revision's own text, before it merged and before any run, so that it holds no figure, as the rule says of
+  itself; its dated note says what each place read. Its decision and the two lines it changes are as above.
 
 **Part C, read a second time, under the revision of 2026-11-19 (b): read MET on the retained runs.** It is read on
 the runs the first reading read, nothing rerun: [`base/part-c/results.tsv`](base/part-c/results.tsv)
