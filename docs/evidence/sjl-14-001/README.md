@@ -33,15 +33,22 @@ Broiler.JS `33d3093b` and Broiler.VM `c5bde2b`, each repository's default branch
 **Written:** 2026-11-19, with W2's code, on a branch from the default branch's `fefb4f9c`, before any base run and before
 the base commit exists. Nothing here is a run or a reading of a part; the rule is not edited. The commits are the
 branch's, each named "SJL-14: W2 stage N, ..." for the plan's stage order (`docs/roadmap/SharedLibraries.md`, "The work,
-in order"), and W2 is the one merge that lands them.
+in order"), and W2 is the one merge that lands them. *(Added 2026-11-19, in review of the branch:)* the stage-4
+continuation (`8632939e`, "stage 4, continued") follows stage 5 (`c4b0bf14`) in the branch's history, and the review's
+fixes follow stage 6 and the bundle's commits, each named "SJL-14: W2, review fix..."; the checks were taken on the
+branch's head from a clean archive, not on each stage's commit, and stage 1's commit alone (`34c4e7eb`) leaves the
+deep-nesting fixtures failing until its continuation (`4493624b`).
 
 **The session's decisions under the owner's direction of 2026-10-18**, "Please do all recommended decisions and skip
 waiting for review.", each taken as recommended, with its alternative not taken; none revises a rule line:
 - **B5, the shared stream's version.** `Broiler.ECMAScript/Directory.Build.props`' `VersionSuffix` moves from
   `preview.8` to `preview.12` in W2's package stage (stage 4), so that the Parser package's dependency on
   `Broiler.ECMAScript.Frontend` names the version published from tag `ecmascript-v0.1.0-preview.12`, whose
-  `Broiler.ECMAScript/` equals this branch's (the section "The shared stream's published version" of the records of
-  2026-11-19 reads it). Moving it publishes nothing. *Not taken:* having `eng/pack.ps1` resolve the shared dependency from
+  `Broiler.ECMAScript/` equals the default branch's at `fefb4f9c`, and this branch's but for that file's `VersionSuffix`
+  and its comment (the section "The shared stream's published version" of the records of 2026-11-19 reads it). Moving it
+  publishes nothing. *(Corrected 2026-11-19, in review: this read "whose `Broiler.ECMAScript/` equals this branch's",
+  which the suffix's own change makes untrue; so did `docs/public-api.md`'s "Package dependencies" and the file's
+  comment, corrected with it.)* *Not taken:* having `eng/pack.ps1` resolve the shared dependency from
   the `ecmascript-v*` tags.
 - **B6, part F's control.** The pristine consumer packs both sets, the engine closure, which packs the shared libraries
   it references, and the shared set's other packable projects, and maps this repository's ids to the local feed alone by
@@ -51,7 +58,13 @@ waiting for review.", each taken as recommended, with its alternative not taken;
   the mapping names the prefixes `Broiler.JavaScript.` and `Broiler.ECMAScript.`, since `Broiler.Regex` and
   `Broiler.Unicode.*`, which other repositories publish, are not packed here and come from nuget.org. `scripts/` is no
   product path. *Not taken:* a dated rule revision of the control, which would be weaker evidence by the rule's
-  "Revisions" and goes to the owner by precedent.
+  "Revisions" and goes to the owner by precedent. *(Added 2026-11-19, in review:)* part F reads "eng/pack.ps1 and
+  eng/verify-feed.ps1 at the after commit into a local feed; scripts/packaging/test_pristine_consumer.py against that
+  feed". The script packs its own feed by default; `--feed`, repeatable, copies the packages of the directories it names
+  (`eng/pack.ps1`'s Engine and Shared outputs) into the consumer's private feed and packs nothing, and `--control-remove`
+  then removes the package from that copy alone. Part F's run passes `--feed` with both outputs, for the check and for
+  its control, so that the consumer reads the feed `eng/pack.ps1` made. The control passes only on a missing-package
+  error that names the package removed.
 - **B7, the facade and part I's quantity.** `FastParser.ParseProgram`'s facade parses through `SharedSyntaxBridge.Parse`,
   which takes the hop to the library's parse thread (decision D47 (a)), so the harness's `parse` column
   (`CompilePhaseMetrics`, which times `FastParser.ParseProgram` on the calling thread) measures the rule's after
@@ -62,7 +75,26 @@ waiting for review.", each taken as recommended, with its alternative not taken;
   branch, and part C reads NOT MET for that input unless a class admits it. None is known: no base run has been taken.
   *Not taken:* reading the rule's "fixed as a dark merge" as allowing a bridge-only merge before W2, which conflicts
   with the rule's "W1 is the only first-parent commit that carries any part of the bridge or the switch".
-- **B10, two code points.** `FastScanner.IsValidRegularExpressionLiteral`, Broiler.Regex's validate entry, stays where it
+- **B8 (W2's own bridge changes), a reading added 2026-11-19, in review, before any base run.** The rule reads: "W1 is
+  the only first-parent commit that carries any part of the bridge or the switch"; "W2 is the only first-parent commit
+  that carries any part of SJL-14.3 to SJL-14.5 (the switch's removal, the adapter packages, the portable compiler's and
+  the module analysis's move, the deletions)"; and "A part whose base was taken at any other commit, or whose commits
+  fail those conditions, is void." W2 itself changes the bridge: `Bridge/BridgeRequest.cs` (the request's Unicode
+  tables), `Bridge/BridgeTokens.cs` (the token chain the facades read) and `Bridge/SharedSyntaxBridge.cs` (the token
+  chain and the shared tree the portable compiler's and the module analysis's readers take), each for an item of
+  SJL-14.3 to SJL-14.5, and B8's fix would add to them. *Taken:* W1's condition is read as covering the bridge as
+  SJL-14.2 landed it and every first-parent commit before the base commit: no first-parent commit but W1 carries any
+  part of the bridge or the switch through the base commit. The bridge's changes W2 makes are SJL-14.3 to SJL-14.5's,
+  which the rule's second sentence gives to W2 as its own, the switch's removal and the facades' tokens among them, so
+  W2's carrying them is W2's condition met, not W1's failed. Main's reading B1 reads the same lines against SJL-11.5's
+  merge `b2b226cd`; this one reads them against W2. *Not taken:* the rule's words alone: W2 is a first-parent commit that
+  carries part of the bridge, so W1's condition fails at W2, and by the void sentence every part judged at the base
+  commit or at W2 is void, as is part B, judged at W1. *Added to the owner's optional ruling* beside B1's (the section
+  "Part B, judged on 2026-11-15" on the default branch, by its note of 2026-11-19), with the alternative.
+- **B10 (code points), two code points.** *(Labelled 2026-11-19, in review: this read "B10, two code points"; it is
+  not the records' reading "B10 (part I's protocol)" of the same day, "Part I's protocol, filed before any part I run",
+  which the default branch carries and B7 above cites, and the two share the number because the map's B10 named both.)*
+  `FastScanner.IsValidRegularExpressionLiteral`, Broiler.Regex's validate entry, stays where it
   is, and the bridge's regular-expression provider calls it (`dispositions.md` lists it on no deletion row). *Not
   taken:* moving it into `BridgeRegularExpressions`. And row R24 of K10 is corrected by an overload of the public
   `DirectEvalSupport.Execute` whose new parameter carries the class's heritage, with its row in
@@ -71,7 +103,43 @@ waiting for review.", each taken as recommended, with its alternative not taken;
 
 **Where W2's code departs from the records, and why**, each recorded here before any base run:
 - **`FastParseException` stays in `Ast`**, not moved or forwarded: its public field `Token` is a `FastToken`, which stays
-  in `Ast`. `dispositions.md` records it by a dated note of the same day.
+  in `Ast`. *(Changed 2026-11-19, in review: this read "`dispositions.md` records it by a dated note of the same day". The
+  note is removed from `dispositions.md`, which was committed with the rule, before any change it judges, and which
+  parts F, H and K are judged against, so that W2 does not revise it; the departure is recorded here alone, and
+  `dispositions.tsv` agrees with `dispositions.md` again.)* `dispositions.md`'s bullet reads "**`FastParseException` is
+  moved and forwarded, not marked obsolete.**" It cannot move: `Broiler.JavaScript.Expressions` cannot name `FastToken`,
+  a type of `Ast`, which references it. W2 keeps `FastParseException` in `Ast`, in its namespace, not moved, not
+  forwarded and not marked obsolete; it stays a non-tree type by that bullet's reason, which `Runtime` catches, the
+  facade throws and SJL-12's tool catches, and its public surface does not change. The alternatives were to move
+  `FastToken` with it, and with it `SpanLocation` and `FastKeywords`, which `dispositions.md` marks obsolete, or to change
+  the field's type, a breaking change the facade must not make. Part H reads the type against `dispositions.md`'s bullet
+  as written; whether `dispositions.md` counts as a rule file, and whether this departure is admitted, are the owner's,
+  before any run of parts F, H or K.
+- **The two parser tests that read the old parser's message text** (decision D46, "the texts hosts and tests read are
+  kept (... and the texts this engine's tests assert)"): `ParserTests` asserted `Contains("Unexpected token Negate: ! at
+  1, 1")` with `"the end of the script"`, and with `"SemiColon at 1, 2"`, the old parser's backtracking report naming
+  the statement's first token and the furthest; W2 asserts the library's report of the token where the parse stopped,
+  `Equal("Unexpected token EOF at 1, 2")` and `Equal("Unexpected token ; at 1, 2")`, and the tests' comments call it
+  class M. *(Recorded 2026-11-19, in review: this list and the "Tests revised" bullet below had called the change class
+  M, decision D46, where D46 keeps those texts.)* It departs from D46. *Alternative not taken:* keeping the asserted texts
+  through the bridge's message table, which would make the table reproduce the old parser's backtracking for those two
+  shapes. The owner may rule otherwise, with the other reserved points. The three unterminated-token lines are position
+  moves, which D46 names as class M.
+- **The portable compiler references `Broiler.Regex`** (privately), beyond decision D53's list ("`Portable.Compiler.csproj`
+  references the frontend and `Portable`, and `Broiler.JavaScript.Expressions` only if it uses a non-tree type that
+  moves there"): its regular-expression provider answers the library with Broiler.Regex's validate entry and its flags,
+  which `Expressions` does not expose. *Recorded 2026-11-19, in review*; `docs/architecture/dependencies.md`'s note says
+  the same. *Alternative not taken:* a flags-aware validator exposed from `Expressions`, a new member there. The closure
+  is unchanged: Broiler.Regex was in it through `Ast` and `Parser` at the base.
+- **`FastParser.Combine`'s conditional form** throws `NotSupportedException`; it parsed the false branch from the stream
+  until W2. Decision D50 keeps "every member" of the facade. *Recorded 2026-11-19, in review.* *Alternative not taken:*
+  parsing the false branch from the stream's position through the bridge, as `Export` and `NonDeclarativeStatement` do,
+  which would parse a text that is not a program on its own. `docs/public-api.md` names it.
+- **`FastScope` and `FastScopeItem`** record nothing and answer as a scope that declares no name, since no parser fills
+  them (*changed 2026-11-19, in review*: they had kept a private record of the names a caller added, a working name record
+  rather than a facade over the bridge, which part K's MET clause admits only as "an obsolete forwarder over the bridge").
+  `dispositions.md` lists them `facade-obsolete`. *Alternative not taken:* keeping the name record and reading it as that
+  disposition by a note in `dispositions.md`.
 - **The stages' contents.** The plan's stage order puts "the switch on and removed with the old parser's
   implementations" first. The implementations cannot leave before their facades exist, and the portable compiler, the
   module analysis and the two re-scans still read them until stages 2 and 3, so stage 1 removes the switch and the
@@ -86,8 +154,10 @@ waiting for review.", each taken as recommended, with its alternative not taken;
 - **Tests revised**, each by the correction or class it shows, with its old text in the diff: the deep-nesting fixtures
   (R12, R13; class C3); three parser fixtures whose acceptance the library corrects as the specification does (`await` in
   a class static block, `yield` in a class field initializer, an operator sequence that is no expression); two that read
-  the old parser's backtracking report and three unterminated-token lines (class M, decision D46); and the tests that read
-  the moved types' assembly. They are not part C's classification, which is taken at the base commit.
+  the old parser's backtracking report (a departure from D46, above) and three unterminated-token lines (class M,
+  decision D46); and the tests that read the moved types' assembly. They are not part C's classification, which is taken
+  at the base commit. *(Changed 2026-11-19, in review: the bullet read "two that read the old parser's backtracking report
+  and three unterminated-token lines (class M, decision D46)".)*
 
 **Checks** on the branch head are recorded with the branch's report, not here; no part's base or after run is taken.
 

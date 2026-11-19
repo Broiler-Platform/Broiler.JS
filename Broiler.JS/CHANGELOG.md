@@ -27,8 +27,12 @@ row with no test262 path is shown by the probes or vectors its evidence names. T
 difference by them before it is judged; this list is the changelog's, as decision SJL-D-16 (a) asks, and judges nothing.
 
 - **The messages** (decision D46): a refusal's text is rendered by the bridge's message table from the library's
-  diagnostic, V8-style, with its position; the texts this engine's tests read are kept, and every other text that
-  differs from the old parser's is class M of the bundle's rule, in the side-by-side run's generated message table. A
+  diagnostic, V8-style, with its position. The texts this engine's tests read are kept but two: the two parser tests
+  that read the old parser's backtracking report ("Unexpected token Negate: ! at 1, 1" with "the end of the script" or
+  "SemiColon at 1, 2") now read the library's report of the token where the parse stopped ("Unexpected token EOF at 1,
+  2", "Unexpected token ; at 1, 2"), a departure from decision D46 the bundle records for the owner. Every other text
+  that differs from the old parser's is class M of the bundle's rule, in the side-by-side run's generated message
+  table. A
   refusal is still a `FastParseException` at the parse and a `SyntaxError` to a script. An unterminated comment or
   template is reported where it begins, where the old scanner reported where the input ran out.
 - **The eval prefix and the re-scans** (decisions D41 and D44): a strict caller's eval code is strict through the

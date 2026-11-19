@@ -118,7 +118,9 @@ publish-and-run gate decide whether the hypotheses become the target.
   by `Ast.Tests` as before), with the non-tree types `StringSpan`, `TokenTypes`, `RegExpUnicodeValidator` and the others
   `Ast` now forwards, and `Expressions` references `Broiler.Regex` for the validator; `Ast` references neither package.
   The parser and the portable compiler parse with `Broiler.ECMAScript.Frontend`, and the portable compiler references
-  `Expressions` for the tables, not `Ast` or `Parser` (decision D53).)* *(Corrected
+  `Expressions` for the tables, not `Ast` or `Parser` (decision D53), and `Broiler.Regex` (privately) for the
+  regular-expression check with its flags, which `Expressions` does not expose: a departure from D53's list the bundle
+  README records.)* *(Corrected
   2026-10-12: this bullet read "Nested DateTime, Regex, and Unicode components are implementation
   dependencies of feature code; they must not leak into lower-layer public contracts unnecessarily.")*
   *(Revised 2026-10-16, at milestone SJL-7.5, when the Unicode area moved to Broiler.Unicode's code

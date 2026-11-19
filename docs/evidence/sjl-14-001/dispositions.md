@@ -52,17 +52,6 @@ obsolete with the tree: nothing outside the parser and the compiler calls it.
   catches it, so it is a non-tree type. Read from the code at `33d3093b` by name (this bundle's
   `tools/records/write_records.py` lists the dispositions; the use was found by a search of every project's sources
   for each public type's name outside `Ast` and `Parser`).
-  *(Noted 2026-11-19, at window W2, where W2's code departs from this bullet: the bullet reads "**`FastParseException`
-  is moved and forwarded, not marked obsolete.**" It cannot move. Its public field `Token` is a `FastToken`, a tree type
-  this file marks `obsolete` and keeps in `Ast`, and `Broiler.JavaScript.Expressions` cannot name a type of `Ast`, which
-  references it. W2 therefore keeps `FastParseException` in `Ast`, in its namespace, **not moved, not forwarded and not
-  marked obsolete**: it stays a non-tree type by this bullet's reason, which `Runtime` catches, the facade throws and
-  SJL-12's tool catches, and its public surface does not change. The alternatives were to move `FastToken` with it, and
-  with it `SpanLocation` and `FastKeywords`, which this file marks obsolete, or to change the field's type, a breaking
-  change the facade must not make. `dispositions.tsv` still lists the type as `moved-forwarded`; it is generated from
-  this file's listing at `33d3093b` and is not regenerated for this note. Part H reads this note with that row. This is
-  a departure taken under the owner's direction of 2026-10-18, recorded before any run of parts F, H or K, and the owner
-  may rule otherwise.)*
 - **Every other public type of `Ast` that a product project other than the compiler, the portable compiler and the
   module loader names** is on D50's list: `StringSpan` (`BuiltIns`, `Clr`, `Engine`, `ExpressionCompiler`,
   `Extensions`, `LinqExpressions`, `Modules`, `Network`, `Runtime`, `Storage`), the property contracts (`BuiltIns`,
