@@ -99,7 +99,55 @@ row's second cell read "`0.1.0-preview.1`, the first version the stream will pub
 row's second cell began "`0.1.0-preview.1` published; `0.1.0-preview.2`, with the numerics area, the
 next", and its third cell ended at "`BigIntText` and `BigIntPolicy`".*
 
+## Public API changes, 2026-11-19 (window W2 of milestone SJL-14: the cut-over to the shared syntax library)
+
+Window W2 (SJL-14.3 to SJL-14.5; Broiler.VM's JSD-0083; this repository's decisions D41 to D56 in
+[`roadmap/SharedLibraries.md`](roadmap/SharedLibraries.md)) moves every parse to the shared syntax library,
+`Broiler.ECMAScript.Frontend`, and makes `Broiler.JavaScript.Ast` and `Broiler.JavaScript.Parser` adapter packages over
+it. Each public type and member is disposed of as bundle `sjl-14-001`'s
+[`dispositions.md`](evidence/sjl-14-001/dispositions.md) records it (decision D50), under SJL-D-25: (a) a forwarder,
+(b) obsolete with the removal version, (c) removal with a recorded consumer check. The observable corrections are in
+[`Broiler.JS/CHANGELOG.md`](../Broiler.JS/CHANGELOG.md), "The cut-over to the shared syntax library", K1 to K10 by row.
+
+**The marks.** Every mark this section names carries the one diagnostic identifier `BJS0001` and names the removal
+version `1.0.0` in its message; the repository root's `Directory.Build.props` suppresses `BJS0001` with its one
+`NoWarn`, which every project under it inherits, until milestone SJL-15.5. A consumer outside this repository sees the
+warning `BJS0001` where it names a marked type.
+
+| Member | Assembly | Disposition | What it does now |
+| --- | --- | --- | --- |
+| Every public type of `Broiler.JavaScript.Parser`: `CharExtensions`, `DisposableList`, `Error`, `ErrorHandler`, `FastKeywordMap`, `FastList<T>`, `FastParser`, `FastParserGoal`, `FastParserOptions`, `FastPool` (with `FastPool.Scope`), `FastScanner` (with `FastScanner.State`), `FastScope`, `FastScopeItem`, `FastStack<T>`, `FastStringBuilder`, `FastTokenStream` (with `FastTokenStream.Marker`), `IParser`, `QueueExtensions`, and every member of each | `Parser` | (b) obsolete, removal `1.0.0` (`facade-obsolete`) | Kept, every member, as a facade over the bridge: `FastParser.ParseProgram` and `ParseModule` parse through the bridge, which builds this engine's tree from the library's and takes the hop to the library's parse thread; `FastScanner` and `FastTokenStream` read the library's tokens as the bridge makes them; `FastKeywordMap` reads `FastKeywords`' names; `FastScope` and `FastScopeItem` record names and refuse nothing. A refusal is still a `FastParseException`. `FastParser.Combine`'s conditional form, which parsed the false branch, throws `NotSupportedException` |
+| `FastTokenStream.UndoMark()` | `Parser` | kept obsolete without a removal version (`kept-obsolete-no-version`, JSD-0080's decision D20) | Its mark of SJL-12.5, unchanged; its type is now marked too |
+| Every public type of `Broiler.JavaScript.Ast` but the non-tree types below and `FastParseException`: the tree's nodes, visitors and their helpers in `Broiler.JavaScript.Ast`, `.Ast.Expressions`, `.Ast.Patterns` and `.Ast.Statements`, and `Case`, `FastKeywords`, `FastNodeType`, `FastToken`, `SpanLocation` and `TokenTypesExtensions` in `Broiler.JavaScript.Ast.Misc` | `Ast` | (b) obsolete, removal `1.0.0` (`obsolete`) | Kept and built by the bridge from the shared tree; `TokenTypesExtensions` stays in `Ast` when `TokenTypes` moves |
+| `StringSpan` (with `StringSpan.CharEnumerator`), `StringSpanReader`, `ArraySpan<T>` (with its `Enumerator`), `IPropertyAccessor`, `IPropertyValue`, `UnaryOperator` and `TokenTypes`, namespace `Broiler.JavaScript.Ast.Misc`; `CancellableDisposableAction` and `RegExpUnicodeValidator`, namespace `Broiler.JavaScript.Runtime` | moved from `Ast` to `Expressions`; `Ast` forwards each, and `Runtime` still forwards the last two | (a) forwarder (`moved-forwarded`) | Unchanged in name, namespace, signature and nullable annotations; not marked. A binary built against `Ast` (or `Runtime`) binds through the forwarders |
+| `FastParseException`, namespace `Broiler.JavaScript.Ast.Misc` | `Ast` | kept, unchanged and unmarked | `dispositions.md` lists it as moved and forwarded; it cannot move, since its public field `Token` is a `FastToken`, which stays in `Ast`, and `Expressions` cannot name it. `dispositions.md`'s note of 2026-11-19 records the departure |
+| `DirectEvalSupport.Execute(...)`, a new overload whose parameters are the existing one's with `bool inDerivedConstructor` before `tailCall`, none optional but `tailCall` | `Compiler` | added | The compiler emits it: the flag is whether the caller is a derived class's constructor, from the class's heritage, and a `super()` in a base class's constructor's eval code is a SyntaxError (row R24 of K10; the session's decision B10 of 2026-11-19). The existing overload is kept unchanged and forwards with the flag it always meant, for code compiled against it |
+| `PortableCompiler.Compile(string)` | `Portable.Compiler` | kept, results corrected | It parses with the shared syntax library and reads its tree (decision D41), so a source with an early error the library checks is refused with a `FormatException` naming the library's diagnostic and its position, where it compiled or reached the subset checks; the subset is unchanged. The project references `Broiler.ECMAScript.Frontend`, `Portable`, `Expressions` and `Broiler.Regex`, and no longer `Ast` or `Parser` (decision D53) |
+
+**Package dependencies.** `Broiler.JavaScript.Parser` depends on `Broiler.ECMAScript.Frontend` at the shared stream's
+`0.1.0-preview.12`, published from tag `ecmascript-v0.1.0-preview.12`, whose `Broiler.ECMAScript/` equals this branch's
+(decision D30; the session's decision B5 of 2026-11-19 moved the stream's `VersionSuffix` from `preview.8`, which no
+Frontend package ever had, to `preview.12`, and publishes nothing). `Broiler.JavaScript.Expressions` gains
+`Broiler.Unicode.Algorithms` and `Broiler.Regex`; `Broiler.JavaScript.Ast` loses both and reaches them through
+`Expressions`; `Broiler.JavaScript.Portable.Compiler` depends on the Frontend, `Expressions`, `Portable` and
+`Broiler.Regex`.
+
+**Removed, all internal:** the test-only switch of W1 (`JSCompilationOptions.ParseThroughBridge`, `ParsesThroughBridge`
+and `BridgeByDefault`, `JSContext.ParseThroughBridge`, the shell's `--parse-through-bridge` and the build property
+`BroilerParseThroughBridge`), so `JSCompilationOptions`' synthesized `GetHashCode` folds in one `bool` fewer and hash
+values return to what they were before W1; `SyntaxValidation`'s and `DirectEvalSupport`'s token re-scans and the eval
+prefix with its skip sites; the old parser's partial files, scanner and keyword table; and the parser's half of
+`FastScope`. No public member is removed.
+
+**The consumer check** (SJL-D-25 (c) applies to no member here, as none is removed; recorded for the marks). Broiler.JSeal's
+adapter calls `FastParser.ParseModule(string)` and reads `Ast`'s tree types, which stay, marked; Broiler.HtmlBridge names
+neither package's types. Part G of bundle `sjl-14-001`'s rule runs both suites against the base and after candidates.
+
 ## Public API changes, 2026-11-17 (regular expressions move to Broiler.Regex, milestone SJL-11.5, on branch `sjl-11-5`, not merged)
+
+*(Noted 2026-11-19, at window W2 of milestone SJL-14: the heading reads "on branch `sjl-11-5`, not merged". SJL-11.5
+merged as `b2b226cd`, Broiler-Platform/Broiler.JS#1126, with this section as written; the heading is kept as it was
+written.)*
 
 Milestone SJL-11.5 compiles and matches every regular expression with Broiler.Regex and deletes the .NET translator,
 its routing and the validators (Broiler.VM's JSD-0081, decisions D20 to D22). It applies decision SJL-D-25 to each
@@ -239,7 +287,10 @@ overload are internal. Two things a consumer could notice, neither a contract:
   privately (`PrivateAssets="all"`), so its package, and every package that depends on it, the portable compiler's
   closure included, carries no dependency on `Broiler.ECMAScript.Frontend`, which has no published version yet
   (decision D30). No product path loads that assembly while the switch is off. A release whose package depends on it
-  waits for a published Frontend: that is W2's.
+  waits for a published Frontend: that is W2's. *(Noted 2026-11-19, at window W2: "which has no published version yet" no longer holds.
+  The shared stream's `0.1.0-preview.12` is published, from `2f012739` (tag `ecmascript-v0.1.0-preview.12`), and its
+  `Broiler.ECMAScript/` equals the default branch's at W2's branch point; W2's `Parser` package depends on that version,
+  as "Public API changes, 2026-11-19" above records.)*
 - **`JSCompilationOptions`, a public record struct, gains an internal property.** Its synthesized `GetHashCode` folds
   in one more `bool`, so hash values differ from the previous release's for every instance; equality, `ToString` and
   the code cache's keys are unchanged while the switch is off.

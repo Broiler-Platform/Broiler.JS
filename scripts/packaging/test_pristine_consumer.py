@@ -40,8 +40,22 @@ BUILT_INS_DEPENDENCIES = {"Broiler.Regex", "Broiler.Unicode.Segmentation"}
 # (milestone SJL-7.5), when the Runtime embedded the tables; milestone SJL-12.5 moved the tables and the
 # package reference to Ast (Broiler.VM's JSD-0080, decision D20), so the Ast package is checked for it,
 # and the Runtime package, which reaches the tables through Ast, is checked for Ast.
-AST_DEPENDENCIES = {"Broiler.Unicode.Algorithms"}
+# Revised 2026-11-19, at window W2 of milestone SJL-14 (bundle sjl-14-001's decision D50): the tables and the non-tree
+# types moved from Ast to Broiler.JavaScript.Expressions, with Broiler.Unicode.Algorithms and Broiler.Regex, so the Ast
+# package is checked for Expressions, which carries them, and the Expressions package for the two; the Parser package,
+# the adapter over the shared syntax library, is checked for Broiler.ECMAScript.Frontend (decision D30). Until then
+# AST_DEPENDENCIES read {"Broiler.Unicode.Algorithms"}.
+AST_DEPENDENCIES = {"Broiler.JavaScript.Expressions"}
+EXPRESSIONS_DEPENDENCIES = {"Broiler.Unicode.Algorithms", "Broiler.Regex"}
+PARSER_DEPENDENCIES = {"Broiler.ECMAScript.Frontend"}
 RUNTIME_DEPENDENCIES = {"Broiler.JavaScript.Ast"}
+
+# The package ids this repository packs, which the engine consumer restores from the local feed alone (package source
+# mapping), so that a package the feed lacks fails the restore with the missing-package error rather than coming from
+# nuget.org: the session's decision B6 of 2026-11-19 for bundle sjl-14-001's part F, whose control removes
+# Broiler.ECMAScript.Frontend from the feed. Every other package (Broiler.Regex and Broiler.Unicode.* among them, which
+# other repositories publish) comes from nuget.org.
+LOCAL_PREFIXES = ("Broiler.JavaScript.", "Broiler.ECMAScript.")
 
 
 def run(arguments: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> None:
@@ -221,6 +235,9 @@ def main() -> int:
     parser.add_argument("--configuration", default="Release")
     parser.add_argument("--version", help="The shared set's version to pack, for example 0.0.1-probe.1")
     parser.add_argument("--keep", action="store_true", help="Retain the temporary consumer directory")
+    parser.add_argument("--control-remove", metavar="PACKAGE_ID",
+                        help="The engine set's control: remove this package from the feed after packing; the run passes "
+                             "only if the consumer's restore then fails with the missing-package error (NU1101)")
     arguments = parser.parse_args()
 
     if arguments.set == "shared":
@@ -261,6 +278,19 @@ def main() -> int:
                 pack_arguments.insert(6, "--no-build")
             run(pack_arguments, cwd=REPOSITORY_ROOT)
 
+        # Both version streams (decision B6): the engine closure above already packs the shared libraries it references;
+        # the shared set's other packable projects are packed beside them, so the feed holds every package this
+        # repository makes.
+        packed_ids = {package_identity(path)[0] for path in feed.glob("*.nupkg")}
+        filter_document = json.loads(SHARED_FILTER.read_text(encoding="utf-8"))
+        for relative in filter_document["solution"]["projects"]:
+            shared = REPOSITORY_ROOT / relative
+            properties = evaluate(shared, arguments.configuration, None, "IsPackable", "PackageId")
+            if properties["IsPackable"].lower() != "true" or properties["PackageId"] in packed_ids:
+                continue
+            run(["dotnet", "pack", str(shared), "-c", arguments.configuration, "-p:IncludeSymbols=false", "--output", str(feed)],
+                cwd=REPOSITORY_ROOT)
+
         packages = [path for path in feed.glob("*.nupkg") if not path.name.endswith(".symbols.nupkg")]
         identities = {package_identity(path): path for path in packages}
         built_ins_package = next(
@@ -277,6 +307,12 @@ def main() -> int:
         missing_ast_dependencies = AST_DEPENDENCIES - package_dependencies(ast_package)
         if missing_ast_dependencies:
             raise RuntimeError(f"Ast package is missing dependencies: {sorted(missing_ast_dependencies)}")
+        for package_name, expected in (("Broiler.JavaScript.Expressions", EXPRESSIONS_DEPENDENCIES),
+                                       ("Broiler.JavaScript.Parser", PARSER_DEPENDENCIES)):
+            package = next(path for (package_id, _), path in identities.items() if package_id == package_name)
+            missing = expected - package_dependencies(package)
+            if missing:
+                raise RuntimeError(f"{package_name} package is missing dependencies: {sorted(missing)}")
         runtime_package = next(
             path for (package_id, _), path in identities.items() if package_id == "Broiler.JavaScript.Runtime"
         )
@@ -316,6 +352,7 @@ Console.WriteLine("pristine-consumer: 42");
 """,
             encoding="utf-8",
         )
+        local_patterns = "\n".join(f'      <package pattern=\"{html.escape(prefix)}*\" />' for prefix in LOCAL_PREFIXES)
         (temporary / "NuGet.Config").write_text(
             f"""<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <configuration>
@@ -324,6 +361,13 @@ Console.WriteLine("pristine-consumer: 42");
     <add key=\"phase1-local\" value=\"{html.escape(str(feed))}\" />
     <add key=\"nuget.org\" value=\"https://api.nuget.org/v3/index.json\" />
   </packageSources>
+  <packageSourceMapping>
+    <clear />
+    <packageSource key=\"phase1-local\">
+{local_patterns}
+    </packageSource>
+    <packageSource key=\"nuget.org\"><package pattern=\"*\" /></packageSource>
+  </packageSourceMapping>
 </configuration>
 """,
             encoding="utf-8",
@@ -331,6 +375,20 @@ Console.WriteLine("pristine-consumer: 42");
 
         clean_environment = os.environ.copy()
         clean_environment["NUGET_PACKAGES"] = str(temporary / "packages")
+        if arguments.control_remove:
+            removed = [path for path in feed.glob("*.nupkg") if package_identity(path)[0] == arguments.control_remove]
+            if not removed:
+                raise RuntimeError(f"the control names {arguments.control_remove}, which the feed does not hold")
+            for path in removed:
+                path.unlink()
+            print(f"control: removed {', '.join(path.name for path in removed)} from the feed", flush=True)
+            restore = subprocess.run(["dotnet", "restore", "--configfile", str(temporary / "NuGet.Config"), "--no-http-cache"],
+                                     cwd=consumer, env=clean_environment, capture_output=True, text=True)
+            print(restore.stdout + restore.stderr, flush=True)
+            if restore.returncode != 0 and "NU1101" in restore.stdout + restore.stderr:
+                print(f"control: the restore failed with the missing-package error for {arguments.control_remove}, as expected")
+                return 0
+            raise RuntimeError("control: the restore did not fail with the missing-package error (NU1101)")
         run(
             ["dotnet", "restore", "--configfile", str(temporary / "NuGet.Config")],
             cwd=consumer,
