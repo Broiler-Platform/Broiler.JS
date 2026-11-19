@@ -1,0 +1,6 @@
+build-shell	rc=0	wall=74.9s maxrss=365MB	started=2026-11-19T07:01:11Z	ended=2026-11-19T07:02:26Z
+build-vectors	rc=0	wall=19.7s maxrss=320MB	started=2026-11-19T07:03:38Z	ended=2026-11-19T07:03:58Z
+part-c	rc=0	wall=25.7s maxrss=150MB	started=2026-11-19T07:04:30Z	ended=2026-11-19T07:04:56Z
+part-d-invariant	rc=0	wall=1854.2s maxrss=3195MB	started=2026-11-19T07:04:57Z	ended=2026-11-19T07:35:51Z
+part-d-tr-TR	rc=1	wall=1851.6s maxrss=3173MB	started=2026-11-19T07:38:29Z	ended=2026-11-19T08:09:21Z
+part-d-lt-LT	rc=1	wall=1875.1s maxrss=3188MB	started=2026-11-19T08:09:34Z	ended=2026-11-19T08:40:49Z

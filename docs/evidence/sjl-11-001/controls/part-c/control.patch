@@ -1,0 +1,13 @@
+--- a/Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.Broiler.cs
++++ b/Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.Broiler.cs
+@@ -145,9 +145,7 @@
+         if (status == RegexStatus.NoMatch)
+             return RegexMatchData.NoMatch;
+         if (status == RegexStatus.LimitExceeded)
+-            throw JSEngine.NewRangeError(limit == RegexLimit.Trail
+-                ? "Maximum regular expression backtracking trail exceeded"
+-                : "Maximum regular expression backtracking frames exceeded");
++            return RegexMatchData.NoMatch; // control: a ceiling answers no match
+ 
+         var end = slots[1];
+         var index = slots[0] == from && end >= start ? start : slots[0];

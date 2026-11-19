@@ -1,0 +1,61 @@
+# e2check: part E's check E-2 (decision-rule.md, part E), from System.Reflection.Metadata over the Release
+# assemblies below; no code of theirs is run. A reference into System.Text.RegularExpressions is read widely
+# (see the tool's header), so the check can only over-report.
+
+== Broiler.JavaScript.Parser.dll sha256 fb68190fa5d1c41a6337f5a719382e2cc957752892f55d26ded99911116ccd89
+assembly refs: Broiler.ECMAScript.Algorithms, Broiler.ECMAScript.Frontend, Broiler.JavaScript.Ast, Broiler.JavaScript.Expressions, Broiler.Regex, Broiler.Unicode.Algorithms, System.Collections, System.Memory, System.Runtime
+TypeRefs into System.Text.RegularExpressions: 0
+MemberRefs into System.Text.RegularExpressions: 0
+members using such a reference: 0
+E-2 scope: the whole assembly
+E-2 references in scope: 0
+
+== Broiler.JavaScript.Ast.dll sha256 dec12bfb7550dd77fc9e19f15cf3b3f24a5f5ebda8dd10a2490909841fd96791
+assembly refs: Broiler.ECMAScript.Algorithms, Broiler.JavaScript.Expressions, Broiler.Regex, Broiler.Unicode.Algorithms, System.Collections, System.Memory, System.Runtime
+TypeRefs into System.Text.RegularExpressions: 0
+MemberRefs into System.Text.RegularExpressions: 0
+members using such a reference: 0
+E-2 scope: the whole assembly
+E-2 references in scope: 0
+
+== Broiler.JavaScript.BuiltIns.dll sha256 d88190432fed92d9cccfda10eb69528a4119a775c0c9e295a47902c438a2d6da
+assembly refs: Broiler.ECMAScript.Algorithms, Broiler.ECMAScript.Intl, Broiler.JavaScript.Ast, Broiler.JavaScript.Engine, Broiler.JavaScript.Expressions, Broiler.JavaScript.Extensions, Broiler.JavaScript.LinqExpressions, Broiler.JavaScript.Parser, Broiler.JavaScript.Runtime, Broiler.JavaScript.Storage, Broiler.Regex, Broiler.Unicode.Algorithms, Broiler.Unicode.Segmentation, System.Collections, System.Collections.Concurrent, System.Linq, System.Memory, System.Runtime, System.Runtime.InteropServices, System.Runtime.Numerics, System.Threading
+TypeRefs into System.Text.RegularExpressions: 0
+MemberRefs into System.Text.RegularExpressions: 0
+members using such a reference: 0
+E-2 scope: the types whose namespace is Broiler.JavaScript.BuiltIns.RegExp, with their nested types: 14 - Broiler.JavaScript.BuiltIns.RegExp.JSRegExp, Broiler.JavaScript.BuiltIns.RegExp.JSRegExp/<>O, Broiler.JavaScript.BuiltIns.RegExp.JSRegExp/<>c, Broiler.JavaScript.BuiltIns.RegExp.JSRegExp/<>c__DisplayClass39_0, Broiler.JavaScript.BuiltIns.RegExp.JSRegExp/<>c__DisplayClass41_0, Broiler.JavaScript.BuiltIns.RegExp.JSRegExp/<EnumerateMatches>d__9, Broiler.JavaScript.BuiltIns.RegExp.JSRegExp/CaptureGroupMap, Broiler.JavaScript.BuiltIns.RegExp.JSRegExp/CompiledPattern, Broiler.JavaScript.BuiltIns.RegExp.JSRegExp/RegexCapture, Broiler.JavaScript.BuiltIns.RegExp.JSRegExp/RegexMatchData, Broiler.JavaScript.BuiltIns.RegExp.JSRegExpStringIterator, Broiler.JavaScript.BuiltIns.RegExp.JSRegExpStringIterator/<>O, Broiler.JavaScript.BuiltIns.RegExp.JSRegExpStringIterator/<>c, Broiler.JavaScript.BuiltIns.RegExp.JSRegExpStringIterator/<>c__DisplayClass8_0
+E-2 scope: JSStringPrototype's members, in metadata Broiler.JavaScript.BuiltIns.String.JSString's Search, Match, MatchAll, Replace, ReplaceAll, Split (found: Match, MatchAll, Replace, ReplaceAll, Search, Split), with any method or nested type of it whose name holds <Member>
+E-2 references in scope: 0
+E-4 support: every token naming a Broiler.JavaScript.BuiltIns.RegExp type that JSStringPrototype's Search (JSString::Search) and its generated code use:
+  Broiler.JavaScript.BuiltIns.String.JSString::Search(Broiler.JavaScript.Runtime.Arguments&) -> newobj method Broiler.JavaScript.BuiltIns.RegExp.JSRegExp::.ctor(String, String) : Void
+
+== Broiler.JavaScript.Runtime.dll sha256 fe651a226d7747e483e02b713aa26842005658a1d374a6e0475cb13a4a2ccfee
+assembly refs: Broiler.ECMAScript.Algorithms, Broiler.JavaScript.Ast, Broiler.JavaScript.Expressions, Broiler.JavaScript.Storage, System.Collections, System.Collections.Concurrent, System.Linq, System.Linq.Expressions, System.Memory, System.Runtime, System.Runtime.Numerics, System.Text.RegularExpressions, System.Threading
+TypeRefs into System.Text.RegularExpressions: 6 - System.Text.RegularExpressions.Capture, System.Text.RegularExpressions.Group, System.Text.RegularExpressions.GroupCollection, System.Text.RegularExpressions.Match, System.Text.RegularExpressions.Regex, System.Text.RegularExpressions.RegexOptions
+MemberRefs into System.Text.RegularExpressions: 9
+  System.Text.RegularExpressions.Capture::get_Length () : Int32
+  System.Text.RegularExpressions.Capture::get_Value () : String
+  System.Text.RegularExpressions.Group::get_Success () : Boolean
+  System.Text.RegularExpressions.GroupCollection::get_Item (Int32) : System.Text.RegularExpressions.Group
+  System.Text.RegularExpressions.Match::get_Groups () : System.Text.RegularExpressions.GroupCollection
+  System.Text.RegularExpressions.Regex::.ctor (String, System.Text.RegularExpressions.RegexOptions) : Void
+  System.Text.RegularExpressions.Regex::IsMatch (String) : Boolean
+  System.Text.RegularExpressions.Regex::Match (String) : System.Text.RegularExpressions.Match
+  System.Text.RegularExpressions.Regex::Replace (String, String) : String
+members using such a reference: 12
+  Broiler.JavaScript.Runtime.DateParser::.cctor(): newobj memberref System.Text.RegularExpressions.Regex::.ctor (String, System.Text.RegularExpressions.RegexOptions) : Void; stsfld field Broiler.JavaScript.Runtime.DateParser::ExtendedYearPrefix : System.Text.RegularExpressions.Regex; stsfld field Broiler.JavaScript.Runtime.DateParser::FormatLeniencies : System.Text.RegularExpressions.Regex; stsfld field Broiler.JavaScript.Runtime.DateParser::GmtOffsetWithoutColon : System.Text.RegularExpressions.Regex; stsfld field Broiler.JavaScript.Runtime.DateParser::IsoTSeparator : System.Text.RegularExpressions.Regex; stsfld field Broiler.JavaScript.Runtime.DateParser::NumericSlashDate : System.Text.RegularExpressions.Regex; stsfld field Broiler.JavaScript.Runtime.DateParser::TrailingZoneName : System.Text.RegularExpressions.Regex
+  Broiler.JavaScript.Runtime.DateParser::ExtendedYearPrefix: field type System.Text.RegularExpressions.Regex
+  Broiler.JavaScript.Runtime.DateParser::FormatLeniencies: field type System.Text.RegularExpressions.Regex
+  Broiler.JavaScript.Runtime.DateParser::GmtOffsetWithoutColon: field type System.Text.RegularExpressions.Regex
+  Broiler.JavaScript.Runtime.DateParser::IsoTSeparator: field type System.Text.RegularExpressions.Regex
+  Broiler.JavaScript.Runtime.DateParser::NormalizeExtendedYear(String): callvirt memberref System.Text.RegularExpressions.Capture::get_Length () : Int32; callvirt memberref System.Text.RegularExpressions.Capture::get_Value () : String; callvirt memberref System.Text.RegularExpressions.Group::get_Success () : Boolean; callvirt memberref System.Text.RegularExpressions.GroupCollection::get_Item (Int32) : System.Text.RegularExpressions.Group; callvirt memberref System.Text.RegularExpressions.Match::get_Groups () : System.Text.RegularExpressions.GroupCollection; callvirt memberref System.Text.RegularExpressions.Regex::Match (String) : System.Text.RegularExpressions.Match; ldsfld field Broiler.JavaScript.Runtime.DateParser::ExtendedYearPrefix : System.Text.RegularExpressions.Regex; locals System.Text.RegularExpressions.Match, Int32
+  Broiler.JavaScript.Runtime.DateParser::NormalizeToStringZone(String): callvirt memberref System.Text.RegularExpressions.Regex::Replace (String, String) : String; ldsfld field Broiler.JavaScript.Runtime.DateParser::GmtOffsetWithoutColon : System.Text.RegularExpressions.Regex; ldsfld field Broiler.JavaScript.Runtime.DateParser::TrailingZoneName : System.Text.RegularExpressions.Regex
+  Broiler.JavaScript.Runtime.DateParser::NumericSlashDate: field type System.Text.RegularExpressions.Regex
+  Broiler.JavaScript.Runtime.DateParser::Parse(String): callvirt memberref System.Text.RegularExpressions.Regex::IsMatch (String) : Boolean; ldsfld field Broiler.JavaScript.Runtime.DateParser::IsoTSeparator : System.Text.RegularExpressions.Regex; ldsfld field Broiler.JavaScript.Runtime.DateParser::NumericSlashDate : System.Text.RegularExpressions.Regex
+  Broiler.JavaScript.Runtime.DateParser::ReadFormatLeniencies(String): callvirt memberref System.Text.RegularExpressions.Capture::get_Value () : String; callvirt memberref System.Text.RegularExpressions.Group::get_Success () : Boolean; callvirt memberref System.Text.RegularExpressions.GroupCollection::get_Item (Int32) : System.Text.RegularExpressions.Group; callvirt memberref System.Text.RegularExpressions.Match::get_Groups () : System.Text.RegularExpressions.GroupCollection; callvirt memberref System.Text.RegularExpressions.Regex::Match (String) : System.Text.RegularExpressions.Match; ldsfld field Broiler.JavaScript.Runtime.DateParser::FormatLeniencies : System.Text.RegularExpressions.Regex; locals System.Text.RegularExpressions.Match, String, System.Text.RegularExpressions.Group, String, String
+  Broiler.JavaScript.Runtime.DateParser::TrailingZoneName: field type System.Text.RegularExpressions.Regex
+  Broiler.JavaScript.Runtime.DateParser::TryParseNumericSlashDate(String, System.DateTime&): callvirt memberref System.Text.RegularExpressions.Capture::get_Value () : String; callvirt memberref System.Text.RegularExpressions.Group::get_Success () : Boolean; callvirt memberref System.Text.RegularExpressions.GroupCollection::get_Item (Int32) : System.Text.RegularExpressions.Group; callvirt memberref System.Text.RegularExpressions.Match::get_Groups () : System.Text.RegularExpressions.GroupCollection; callvirt memberref System.Text.RegularExpressions.Regex::Match (String) : System.Text.RegularExpressions.Match; ldsfld field Broiler.JavaScript.Runtime.DateParser::NumericSlashDate : System.Text.RegularExpressions.Regex; locals System.Text.RegularExpressions.Match, Int32, Int32, Int32, Int32, Int32, Int32
+E-2 scope: LegacyRegExpState, with its nested types (found: Broiler.JavaScript.Runtime.LegacyRegExpState)
+E-2 references in scope: 0
+
+E-2 references in scope, all assemblies: 0

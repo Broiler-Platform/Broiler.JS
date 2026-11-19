@@ -1,0 +1,80 @@
+Bundle sjl-11-001's local after runs, parts C and D, and part E's checks, at the after commit
+b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1 (Broiler-Platform/Broiler.JS#1126's merge, whose first parent is the base
+commit 5429c4065e8b273e5c7965598b8a2f5490a8ad98), 2026-11-19 UTC. Every command as it was run, in order. They are the
+base runs' commands (../base/commands.txt), with the after commit in place of the base commit.
+
+Host: Ubuntu 24.04.5 LTS; Linux 6.18.44 x86_64; 4 logical CPUs; ICU 74.2 (libicu74 74.2-1ubuntu3.1, the only ICU
+installed); .NET SDK 10.0.404, runtime Microsoft.NETCore.App 10.0.15, as at the base runs. The machine is a container
+shared with other work, so no run here is a timing. Each step ran through the same wrapper as the base runs (run.sh):
+an exclusive lock, a wait until the one-minute load average is 1.0 or less and no other dotnet, testhost,
+VBCSCompiler, MSBuild or Broiler.* process runs (logs/gate.log), the machine recorded before and after
+(logs/<step>.machine.txt, logs/<step>.machine-sh.txt), the step timed (logs/<step>.time.txt: wall-clock and peak RSS)
+and its exit code, standard output and standard error kept (logs/<step>.exit.txt, .out.txt, .err.txt). The wrapper
+exports PATH=/root/.dotnet:$PATH, DOTNET_ROOT=/root/.dotnet, DOTNET_CLI_TELEMETRY_OPTOUT=1, DOTNET_NOLOGO=1,
+MSBUILDDISABLENODEREUSE=1, DOTNET_CLI_USE_MSBUILD_SERVER=0 and UseSharedCompilation=false. logs/commands.log and
+logs/runs.tsv are the wrapper's own records of each step. status.txt lists each step's exit.
+
+W=/home/user/js-115after-build/after   # the clean tree, removed afterwards
+O=<this directory>                     # the outputs, written to a scratch folder and copied here unchanged
+
+# ---- before anything: the after commit's parents (archive.txt: "parents 5429c406... ce908940...", the first the
+#      base commit), and git ls-remote origin refs/heads/main, which read the after commit before and after the runs
+
+# ---- the clean tree: git archive of the after commit, on disk (archive.txt: commit, parents, tree, file count)
+git archive --format=tar b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1 | tar -x -C $W
+
+# ---- the builds, in Release, from clean (no warning, no error: build-*-summary.txt, build-*-warnings.txt empty)
+cd $W && dotnet build Broiler.JS/Broiler.JavaScript -c Release --disable-build-servers -nologo
+cd $W && dotnet build Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --disable-build-servers -nologo
+# the shell's and the vector runner's assemblies by SHA-256: shell-binaries.sha256, vectors-binaries.sha256; part E's
+# four assemblies (Parser, Ast, BuiltIns, Runtime) by SHA-256, from their projects' bin/Release/net10.0:
+# part-e/assemblies.sha256 (the shell's folder holds the same bytes, as shell-binaries.sha256 shows)
+
+# ---- part C: every case of docs/evidence/sjl-11-001/inputs/adversarial/manifest.tsv, one process each, through the
+#      base's run-part-c.py (../base/run-part-c.py, byte for byte; run from a checkout of the after commit, G), which reads
+#      each program from the clean tree, checks it against the manifest's SHA-256, and runs it under the manifest
+#      header's wall-clock limit with LANG, LANGUAGE and every LC_* variable removed (the invariant culture) and TZ=UTC:
+cd $W && python3 -I $G/docs/evidence/sjl-11-001/base/run-part-c.py $W $W/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll $O/part-c
+#   exit 0. part-c/results.tsv: one row per case; part-c/cases/<id>.out.txt: each process's command, exit and whole
+#   standard output and error. Part C ran before part D here (after D at the base); the commands are the same.
+
+# ---- part D: the engine-level vector runner, three cultures, one evaluating process each (BROILER_VECTORS_WORKERS
+#      unset), the whole test project (the corpus test and the negative control)
+cd $W && env -u LANG -u LANGUAGE -u LC_ALL TZ=UTC BROILER_VECTORS_REPORT=$O/part-d/run-invariant.tsv \
+  dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --nologo --logger "console;verbosity=normal"
+cd $W && env -u LANG -u LANGUAGE -u LC_ALL LANG=tr_TR.UTF-8 LC_ALL=tr_TR.UTF-8 TZ=UTC BROILER_VECTORS_REPORT=$O/part-d/run-tr-TR.tsv \
+  dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --nologo --logger "console;verbosity=normal"
+cd $W && env -u LANG -u LANGUAGE -u LC_ALL LANG=lt_LT.UTF-8 LC_ALL=lt_LT.UTF-8 TZ=UTC BROILER_VECTORS_REPORT=$O/part-d/run-lt-LT.tsv \
+  dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --no-build --nologo --logger "console;verbosity=normal"
+#   exit 0 (invariant), 1 (tr-TR), 1 (lt-LT), as at the base. Each report is the whole corpus at the after commit's
+#   revision 43; each run's negative control wrote run-*.negative-control.tsv beside it (byte for byte the base's).
+#   The reports are kept gzip-compressed (gzip -9 -n), part-d/run-*.tsv.gz. The culture took effect: the tr-TR run's
+#   dotnet test messages are in Turkish, and both runs' intl/ lines differ from the invariant run's.
+rm -rf $W
+
+# ---- part D read at corpus revision 32 (the owner's answer 5 of 2026-11-19), from git objects and the three reports
+#      only, run twice into two empty directories, both outputs byte for byte the same, the first copied here:
+python3 -I docs/evidence/sjl-11-001/base/part-d/read-revision-32.py --repo . --scratch <an empty directory> \
+  --runs after --tree-commit b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1 --out <a folder holding the three reports>
+#   exit 0. part-d/reading-revision-32.txt; part-d/revision-32.pin, byte for byte ../base/part-d/revision-32.pin.
+#   part-d/reading.txt reads the three reports at the tree's revision 43, as ../base/part-d/reading.txt does; it is
+#   not part D's reading.
+
+# ---- part E, at the after commit
+#   E-1 (part-e/e1.txt): for each name the rule lists, from a clone,
+git grep -w -n <name> b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1 -- Broiler.JS ':!Broiler.JS/CHANGELOG.md'
+git cat-file -e b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1:Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.UnicodeSets.cs
+#   E-2 (part-e/e2.txt): the tool in part-e/e2check/ (System.Reflection.Metadata; it runs no code of the assemblies it
+#   reads), built and run through the same wrapper, its records in ../controls/logs/ (e2-build, e2-run), over copies of
+#   the four assemblies above, by SHA-256 the same as part-e/assemblies.sha256:
+dotnet build e2check.csproj -c Release --disable-build-servers -nologo -o <out>
+dotnet <out>/e2check.dll <a folder holding Broiler.JavaScript.{Parser,Ast,BuiltIns,Runtime}.dll>
+#   exit 0. A first run of the tool scoped JSStringPrototype's members to a type of that name, which metadata does
+#   not have (they are members of the partial class Broiler.JavaScript.BuiltIns.String.JSString, declared in
+#   JSStringPrototype*.cs); the tool was corrected and run again, and only the second run's output is retained. Both
+#   runs found no reference into System.Text.RegularExpressions in the BuiltIns assembly at all.
+#   E-3 and E-4 (part-e/sources.txt): the lines they read, from git at the after commit, with the greps it shows.
+
+# ---- part B's arm A, the condition of decision-rule-revised-2026-11-19.md (no run; git objects only):
+python3 -I docs/evidence/sjl-11-001/after/part-b-arm-a/check-program-cs.py --repo . --after b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1
+#   exit 0, "the condition holds": part-b-arm-a/check.txt.

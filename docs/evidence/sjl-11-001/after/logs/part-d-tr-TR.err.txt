@@ -1,0 +1,2 @@
+[xUnit.net 00:30:32.37]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+Test Çalıştırması Başarısız.

@@ -1,0 +1,27 @@
+# part-e/e1.txt: check E-1 at the after commit b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1, as the rule words it: git grep -w -n over Broiler.JS/ but
+# CHANGELOG.md, one name at a time, and the file JSRegExp.UnicodeSets.cs absent. Run from a clone: for each name,
+#   git grep -w -n <name> b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1 -- Broiler.JS ':!Broiler.JS/CHANGELOG.md'
+== RegExpValidator
+== RegexTiering
+== RegexTieringDiagnostics
+== ClampLargeQuantifiers
+== HexValue
+b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1:Broiler.JS/Broiler.JavaScript.Parser/CharExtensions.cs:17:    internal static int HexValue(this char ch)
+b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1:Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:975:                        code = code * 16 + ch.HexValue();
+b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1:Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1020:            codePoint = codePoint * 16 + ch.HexValue();
+b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1:Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1669:                codePoint = codePoint * 16 + current.HexValue();
+b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1:Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1690:                codePoint = codePoint * 16 + current.HexValue();
+== GapScan
+== TryRouteToBroiler
+== FromNet
+== CreateRegex
+== ParseFlags
+== BuildFlagsString
+== TryAppendEscape
+== EscapePatternSource
+== DecodeBracedUnicodeEscapes
+== FirstError
+== FirstDuplicate
+== FirstRefused
+== the file Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.UnicodeSets.cs
+absent

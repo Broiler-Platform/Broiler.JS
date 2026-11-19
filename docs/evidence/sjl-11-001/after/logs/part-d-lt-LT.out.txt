@@ -1,0 +1,90 @@
+Test run for /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.17]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.39]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.56]   Starting:    Broiler.JavaScript.Vectors.Tests
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_negative_control_is_reported_as_an_unclassified_difference [14 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm [321 ms]
+111374 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 30 min 40.2 s; the slowest, semantics/super/ee0131/0003, took 5.000 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003.
+[xUnit.net 00:30:56.15]       59 of 111374 vectors differ and nothing classifies them:
+[xUnit.net 00:30:56.15]       intl/collation/root/scripts/0002: expected value: str:"\uD83D\uDE00 < 1 = \u0661 = \u0967 < \u2460 < \u00BD < a < ae < \u00E6 < \u00F0 < \u0131 < \u00F8 < \u0153 < ss < \u00DF < z < \u00FE < \u03B1 < \u03C9 < \u0430 < \u044F < \u10D0 < \u0561 < \u05D0 < \u05EA < \u0627 < \u064A < \u1200 < \u0905 < \u0939 < \u0E01 < \u0E2E < \u0F40 < \u1820 < \u13A0 < \uAC00 < \uD7A3 < \u3042 < \u30A2 < \u3093 < \uA000 < \u4E00 < \u4E01 < \u4E2D < \uD840\uDC00", rendered value: str:"\uD83D\uDE00 < 1 = \u0661 = \u0967 < \u2460 < \u00BD < a < ae < \u00E6 < \u00F0 < \u0131 < \u00F8 < \u0153 < ss < \u00DF < z < \u00FE < \u03B1 < \u03C9 < \u0430 < \u044F < \u10D0 < \u0561 < \u05D0 < \u05EA < \u0627 < \u064A < \u1200 < \u0905 < \u0939 < \u0E01 < \u0E2E < \u0F40 < \u1820 < \u13A0 < \uAC00 < \uD7A3 < \u3042 < \u30A2 < \u3093 < \uA000 < \u4E00 < \u4E01 < \uD840\uDC00 < \u4E2D"
+[xUnit.net 00:30:56.15]       intl/date-times/families/0002: expected value: str:"3:07\u202FPM", rendered value: str:"15:07"
+[xUnit.net 00:30:56.15]       intl/date-times/families/0003: expected value: str:"h12", rendered value: str:"h23"
+[xUnit.net 00:30:56.15]       intl/date-times/families/0007: expected value: str:"Friday, January 5, 2024", rendered value: str:"2024 m. sausio 5 d., penktadienis"
+[xUnit.net 00:30:56.15]       intl/date-times/families/0008: expected value: str:"3:07\u202FPM", rendered value: str:"15:07"
+[xUnit.net 00:30:56.15]       intl/date-times/families/0009: expected value: str:"h12", rendered value: str:"h23"
+[xUnit.net 00:30:56.15]       intl/date-times/families/0010: expected value: str:"3 in the afternoon", rendered value: str:"15"
+[xUnit.net 00:30:56.15]       intl/date-times/families/0011: expected value: str:"Jan 5\u2009\u2013\u20097, 2024", rendered value: str:"2024-01-05\u2009\u2013\u20092024-01-07"
+[xUnit.net 00:30:56.15]       intl/date-times/families/0012: expected value: str:"Eastern Standard Time", rendered value: str:"\u0160iaur\u0117s Amerikos ryt\u0173 \u017Eiemos laikas"
+[xUnit.net 00:30:56.15]       intl/date-times/families/0254: expected value: str:"Friday, January 5, 2024", rendered value: str:"2024 m. sausio 5 d., penktadienis"
+[xUnit.net 00:30:56.15]       intl/date-times/families/0255: expected value: str:"3:07\u202FPM", rendered value: str:"15:07"
+[xUnit.net 00:30:56.15]       intl/date-times/families/0256: expected value: str:"h12", rendered value: str:"h23"
+[xUnit.net 00:30:56.15]       intl/date-times/families/0257: expected value: str:"3 in the afternoon", rendered value: str:"15"
+[xUnit.net 00:30:56.15]       intl/date-times/families/0258: expected value: str:"Jan 5\u2009\u2013\u20097, 2024", rendered value: str:"2024-01-05\u2009\u2013\u20092024-01-07"
+[xUnit.net 00:30:56.15]       intl/date-times/families/0259: expected value: str:"Eastern Standard Time", rendered value: str:"\u0160iaur\u0117s Amerikos ryt\u0173 \u017Eiemos laikas"
+[xUnit.net 00:30:56.15]       intl/durations/families/0002: expected value: str:"1 hour, 2 minutes, 3 seconds", rendered value: str:"01:02:03"
+[xUnit.net 00:30:56.15]       intl/durations/families/0044: expected value: str:"1 hour, 2 minutes, 3 seconds", rendered value: str:"01:02:03"
+[xUnit.net 00:30:56.15]       intl/locales/providers/0008: expected value: str:"en-US", rendered value: str:"lt-LT"
+[xUnit.net 00:30:56.15]       intl/locales/providers/0009: expected value: str:"en-US", rendered value: str:"lt-LT"
+[xUnit.net 00:30:56.15]       intl/locales/providers/0010: expected value: str:"en-US", rendered value: str:"lt-LT"
+[xUnit.net 00:30:56.15]       intl/locales/providers/0011: expected value: str:"en-US", rendered value: str:"lt-LT"
+[xUnit.net 00:30:56.15]       intl/locales/providers/0012: expected value: str:"1,234.5", rendered value: str:"1\u00A0234,5"
+[xUnit.net 00:30:56.15]       intl/locales/providers/0014: expected value: str:"en-US,en", rendered value: str:"lt-LT,en"
+[xUnit.net 00:30:56.15]       intl/numbers-and-text/list/0028: expected value: str:"A, B, C, and D", rendered value: str:"A, B, C ir D"
+[xUnit.net 00:30:56.15]       intl/numbers-and-text/relative/0037: expected value: str:"3 days ago", rendered value: str:"prie\u0161 3 dienas"
+[xUnit.net 00:30:56.15]       Stack Trace:
+[xUnit.net 00:30:56.16]         /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs(58,0): at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified()
+[xUnit.net 00:30:56.16]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:30:56.16]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:30:56.16]       Output:
+[xUnit.net 00:30:56.16]         111374 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 30 min 40.2 s; the slowest, semantics/super/ee0131/0003, took 5.000 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003.
+  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [30 m 40 s]
+  Error Message:
+   59 of 111374 vectors differ and nothing classifies them:
+intl/collation/root/scripts/0002: expected value: str:"\uD83D\uDE00 < 1 = \u0661 = \u0967 < \u2460 < \u00BD < a < ae < \u00E6 < \u00F0 < \u0131 < \u00F8 < \u0153 < ss < \u00DF < z < \u00FE < \u03B1 < \u03C9 < \u0430 < \u044F < \u10D0 < \u0561 < \u05D0 < \u05EA < \u0627 < \u064A < \u1200 < \u0905 < \u0939 < \u0E01 < \u0E2E < \u0F40 < \u1820 < \u13A0 < \uAC00 < \uD7A3 < \u3042 < \u30A2 < \u3093 < \uA000 < \u4E00 < \u4E01 < \u4E2D < \uD840\uDC00", rendered value: str:"\uD83D\uDE00 < 1 = \u0661 = \u0967 < \u2460 < \u00BD < a < ae < \u00E6 < \u00F0 < \u0131 < \u00F8 < \u0153 < ss < \u00DF < z < \u00FE < \u03B1 < \u03C9 < \u0430 < \u044F < \u10D0 < \u0561 < \u05D0 < \u05EA < \u0627 < \u064A < \u1200 < \u0905 < \u0939 < \u0E01 < \u0E2E < \u0F40 < \u1820 < \u13A0 < \uAC00 < \uD7A3 < \u3042 < \u30A2 < \u3093 < \uA000 < \u4E00 < \u4E01 < \uD840\uDC00 < \u4E2D"
+intl/date-times/families/0002: expected value: str:"3:07\u202FPM", rendered value: str:"15:07"
+intl/date-times/families/0003: expected value: str:"h12", rendered value: str:"h23"
+intl/date-times/families/0007: expected value: str:"Friday, January 5, 2024", rendered value: str:"2024 m. sausio 5 d., penktadienis"
+intl/date-times/families/0008: expected value: str:"3:07\u202FPM", rendered value: str:"15:07"
+intl/date-times/families/0009: expected value: str:"h12", rendered value: str:"h23"
+intl/date-times/families/0010: expected value: str:"3 in the afternoon", rendered value: str:"15"
+intl/date-times/families/0011: expected value: str:"Jan 5\u2009\u2013\u20097, 2024", rendered value: str:"2024-01-05\u2009\u2013\u20092024-01-07"
+intl/date-times/families/0012: expected value: str:"Eastern Standard Time", rendered value: str:"\u0160iaur\u0117s Amerikos ryt\u0173 \u017Eiemos laikas"
+intl/date-times/families/0254: expected value: str:"Friday, January 5, 2024", rendered value: str:"2024 m. sausio 5 d., penktadienis"
+intl/date-times/families/0255: expected value: str:"3:07\u202FPM", rendered value: str:"15:07"
+intl/date-times/families/0256: expected value: str:"h12", rendered value: str:"h23"
+intl/date-times/families/0257: expected value: str:"3 in the afternoon", rendered value: str:"15"
+intl/date-times/families/0258: expected value: str:"Jan 5\u2009\u2013\u20097, 2024", rendered value: str:"2024-01-05\u2009\u2013\u20092024-01-07"
+intl/date-times/families/0259: expected value: str:"Eastern Standard Time", rendered value: str:"\u0160iaur\u0117s Amerikos ryt\u0173 \u017Eiemos laikas"
+intl/durations/families/0002: expected value: str:"1 hour, 2 minutes, 3 seconds", rendered value: str:"01:02:03"
+intl/durations/families/0044: expected value: str:"1 hour, 2 minutes, 3 seconds", rendered value: str:"01:02:03"
+intl/locales/providers/0008: expected value: str:"en-US", rendered value: str:"lt-LT"
+intl/locales/providers/0009: expected value: str:"en-US", rendered value: str:"lt-LT"
+intl/locales/providers/0010: expected value: str:"en-US", rendered value: str:"lt-LT"
+intl/locales/providers/0011: expected value: str:"en-US", rendered value: str:"lt-LT"
+intl/locales/providers/0012: expected value: str:"1,234.5", rendered value: str:"1\u00A0234,5"
+intl/locales/providers/0014: expected value: str:"en-US,en", rendered value: str:"lt-LT,en"
+intl/numbers-and-text/list/0028: expected value: str:"A, B, C, and D", rendered value: str:"A, B, C ir D"
+intl/numbers-and-text/relative/0037: expected value: str:"3 days ago", rendered value: str:"prie\u0161 3 dienas"
+  Stack Trace:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 58
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ 111374 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 30 min 40.2 s; the slowest, semantics/super/ee0131/0003, took 5.000 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003.
+
+
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way [5 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion [12 s]
+[xUnit.net 00:31:14.07]   Finished:    Broiler.JavaScript.Vectors.Tests (ID = 'b14f096f8d1d0a029816d2ca2bd15e3cc35a59ffad42c473394de27d98babf5c')
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 1) [5 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 3) [1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place [2 ms]
+
+Total tests: 8
+     Passed: 7
+     Failed: 1
+ Total time: 31,2422 Minutes
+VSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.

@@ -1,0 +1,25 @@
+== RegExpValidator
+== RegexTiering
+== RegexTieringDiagnostics
+== ClampLargeQuantifiers
+== HexValue
+Broiler.JS/Broiler.JavaScript.Parser/CharExtensions.cs:17:    internal static int HexValue(this char ch)
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:975:                        code = code * 16 + ch.HexValue();
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1020:            codePoint = codePoint * 16 + ch.HexValue();
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1669:                codePoint = codePoint * 16 + current.HexValue();
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1690:                codePoint = codePoint * 16 + current.HexValue();
+== GapScan
+== TryRouteToBroiler
+== FromNet
+== CreateRegex
+== ParseFlags
+== BuildFlagsString
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:453:    private static string BuildFlagsString(bool hasIndices, bool globalSearch, bool ignoreCase, bool multiline, bool dotAll, bool unicode, bool unicodeSets, bool sticky)
+== TryAppendEscape
+== EscapePatternSource
+== DecodeBracedUnicodeEscapes
+== FirstError
+== FirstDuplicate
+== FirstRefused
+== the file Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.UnicodeSets.cs
+absent

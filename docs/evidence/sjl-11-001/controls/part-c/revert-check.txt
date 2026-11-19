@@ -1,0 +1,5 @@
+revert: patch -R -p1 < control.patch (exit in revert.txt)
+sha256 of Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.Broiler.cs after the revert: 949c1c87f415febb6d7b554cb969642214537615c4a316f0674fcf355285c5e6
+sha256 of Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.Broiler.cs at the after commit: 949c1c87f415febb6d7b554cb969642214537615c4a316f0674fcf355285c5e6
+diff -r -x bin -x obj against a clean archive of the after commit:
+diff exit 0

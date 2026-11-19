@@ -1,0 +1,6 @@
+sha256 of Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs after the revert: a0573c5ed31000868e6824b3b8c22dad629df5848bfbcfaec3c6f036ab4f1f1e
+sha256 of Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs at the after commit: a0573c5ed31000868e6824b3b8c22dad629df5848bfbcfaec3c6f036ab4f1f1e
+diff -r against a clean archive of the after commit:
+diff exit 0
+E-1 over the reverted copy against E-1 over the clean archive:
+identical

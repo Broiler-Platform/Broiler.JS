@@ -1,0 +1,45 @@
+  Determining projects to restore...
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj (in 4.85 sec).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj (in 4.85 sec).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.JSClassGenerator/Broiler.JavaScript.JSClassGenerator.csproj (in 5.32 sec).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj (in 5 ms).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj (in 7 ms).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj (in 5 ms).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.LinqExpressions/Broiler.JavaScript.LinqExpressions.csproj (in 7 ms).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Modules/Broiler.JavaScript.Modules.csproj (in 8 ms).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Globals/Broiler.JavaScript.Globals.csproj (in 8 ms).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Extensions/Broiler.JavaScript.Extensions.csproj (in 6 ms).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj (in 4 ms).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj (in 219 ms).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj (in 5.4 sec).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj (in 3 ms).
+  Restored /home/user/js-115after-build/after/Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj (in 2 ms).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj (in 7 ms).
+  Restored /home/user/js-115after-build/after/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 0.9 ms).
+  Restored /home/user/js-115after-build/after/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj (in 2 ms).
+  Restored /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Clr/Broiler.JavaScript.Clr.csproj (in 13 ms).
+  Broiler.ECMAScript.Algorithms -> /home/user/js-115after-build/after/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-115after-build/after/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-115after-build/after/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Ast -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Parser -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Storage -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.Compiler -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Compiler/bin/Release/net10.0/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.BuiltIns -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Clr -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Clr/bin/Release/net10.0/Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.Modules -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Modules/bin/Release/net10.0/Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Globals -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript.Globals/bin/Release/net10.0/Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript -> /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:01:14.68

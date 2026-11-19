@@ -1,0 +1,47 @@
+Bundle sjl-11-001's controls of parts C and E, at the after commit b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1,
+2026-11-19 UTC. Every command as it was run, in order. Each control edits a scratch copy of the after commit (a git
+archive on disk), never committed, pushed or merged, and is reverted and the revert checked. Host, toolchain and
+wrapper (run.sh) as ../after/commands.txt says; builds and runs went through the wrapper (logs/), the greps did not.
+logs/ also holds the wrapper's records of part E's check E-2 (e2-build, e2-run), whose output is ../after/part-e/e2.txt;
+logs/runs.tsv and logs/commands.log list E-2's two runs, of which only the second's step records are kept, as
+../after/commands.txt says.
+
+B=/home/user/js-115after-build          # the scratch copies, removed afterwards
+O=<this directory>
+for d in ctl-c ctl-e clean; do git archive --format=tar b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1 | tar -x -C $B/$d; done
+
+# ---- part C's control: "a patch to a scratch copy of the after commit, never merged, in which the adapter answers no
+#      match where Broiler.Regex's match reports LimitExceeded naming frames or trail; every M case must be reported as
+#      differing from its declared outcome; retained; reverted and the revert checked"
+python3 -I control-edit.py c $B/ctl-c       # the edit (control-edit.py, kept here); part-c/control.patch is its diff:
+(cd $B && diff -u --label a/<file> --label b/<file> clean/<file> ctl-c/<file>) > part-c/control.patch
+#   <file> = Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.Broiler.cs; RunMatch's throw of the RangeError
+#   naming the ceiling becomes "return RegexMatchData.NoMatch;"
+cd $B/ctl-c && dotnet build Broiler.JS/Broiler.JavaScript -c Release --disable-build-servers -nologo
+#   part-c/control-binaries.sha256 (BuiltIns and the shell)
+cd $B/ctl-c && python3 -I run-part-c-control.py $B/ctl-c $B/ctl-c/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll $O/part-c/control M
+#   run-part-c-control.py (kept here) runs ../base/run-part-c.py, byte for byte, over the manifest's M cases only,
+#   each program still checked against the manifest's SHA-256: part-c/control/results.tsv and cases/. exit 0.
+cd $B/ctl-c && patch -R -p1 < part-c/control.patch          # the revert: part-c/revert.txt (patch's output)
+#   the revert's check, part-c/revert-check.txt: the file's SHA-256 after the revert against the after commit's blob,
+#   and diff -r -q -x bin -x obj of the whole copy against a clean archive of the after commit (exit 0)
+cd $B/ctl-c && dotnet build Broiler.JS/Broiler.JavaScript -c Release --disable-build-servers -nologo
+#   the reverted copy built again (incrementally, over the control's bin/ and obj/): part-c/reverted-binaries.sha256
+cd $B/ctl-c && python3 -I run-part-c-control.py $B/ctl-c <the same shell> $O/part-c/reverted M
+#   part-c/reverted/results.tsv: the M cases on the reverted build. exit 0.
+rm -rf $B/ctl-c
+
+# ---- part E's control: "one deleted member re-added to a scratch copy of the after commit, never merged; E-1 must
+#      report it; reverted and the revert checked"
+#   E-1 over a tree, each name the rule lists, as at the commit but over the files (--no-index):
+#     (cd <tree> && git grep --no-index -w -n <name> -- Broiler.JS ':!Broiler.JS/CHANGELOG.md'), and the file
+#     JSRegExp.UnicodeSets.cs present or absent
+E-1 over $B/clean                         # part-e/e1-clean-archive.txt: the same lines as ../after/part-e/e1.txt
+python3 -I control-edit.py e $B/ctl-e      # JSRegExp's BuildFlagsString, as the base commit 5429c406 has it,
+                                           # re-added to the after commit's JSRegExp.cs: part-e/control.patch
+E-1 over $B/ctl-e                         # part-e/e1-control.txt: E-1 reports BuildFlagsString
+cd $B/ctl-e && patch -R -p1 < part-e/control.patch           # the revert: part-e/revert.txt
+E-1 over $B/ctl-e                         # part-e/e1-reverted.txt
+#   the revert's check, part-e/revert-check.txt: the file's SHA-256 against the after commit's blob, diff -r -q of
+#   the whole copy against the clean archive (exit 0), and e1-reverted.txt against e1-clean-archive.txt (identical)
+rm -rf $B/ctl-e $B/clean
