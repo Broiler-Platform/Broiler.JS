@@ -20,6 +20,10 @@ match, `exec`, `test`, `@@match`, `@@matchAll`, `@@replace`, `@@search`, `@@spli
 the scanner, and `RegExp.escape` and `source` are its text helpers' (requirement R9). The area verdict is "Regular
 expressions (SJL-11.1)" in [`docs/roadmap/SharedLibraries.md`](../docs/roadmap/SharedLibraries.md); the rows below are
 Broiler.VM's `docs/evidence/sjl-11-001/correspondence.md`, and its JSD-0081's decisions D7, D10 and D20 to D23.
+*(Noted 2026-11-19: the heading reads "on branch `sjl-11-5`, not merged". The change merged to the default branch on
+2026-11-19 in Broiler-Platform/Broiler.JS#1126, as `b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1`, the after commit of
+bundle [`sjl-11-001`](../docs/evidence/sjl-11-001/README.md), whose README records its after runs; the heading and the
+entry are left as written.)*
 
 **The policy** (decisions D7 and D10), as Broiler.VM passes it: no meter and no step ceiling; a frame ceiling of
 `1 << 20` and a trail ceiling of `1 << 21`, a ceiling reached being a catchable `RangeError` ("Maximum regular
