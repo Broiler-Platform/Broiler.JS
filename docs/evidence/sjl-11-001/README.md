@@ -681,6 +681,53 @@ exceptions and the control is reported."
 These are per-part readings only. No clause of SJL-11 (4 to 7), no exit reading and nothing of Broiler.VM's or
 Broiler.RegEx's is read here; part A and part B have no reading; nothing is declared met beyond the words above.
 
+*Dated note, 2026-11-19, part B's arm A by the owner's answer 7; the note above "Part B's arm A, for the owner" is not
+rewritten.* It reads "How arm A is built is the owner's open question; it is not built until the owner's reading is
+recorded here by a dated note." The owner answered on 2026-11-19, an answer of the owner's own, not taken under the
+owner's direction of 2026-10-18, quoted verbatim and numbered as the answers above continue:
+- **7.** Asked (2026-11-19): "SJL-11.5 part B's arm A is "the after commit, with the same two files"
+  (RegExpBenchmarks.cs and the benchmark Program.cs "as the inputs commit has them"). RegExpBenchmarks.cs is unchanged
+  at the merge. But the inputs commit's Program.cs calls the RegexTiering metrics that the cut-over deletes (D20/D21),
+  so it cannot build at the merge. How should arm A be built?" Chosen: "Merge's own Program.cs" — "A dated revision,
+  filed before any part B run, reads arm A's Program.cs as the merge's own. That file differs from the inputs commit's
+  only by the removed --regex-tiering block, which part B never invokes. Its --regexp-answers path and the benchmark
+  entry must be byte-identical; if they aren't, the run stops and comes back to you." Not taken: "Inputs file minus
+  the block" — "Arm A uses the inputs commit's Program.cs with only the --regex-tiering block cut out, as a patched file
+  named by hash in the manifest. It stays closer to the rule's words, but arm A then builds from a file no commit
+  has."; "Record part B void" — "No part B run. The rule then leaves the measurement question open for this engine. It
+  blocks nothing."
+
+What it means here:
+- **The revision.** [`decision-rule-revised-2026-11-19.md`](decision-rule-revised-2026-11-19.md), filed by
+  `cb0246d63699030cdedf972524811fc2de2fc4e2` before any part B run, quotes `decision-rule.md` whole, as the earlier
+  revisions do, and changes only part B's arms line: "A the after commit, with the same two files" reads "A the after
+  commit, with RegExpBenchmarks.cs as the inputs commit has it and the benchmark Program.cs as the after commit has
+  it", and the part B run refuses unless, before any lane runs, the after commit's `Program.cs` differs from the
+  inputs commit's (`24fe7cba`, blob `6074646340c64176f4c918b1c963dbd1347cdcff`) only by the removal of the
+  `--regex-tiering` block, with its `--regexp-answers` path and the benchmark entry byte-identical. Arm B, A-again,
+  the configuration, the condition, the configuration check, the quantity, the noise floor, the comparison and the MET
+  line are unchanged. It says it was written after parts A, C and D's base runs and part C's after run had been seen,
+  with part D's after runs under way, none of them part B's, so its decision is weaker evidence in the sense of the
+  rule's section "Revisions".
+  `decision-rule.md` and the earlier revisions are not edited; the four are read together.
+- **The condition holds at the after commit.** [`after/part-b-arm-a/check.txt`](after/part-b-arm-a/check.txt)
+  (`4ed579dbe4ccd749c98b1cbf5787eae8b8ca0a45ffee516972a1f40061b23549`), written by
+  [`after/part-b-arm-a/check-program-cs.py`](after/part-b-arm-a/check-program-cs.py)
+  (`96456659d7c32b2cb51ee62cdd02f96060c3ab50a8d807c161bc5ada119fa7c7`) from git objects alone, reads: the inputs
+  commit's `Program.cs` is blob `6074646340c64176f4c918b1c963dbd1347cdcff`; with its one `--regex-tiering` block
+  removed (its lines 59 to 64, the `if` statement that calls `RegexTieringMetrics.Write()` and the blank line after
+  it) it is, byte for byte, the after commit's `Program.cs`, blob `095db42675307de05e23cd22ba5c2b8e24c3241a`; the
+  `--regexp-answers` block and the benchmark entry (`BenchmarkSwitcher` to `.Run(args,
+  BenchmarkConfiguration.Create());`) are byte-identical in both; and `RegExpBenchmarks.cs` is blob
+  `604dced1d4a4485e7fa01cac55630b21c0c72f59` at both, so arm A builds the after commit's own tree, with no file
+  replaced. The local session runs the same check again before any lane runs, and keeps its output with the
+  sub-bundle's manifest.
+- **Part B is still to be taken**, on the controlled lane `win-x64-r7-5800x` by a local session on the owner's
+  workstation (answer 4 above), into `measurement/win-x64-r7-5800x/`. No arm has been built and nothing has been
+  measured; part B has no reading.
+
+Nothing here is a verdict.
+
 *2026-11-01:* the regular-expression vectors this bundle's part D runs were added at corpus revision 31, `conformance/vectors/regexp/` (milestone SJL-11.3), whose expected values are `scripts/conformance/regexpref.py`'s (`ref:regexpref@1`), as at `3ea693c727e7a5801d3e6681772f53dc98ccc10f` (first committed at `4420d902b55c29ab37792cb2cc1f74cbd5804c34`). Revision 31 classifies no difference; the revision that classifies both engines' first runs is the one part D names, and this README names it when it exists. **A disagreement for the owner:** part D's population is "every vector of conformance/vectors/regexp/" and its MET clause holds each to "the outcome its class expects (normative: out; ...)", but the 18 vectors of `regexp/budget.vectors` whose `out` is `status: exhausted` are library-level (JSD-0081's decision D25), and the corpus's SCHEMA.md section 4 has an engine-level runner skip them and give them no line, so this engine's run can never give their `out`. Read with SCHEMA.md, part D's population leaves them out; the rule is not revised here, and its reading is the owner's to state.
 
 *2026-11-01, at corpus revision 32:* **part D names revision 32**, the revision that classifies both engines' first
