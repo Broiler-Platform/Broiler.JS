@@ -109,10 +109,10 @@ it. Each public type and member is disposed of as bundle `sjl-14-001`'s
 (b) obsolete with the removal version, (c) removal with a recorded consumer check. The observable corrections are in
 [`Broiler.JS/CHANGELOG.md`](../Broiler.JS/CHANGELOG.md), "The cut-over to the shared syntax library", K1 to K10 by row.
 
-**The marks.** Every mark this section names carries the one diagnostic identifier `BJS0001` and names the removal
-version `1.0.0` in its message; the repository root's `Directory.Build.props` suppresses `BJS0001` with its one
+**The marks.** Every mark this section names carries the one diagnostic identifier `BJS0002` and names the removal
+version `1.0.0` in its message; the repository root's `Directory.Build.props` suppresses `BJS0002` with its one
 `NoWarn`, which every project under it inherits, until milestone SJL-15.5. A consumer outside this repository sees the
-warning `BJS0001` where it names a marked type.
+warning `BJS0002` where it names a marked type.
 
 | Member | Assembly | Disposition | What it does now |
 | --- | --- | --- | --- |

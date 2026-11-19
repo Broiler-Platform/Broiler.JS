@@ -18,7 +18,7 @@ constructor's two piece parses, the module analysis and the portable compiler al
 through the bridge, which builds this engine's tree from the library's, and the last two reading the library's tree
 directly. The bridge's test-only switch of W1 is gone. `Broiler.JavaScript.Ast` and `Broiler.JavaScript.Parser` are
 adapter packages over the library, obsolete with the removal version `1.0.0` under the one diagnostic identifier
-`BJS0001`, as [`docs/public-api.md`](../docs/public-api.md) ("Public API changes, 2026-11-19") lists them by type. The
+`BJS0002`, as [`docs/public-api.md`](../docs/public-api.md) ("Public API changes, 2026-11-19") lists them by type. The
 decisions are D40 to D56 and D64 in [`docs/roadmap/SharedLibraries.md`](../docs/roadmap/SharedLibraries.md), section
 "Broiler.JS on the shared syntax library (SJL-14)"; the corrections below are bundle
 [`sjl-14-001`](../docs/evidence/sjl-14-001/corrections.md)'s K1 to K10 (decision D45), each by its rows, as

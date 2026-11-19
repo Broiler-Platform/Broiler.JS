@@ -137,12 +137,13 @@
                 encodeURI() specification exactly.
       Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
     -->
-    <!-- BJS0001, added at window W2 of milestone SJL-14 (decision D50; bundle sjl-14-001's dispositions.md): the one
+    <!-- BJS0002, added at window W2 of milestone SJL-14 (decision D50; bundle sjl-14-001's dispositions.md): the one
          diagnostic identifier of the obsolete marks on Broiler.JavaScript.Ast's tree types and Broiler.JavaScript.Parser's
          public types, which are adapter packages over the shared syntax library until their removal version, 1.0.0.
          Every project under this root inherits it, bundle sjl-12-001's tool under docs/evidence/ among them, until
-         milestone SJL-15.5 moves the compiler to the shared tree. -->
-    <NoWarn>$(NoWarn);CS8600;CS8601;CS8602;CS8603;CS8604;CS8618;CS8619;CS8620;CS8622;CS8625;CS8631;CS8632;CS8765;CS8767;CS0109;CS0628;CS9113;CA1416;CA2255;SYSLIB0013;BJS0001</NoWarn>
+         milestone SJL-15.5 moves the compiler to the shared tree. It is not BJS0001, which is
+         KeyStringGetOrCreateLoopAnalyzer's (Broiler.JavaScript.JSClassGenerator) and must stay unsuppressed. -->
+    <NoWarn>$(NoWarn);CS8600;CS8601;CS8602;CS8603;CS8604;CS8618;CS8619;CS8620;CS8622;CS8625;CS8631;CS8632;CS8765;CS8767;CS0109;CS0628;CS9113;CA1416;CA2255;SYSLIB0013;BJS0002</NoWarn>
     <!-- Persisted source directories are never ordinary compiler input. The opt-in
          output properties live in Directory.Build.targets, after project TFMs exist. -->
     <DefaultItemExcludes>$(DefaultItemExcludes);Generated\**</DefaultItemExcludes>

@@ -159,6 +159,17 @@ waiting for review.", each taken as recommended, with its alternative not taken;
   at the base commit. *(Changed 2026-11-19, in review: the bullet read "two that read the old parser's backtracking report
   and three unterminated-token lines (class M, decision D46)".)*
 
+**The marks' diagnostic identifier.** *(Changed 2026-11-19, in review, before W2 merged and before any base run:)* the
+one identifier decision D50 gives the marks (`dispositions.md`, "one diagnostic identifier, suppressed by one `NoWarn`
+in the repository root's `Directory.Build.props`"), which names no value, is `BJS0002`. The branch had given it
+`BJS0001`: `ObsoleteMarks.cs` read `internal const string DiagnosticId = "BJS0001";`, the root `Directory.Build.props`'
+`NoWarn` ended `;SYSLIB0013;BJS0001` under a comment opening "BJS0001, added at window W2", and `docs/public-api.md`
+("The marks") and `Broiler.JS/CHANGELOG.md` named `BJS0001`. That identifier is already
+`KeyStringGetOrCreateLoopAnalyzer`'s (`Broiler.JavaScript.JSClassGenerator`), which BuiltIns, Engine, Globals,
+Modules, Network and Runtime reference as an analyzer, so the root `NoWarn` silenced that analyzer in every project.
+`BJS0002` is the next identifier of the repository's `BJS` scheme, which has no other; no part was run under the old
+identifier, so no reading changes. `KeyStringGetOrCreateLoopAnalyzer` keeps `BJS0001`, unsuppressed.
+
 **Checks** on the branch head are recorded with the branch's report, not here; no part's base or after run is taken.
 
 ## What it will hold

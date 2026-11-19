@@ -9,8 +9,11 @@ namespace Broiler.JavaScript;
 /// </summary>
 internal static class ObsoleteMarks
 {
-    /// <summary>The diagnostic identifier every mark carries.</summary>
-    internal const string DiagnosticId = "BJS0001";
+    /// <summary>
+    /// The diagnostic identifier every mark carries; not <c>BJS0001</c>, which is
+    /// <c>KeyStringGetOrCreateLoopAnalyzer</c>'s, so that the <c>NoWarn</c> leaves that analyzer active.
+    /// </summary>
+    internal const string DiagnosticId = "BJS0002";
 
     /// <summary>The mark of <c>Broiler.JavaScript.Ast</c>'s tree types.</summary>
     internal const string Ast =
