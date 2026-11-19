@@ -75,4 +75,31 @@ public class DirectEvalStrictnessAndHeritageTests
             "class A { constructor() { this.x = 4; } }" +
             "class B extends A { constructor() { eval(\"eval('super()')\"); } }" +
             "'' + new B().x"));
+
+    [Fact]
+    public void ABaseClassConstructorsEvalReachedBySuperFromADerivedConstructorsEvalReadsItsOwnThis()
+        // Found in review of window W2: the base class's constructor shares no binding, so its eval code read the
+        // enclosing derived constructor's `this`, still uninitialised, and threw a ReferenceError. The innermost shared
+        // binding is now the running constructor's own. (Inside a function: at a sloppy script's top level the same
+        // source throws "Cannot assign to read only variable" at the base commit too, which is not this row.)
+        => Assert.Equal("E:true|E:true|F:true", Eval(
+            "(function () { var r = [];" +
+            "class E { constructor() { r.push('E:' + (eval('this') === this)); } }" +
+            "new E();" +
+            "class F extends E { constructor() { eval('super()'); r.push('F:' + (this instanceof F)); } }" +
+            "try { new F(); } catch (e) { r.push('F-threw:' + e.constructor.name); }" +
+            "return r.join('|'); })()"));
+
+    [Fact]
+    public void ANestedEvalInABaseClassConstructorInheritsNoSuperCallFromADerivedConstructorsEval()
+        // Found in review of window W2: the derived constructor's super-call grant reached the base constructor's nested
+        // eval, whose super() ran the base constructor again. It is the base constructor's eval code, where super() is
+        // an early error (row R24).
+        => Assert.Equal("A:SyntaxError|B:true", Eval(
+            "(function () { var r = [], n = 0;" +
+            "class A { constructor() { if (++n > 3) { r.push('A:re-entered ' + n + ' times'); return; }" +
+            " try { var s = 'super()'; eval('eval(s)'); r.push('A:none'); } catch (e) { r.push('A:' + e.constructor.name); } } }" +
+            "class B extends A { constructor() { var s = 'super()'; eval('eval(s)'); r.push('B:' + (this instanceof B)); } }" +
+            "try { new B(); } catch (e) { r.push('outer:' + e.constructor.name); }" +
+            "return r.join('|'); })()"));
 }

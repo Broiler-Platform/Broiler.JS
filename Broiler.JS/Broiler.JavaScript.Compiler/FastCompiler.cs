@@ -133,7 +133,7 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
                 ForcedStrict = context.DirectEvalCodeIsStrict,
                 InFunction = !context.DirectEvalRejectsNewTarget,
                 InMethod = context.HasDirectEvalSuper,
-                InDerivedConstructor = context.HasDirectEvalSuperCall,
+                InDerivedConstructor = context.DirectEvalSuperCallInDerivedConstructor,
                 VisiblePrivateNames = privateNames,
             };
         }
@@ -231,6 +231,8 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         // constructor sees afterwards. #evalThis holds the shared JSVariable directly
         // (CreateVariable assigns the JSVariable rather than wrapping a value), so `this`
         // reads resolve through it and the eval's super() binds it via its target.
+        // A base class's constructor shares its own, initialised binding the same way, with no super-call grant
+        // (window W2 of milestone SJL-14, row R24), so the innermost shared binding is the running constructor's.
         if (isDirectEvalCompilation && context?.HasDirectEvalSuperCall == true)
         {
             var evalSuperConstructor = fx.CreateVariable("#evalSuperConstructor", JSContextBuilder.DirectEvalSuperConstructor);

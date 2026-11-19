@@ -202,8 +202,10 @@ public static class DirectEvalSupport
                 : null;
             // Share the derived constructor's superclass constructor and `this` binding
             // so a `super(...)` inside the eval initializes the constructor's own `this`.
+            // A base class's constructor shares its own binding with inDerivedConstructor false (window W2,
+            // row R24), so that its eval code reads its own `this` and inherits no super-call grant.
             using var superCallScope = directEvalThisBinding != null
-                ? context.PushDirectEvalSuperCall(directEvalSuperConstructor, directEvalThisBinding)
+                ? context.PushDirectEvalSuperCall(directEvalSuperConstructor, directEvalThisBinding, inDerivedConstructor)
                 : null;
             // Thread the caller's new.target so `new.target` at the eval's top level
             // (and a nested eval) observes it. Pushed unconditionally so a nested

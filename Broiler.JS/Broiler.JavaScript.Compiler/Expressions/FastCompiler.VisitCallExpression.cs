@@ -138,9 +138,13 @@ partial class FastCompiler
             // tell a derived constructor from a base one. The class's heritage does: only a derived constructor's scope
             // has a superclass constructor binding (CreateClass). Window W2 (decision D44; row R24) passes it to the
             // eval, whose super() is then an early error in a base class's constructor, as the specification has it,
-            // and not a TypeError at run time. A nested eval inherits it with the super-call grant.
+            // and not a TypeError at run time. A nested eval inherits it from the binding its outer eval shares: the
+            // innermost on the context's stack, which a base class's constructor pushes too, so that an enclosing derived
+            // constructor's grant does not reach the eval code of the base constructor its super() runs.
             var inDerivedConstructor = allowSuperCall
-                && (nestedEvalInheritsSuperCall || scope.Top.RootScope.SuperConstructor != null);
+                && (nestedEvalInheritsSuperCall
+                    ? ((JSContext)JSEngine.Current).DirectEvalSuperCallInDerivedConstructor
+                    : scope.Top.RootScope.SuperConstructor != null);
             var useActivationBinding = scope.Top.Function?.IsArrowFunction == true && parameterInitializerDepth > 0;
             var activationOwner = disallowArgumentsDeclaration || useActivationBinding
                 ? scope.Top.StackItem
@@ -174,9 +178,11 @@ partial class FastCompiler
             var thisArg = scope.Top.ThisExpression;
             BExpression directEvalSuperConstructor = BExpression.Constant(null, typeof(JSValue));
             BExpression directEvalThisBinding = BExpression.Constant(null, typeof(JSVariable));
-            // Only a derived constructor's eval can call super() since window W2 (row R24), so only it shares the binding;
-            // a base class's constructor has initialised `this` before any of its code runs.
-            if (inDerivedConstructor && (scope.Top.ThisExpression as BPropertyExpression)?.Target is { } thisBindingTarget
+            // Every class constructor's eval shares the binding, a base class's included, whose `this` is initialised
+            // before any of its code runs: the eval code then reads its own constructor's binding, the innermost one the
+            // context holds, and not that of a derived constructor whose eval's super() reached this constructor. Only a
+            // derived constructor's eval can call super() since window W2 (row R24); inDerivedConstructor says which.
+            if (allowSuperCall && (scope.Top.ThisExpression as BPropertyExpression)?.Target is { } thisBindingTarget
                 && thisBindingTarget.Type == typeof(JSVariable))
             {
                 directEvalThisBinding = thisBindingTarget;
