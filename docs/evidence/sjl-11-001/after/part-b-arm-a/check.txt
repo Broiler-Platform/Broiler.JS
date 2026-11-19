@@ -1,0 +1,17 @@
+inputs commit 24fe7cba2dadbadb5917cf20e6c884d1ddabec85; after commit b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1
+Program.cs: inputs blob 6074646340c64176f4c918b1c963dbd1347cdcff; after blob 095db42675307de05e23cd22ba5c2b8e24c3241a
+yes  1. the inputs commit's Program.cs is blob 6074646340c64176f4c918b1c963dbd1347cdcff
+yes  2a. the inputs file holds exactly one --regex-tiering block (found 1)
+   the block: inputs lines 59 to 64 (6 lines, the last blank), sha256 d2afe676bc58027e2bc99390a8541877f2a88cc028b574cf5524b8f54557f205
+   |         if (args.Length == 1 && args[0] == "--regex-tiering")
+   |         {
+   |             RegexTieringMetrics.Write();
+   |             return;
+   |         }
+   | 
+yes  2b. the inputs file with that block removed is the after file, byte for byte
+yes  2c. the after file holds no --regex-tiering block
+yes  3a. the --regexp-answers block, once in each (inputs lines 198-202, after lines 192-196), is byte-identical; sha256 d24e23cbaad6c0c50b52ba628019c0f222b7d065bbeef6949408214de6cd5afe
+yes  3b. the benchmark entry, once in each (inputs lines 204-231, after lines 198-225), is byte-identical; sha256 e2716a024e03f9a2bf4ccfc0b7d2863cbec952171aabc4a20600e20e1c03bf2c
+same 4. RegExpBenchmarks.cs: inputs blob 604dced1d4a4485e7fa01cac55630b21c0c72f59; after blob 604dced1d4a4485e7fa01cac55630b21c0c72f59 (arm A uses the inputs commit's)
+the condition holds

@@ -1,0 +1,6 @@
+ctl-c-build rc=0
+ctl-c-run rc=0
+ctl-c-reverted-build rc=0
+ctl-c-reverted-run rc=0
+e2-build rc=0
+e2-run rc=0

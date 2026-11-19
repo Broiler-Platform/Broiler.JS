@@ -1,0 +1,8 @@
+# command (cwd /home/user/js-115after-build/after): env -u LANG -u LANGUAGE -u LC_* TZ=UTC dotnet /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll --script-host /home/user/js-115after-build/after/docs/evidence/sjl-11-001/inputs/adversarial/N14.js
+# program-sha256: 15cd65c6da1b9066f683517f47a36c1c4028b1f9c2a60eaa5bd566bbcc959b78 (manifest: 15cd65c6da1b9066f683517f47a36c1c4028b1f9c2a60eaa5bd566bbcc959b78)
+# exit: 0
+# wall-seconds: 0.5
+# timed-out: False
+## stdout
+adversarial-outcome N14 threw SyntaxError
+## stderr

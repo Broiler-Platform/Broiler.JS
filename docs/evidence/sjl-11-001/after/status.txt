@@ -1,0 +1,6 @@
+build-shell rc=0
+build-vectors rc=0
+part-c rc=0
+part-d-invariant rc=0
+part-d-tr-TR rc=1
+part-d-lt-LT rc=1

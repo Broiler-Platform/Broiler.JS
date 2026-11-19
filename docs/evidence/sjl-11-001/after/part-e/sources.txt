@@ -1,0 +1,122 @@
+# part-e/sources.txt: the lines checks E-3 and E-4 read, from git at the after commit b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1 (carriage returns
+# removed for display; each file named by blob). Extracted with git show <commit>:<path>, line numbers the file's own.
+
+== E-3, the scanner: FastScanner's regular-expression scan calls Broiler.Regex's validate entry
+-- Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1039-1050 (blob 75406092ddf4611962079b10a8cca5903c90cdd9)
+ 1039  
+ 1040      /// <summary>
+ 1041      /// Whether a regular-expression literal's body and flags are a RegularExpressionLiteral the specification admits
+ 1042      /// (ECMA-262 13.2.7.2, IsValidRegularExpressionLiteral): Broiler.Regex's validate entry, under the nesting limit
+ 1043      /// this engine compiles under (Broiler.VM's JSD-0081, decisions D7 and D22).
+ 1044      /// </summary>
+ 1045      // Broiler-AI:           Origin=AI; Spec=ECMA-262 13.2.7.2 and JSD-0081 decision D22; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+ 1046      // Broiler-Falsified-If: the literal /(?<=a)?/ or /[(]/v is admitted, or /\u{1F600}/u is refused
+ 1047      // Broiler-Human:        PENDING
+ 1048      internal static bool IsValidRegularExpressionLiteral(string pattern, string flags)
+ 1049          => Broiler.Regex.BroilerRegex.Validate(pattern, flags, JSUnicode.Tables, Broiler.Regex.BroilerRegex.MaximumNestingLimit,
+ 1050              out _, out _) == Broiler.Regex.RegexStatus.Success;
+-- Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1218-1236 (blob 75406092ddf4611962079b10a8cca5903c90cdd9)
+ 1218          if (scanRegExp)
+ 1219          {
+ 1220              if (ScanRegEx(state, first, out var token))
+ 1221                  return token;
+ 1222          }
+ 1223  
+ 1224          if (divideAndAssign)
+ 1225          {
+ 1226              state.Dispose();
+ 1227              Consume();
+ 1228              Consume();
+ 1229              return divide.Commit(TokenTypes.AssignDivide);
+ 1230          }
+ 1231  
+ 1232          state.Dispose();
+ 1233          Consume();
+ 1234          return divide.Commit(TokenTypes.Divide);
+ 1235  
+ 1236          bool ScanRegEx(State state, char first, out FastToken token)
+-- Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1354-1367 (blob 75406092ddf4611962079b10a8cca5903c90cdd9)
+ 1354  
+ 1355              var flags = ScanFlags();
+ 1356  
+ 1357              // IsValidRegularExpressionLiteral (ECMA-262 13.2.7.2): the body and the flags as written, checked by
+ 1358              // Broiler.Regex's validate entry under the nesting limit the RegExp constructor compiles under (milestone
+ 1359              // SJL-11.5; Broiler.VM's JSD-0081, decision D22). The token carries the body as written, so `source` is
+ 1360              // the text the literal holds (row T1). Until SJL-11.5 the check was the parser's own .NET-based validator, after a
+ 1361              // parenthesis-balance patch and a rewrite of `\u{…}` escapes under u or v, which are gone. A literal it
+ 1362              // refuses is still read as a division here, the fallback SJL-14 owns (row S9).
+ 1363              if (!IsValidRegularExpressionLiteral(regExp, flags))
+ 1364                  return false;
+ 1365  
+ 1366              token = state.Commit(TokenTypes.RegExLiteral, regExp, flags);
+ 1367              return true;
+
+== E-3, DecodeBracedUnicodeEscapes and the parenthesis-balance patch absent (git grep at the after commit)
+$ git grep -n -w -E 'DecodeBracedUnicodeEscapes|TryDecodeBracedUnicodeEscapes|sawBracedUnicodeEscape' b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1 -- Broiler.JS/Broiler.JavaScript.Parser
+(exit 1)
+$ git grep -n -E 'depth--|depth\+\+' b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1 -- Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs
+(exit 1)
+the patch as the base commit 5429c406 has it, for comparison:
+$ git grep -n -E 'depth--|depth\+\+|sawBracedUnicodeEscape = true' 5429c4065e8b273e5c7965598b8a2f5490a8ad98 -- Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs
+5429c4065e8b273e5c7965598b8a2f5490a8ad98:Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1442:                                sawBracedUnicodeEscape = true;
+5429c4065e8b273e5c7965598b8a2f5490a8ad98:Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1495:                    if (vc == '(') depth++;
+5429c4065e8b273e5c7965598b8a2f5490a8ad98:Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1496:                    if (vc == ')') { depth--; if (depth < 0) { token = null; return false; } }
+
+== E-4, the direct call: JSStringPrototype's Search member
+-- Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Search.cs:185-218 (blob 95519e54c45814e45963042e757667bfdafaa7af)
+  185      [JSPrototypeMethod]
+  186      [JSExport("search", Length = 1)]
+  187      internal static JSValue Search(in Arguments a)
+  188      {
+  189          var @this = a.This.AsString();
+  190          var search = a.Get1();
+  191  
+  192          if (!search.IsNullOrUndefined && search.IsObject)
+  193          {
+  194              var searcher = search[(IJSSymbol)JSSymbol.search];
+  195              // GetMethod semantics: a null @@search is treated as absent.
+  196              if (!searcher.IsNullOrUndefined)
+  197              {
+  198                  if (!searcher.IsFunction)
+  199                      throw JSEngine.NewTypeError("@@search is not callable");
+  200  
+  201                  return searcher.InvokeFunction(new Arguments(search, a.This));
+  202              }
+  203          }
+  204  
+  205          //search string not defined
+  206          if (search.IsUndefined)
+  207              return NumberZero;
+  208  
+  209          // §22.1.3.12 step 4: RegExpCreate(regexp, undefined), whose RegExpInitialize reads ToString(regexp), a
+  210          // RegExp object among them whose @@search is undefined or null. Until SJL-11.5 such a RegExp reached its .NET
+  211          // engine's Match directly here (row M6 of Broiler.VM's correspondence, a correction of Broiler.JS).
+  212          var created = new JSRegExp(search.StringValue, "");
+  213          var builtinSearcher = created[(IJSSymbol)JSSymbol.search];
+  214          // §22.1.3.12 step 5: Invoke(rx, @@search, « string »), where string is ToString(O)
+  215          // (computed above as @this) — not the raw receiver. A boxed String receiver must
+  216          // therefore reach the built-in @@search as the primitive string it coerces to.
+  217          return builtinSearcher.InvokeFunction(new Arguments(created, CreateString(@this)));
+  218      }
+
+== The forwarder E-1 keeps (decision D21, SJL-D-25 (a)): RegExpUnicodeValidator's body
+-- Broiler.JS/Broiler.JavaScript.Ast/RegExpUnicodeValidator.cs:28-40 (blob 47ca18d5e16fb9ffdd9365a78ef0beb9b3643174)
+   28  public static class RegExpUnicodeValidator
+   29  {
+   30      /// <summary>
+   31      /// Whether <paramref name="pattern"/> is a valid pattern under the <c>u</c> flag, by the grammar and every early
+   32      /// error, as Broiler.Regex's validate entry answers it.
+   33      /// </summary>
+   34      // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.2.1 and JSD-0081 decision D21; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+   35      // Broiler-Falsified-If: IsValidUnicodePattern("\\-") or IsValidUnicodePattern("(?<=a)?") answers true, or IsValidUnicodePattern("\\u{1F600}") answers false
+   36      // Broiler-Human:        PENDING
+   37      public static bool IsValidUnicodePattern(string pattern)
+   38          => BroilerRegex.Validate(pattern ?? string.Empty, RegexFlags.Unicode, JSUnicode.Tables, BroilerRegex.MaximumNestingLimit,
+   39              out _, out _) == RegexStatus.Success;
+   40  }
+
+== E-1's one hit, another type's member of the same name: CharExtensions.HexValue (the scanner's string and identifier escapes)
+-- Broiler.JS/Broiler.JavaScript.Parser/CharExtensions.cs:16-18 (blob 4a05665eca3f315c7c7db33ddc7113f0decfd771)
+   16      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   17      internal static int HexValue(this char ch)
+   18      {

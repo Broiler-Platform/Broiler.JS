@@ -1,0 +1,8 @@
+# command (cwd /home/user/js-115after-build/after): env -u LANG -u LANGUAGE -u LC_* TZ=UTC dotnet /home/user/js-115after-build/after/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll --script-host /home/user/js-115after-build/after/docs/evidence/sjl-11-001/inputs/adversarial/O07.js
+# program-sha256: ba39dcb82a7b62c5f3fcfcd6ffca8ce776e84ab7f1277f8eccb64049a154d911 (manifest: ba39dcb82a7b62c5f3fcfcd6ffca8ce776e84ab7f1277f8eccb64049a154d911)
+# exit: 0
+# wall-seconds: 0.4
+# timed-out: False
+## stdout
+adversarial-outcome O07 completed 0,1 - 1
+## stderr

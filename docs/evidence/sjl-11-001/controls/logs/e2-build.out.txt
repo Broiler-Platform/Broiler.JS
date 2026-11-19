@@ -1,0 +1,18 @@
+  Determining projects to restore...
+  Restored /home/user/js-115after-build/e2check/e2check.csproj (in 67 ms).
+/home/user/js-115after-build/e2check/Program.cs(350,84): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/user/js-115after-build/e2check/e2check.csproj]
+/home/user/js-115after-build/e2check/Program.cs(356,55): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/user/js-115after-build/e2check/e2check.csproj]
+/home/user/js-115after-build/e2check/Program.cs(357,53): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/user/js-115after-build/e2check/e2check.csproj]
+/home/user/js-115after-build/e2check/Program.cs(365,72): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/user/js-115after-build/e2check/e2check.csproj]
+  e2check -> /home/user/js-115after-build/e2check/out/e2check.dll
+
+Build succeeded.
+
+/home/user/js-115after-build/e2check/Program.cs(350,84): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/user/js-115after-build/e2check/e2check.csproj]
+/home/user/js-115after-build/e2check/Program.cs(356,55): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/user/js-115after-build/e2check/e2check.csproj]
+/home/user/js-115after-build/e2check/Program.cs(357,53): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/user/js-115after-build/e2check/e2check.csproj]
+/home/user/js-115after-build/e2check/Program.cs(365,72): warning CS8632: The annotation for nullable reference types should only be used in code within a '#nullable' annotations context. [/home/user/js-115after-build/e2check/e2check.csproj]
+    4 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.27

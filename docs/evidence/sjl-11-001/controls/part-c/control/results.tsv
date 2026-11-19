@@ -1,0 +1,3 @@
+id	class	declared-outcome	program-sha256-checked	exit	wall-seconds	outcome	matches-declared
+M01	M	threw RangeError	ok	0	0.5	completed null	no
+M02	M	threw RangeError	ok	0	0.5	completed null	no

@@ -1,0 +1,15 @@
+# part-d/reading.txt: the three after reports' regexp/ lines read against each other (written by the import, from the
+# three .tsv.gz reports beside it; at the tree's corpus revision; part D is read at revision 32, in reading-revision-32.txt).
+
+invariant: engine: broiler-js; corpus revision: 43; vectors: 111374; match: 111244; classified-divergence: 130; difference: 0; not-implemented: 0; divergence no longer holds: 198
+  regexp/ lines: 1402; verdicts: match 1402
+tr-TR: engine: broiler-js; corpus revision: 43; vectors: 111374; match: 111163; classified-divergence: 153; difference: 58; not-implemented: 0; divergence no longer holds: 175
+  regexp/ lines: 1402; verdicts: match 1402
+lt-LT: engine: broiler-js; corpus revision: 43; vectors: 111374; match: 111160; classified-divergence: 155; difference: 59; not-implemented: 0; divergence no longer holds: 173
+  regexp/ lines: 1402; verdicts: match 1402
+
+regexp/ lines, invariant against tr-TR: byte-identical
+  every line, invariant against tr-TR: 85 differ, by area: intl 85
+regexp/ lines, invariant against lt-LT: byte-identical
+  every line, invariant against lt-LT: 90 differ, by area: intl 90
+regexp/ lines, tr-TR against lt-LT: byte-identical

@@ -1,0 +1,8 @@
+# command (cwd /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-115after/controls/part-c/control/_tree): env -u LANG -u LANGUAGE -u LC_* TZ=UTC dotnet /home/user/js-115after-build/ctl-c/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll --script-host /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-115after/controls/part-c/control/_tree/docs/evidence/sjl-11-001/inputs/adversarial/M01.js
+# program-sha256: 29c3c1aa9e7da73349cf7e47ce561704837c3c7d54bf829ad6502c5676485c2a (manifest: 29c3c1aa9e7da73349cf7e47ce561704837c3c7d54bf829ad6502c5676485c2a)
+# exit: 0
+# wall-seconds: 0.5
+# timed-out: False
+## stdout
+adversarial-outcome M01 completed null
+## stderr

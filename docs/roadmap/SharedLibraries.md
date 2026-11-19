@@ -1786,6 +1786,82 @@ numbered as the answers of 2026-11-18 above continue.
   same in a dated note, with the files' blob ids, and revises no rule line. No after run has been taken, every clause
   of this engine's, 4 to 7, is unmet, and none of it is accepted.
 
+*(Noted 2026-11-19, after SJL-11.5's merge; the notes above are left as written.)* **SJL-11.5 merged, the hold
+ended, and the after runs of parts C, D and E were taken.** The notes above end "No after run has been taken, every
+clause of this engine's, 4 to 7, is unmet, and none of it is accepted", and the last reads "How arm A is built is the
+owner's open question, and arm A is not built until the owner's reading is recorded".
+- **The merge.** SJL-11.5 merged to the default branch on 2026-11-19 as Broiler-Platform/Broiler.JS#1126,
+  `b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1`, a merge commit whose first parent is the base commit
+  `5429c4065e8b273e5c7965598b8a2f5490a8ad98` and whose second is `ce908940`, the head of `sjl-11-5`. It is the rule's
+  after commit, `5429c406` is its base commit, and the base runs taken there stand. The hold of decision D16 ended with
+  that merge.
+- **The after runs.** Parts C, D and E's after runs were taken at the after commit, from a clean archive, with the base
+  runs' commands, zone, cultures and toolchain, and are retained in bundle
+  [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s `after/`, with part C's and part E's controls in its `controls/`;
+  the bundle's README names each file by its SHA-256 and reads each part by the rule. **Part C: read NOT MET.** One
+  case, N05, passes the wall-clock limit at the base and throws its declared `SyntaxError` after, and neither class C1,
+  whose base outcomes do not include passing the limit, nor C3, which asks that the case completed at the base, admits
+  it; whether such a case reads under C1 is the owner's. **Part D: read MET on the retained runs**, at corpus revision
+  32 by the owner's answer 5. **Part E: read MET on the retained runs.** Part A's after run, a dispatch of the evidence
+  workflow at the after commit with the base run's inputs, has not been taken, and part A has no reading.
+- **The owner's answer 7 of 2026-11-19, quoted verbatim**, the owner's own, not taken under the owner's direction of
+  2026-10-18. Asked (2026-11-19): "SJL-11.5 part B's arm A is "the after commit, with the same two files"
+  (RegExpBenchmarks.cs and the benchmark Program.cs "as the inputs commit has them"). RegExpBenchmarks.cs is unchanged
+  at the merge. But the inputs commit's Program.cs calls the RegexTiering metrics that the cut-over deletes (D20/D21),
+  so it cannot build at the merge. How should arm A be built?" Chosen: "Merge's own Program.cs" — "A dated revision,
+  filed before any part B run, reads arm A's Program.cs as the merge's own. That file differs from the inputs commit's
+  only by the removed --regex-tiering block, which part B never invokes. Its --regexp-answers path and the benchmark
+  entry must be byte-identical; if they aren't, the run stops and comes back to you." Not taken: "Inputs file minus
+  the block" — "Arm A uses the inputs commit's Program.cs with only the --regex-tiering block cut out, as a patched file
+  named by hash in the manifest. It stays closer to the rule's words, but arm A then builds from a file no commit
+  has."; "Record part B void" — "No part B run. The rule then leaves the measurement question open for this engine. It
+  blocks nothing." The bundle's
+  [`decision-rule-revised-2026-11-19.md`](../evidence/sjl-11-001/decision-rule-revised-2026-11-19.md) is that
+  revision, filed before any part B run and written after other parts' runs were seen, which the rule calls weaker
+  evidence; its condition holds at the after commit, as the bundle's README records. Part B's run on the lane
+  `win-x64-r7-5800x` is still to be taken, by a local session on the owner's workstation.
+
+No clause reading and no exit reading is taken here: no clause of this engine's, 4 to 7, has been read, and none of
+it is accepted.
+
+*(Noted 2026-11-19, later the same day, part A's after run and its reading, the owner's answer 8, and part C read a
+second time; the notes above are left as written.)* **Part A: read MET on the retained runs; part C, read a second
+time under a revision for case N05: read MET on the retained runs.** The note above reads "Part A's after run, a
+dispatch of the evidence workflow at the after commit with the base run's inputs, has not been taken, and part A has
+no reading" and, of part C's case N05, "whether such a case reads under C1 is the owner's".
+- **Part A's after run** is a run of `.github/workflows/test262-evidence.yml`, which the bundle's README names,
+  dispatched on 2026-11-19 on `main` at the after commit `b2b226cd` with the base run's inputs but for the commit, by
+  the workflow blob the rule's revision of 2026-11-18 admits; every job concluded success, and its evidence artifact is retained unchanged in bundle
+  [`sjl-11-001`](../evidence/sjl-11-001/README.md)'s `after/part-a/`, named by the zip's digest, with the rule's
+  comparison of it with the base beside it. The bundle's README reads part A by the rule's MET line, each condition
+  with the file and digest that shows it: both runs complete, one shell each, every shard in the zone, the two
+  host-zone records the same, every duplicate-named-groups row passing at both commits, no row that passed at the base
+  changed, and every changed verdict a C1 row of rows S7, S8 and S11, exactly the test262 files the rule's list names
+  for them, each listed. No row moved for row M28's first half or through the `split` fallback, and no row is a
+  finding against JSD-0081. **Part A: read MET on the retained runs.**
+- **The owner's answer 8 of 2026-11-19**, the owner's own, not taken under the owner's direction of 2026-10-18,
+  "Admit N05 by revision", is quoted verbatim, with the alternative not taken ("Keep part C NOT MET"), in the bundle's
+  README and in the revision it orders,
+  [`decision-rule-revised-2026-11-19b.md`](../evidence/sjl-11-001/decision-rule-revised-2026-11-19b.md). That
+  revision quotes the rule whole and changes only part C: one named exception admits case N05 alone, past the
+  wall-clock limit at the base and its declared `SyntaxError` after, and part C's MET line reads with it; the classes
+  C1 and C3 and "no other class" stand for every other case. It was written after part C's runs and first reading had
+  been seen, so its decision is weaker evidence under the rule's section "Revisions".
+- **Part C, read a second time** on the same retained runs, with nothing rerun: after, every case gives its declared
+  outcome; every case whose outcome differs from the base's is C3, as the first reading lists it, or is case N05 under
+  its exception; and the control is reported as stated. **Part C, under the revision: read MET on the retained runs.**
+  The first reading, "Part C: read NOT MET", stays on record beside it.
+- **The rule's two revisions of 2026-11-19** are
+  [`decision-rule-revised-2026-11-19.md`](../evidence/sjl-11-001/decision-rule-revised-2026-11-19.md), by answer 7,
+  for part B's arm A, filed before any part B run, and `decision-rule-revised-2026-11-19b.md`, by answer 8, for case
+  N05. Each was written after runs the rule judges were seen, and each is weaker evidence for that. The second changes
+  nothing in part B.
+- **Part B** is still to be taken, on the lane `win-x64-r7-5800x` by a local session on the owner's workstation, and
+  has no reading.
+
+No clause reading and no exit reading is taken here: no clause of this engine's, 4 to 7, has been read, and none of
+it is accepted.
+
 **Locale data and the Intl algorithms (SJL-9.1), filed 2026-10-26: all five sub-areas accepted, plural ranges and
 display-name naming adopted, decisions SJL-D-22 and SJL-D-24 recorded, and the owner's decisions of 2026-10-26
 recorded.**

@@ -1,0 +1,43 @@
+# Part A's line "duplicate named groups (clause 6): every row of a file whose front matter's features list
+# regexp-duplicate-named-groups passes at both commits", read from each run's test262-results.json.gz: every row whose
+# features field (run_test262.py's reading of the file's front matter) lists that feature; path, variant, base, after.
+# Neither run has a timed-out row among them, so no re-run replaces one.
+test/annexB/built-ins/RegExp/prototype/compile/duplicate-named-capturing-groups-syntax.js [original] passed passed
+test/annexB/built-ins/RegExp/prototype/compile/duplicate-named-capturing-groups-syntax.js [terser] passed passed
+test/built-ins/RegExp/duplicate-named-capturing-groups-syntax.js [original] passed passed
+test/built-ins/RegExp/duplicate-named-capturing-groups-syntax.js [terser] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-exec.js [original] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-exec.js [terser] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-group-property-enumeration-order.js [original] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-group-property-enumeration-order.js [terser] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-match-indices.js [original] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-match-indices.js [terser] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-match.js [original] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-match.js [terser] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-matchall.js [original] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-matchall.js [terser] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-replace.js [original] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-replace.js [terser] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-replaceall.js [original] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-replaceall.js [terser] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-search.js [original] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-search.js [terser] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-split.js [original] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-split.js [terser] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-test.js [original] passed passed
+test/built-ins/RegExp/named-groups/duplicate-names-test.js [terser] passed passed
+test/built-ins/RegExp/prototype/exec/duplicate-named-groups-properties.js [original] passed passed
+test/built-ins/RegExp/prototype/exec/duplicate-named-groups-properties.js [terser] passed passed
+test/built-ins/RegExp/prototype/exec/duplicate-named-indices-groups-properties.js [original] passed passed
+test/built-ins/RegExp/prototype/exec/duplicate-named-indices-groups-properties.js [terser] passed passed
+test/built-ins/String/prototype/match/duplicate-named-groups-properties.js [original] passed passed
+test/built-ins/String/prototype/match/duplicate-named-groups-properties.js [terser] passed passed
+test/built-ins/String/prototype/match/duplicate-named-indices-groups-properties.js [original] passed passed
+test/built-ins/String/prototype/match/duplicate-named-indices-groups-properties.js [terser] passed passed
+test/staging/built-ins/RegExp/named-groups/duplicate-named-groups-replace.js [original] passed passed
+test/staging/built-ins/RegExp/named-groups/duplicate-named-groups-replace.js [terser] passed passed
+test/staging/built-ins/RegExp/named-groups/duplicate-named-groups-search.js [original] passed passed
+test/staging/built-ins/RegExp/named-groups/duplicate-named-groups-search.js [terser] passed passed
+test/staging/built-ins/RegExp/named-groups/duplicate-named-groups.js [original] passed passed
+test/staging/built-ins/RegExp/named-groups/duplicate-named-groups.js [terser] passed passed
+# files: 19; rows: 38; every row passed at both commits: True

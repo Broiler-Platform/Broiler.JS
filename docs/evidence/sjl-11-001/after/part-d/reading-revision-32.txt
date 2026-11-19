@@ -1,0 +1,73 @@
+# part-d/reading-revision-32.txt: the three after reports' regexp/ lines read again against corpus revision 32's
+# class lines (the owner's answer 5 of 2026-11-19, "Read revision 32"), by read-revision-32.py beside it, through
+# the scratch pin revision-32.pin. No run was taken for it: the rendered outcomes are the reports' own, and no
+# retained file changes. The after reports, taken at b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1, which part D judges.
+
+== Revision 32 against the tree of b2b226cd3158f0b7d990a3f4fecbe75b259b4fa1, conformance/vectors/regexp/
+vectors: 1420 at each, the same ids; status vectors (no engine-level line): 18 at each
+every other field (id, area, op, in, out, per-engine.*, prov, script, note, since) is the same in both: yes
+class lines that differ: 22 divergence -> normative
+divergence.* fields: 22 at revision 32 and not at 43; 0 at 43 and not at 32; 1 at both with other text
+the expected outcome the comparison uses for broiler-js (per-engine on impl-defined, otherwise out) is the same at both revisions for every vector: yes
+
+== Each after report
+invariant: run-invariant.tsv.gz, corpus revision: 43; regexp/ lines: 1402, one for each of revision 32's non-status vectors; class and expected columns are revision 43's for every line
+  as written (revision 43): match 1402; divergence no longer holds: 169
+  read again (revision 32): match 1402; divergence no longer holds: 189
+  lines that read differently: 22
+  sha256 of the re-read regexp/ lines (each line and LF): f8c5eb26fd8c9308b06989c015823951bc20353a196f1d5a68f4ecf5759f143c
+tr-TR: run-tr-TR.tsv.gz, corpus revision: 43; regexp/ lines: 1402, one for each of revision 32's non-status vectors; class and expected columns are revision 43's for every line
+  as written (revision 43): match 1402; divergence no longer holds: 169
+  read again (revision 32): match 1402; divergence no longer holds: 189
+  lines that read differently: 22
+  sha256 of the re-read regexp/ lines (each line and LF): f8c5eb26fd8c9308b06989c015823951bc20353a196f1d5a68f4ecf5759f143c
+lt-LT: run-lt-LT.tsv.gz, corpus revision: 43; regexp/ lines: 1402, one for each of revision 32's non-status vectors; class and expected columns are revision 43's for every line
+  as written (revision 43): match 1402; divergence no longer holds: 169
+  read again (revision 32): match 1402; divergence no longer holds: 189
+  lines that read differently: 22
+  sha256 of the re-read regexp/ lines (each line and LF): f8c5eb26fd8c9308b06989c015823951bc20353a196f1d5a68f4ecf5759f143c
+
+== The three cultures' re-read regexp/ lines against each other
+invariant against tr-TR: byte-identical
+invariant against lt-LT: byte-identical
+tr-TR against lt-LT: byte-identical
+
+== The lines that read differently, as written -> revision 32 read again (class, verdict)
+(the same lines, with the same readings, in all three reports)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0001	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0002	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0004	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0005	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0006	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0008	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0009	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0011	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0012	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0022	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0025	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0026	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0027	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0033	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0035	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0037	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0039	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-dotted-and-dotless-i/0040	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-back-references/0001	normative, match	->	divergence, match (divergence no longer holds)
+regexp/case-insensitive/m2a-back-references/0002	normative, match	->	divergence, match (divergence no longer holds)
+regexp/literals/s9b-literal-grammar/0001	normative, match	->	divergence, match
+regexp/literals/s9b-literal-grammar/0002	normative, match	->	divergence, match
+
+== Part D's clauses on the after runs, at revision 32 (decision-rule.md:216-228, with its note of 2026-11-01)
+population: revision 32's non-status vectors of regexp/, 1402; each of the three reports gives each one line, and the 18 status vectors none
+comparison, the three after reports byte for byte (their regexp/ lines read again): byte-identical
+comparison, each vector's result after against its class's expectation for broiler-js (revision 32's class):
+  invariant, divergence: match 63, match (divergence no longer holds) 168
+  invariant, impl-defined: match 64, match (divergence no longer holds) 21
+  invariant, normative: match 1086
+  tr-TR, divergence: match 63, match (divergence no longer holds) 168
+  tr-TR, impl-defined: match 64, match (divergence no longer holds) 21
+  tr-TR, normative: match 1086
+  lt-LT, divergence: match 63, match (divergence no longer holds) 168
+  lt-LT, impl-defined: match 64, match (divergence no longer holds) 21
+  lt-LT, normative: match 1086
+MET clause: the bundle's README reads it from the lines above; this file judges nothing.

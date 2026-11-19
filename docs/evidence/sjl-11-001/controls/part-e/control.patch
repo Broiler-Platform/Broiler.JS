@@ -1,0 +1,29 @@
+--- a/Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs
++++ b/Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs
+@@ -449,4 +449,26 @@
+     }
+ 
+     public override string ToString() => $"/{pattern}/{flags}";
++
++    private static string BuildFlagsString(bool hasIndices, bool globalSearch, bool ignoreCase, bool multiline, bool dotAll, bool unicode, bool unicodeSets, bool sticky)
++    {
++        var builder = new StringBuilder(8);
++        if (hasIndices)
++            builder.Append('d');
++        if (globalSearch)
++            builder.Append('g');
++        if (ignoreCase)
++            builder.Append('i');
++        if (multiline)
++            builder.Append('m');
++        if (dotAll)
++            builder.Append('s');
++        if (unicode)
++            builder.Append('u');
++        if (unicodeSets)
++            builder.Append('v');
++        if (sticky)
++            builder.Append('y');
++        return builder.ToString();
++    }
+ }
