@@ -224,8 +224,6 @@ Console.WriteLine("pristine-consumer: Broiler.ECMAScript contract types");
         if arguments.keep:
             print(f"Retained: {temporary}")
         else:
-            import shutil
-
             shutil.rmtree(temporary, ignore_errors=True)
 
 
@@ -423,8 +421,6 @@ Console.WriteLine("pristine-consumer: 42");
         if arguments.keep:
             print(f"Retained: {temporary}")
         else:
-            import shutil
-
             shutil.rmtree(temporary, ignore_errors=True)
 
 
