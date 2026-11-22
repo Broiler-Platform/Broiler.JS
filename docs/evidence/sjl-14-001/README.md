@@ -533,9 +533,10 @@ accepted here.
     lost to it; the runs went on from 23:36:24Z under one resumable chain of the same drivers, which read the head
     `69a8a13b` and took that shard again from its start at 23:36:37Z. `w1/logs/commands.log` names the step twice, and
     `w1/logs/runs.tsv` keeps the completed run alone.
-  - after 2026-11-20T04:02:25Z, when W1's switch-on test-project step (`tests-on`) began. The chain was started again
-    at 2026-11-22T14:00:07Z, read the head `69a8a13b` at 14:00:08Z, and took that step again from its start at
-    14:00:20Z.
+  - after 2026-11-20T04:02:25Z, when W1's switch-on test-project step (`tests-on`) began. The container was down from
+    then until it started again on 2026-11-22 (the machine's boot time reads 2026-11-22T13:59:07Z). The chain was
+    started again at 2026-11-22T14:00:07Z, read the head `69a8a13b` at 14:00:08Z, and took that step again from its
+    start at 14:00:20Z.
 
   No step ran between an interruption and its resumption.
 
@@ -569,8 +570,8 @@ accepted here.
   `a8ab124c2fa6cfc0f8f63bb6f326f0ecb984e3753aea34d44820e176cce81f24`.
 - **Its own records** show one shell across the shards and the re-run (`shell-hashes.log`), every shard in the zone the
   merging job expects, `TZ` unset, UTC and tzdata 2026e (`host-zone.log`), and no incomplete shard (`merge.log`). The
-  jobs ran on three versions of the `ubuntu-24.04` image, as `runner-images.txt` lists; the rule fixes the shell and
-  the zone, which the records show, and not the image version.
+  jobs ran on more than one version of the `ubuntu-24.04` image, as `runner-images.txt` lists; the rule fixes the shell
+  and the zone, which the records show, and not the image version.
 - **Read, not judged.** Part A compares the base run with the after run, and the after commit does not exist.
 
 ## What it does not claim
