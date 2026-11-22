@@ -1,0 +1,13 @@
+# read_local.py's counts; a reading, not a class
+tests-off: 11376 test name(s); results by outcome: Failed 1, Passed 11466
+tests-on: 11376 test name(s); results by outcome: Failed 5, Passed 11462
+tests whose outcomes differ off and on: 6
+  1	Broiler.JavaScript.Architecture.Tests	off Passed	on Failed
+  1	Broiler.JavaScript.Compiler.Tests	off Failed	on Passed
+  4	Broiler.JavaScript.Compiler.Tests	off Passed	on Failed
+t262-off: 106058 case(s) (path and variant), after the re-run's rows; by status: failed 2004, passed 98181, skipped 5871, timedOut 2; from the re-run: 2
+t262-on: 106058 case(s) (path and variant), after the re-run's rows; by status: failed 1322, passed 98862, skipped 5872, timedOut 2; from the re-run: 2
+test262 cases whose status differs off and on: 687
+  684	off failed	on passed	a corrections table names the path
+  2	off passed	on failed	no corrections table names the path
+  1	off passed	on skipped	no corrections table names the path

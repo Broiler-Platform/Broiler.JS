@@ -1,0 +1,7 @@
+Test run for /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Clr.Tests/bin/Release/net10.0/Broiler.JavaScript.Clr.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+Results File: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2base/w1/tests-on/trx/Broiler.JavaScript.Clr.Tests.trx
+
+Passed!  - Failed:     0, Passed:     3, Skipped:     0, Total:     3, Duration: 3 s - Broiler.JavaScript.Clr.Tests.dll (net10.0)
+VSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.

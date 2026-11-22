@@ -1,0 +1,9 @@
+commit: 8e5519d8cf81808856e32f2275fcb4d3b98a73f3
+tree: 6dc6223f151409f7c1cdcd8b83b42aa2456767af
+first-parent: e2ed7fae6384b484b3b9773fd89dd33e40c01884
+files: 9039
+archived: 2026-11-19T17:52:02Z by git archive --format=tar 8e5519d8cf81808856e32f2275fcb4d3b98a73f3 | tar -x -C <tree>, on disk
+sdk: 10.0.404
+node: v22.23.4
+python: Python 3.13.18
+machine: Linux 6.18.44-fc-v653 x86_64, 4 processors, Ubuntu 24.04.5 LTS

@@ -1,0 +1,6 @@
+2026-11-19T23:36:24Z chain started (pid follows)
+212
+2026-11-22T14:00:07Z chain restarted after the container restart of about 2026-11-20T04:01Z (tests-on was running; it is taken again from its start)
+224
+2026-11-22T21:21:40Z chain restarted after a container restart between 2026-11-22T20:09Z and 21:21Z (t262-off shard 6 was running; it is taken again from its start)
+2026-11-22T21:52:31Z chain restarted after a container restart between 2026-11-22T21:21Z and 21:52Z (t262-off shard 6 was running; it is taken again from its start)

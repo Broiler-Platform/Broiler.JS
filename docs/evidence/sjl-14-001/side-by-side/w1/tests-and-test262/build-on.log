@@ -1,0 +1,132 @@
+  Determining projects to restore...
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj (in 6.72 sec).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/Broiler.JavaScript.Architecture.Tests.csproj (in 6.74 sec).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Debugger.Tests/Broiler.JavaScript.Debugger.Tests.csproj (in 6.74 sec).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Debugger/Broiler.JavaScript.Debugger.csproj (in 6.72 sec).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj (in 14 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Clr/Broiler.JavaScript.Clr.csproj (in 14 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Core.Tests/Broiler.JavaScript.Core.Tests.csproj (in 228 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj (in 136 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Clr.Tests/Broiler.JavaScript.Clr.Tests.csproj (in 438 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Broiler.JavaScript.BuiltIns.Tests.csproj (in 45 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj (in 197 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Compiler.Tests/Broiler.JavaScript.Compiler.Tests.csproj (in 2.09 sec).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Modules/Broiler.JavaScript.Modules.csproj (in 11 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Modules.Tests/Broiler.JavaScript.Modules.Tests.csproj (in 12 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.ModuleExtensions/Broiler.JavaScript.ModuleExtensions.csproj (in 297 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.ModuleExtensions.Tests/Broiler.JavaScript.ModuleExtensions.Tests.csproj (in 20 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.LinqExpressions/Broiler.JavaScript.LinqExpressions.csproj (in 7 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/samples/Broiler.JavaScript.StartupHost/Broiler.JavaScript.StartupHost.csproj (in 11 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Minimal/Broiler.JavaScript.Minimal.csproj (in 13 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Vectors.Tests/Broiler.JavaScript.Vectors.Tests.csproj (in 1.44 sec).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj (in 1.79 sec).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Runtime.Tests/Broiler.JavaScript.Runtime.Tests.csproj (in 190 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Portable.Compiler/Broiler.JavaScript.Portable.Compiler.csproj (in 159 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj (in 88 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Portable.Tests/Broiler.JavaScript.Portable.Tests.csproj (in 247 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Parser.Tests/Broiler.JavaScript.Parser.Tests.csproj (in 585 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj (in 354 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Globals/Broiler.JavaScript.Globals.csproj (in 4 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Extensions/Broiler.JavaScript.Extensions.csproj (in 4 ms).
+  Restored /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Broiler.JavaScript.Engine.Benchmarks.csproj (in 4.25 sec).
+  23 of 53 projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Portable: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.JSClassGenerator: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.ECMAScript.Generation -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.ECMAScript/Broiler.ECMAScript.Generation/bin/Release/net10.0/Broiler.ECMAScript.Generation.dll
+  Broiler.ECMAScript.Conformance -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/bin/Release/net10.0/Broiler.ECMAScript.Conformance.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.ECMAScript.Generation.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/bin/Release/net10.0/Broiler.ECMAScript.Generation.Tests.dll
+  Broiler.ECMAScript.Algorithms.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.Tests.dll
+  Broiler.ECMAScript.Intl.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/bin/Release/net10.0/Broiler.ECMAScript.Intl.Tests.dll
+  Broiler.JavaScript.Portable -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Portable/bin/Release/net10.0/Broiler.JavaScript.Portable.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Expressions: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.ECMAScript.Probe -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll
+  Broiler.ECMAScript.Frontend.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/bin/Release/net10.0/Broiler.ECMAScript.Frontend.Tests.dll
+  Broiler.JavaScript.NativeAotSample: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.ECMAScript.Conformance.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/bin/Release/net10.0/Broiler.ECMAScript.Conformance.Tests.dll
+  Broiler.JavaScript.NativeAotSample -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/samples/Broiler.JavaScript.NativeAotSample/bin/Release/net10.0/Broiler.JavaScript.NativeAotSample.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.ExpressionCompiler: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.ECMAScript.Architecture.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll
+  Broiler.JavaScript.Ast: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Ast.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Storage: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Parser: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.Storage.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Runtime: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Ast.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Ast.Tests/bin/Release/net10.0/Broiler.JavaScript.Ast.Tests.dll
+  Broiler.JavaScript.Portable.Compiler: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Portable.Compiler -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Portable.Compiler/bin/Release/net10.0/Broiler.JavaScript.Portable.Compiler.dll
+  Broiler.JavaScript.Parser.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Storage.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Storage.Tests/bin/Release/net10.0/Broiler.JavaScript.Storage.Tests.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Feature.Sample: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Feature.Sample -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Feature.Sample/bin/Release/net10.0/Broiler.JavaScript.Feature.Sample.dll
+  Broiler.JavaScript.Parser.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Parser.Tests/bin/Release/net10.0/Broiler.JavaScript.Parser.Tests.dll
+  Broiler.JavaScript.Architecture.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Portable.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Engine -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.Portable.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Portable.Tests/bin/Release/net10.0/Broiler.JavaScript.Portable.Tests.dll
+  Broiler.JavaScript.Architecture.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll
+  Broiler.JavaScript.LinqExpressions: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Extensions -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.Compiler: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Compiler -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Compiler/bin/Release/net10.0/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.BuiltIns: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.BuiltIns -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Modules: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Debugger: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Debugger -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Debugger/bin/Release/net10.0/Broiler.JavaScript.Debugger.dll
+  Broiler.JavaScript.Globals: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Modules -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Modules/bin/Release/net10.0/Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Globals -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Globals/bin/Release/net10.0/Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.Runtime.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Clr: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Clr -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Clr/bin/Release/net10.0/Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.Runtime.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Runtime.Tests/bin/Release/net10.0/Broiler.JavaScript.Runtime.Tests.dll
+  Broiler.JavaScript.Minimal: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.StartupHost: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Minimal -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Minimal/bin/Release/net10.0/Broiler.JavaScript.Minimal.dll
+  Broiler.JavaScript: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.StartupHost -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/samples/Broiler.JavaScript.StartupHost/bin/Release/net10.0/Broiler.JavaScript.StartupHost.dll
+  Broiler.JavaScript.ModuleExtensions: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.ModuleExtensions -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.ModuleExtensions/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.dll
+  Broiler.JavaScript.BuiltIns.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Core.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+  Broiler.JavaScript.Compiler.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Core.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Core.Tests/bin/Release/net10.0/Broiler.JavaScript.Core.Tests.dll
+  Broiler.JavaScript.Compiler.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Compiler.Tests/bin/Release/net10.0/Broiler.JavaScript.Compiler.Tests.dll
+  Broiler.JavaScript.Debugger.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.BuiltIns.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.Tests.dll
+  Broiler.JavaScript.Clr.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Clr.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Clr.Tests/bin/Release/net10.0/Broiler.JavaScript.Clr.Tests.dll
+  Broiler.JavaScript.Debugger.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Debugger.Tests/bin/Release/net10.0/Broiler.JavaScript.Debugger.Tests.dll
+  Broiler.JavaScript.Modules.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Modules.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Modules.Tests/bin/Release/net10.0/Broiler.JavaScript.Modules.Tests.dll
+  Broiler.JavaScript.All: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.ModuleExtensions.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Integration.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Integration.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Integration.Tests/bin/Release/net10.0/Broiler.JavaScript.Integration.Tests.dll
+  Broiler.JavaScript.All -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.All/bin/Release/net10.0/Broiler.JavaScript.All.dll
+  Broiler.JavaScript.ModuleExtensions.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.ModuleExtensions.Tests/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.Tests.dll
+  Broiler.JavaScript.Vectors.Tests: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Engine.Benchmarks: built with the compiler's test-only switch ON (BroilerParseThroughBridge=true): every compile parses through the bridge. Not a product build.
+  Broiler.JavaScript.Vectors.Tests -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll
+  Broiler.JavaScript.Engine.Benchmarks -> /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/bin/Release/net10.0/Broiler.JavaScript.Engine.Benchmarks.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:02:31.18
