@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 # SPDX-License-Identifier: Apache-2.0
-"""Write the semantics area of the conformance corpus (corpus revisions 42 and 43, milestone SJL-15).
+"""Write the semantics area of the conformance corpus (corpus revisions 42, 43 and 44, milestone SJL-15).
 
     python3 -I scripts/conformance/generate_semantics_vectors.py [--out conformance/vectors/semantics]
     python3 -I scripts/conformance/generate_semantics_vectors.py --check-node <Node v26.12.0>
@@ -33,7 +33,11 @@ statement, where an early error refuses the whole Script before any of it runs (
 second half). Revision 43 adds, for each row whose construct eval code may hold at its own top level and which a
 compiler checks as it lowers, its refusal in eval code a direct eval evaluates, and three named-evaluation names in eval
 code (``eval_code``), which bundle sjl-15-001's probes found Broiler.JS leaving unchecked or unnamed in eval code; each
-vector's `since` is 43.
+vector's `since` is 43. Revision 44 adds the eval-code inputs of three of those probes, as a direct eval at a Script's top
+level evaluates them (``probe_inputs``): V029's and V030's, Broiler.VM's answers for row AB1 (a block function under a
+`let` of its name in an enclosing block, in a function eval code declares, and a block function in strict eval code),
+and V046's, Broiler.JS's answer for row DE3 (a `var` of eval code against the calling eval code's `let`, catalogue row
+EA0007), which the vectors of revisions 42 and 43 hold only as Scripts or in other eval code; each vector's `since` is 44.
 
 THE EXPECTED VALUES are the specification's, ECMA-262 ES2026 at 0248456c (sources/ecma262.pin), each vector citing the
 clauses that decide it and, where one asserts the vector's outcome, the test262 tests at ccaac100 the catalogue names
@@ -81,7 +85,8 @@ DIVERGENCES = SCRIPTS / "semantics-divergences.txt"
 CHECKER = SCRIPTS / "syntaxcheck.mjs"
 SINCE = 42              # the corpus revision that added the area
 EVAL_CODE = 43          # the corpus revision that added the eval-code refusals the probes of bundle sjl-15-001 asked for
-CORPUS_REVISION = 43    # the corpus revision this generator writes: REVISIONS.md's last row
+PROBE_INPUTS = 44       # the corpus revision that added the eval-code inputs of that bundle's probes V029, V030 and V046
+CORPUS_REVISION = 44    # the corpus revision this generator writes: REVISIONS.md's last row
 GENERATOR = "generate_semantics_vectors.py"
 REFERENCE_VERSION = "v26.12.0"
 
@@ -219,8 +224,8 @@ def add(file: str, group: str, script: str, out: str, *, rows: Sequence[str] = (
         raise GeneratorError(f"{group}: {script!r} names no row")
     if op == "DirectEval" and "eval(" not in script:
         raise GeneratorError(f"{group}: a DirectEval vector's script calls eval")
-    if since not in (SINCE, EVAL_CODE):
-        raise GeneratorError(f"{group}: a vector is added at revision {SINCE} or {EVAL_CODE}, not {since}")
+    if since not in (SINCE, EVAL_CODE, PROBE_INPUTS):
+        raise GeneratorError(f"{group}: a vector is added at revision {SINCE}, {EVAL_CODE} or {PROBE_INPUTS}, not {since}")
     if rows and not corr:
         # A catalogue row's vector names the correspondence row that holds the row's early error.
         corr = tuple(dict.fromkeys(ROW_CORRESPONDENCE.get(row, "EE1") for row in rows))
@@ -855,6 +860,29 @@ def eval_code() -> None:
             clauses=clauses + C(PERFORM_EVAL), note=f"{what}, in eval code a direct eval evaluates", since=EVAL_CODE)
 
 
+def probe_inputs() -> None:
+    """Revision 44: the eval-code inputs of bundle sjl-15-001's probes V029, V030 and V046 (its probes.js, each source
+    without the probe's first statement, `__reached = true;`), as eval code a direct eval at a Script's top level
+    evaluates. The probes compiled each by an indirect eval, whose eval code, sloppy unless it says otherwise, has the
+    global environment as its variable environment and a new declarative environment under the global one as its lexical
+    environment, as a sloppy direct eval's at a Script's top level has (PerformEval's steps 16 to 18). As Scripts, V029's and V030's are
+    revision 42's `semantics/annex-b/ab1/0009` and `0011`; V046's is revision 42's `semantics/scopes/ea0006/0003`, a
+    Script whose `let` is the global record's (row EA0006), while in eval code the `let` is the calling eval code's own,
+    and the refusal is EvalDeclarationInstantiation's step 3.d.i.2.a.i (row EA0007), as the bundle's probes README notes."""
+    note = "in eval code a direct eval at a Script's top level evaluates (bundle sjl-15-001's probe {probe})"
+    add("annex-b", "ab1", "eval('function f() { { let g = 1; { function g() {} } } return typeof g; } f()')",
+        V("undefined"), op="DirectEval", corr=("AB1",), clauses=C(ANNEX_B_FN, FDI, PERFORM_EVAL),
+        note="no alias where the replacing var would conflict with a lexical declaration it hoists through, in a function "
+             "declared " + note.format(probe="V029"), since=PROBE_INPUTS)
+    add("annex-b", "ab1", "eval(\"'use strict'; { function g() {} } typeof g\")", V("undefined"), op="DirectEval",
+        corr=("AB1",), clauses=C(ANNEX_B_FN, EVAL_DI, STRICT, PERFORM_EVAL),
+        note="no alias in strict code, " + note.format(probe="V030"), since=PROBE_INPUTS)
+    add("scopes", "ea0007", "eval(\"let x; eval('var x;')\")", SE, op="DirectEval", rows=("EA0007",),
+        clauses=C(EVAL_DI, PERFORM_EVAL),
+        note="a var of eval code against the lexical declaration of the eval code that calls it, " +
+             note.format(probe="V046"), since=PROBE_INPUTS)
+
+
 # ---- Coverage -------------------------------------------------------------------------------------------------------
 
 MODULE = "only the Module goal reaches it, which schema 1 has no field for (decision D61, as D25 for the syntax area)"
@@ -1051,6 +1079,7 @@ def build() -> list[Case]:
     named_evaluation()
     expressions()
     eval_code()
+    probe_inputs()
     return list(CASES)
 
 
