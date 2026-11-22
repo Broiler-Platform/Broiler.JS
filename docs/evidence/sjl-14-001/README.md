@@ -527,16 +527,23 @@ accepted here.
   "A part whose base was taken at any other commit, or whose commits fail those conditions, is void." So `69a8a13b` is
   the base commit when W2 merges with it as its first parent, and nothing merges to the default branch before W2,
   records included.
-- **Two container restarts interrupted the stage.** The runs were resumed from their per-step markers, the step that
-  was running taken again from its start, with the default branch's head read before every step:
-  - on 2026-11-19, during W1's switch-on test262 shard 1 (step `t262-on 1`, begun at 23:10:21Z). The stage's agent was
-    lost to it; the runs went on from 23:36:24Z under one resumable chain of the same drivers, which read the head
-    `69a8a13b` and took that shard again from its start at 23:36:37Z. `w1/logs/commands.log` names the step twice, and
-    `w1/logs/runs.tsv` keeps the completed run alone.
-  - after 2026-11-20T04:02:25Z, when W1's switch-on test-project step (`tests-on`) began. The container was down from
-    then until it started again on 2026-11-22 (the machine's boot time reads 2026-11-22T13:59:07Z). The chain was
-    started again at 2026-11-22T14:00:07Z, read the head `69a8a13b` at 14:00:08Z, and took that step again from its
-    start at 14:00:20Z.
+- **Three container restarts fell within the stage, and two of them interrupted its runs.** The stage's machine
+  snapshots (`w1/logs/*.machine.txt`, each snapshot's time less the age of process 1) give three boots of the machine:
+  2026-11-19T17:40:58Z, 2026-11-19T23:35:11Z and 2026-11-22T13:59:07Z. The interrupted runs were resumed from their
+  per-step markers, the step that was running taken again from its start, with the default branch's head read before
+  every step:
+  - on 2026-11-19, with the boot of 17:40:58Z, after the stage's brief was written (16:41:39Z, by the file's time) and
+    before the stage's worktree was made (17:43:25Z, by its reflog) and its first step began (17:51:58Z). It
+    interrupted no run.
+  - on 2026-11-19, with the boot of 23:35:11Z, during W1's switch-on test262 shard 1 (step `t262-on 1`, begun at
+    23:10:21Z). The stage's agent was lost to it; the runs went on from 23:36:24Z under one resumable chain of the same
+    drivers, which read the head `69a8a13b` and took that shard again from its start at 23:36:37Z.
+    `w1/logs/commands.log` names the step twice, and `w1/logs/runs.tsv` keeps the completed run alone.
+  - during W1's switch-on test-project step (`tests-on`), begun at 2026-11-20T04:02:25Z, at a time the logs do not
+    show. The machine was still up after the step began: its session logs record a shutdown signal at
+    2026-11-20T04:11:20Z, the last time they show before the restart, and its current boot reads
+    2026-11-22T13:59:07Z. The chain was started again at 2026-11-22T14:00:07Z, read the head `69a8a13b` at 14:00:08Z,
+    and took that step again from its start at 14:00:20Z.
 
   No step ran between an interruption and its resumption.
 
