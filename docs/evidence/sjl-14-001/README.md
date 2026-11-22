@@ -23,6 +23,7 @@ Broiler.JS `33d3093b` and Broiler.VM `c5bde2b`, each repository's default branch
 | [`tools/side-by-side/`](tools/side-by-side/README.md) | Part C's tool, with entry points P, B, K and K-on and sjl-12-001's canonical dump; `compare.py` (outcome pairs, part B's identity, class M's message table) and `spancheck.py` (class S's span check); landed with W1 (SJL-14.2) |
 | [`bridge/`](bridge/README.md) | Part B's runs: W1's CI run of every test project, imported from GitHub Actions with its run ids and digests; the identity runs with the switch off at W1 and its first parent and at each library merge since W1 and its first parent; the switch-on outputs at the library merges and their first parents, read; the comparisons; a read at the default branch's head, outside part B *(added 2026-11-15, at SJL-14.2's tail)* |
 | [`side-by-side/w1/`](side-by-side/w1/README.md) | Part C's tool run at W1, every entry point with the dumps, and its readings (outcome pairs, the generated message tables, the outcome moves against the corrections' listing, the span check), read and not judged *(added 2026-11-15, at SJL-14.2's tail)* |
+| [`base/part-a/`](base/part-a/imported.txt) | Part A's base run, `.github/workflows/test262-evidence.yml` run 44639106095 at `69a8a13b`, its artifact's entries imported unchanged (the one over 2 MB by its digest), with its run's artifacts and digests, the jobs' runner images and `hashes.txt`; read, not judged *(added 2026-11-22, during W2's base runs)* |
 
 ## What it will hold
 
@@ -35,7 +36,8 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
   *(Noted 2026-11-15: `side-by-side/w1/` is taken, the tool's run, read and not judged, with no difference classified,
   since the rule classifies only at the base commit; `side-by-side/w2-base/` waits for the base commit.)*
 - `base/` and `after/` - part A's hosted runs (UTC, negative tests), imported unchanged with their digests, and the
-  comparison; parts D, E, F, G, H and K's local runs;
+  comparison; parts D, E, F, G, H and K's local runs; *(Noted 2026-11-22: part A's base run is taken and retained in
+  `base/part-a/`, "Part A's base run, retained" below; this line's other runs are not yet in `base/`.)*
 - `measurement/` - part I's runs, void on a lane that is not controlled (decision D48); *(Noted 2026-11-18: this
   line reads "`measurement/` - part I's runs, void on a lane that is not controlled". Part I is to be taken as written
   on the controlled lane [`win-x64-r7-5800x`](../lanes/win-x64-r7-5800x/README.md), by the owner's choice of
@@ -536,6 +538,40 @@ accepted here.
     14:00:20Z.
 
   No step ran between an interruption and its resumption.
+
+### Part A's base run, retained
+
+- **The run.** `.github/workflows/test262-evidence.yml` as the default branch carries it at `69a8a13b`, blob
+  `fc38229782ee1b2e93ecca9e990d182f5e44dbf2`: workflow run
+  [44639106095](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/44639106095) (attempt 1), dispatched on
+  2026-11-19 at 23:36:38Z on `main` with commit `69a8a13bc446a1714d3c8be9be3cfd742aebee6e`, suite_ref
+  `ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e`, max_workers 4, test_timeout_seconds 30, rerun_timeouts true, time_zone
+  empty and include_negative true, the inputs part A's configuration line fixes, and completed on 2026-11-20 at
+  00:40:14Z. Its head commit, its `run.txt`'s dispatched ref and tested commit all read `69a8a13b`, and `run.txt`'s
+  inputs line reads those inputs (time_zone empty is not echoed there). Its conclusion is success, and so is every
+  job's, at `69a8a13b`, in attempt 1: prepare 135965203630, shard (0) 135965325817, shard (1) 135965325784, shard (2)
+  135965325952, shard (3) 135965325759, shard (4) 135965325783, shard (5) 135965325875, shard (6) 135965325908, shard
+  (7) 135965325802 and collect 135993015562, whose step "Require a complete run" is among them (GitHub's record of the
+  run and its jobs, read 2026-11-22).
+- **The artifacts.** Every artifact of the run was downloaded, and each zip's SHA-256 equals the digest GitHub records
+  for it ([`part-a-artifacts.txt`](base/part-a/part-a-artifacts.txt), each with its id and digest). The evidence
+  artifact `test262-evidence`, id 14588573558, is
+  `sha256:12163b9df6e680ddfbd50b3f9356d9bae2f2e2c1cb417ace2045ca7223c647c1`; the zip is named by that digest and not
+  committed.
+- **Retained** in [`base/part-a/`](base/part-a/imported.txt) as bundle `sjl-11-001` retained its base part A: every
+  entry of the evidence artifact unchanged, with [`imported.txt`](base/part-a/imported.txt), `runner-images.txt` (each
+  job's runner image, from its own log), `part-a-artifacts.txt` and [`hashes.txt`](base/part-a/hashes.txt) added, and
+  a `.gitattributes` so the bytes stay as committed. One entry differs from that bundle's way: `test262-results.json.gz`,
+  over 2 MB, is retained by its digest only,
+  `20b632f9ebeb49ff926201ca436a86a3b22747cfd3d5cc69bc332610e99480e1`, as `imported.txt` records; it is the entry of
+  that name in the zip above, read from the zip after the zip's digest is checked. GitHub keeps the run's artifacts
+  until 2027-02-17. `hashes.txt` names every committed file of the folder by its SHA-256 and is
+  `a8ab124c2fa6cfc0f8f63bb6f326f0ecb984e3753aea34d44820e176cce81f24`.
+- **Its own records** show one shell across the shards and the re-run (`shell-hashes.log`), every shard in the zone the
+  merging job expects, `TZ` unset, UTC and tzdata 2026e (`host-zone.log`), and no incomplete shard (`merge.log`). The
+  jobs ran on three versions of the `ubuntu-24.04` image, as `runner-images.txt` lists; the rule fixes the shell and
+  the zone, which the records show, and not the image version.
+- **Read, not judged.** Part A compares the base run with the after run, and the after commit does not exist.
 
 ## What it does not claim
 
