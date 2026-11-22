@@ -156,7 +156,10 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
     #1105. From the first base run until W2 merges, the default branch is held for W2 by the owner's answer 9 of
     2026-11-19 (the same section); that hold has not started. The rest of this bullet stands.)* *(Changed the same
     day, before this note merged, after review: it read "From the first part C base run until W2 merges", the
-    question's words; the chosen answer reads "The hold then starts at the first base run".)*
+    question's words; the chosen answer reads "The hold then starts at the first base run".)* *(Noted 2026-11-22,
+    during W2's base runs: the note above reads "that hold has not started". It started on 2026-11-19 with the first
+    base run, and the default branch's head has been `69a8a13bc446a1714d3c8be9be3cfd742aebee6e` since; see "The hold's
+    start" in "W2's base, recorded on 2026-11-22" below. W2 does not exist yet.)*
 
 ## Part B, judged on 2026-11-15
 
@@ -274,7 +277,9 @@ What it means here:
   of any part, a dispatch of part A's included if one comes first. Nothing merges to the default branch meanwhile,
   records included, so that W2's first parent is the commit the base runs were taken at, as the rule's definition of
   the base commit, W2's first parent, and its void sentence need. Its start and its end are recorded in this bundle
-  when each happens. **It has not started**: this record and the W2 branch come first, with nothing held. *(Changed
+  when each happens. **It has not started**: this record and the W2 branch come first, with nothing held. *(Noted
+  2026-11-22: the sentence before this note reads "It has not started"; the hold started on 2026-11-19, as "The
+  hold's start" in "W2's base, recorded on 2026-11-22" below records.)* *(Changed
   the same day, before this record merged, after review: the bold sentence read "W2's hold begins at the first part C
   base run and ends with W2's merge.", the question's words and not the answer's.)*
 - **Part A's base and after runs are taken by dispatches of `test262-evidence.yml`**, once at the base commit and once
@@ -492,6 +497,45 @@ W2 corrects each by a dated note.
 `0.1.0-preview.12` is published on nuget.org", naming a package id nuget.org does not have, and read "its package's
 repository record"; and the paragraph on `docs/public-api.md` is new, the notes that an earlier commit of this change
 added to that file having been taken out of it.)*
+
+## W2's base, recorded on 2026-11-22
+
+**Written:** 2026-11-22, during W2's base runs, on branch `sjl-14-w2-base`, with the default branch's head at
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` (read by `git ls-remote` at 2026-11-22T14:02:16Z).
+[`decision-rule.md`](decision-rule.md) is not edited, nothing here revises a line of it, and nothing is judged, met or
+accepted here.
+
+### The hold's start
+
+- **The hold of the owner's answer 9 started on 2026-11-19, with the first base run.** Answer 9's chosen answer, in
+  short: "The hold then starts at the first base run, and nothing merges to Broiler.JS main until W2 merges." (whole in
+  "The owner's answer 9 of 2026-11-19: the hold for W2" above). The first run of W2's base phase was W1's part C runs
+  still owed, "the same runs at W1, retained and read, not judged" in part C's configuration, which began at
+  2026-11-19T17:51:58Z. Their driver reads the default branch's head by `git ls-remote` before each step and stops if
+  it is not `69a8a13b`; its log reads `main=69a8a13bc446a1714d3c8be9be3cfd742aebee6e` before every step (the stage's
+  `w1/driver.log`, with `w1/logs/runs.tsv` and `w1/logs/commands.log`, in its run folder outside this repository until
+  those runs are retained). Part A's base run, the first run at `69a8a13b` itself, was dispatched under the same hold at
+  2026-11-19T23:36:38Z ("Part A's base run, retained" below).
+- **The commit the base runs are taken at** is `69a8a13bc446a1714d3c8be9be3cfd742aebee6e`, the merge of
+  Broiler-Platform/Broiler.JS#1128 (its first parent `fefb4f9c`, the merge of Broiler-Platform/Broiler.JS#1127), the
+  default branch's head when the hold started and through this note. It descends from W1 `8e5519d8` and from the rule
+  commit's merge `d8f14602`. The rule reads: "**The after commit (W2)** is the default-branch merge that lands
+  SJL-14.3 to SJL-14.5, one merge. **The base commit** is its first parent, which descends from W1 and from the rule
+  commit"; part A's configuration reads "the base run at the base commit and the after run at the after commit"; and
+  "A part whose base was taken at any other commit, or whose commits fail those conditions, is void." So `69a8a13b` is
+  the base commit when W2 merges with it as its first parent, and nothing merges to the default branch before W2,
+  records included.
+- **Two container restarts interrupted the stage.** The runs were resumed from their per-step markers, the step that
+  was running taken again from its start, with the default branch's head read before every step:
+  - on 2026-11-19, during W1's switch-on test262 shard 1 (step `t262-on 1`, begun at 23:10:21Z). The stage's agent was
+    lost to it; the runs went on from 23:36:24Z under one resumable chain of the same drivers, which read the head
+    `69a8a13b` and took that shard again from its start at 23:36:37Z. `w1/logs/commands.log` names the step twice, and
+    `w1/logs/runs.tsv` keeps the completed run alone.
+  - after 2026-11-20T04:02:25Z, when W1's switch-on test-project step (`tests-on`) began. The chain was started again
+    at 2026-11-22T14:00:07Z, read the head `69a8a13b` at 14:00:08Z, and took that step again from its start at
+    14:00:20Z.
+
+  No step ran between an interruption and its resumption.
 
 ## What it does not claim
 
