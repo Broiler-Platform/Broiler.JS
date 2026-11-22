@@ -24,6 +24,7 @@ Broiler.JS `33d3093b` and Broiler.VM `c5bde2b`, each repository's default branch
 | [`bridge/`](bridge/README.md) | Part B's runs: W1's CI run of every test project, imported from GitHub Actions with its run ids and digests; the identity runs with the switch off at W1 and its first parent and at each library merge since W1 and its first parent; the switch-on outputs at the library merges and their first parents, read; the comparisons; a read at the default branch's head, outside part B *(added 2026-11-15, at SJL-14.2's tail)* |
 | [`side-by-side/w1/`](side-by-side/w1/README.md) | Part C's tool run at W1, every entry point with the dumps, and its readings (outcome pairs, the generated message tables, the outcome moves against the corrections' listing, the span check), read and not judged *(added 2026-11-15, at SJL-14.2's tail)* |
 | [`base/part-a/`](base/part-a/imported.txt) | Part A's base run, `.github/workflows/test262-evidence.yml` run 44639106095 at `69a8a13b`, its artifact's entries imported unchanged (the one over 2 MB by its digest), with its run's artifacts and digests, the jobs' runner images and `hashes.txt`; read, not judged *(added 2026-11-22, during W2's base runs)* |
+| [`side-by-side/w1/tests-and-test262/`](side-by-side/w1/tests-and-test262/README.md) | Part C's other runs at W1, the test projects and test262 with the switch off and on, taken during W2's base phase, with their logs, machine records, scripts and `hashes.txt` (the files over 2 MB by digest), and a reading of them that classifies nothing; read, not judged *(added 2026-11-22, during W2's base runs)* |
 
 ## What it will hold
 
@@ -35,6 +36,10 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
   message table of class M (decision D46), written by the side-by-side tool, `tools/side-by-side/`, which W1 adds;
   *(Noted 2026-11-15: `side-by-side/w1/` is taken, the tool's run, read and not judged, with no difference classified,
   since the rule classifies only at the base commit; `side-by-side/w2-base/` waits for the base commit.)*
+  *(Noted 2026-11-22, during W2's base runs: the note before this one reads "`side-by-side/w1/` is taken, the tool's
+  run". Part C's other runs at W1 are taken too and retained in [`side-by-side/w1/tests-and-test262/`](side-by-side/w1/tests-and-test262/README.md), read and not
+  judged ("W1's owed part C runs, retained" below). `side-by-side/w2-base/` still waits: the base commit's part C runs
+  are being taken and are not finished.)*
 - `base/` and `after/` - part A's hosted runs (UTC, negative tests), imported unchanged with their digests, and the
   comparison; parts D, E, F, G, H and K's local runs; *(Noted 2026-11-22: part A's base run is taken and retained in
   `base/part-a/`, "Part A's base run, retained" below; this line's other runs are not yet in `base/`.)*
@@ -253,6 +258,10 @@ are not taken here. The rule asks for them at W1 too, retained and read, not jud
 each run names its tested commit, so they can be taken at W1 at any time. The choice taken, under the owner's direction
 of 2026-10-18, is to leave them to a later stage, before or with part C's runs at the base commit; the alternative not
 taken is to take them in this stage. Part C's verdict reads only the runs at the base commit, so none waits on them.
+*(Noted 2026-11-22, during W2's base runs: the paragraph above reads "they are still to be taken". They were taken at
+W1 from 2026-11-19 to 2026-11-22, before part C's runs at the base commit began, as the choice above has it, and are
+retained in [`side-by-side/w1/tests-and-test262/`](side-by-side/w1/tests-and-test262/README.md); see "W1's owed part C runs, retained" in "W2's base, recorded on
+2026-11-22" below. They are read, not judged.)*
 
 ## Before W2's base, read on 2026-11-19
 
@@ -516,7 +525,9 @@ accepted here.
   2026-11-19T17:51:58Z. Their driver reads the default branch's head by `git ls-remote` before each step and stops if
   it is not `69a8a13b`; its log reads `main=69a8a13bc446a1714d3c8be9be3cfd742aebee6e` before every step (the stage's
   `w1/driver.log`, with `w1/logs/runs.tsv` and `w1/logs/commands.log`, in its run folder outside this repository until
-  those runs are retained). Part A's base run, the first run at `69a8a13b` itself, was dispatched under the same hold at
+  those runs are retained). *(Noted 2026-11-22, later: the parenthesis before this note reads "in its run folder outside
+  this repository until those runs are retained". They are retained now, and those logs with them, at the same paths
+  under [`side-by-side/w1/tests-and-test262/`](side-by-side/w1/tests-and-test262/driver.log).)* Part A's base run, the first run at `69a8a13b` itself, was dispatched under the same hold at
   2026-11-19T23:36:38Z ("Part A's base run, retained" below).
 - **The commit the base runs are taken at** is `69a8a13bc446a1714d3c8be9be3cfd742aebee6e`, the merge of
   Broiler-Platform/Broiler.JS#1128 (its first parent `fefb4f9c`, the merge of Broiler-Platform/Broiler.JS#1127), the
@@ -546,6 +557,11 @@ accepted here.
     and took that step again from its start at 14:00:20Z.
 
   No step ran between an interruption and its resumption.
+
+  *(Noted 2026-11-22, later: the bullet above reads "Three container restarts fell within the stage, and two of them
+  interrupted its runs." Two more restarts have interrupted the chain since, both on 2026-11-22 and both during the base
+  commit's switch-off test262 shard 6, after W1's runs had finished; see "The restarts that interrupted the runs" below.
+  The bullet is left as written.)*
 
 ### Part A's base run, retained
 
@@ -580,6 +596,102 @@ accepted here.
   jobs ran on more than one version of the `ubuntu-24.04` image, as `runner-images.txt` lists; the rule fixes the shell
   and the zone, which the records show, and not the image version.
 - **Read, not judged.** Part A compares the base run with the after run, and the after commit does not exist.
+
+### W1's owed part C runs, retained
+
+**Written:** 2026-11-22, during W2's base runs, on branch `sjl-14-w2-base`, with the default branch's head at
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` (read by `git ls-remote` before this record was committed). Nothing here is
+judged, met or accepted, and nothing is classified: part C judges only the runs at the base commit.
+
+**Which runs were owed.** Part C's configuration names, at the base commit, the side-by-side tool's run, "every test
+project with the switch on through its internal options member" and "scripts/compliance/run_test262.py locally on the
+programme's machine through the shell built at that commit with its hidden switch off and on, in UTC, with negative
+tests, one worker per core", and then "the same runs at W1, retained and read, not judged"; its comparison reads "per
+test, its result off and on; per test262 path and variant, its verdict off and on". The tool's run at W1 was taken on
+2026-11-15 ([`side-by-side/w1/`](side-by-side/w1/README.md)); "The side-by-side run at W1, read on 2026-11-15" above
+left the others "to a later stage, before or with part C's runs at the base commit". So three runs were owed at W1:
+every test project with the switch on, and test262 with the shell's hidden switch off and on. The test projects were
+also run with the switch off, the other side of the comparison's "per test, its result off and on". Each matches its
+outputs as follows.
+
+**Where, and how.** All at W1, `8e5519d8cf81808856e32f2275fcb4d3b98a73f3`, from a clean `git archive` of it on disk, on
+the programme's machine (Linux, four processors), each step by `step.sh <commit> w1 <step>` through the machine-wide
+lock and idle gate, with the default branch's head read before every step, and every test and test262 run under `env -i`
+with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*` variable. Retained in
+[`side-by-side/w1/tests-and-test262/`](side-by-side/w1/tests-and-test262/README.md), every file of the run folder at the
+same path, but the files over 2 MB, retained by digest only
+([`retained.txt`](side-by-side/w1/tests-and-test262/retained.txt),
+[`not-retained.sha256.txt`](side-by-side/w1/tests-and-test262/not-retained.sha256.txt)), with the drivers and scripts as
+they were on disk, a `.gitattributes`, and [`hashes.txt`](side-by-side/w1/tests-and-test262/hashes.txt), SHA-256
+`441488ef029d903db50515fdb276c70764b706f79b9c7e7f54e83baf7d3e0d03`. The bundle's `manifest.json` (decision D56) is still
+written at the evidence step, so the folder is named by its `hashes.txt`, as part B's and the tool's are; the tool's,
+[`side-by-side/w1/hashes.txt`](side-by-side/w1/hashes.txt), names the tool run's files and not this folder's, and is
+left as written. Each step's command line is in
+[`logs/commands.log`](side-by-side/w1/tests-and-test262/logs/commands.log), its exit in `logs/runs.tsv`, and its machine
+records before and after in `logs/<label>.machine.txt` and `logs/<label>.machine-sh.txt`. Every step's exit is 0.
+- **Every test project, the switch off** (step `tests-off`, 2026-11-19): `dotnet test <project> -c Release --no-build
+  --logger trx` for each test project of `Broiler.JS.slnx` under `Broiler.JS/`, on the Release build of the solution
+  with the compiler's test-only switch at its default (step `build-off`);
+  [`tests-off/`](side-by-side/w1/tests-and-test262/tests-off/summary.txt), its projects' exits in `exits.tsv`, SHA-256
+  `90f06972957a31343804cd090a47a596d8ed330da739743e5f9af45798b6b49a`.
+- **Every test project, the switch on** (step `tests-on`, begun 2026-11-20 and taken again from its start and completed
+  on 2026-11-22): the same, on the Release build with `-p:BroilerParseThroughBridge=true` (step `build-on`), which
+  defines `BROILER_PARSE_THROUGH_BRIDGE` and so turns the internal `JSCompilationOptions.BridgeByDefault` on for every
+  compile: the switch-on pass over the test projects that decision D43's note in
+  [`docs/roadmap/SharedLibraries.md`](../../roadmap/SharedLibraries.md) records "in addition" to the internal
+  `JSCompilationOptions.ParseThroughBridge`, which tests and the shell's hidden flag set;
+  [`tests-on/`](side-by-side/w1/tests-and-test262/tests-on/summary.txt), `exits.tsv` SHA-256
+  `3dd7731b63c7707f53f86906d13bcfc60792d94c6781593b27b04cb86e31f207`.
+- **test262, the shell's hidden switch off** (steps `t262-off 0` to `7`, `t262merge-off`, `t262rerun-off`, 2026-11-19):
+  `run_test262.py` in eight shards over the whole selection part A takes, with `--include-negative`, the original and
+  Terser variants, a 30-second test timeout and `--max-workers 4`, through the shell of the switch-off build, each shard
+  after the runner's self-check; merged by `merge_test262_shards.py`; each timed-out path run again alone with one
+  worker. The merged report, `t262-off/test262-results.json`, over 2 MB, is retained by digest,
+  `f698d6d58ff6b8cc4d88a61e7b3c629f0d82cfe537a71d1d720dbbcd6c6e6231`; its re-run,
+  [`rerun-timeouts.json`](side-by-side/w1/tests-and-test262/t262-off/rerun-timeouts.json), is
+  `8f7b57fd31779b123d47f5f1d972da578fbe763b600f8fa2678afdb701af1682`.
+- **test262, the hidden switch on** (steps `t262-on 0` to `7`, `t262merge-on`, `t262rerun-on`, 2026-11-19 and
+  2026-11-20, shard 1 taken again from its start): the same with `--shell-arg=--parse-through-bridge`, through the same
+  shell (each shard's shell binaries are the switch-off build's). Merged report `t262-on/test262-results.json`, by
+  digest, `305ccd70310137342eb2523ed80d26cb573ac63a6b98f917634c838b0dcca3e7`; re-run
+  [`rerun-timeouts.json`](side-by-side/w1/tests-and-test262/t262-on/rerun-timeouts.json),
+  `25669463928d5e11f0413cf4bcdd2839cc5265effda699ea25679ce6cc05cb66`.
+
+**What each shows**, read and not judged, in words (the counts are in the folder's
+[`counts.txt`](side-by-side/w1/tests-and-test262/counts.txt), written with the per-test and per-case tables by
+[`read_local.py`](side-by-side/w1/tests-and-test262/scripts/read_local.py), which classifies nothing):
+- **The test projects, off and on.** The same tests run in both. With the switch off, one timing test of the compiler's
+  fails, and passes with it on. With the switch on, the architecture test that the switch is off in the build fails, by
+  its own message, and so do four of the compiler's deep-nesting tests, refused with the library's nesting messages or,
+  on a one-mebibyte thread, failing their assertion
+  ([`tests-differ.tsv`](side-by-side/w1/tests-and-test262/tests-differ.tsv)).
+- **test262, off and on.** The same paths and variants run in both. Most cases whose status moves go from failing off to
+  passing on, and a corrections table names every such path; both variants of one path pass off and fail on, and one
+  Terser variant passes off and is skipped on, and no corrections table names either path
+  ([`t262-differ.tsv.gz`](side-by-side/w1/tests-and-test262/t262-differ.tsv.gz)). One path times out in both, and again
+  in its re-run.
+- Which of these moves part C would admit is read only at the base commit, from its own runs.
+
+### The restarts that interrupted the runs
+
+The runs at W1 began under one driver at 2026-11-19T17:51:58Z; since 2026-11-19T23:36:24Z one resumable chain has run
+W1's steps and then the base commit's. Every interrupted step was taken again from its start, after the default branch's
+head was read as `69a8a13b`, and no step ran between an interruption and its resumption:
+- **During W1's switch-on test262 shard 1**, begun 2026-11-19T23:10:21Z: the restart of 2026-11-19 (above); the chain
+  started at 23:36:24Z and took the shard again from its start at 23:36:37Z (`w1/driver.log`, `w1/logs/commands.log`).
+- **During W1's switch-on test projects**, begun 2026-11-20T04:02:25Z: the chain's log reads "2026-11-22T14:00:07Z chain
+  restarted after the container restart of about 2026-11-20T04:01Z (tests-on was running; it is taken again from its
+  start)"; the step was taken again from its start at 2026-11-22T14:00:20Z and completed. The hold's note above reads
+  the restart's time as one "the logs do not show", as the step began after the time the chain's log gives.
+- **Twice during the base commit's switch-off test262 shard 6**, after W1's runs had finished: the chain's log reads
+  "2026-11-22T21:21:40Z chain restarted after a container restart between 2026-11-22T20:09Z and 21:21Z (t262-off shard 6
+  was running; it is taken again from its start)" and "2026-11-22T21:52:31Z chain restarted after a container restart
+  between 2026-11-22T21:21Z and 21:52Z (t262-off shard 6 was running; it is taken again from its start)". The base
+  driver read the head `69a8a13b` before each start of that shard. Those runs are still being taken and are not read
+  here.
+
+The chain's log as it stood on 2026-11-22T21:59Z is retained as
+[`chain.log`](side-by-side/w1/tests-and-test262/chain.log).
 
 ## What it does not claim
 
