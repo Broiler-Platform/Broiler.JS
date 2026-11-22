@@ -39,6 +39,10 @@ base commit.
     the dumps' text, its counts by class and node kind, and every row of its listing that is not `S` (`both-agree` and
     `not-span`, with both texts).
 - [`hashes.txt`](hashes.txt) gives the SHA-256 of every file here.
+  *(Noted 2026-11-22, during W2's base runs: the line above reads "gives the SHA-256 of every file here". It names the
+  tool run's files, and this README's, and not those of [`tests-and-test262/`](tests-and-test262/README.md), retained
+  here on 2026-11-22, which has its own [`hashes.txt`](tests-and-test262/hashes.txt). Its line for this README is
+  written again for this note; its other lines are as they were. The line above is left as written.)*
 
 **Not run at W1:** part C's other runs, every test project with the switch on through its internal options member,
 and `scripts/compliance/run_test262.py` locally with the shell's hidden switch off and on. The rule asks for them at W1
@@ -47,6 +51,9 @@ taken at W1 at any time. This stage took the tool's run, which is what traces a 
 choice taken is to leave the others to a later stage, before or with part C's runs at the base commit; the alternative
 not taken is to take them now (the bundle's README, "The side-by-side run at W1, read on 2026-11-15", records the
 choice). Part C's verdict reads only the runs at the base commit, so none waits on them.
+*(Noted 2026-11-22, during W2's base runs: the paragraph above reads "and they are still to be taken". They are
+taken, at W1, from 2026-11-19 to 2026-11-22, before part C's runs at the base commit began, and retained in
+[`tests-and-test262/`](tests-and-test262/README.md), read and not judged. The paragraph is left as written.)*
 
 ## What it shows
 
