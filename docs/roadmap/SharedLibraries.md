@@ -3559,8 +3559,10 @@ then re-read on the same retained runs, nothing re-run, and W2 proceeds to its P
 "Hold W2". Answer 11 chose "Admit by revision (Recommended)" — "Include group 9 in the dated revision. W2's trees stay
 as they are; no other span changes."; not taken: "Fix in W2". The revision is
 [`decision-rule-revised-2026-11-23.md`](../evidence/sjl-14-001/decision-rule-revised-2026-11-23.md), written after
-part C's base runs were seen and so weaker evidence: parts C and D admit the differences of the groups the answers
-name, each class naming its inputs, tests or paths, and nothing wider; group 6, `test/staging/sm/regress/regress-610026.js`,
+part C's base runs were seen and so weaker evidence: part C admits the differences of groups 1 to 5, 7, 8 and 9 the
+answers name, and part D those of groups 1 to 3, 8 and 9, each class naming its inputs, tests or paths, and nothing
+wider *(changed the same day, after review, before this note merged: it read "parts C and D admit the differences of
+the groups the answers name", wider than the revision, which admits groups 4, 5 and 7 in part C alone)*; group 6, `test/staging/sm/regress/regress-610026.js`,
 is not admitted, and W2 fixes it inside W2 by the bundle's decision B8 (`e0b2d17b`, with its review fix `80b04d26`, on
 branch `sjl-14-w2`); part A is not revised. **Part C, read again under the revision on the same retained runs: read
 NOT MET on the retained runs, for `regress-610026.js` alone.** The bundle records finding S14-F2 against the

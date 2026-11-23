@@ -15,8 +15,8 @@ Broiler.JS `33d3093b` and Broiler.VM `c5bde2b`, each repository's default branch
 | File | What |
 |---|---|
 | [`decision-rule.md`](decision-rule.md) | The rule: eleven predeclared parts, A to K, filed before any change it judges (no bridge, no switch, no adapter package, no deletion); it holds no figure |
-| [`decision-rule-revised-2026-11-23.md`](decision-rule-revised-2026-11-23.md) | The rule's dated revision, filed by the owner's answers 10 and 11 of 2026-11-23 after part C's base runs were seen, and so weaker evidence: parts C and D admit the differences those answers name, each class naming its entries, and nothing wider; it quotes the rule whole *(added 2026-11-23, records part 5)* |
-| [`corrections.md`](corrections.md) and [`corrections/`](corrections/k-rows.tsv) | The corrections K1 to K10, each with its rows and test262 paths; the classes E and T with their rows and sites; finding S14-F1; the probes' rows |
+| [`decision-rule-revised-2026-11-23.md`](decision-rule-revised-2026-11-23.md) | The rule's dated revision, filed by the owner's answers 10 and 11 of 2026-11-23 after part C's base runs were seen, and so weaker evidence: part C admits the differences of groups 1 to 5, 7, 8 and 9 those answers name, and part D those of groups 1 to 3, 8 and 9, each class naming its entries, and nothing wider; it quotes the rule whole *(added 2026-11-23, records part 5)* *(Changed the same day, after review, before this record merged: the cell read "parts C and D admit the differences those answers name", wider than the revision, which admits groups 4, 5 and 7 in part C alone.)* |
+| [`corrections.md`](corrections.md) and [`corrections/`](corrections/k-rows.tsv) | The corrections K1 to K10, each with its rows and test262 paths; the classes E and T with their rows and sites; finding S14-F1; the probes' rows *(Noted 2026-11-23, after review: finding S14-F2, against the correspondence, is recorded in "W2's base, records part 5" below, not in `corrections.md`, which the rule's revision of 2026-11-23 leaves unedited.)* |
 | [`dispositions.md`](dispositions.md), [`dispositions.tsv`](dispositions.tsv) and [`api/`](api/) | Every public type and member of `Ast` and `Parser` with its disposition (decision D50), from a PublicApiGenerator listing at `33d3093b`; the non-tree types' new home; SJL-14.5's deletion list member by member |
 | [`inherited-context/`](inherited-context/README.md) | The inherited-context probes of decision D44, run on both engines with every answer recorded |
 | [`inputs/`](inputs/README.md) | Part I's workloads (the real corpora, named by revision and SHA-256) and part J's seeds |
@@ -1078,9 +1078,13 @@ and 11 of 2026-11-23, recorded in "W2's base, records part 5" below; the sentenc
 ## W2's base, records part 5: the rule's revision of 2026-11-23, recorded on 2026-11-23
 
 **Written:** 2026-11-23, during W2's hold, on branch `sjl-14-w2-base`, with the default branch's head read as
-`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` by `git ls-remote` before the commit. **What it records:** the owner's
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` by one `git ls-remote` at 2026-11-23T19:19:01Z, before this record's
+three commits of 19:31:47Z to 19:31:48Z; no later read was kept for them. **What it records:** the owner's
 answers 10 and 11 of 2026-11-23, the rule's dated revision they file, and part C read again under it on the same
-retained runs, with nothing built, run or dispatched. [`decision-rule.md`](decision-rule.md) is not edited, and no row
+retained runs; nothing of the engine was built or run, and nothing was dispatched; only the reading scripts were run.
+*(Changed the same day, after review, before this record merged: the paragraph read "by `git ls-remote` before the
+commit", which no kept read shows for each commit, and "with nothing built, run or dispatched", which the reading runs
+contradict. A read before each review-fix commit gave the same head.)* [`decision-rule.md`](decision-rule.md) is not edited, and no row
 is added to [`corrections.md`](corrections.md) or its tables.
 
 **The owner's answers 10 and 11 of 2026-11-23**, the owner's own and not ones taken under the owner's direction of
@@ -1142,14 +1146,17 @@ now reads SHA-256 `0e898cfaaae7185b1d8d8c95a88a64b53e5ec755ccf3be0162f01b4b9dec7
 written there.)*
 - **Part C: read NOT MET on the retained runs**, under the rule's revision of 2026-11-23, for
   `test/staging/sm/regress/regress-610026.js` (both variants), passing with the switch off and failing with it on,
-  which no class admits; the tables read every other difference in a class. Not judged beyond that (EX-30). The
-  reading of the section "W2's base, recorded on 2026-11-23", under the rule as written, stays on record as taken.
+  which no class admits. Not judged beyond that (EX-30). The reading of the section "W2's base, recorded on
+  2026-11-23", under the rule as written, stays on record as taken. *(Changed the same day, after review, before this
+  record merged: after "which no class admits" the reading read "; the tables read every other difference in a
+  class.", which went beyond the reading; the counts are the tables'.)*
 - **Finding S14-F2, against the correspondence**, as part A's C1 line asks ("a C1 row that none explains is recorded as
   a finding against the correspondence and is a regression"):
   `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js`, original variant, fails with the switch
   off and passes with it on, and no row of K1 to K10 explains it: the corrections' tables explain the path by the
   correspondence's D31 bucket alone, while what the shell shows is the early error EE0056 that the old parser misses
-  for an `await using` head, which K7's D35 ("Lexical redeclarations Broiler.JS misses") describes, and the library's
+  for an `await using` head, which K7's D35 ("Lexical redeclarations Broiler.JS misses (async functions and generators in blocks, catch and
+  others)"; cut after "misses" before review, as the revision's quote is) describes, and the library's
   row table calls the `using` heads, this test by name, EP rows. Recorded here, for the correspondence's owner;
   [`base/part-c/README.md`](base/part-c/README.md)'s "Records part 5" gives the sites. Part A's lines are not
   revised, so part A's after comparison reads this path as part A's C1 line reads it.
@@ -1157,6 +1164,21 @@ written there.)*
   and rev-code, rev-eof and rev-bracket for the inputs and input variants the revision names, each read at entry point
   P as the base commit's old parser against the after commit's `FastParser` facade; every other difference is a
   regression. Groups 4 to 7 are not in part D's population. No part D after run exists.
+
+**After review, 2026-11-23**, before this record merged, with the default branch's head read as
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` by `git ls-remote` before each review-fix commit (each read, with its time,
+is kept in the session's notes). [`base/part-c/scripts/classify_c.py`](base/part-c/scripts/classify_c.py) read
+rev-eof for any input variant whose differing lines were all S or the `eof` reading, without testing that the variant
+is one the revision names by the earlier `unclassified.tsv` (git blob `4cb883804fcea72f29621a05d8476dc0168f5b47`); it
+now reads that blob by its digest and admits by rev-eof only the input variants it lists, so that a part D reader built
+from it admits no other. Read again on the same retained runs through the same lock and gate, the tables are the same
+bytes; [`base/part-c/README.md`](base/part-c/README.md)'s "Records part 5" gives the runs, with their logs in
+[`base/part-c/logs-fix/`](base/part-c/logs-fix/runs.tsv), and how this record reads the revision's quoted reason
+(which in the blob goes on with a count) and its D35 quote (the row's opening words). Finding S14-F2 is recorded in
+this section, not in [`corrections.md`](corrections.md). That folder's [`hashes.txt`](base/part-c/hashes.txt) now
+reads SHA-256 `52b87e74d8fc5d921378fc3833eac6508dfd1eb72f7b9102bf59f0591765964c`; the paragraph "Part C, read again"
+above names its digest of before this change, and is left as written. Part C's reading under the revision is
+unchanged.
 
 ## What it does not claim
 
