@@ -430,11 +430,16 @@ only. *(Added the same day, after review, before this record merged.)*
 ## Records part 5: part C read again under the rule's revision of 2026-11-23
 
 **Written:** 2026-11-23, on branch `sjl-14-w2-base`, with the default branch's head read as
-`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` by `git ls-remote` before the commit. **What it is:** part C read again on
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` by one `git ls-remote` at 2026-11-23T19:19:01Z, before this record's three
+commits of 19:31:47Z to 19:31:48Z; no later read was kept for them. *(Changed the same day, after review, before this
+record merged: it read "by `git ls-remote` before the commit", which no kept read shows for each commit. A read at
+the review fix, below, gave the same head.)* **What it is:** part C read again on
 the same retained runs under [`../../decision-rule-revised-2026-11-23.md`](../../decision-rule-revised-2026-11-23.md),
 the rule's dated revision filed by the owner's answers 10 and 11 of 2026-11-23, which that file quotes whole. Nothing
-was built, run or dispatched for it: the scripts read the retained runs, the tools step's `--text` run and records part
-4's code file, as before. [`../../decision-rule.md`](../../decision-rule.md) is not edited, and no row is added to
+of the engine was built or run for it, and nothing was dispatched; only the reading scripts were run, and they read the
+retained runs, the tools step's `--text` run and records part 4's code file, as before. *(Changed the same day, after
+review, before this record merged: it read "Nothing was built, run or dispatched for it: the scripts read", which the
+reading runs below contradict.)* [`../../decision-rule.md`](../../decision-rule.md) is not edited, and no row is added to
 [`../../corrections.md`](../../corrections.md) or its tables.
 
 **The scripts, taught the revision.** [`scripts/classify_c.py`](scripts/classify_c.py) reads the classes rev-code,
@@ -446,7 +451,8 @@ its sixth argument, after the code file. Without the word they write the earlier
 **The runs**, each through the machine-wide lock and idle gate (`run.sh`, as [`../local/scripts/run.sh`](../local/scripts/run.sh)),
 by the wrapper [`logs-revised/readE.sh`](logs-revised/readE.sh) around `read_base.sh`, with the code file
 [`aids/base/bridge-codes.tsv`](aids/base/bridge-codes.tsv); each run's command line, exit and machine records are in
-[`logs-revised/`](logs-revised/runs.tsv):
+[`logs-revised/`](logs-revised/runs.tsv). The command lines there name the wrapper by its path in the session's notes;
+`logs-revised/readE.sh` is a byte-identical copy of it *(added the same day, after review)*:
 - `e-base-read`, before any change: the scripts as commit `de1951e8e277b3036ddf4b94125bec42fa24d802` holds them wrote
   every table of this folder byte for byte.
 - `e-read-unrevised`, taken twice under the same label (after the first text of the change and after its correction,
@@ -497,14 +503,36 @@ is unchanged.
   `sjl-13-001`'s classification, explain the path by the correspondence's D31 bucket, as the corpus's K at the base
   refuses the input only for awaiting at the top level without the permission; what the shell shows is the early error
   EE0056 the old parser misses for an `await using` head and the library reports (`JSE1417`), which K7's D35
-  ("Lexical redeclarations Broiler.JS misses") describes; and the library's row table reads in EE0056's notes that the
+  ("Lexical redeclarations Broiler.JS misses (async functions and generators in blocks, catch and others)", as
+  [`../../corrections/k-rows.tsv`](../../corrections/k-rows.tsv) words it; the quote was cut after "misses" before
+  review, as the revision's is) describes; and the library's row table reads in EE0056's notes that the
   `using` heads, this test by name, "are EP rows". The corrections' tables list the path under D31 alone
   ([`../../corrections/test262-paths.tsv`](../../corrections/test262-paths.tsv)), and
   [`../../corrections/k-paths.tsv`](../../corrections/k-paths.tsv) does not list it. The finding is recorded here and is the correspondence's owner's to answer; the revision lists the path with K7 and
   D35 for part C alone, and part A's lines are not revised.
 
 **Part C: read NOT MET on the retained runs**, under the rule's revision of 2026-11-23, for item 6 alone,
-`test/staging/sm/regress/regress-610026.js` (both variants), which no class admits; the tables here read every other
-difference in a class, as [`classes.txt`](classes.txt) and [`tests-and-test262/classes.txt`](tests-and-test262/classes.txt)
-count them. Not judged beyond that (EX-30). The first reading, above, stays on
-record as taken.
+`test/staging/sm/regress/regress-610026.js` (both variants), which no class admits. Not judged beyond that (EX-30).
+The first reading, above, stays on record as taken. *(Changed the same day, after review, before this record merged:
+after "which no class admits" the reading read "; the tables here read every other difference in a class, as
+[`classes.txt`](classes.txt) and [`tests-and-test262/classes.txt`](tests-and-test262/classes.txt) count them.", which
+went beyond the reading, as the sentence records part 4 struck did; the counts are those files'.)*
+
+**After review, 2026-11-23**, before this record merged, with the default branch's head read as
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` by `git ls-remote` before each review-fix commit (each read, with its time,
+is kept in the session's notes):
+- **rev-eof tests the revision's list.** [`scripts/classify_c.py`](scripts/classify_c.py) read rev-eof for any input
+  variant whose differing lines were all S or the P-eof-same-text reading, and did not test that the variant is one the
+  revision names by the earlier `unclassified.tsv` (git blob `4cb883804fcea72f29621a05d8476dc0168f5b47`, SHA-256
+  `1622df7102aa57fa94730542b05df91843f5c2f8099feeefc8dc26166820194f`); on these runs the two read the same differences.
+  It now reads that blob from the repository by `git cat-file`, stops unless its SHA-256 is that one, and reads rev-eof
+  only for the input variants it lists with a reason beginning "span lines not S: P-eof-same-text" (its docstring
+  quotes the class as it read before). At part D, a reader built from it admits by rev-eof no other input variant, as
+  the revision says. The runs `e-fix-revised-1` and `e-fix-revised-2`, through the same lock and gate and by the same
+  wrapper, wrote every table of this folder byte for byte, and `e-fix-unrevised`, without the word, wrote the tables of
+  commit `de1951e8` byte for byte; their records are in [`logs-fix/`](logs-fix/runs.tsv). No engine was built or run.
+- **The revision's words, as read here.** Its rev-eof names the input variants the blob lists "with the reason \"span
+  lines not S: P-eof-same-text\""; in the blob each such reason goes on with the count of those lines, and no row mixes that reading with another, so the words are read as the reason beginning with that
+  text. Its rev-for-of quotes D35 as "Lexical redeclarations Broiler.JS misses", the opening words of the row, which
+  [`../../corrections/k-rows.tsv`](../../corrections/k-rows.tsv) gives in full as above. The revision's file is not
+  edited.

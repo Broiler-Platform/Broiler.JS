@@ -78,10 +78,18 @@ base commit holds them (no row is added here):
                  code is the one it names for that input: EX0009 (JSE9109) for T035220, T039055, T047023, J000058 and
                  J001174; EX0008 (JSE9108) for T034966, T034969, T046767 and T046770; EE0033 (JSE1329) for J000040
                  and J001147; read only where class E is not
-    rev-eof      a dump difference, in any variant, whose every differing line is S or the P-eof-same-text reading
-                 above, with at least one of the latter (the end written eof read as the same offset written as the
-                 source's length: one span); on these runs, exactly the input variants the earlier unclassified.tsv
-                 (SHA-256 1622df7102aa57fa94730542b05df91843f5c2f8099feeefc8dc26166820194f) lists with that reading
+    rev-eof      a dump difference of an input variant the earlier unclassified.tsv lists with a reason beginning
+                 "span lines not S: P-eof-same-text" (git blob 4cb883804fcea72f29621a05d8476dc0168f5b47, SHA-256
+                 1622df7102aa57fa94730542b05df91843f5c2f8099feeefc8dc26166820194f, the list the revision names; read
+                 from <repo root> by git cat-file and checked by that digest, or the script stops), whose every
+                 differing line is S or the P-eof-same-text reading above, with at least one of the latter (the end
+                 written eof read as the same offset written as the source's length: one span). (Changed 2026-11-23,
+                 after review, before this record merged: the class read "a dump difference, in any variant, whose
+                 every differing line is S or the P-eof-same-text reading above, with at least one of the latter (the
+                 end written eof read as the same offset written as the source's length: one span); on these runs,
+                 exactly the input variants the earlier unclassified.tsv (SHA-256
+                 1622df7102aa57fa94730542b05df91843f5c2f8099feeefc8dc26166820194f) lists with that reading", and did
+                 not test the list, which the revision names; on these runs the two read the same differences.)
     rev-bracket  a dump difference of T036087, T039546 or T051374, in its strict or sloppy variant, whose every
                  differing line is S or the B-short-bracket reading above, with at least one of the latter
   Without the word, nothing of the revision is read, and the script writes the tables it wrote before it.
@@ -103,6 +111,20 @@ REV_CODE = {i: ("EX0009", "JSE9109") for i in ("T035220", "T039055", "T047023", 
 REV_CODE.update({i: ("EX0008", "JSE9108") for i in ("T034966", "T034969", "T046767", "T046770")})
 REV_CODE.update({i: ("EE0033", "JSE1329") for i in ("J000040", "J001147")})
 REV_BRACKET = {"T036087", "T039546", "T051374"}
+# rev-eof's input variants: those the earlier unclassified.tsv, the blob the revision names, lists with the
+# P-eof-same-text reason (added 2026-11-23, after review).
+REV_EOF_BLOB = "4cb883804fcea72f29621a05d8476dc0168f5b47"
+REV_EOF_SHA256 = "1622df7102aa57fa94730542b05df91843f5c2f8099feeefc8dc26166820194f"
+REV_EOF = set()
+if revised:
+    import hashlib, subprocess
+    blob = subprocess.run(["git", "-C", root, "cat-file", "blob", REV_EOF_BLOB], capture_output=True).stdout
+    if hashlib.sha256(blob).hexdigest() != REV_EOF_SHA256:
+        sys.exit("classify_c.py: git blob %s, the list rev-eof reads, is missing or not the bytes the revision names" % REV_EOF_BLOB)
+    for line in blob.decode("utf-8").split("\n")[1:]:
+        f = line.split("\t")
+        if len(f) == 9 and f[0] == "P/B" and f[3] == "dump" and f[8].startswith("span lines not S: P-eof-same-text"):
+            REV_EOF.add((f[1], f[2]))
 B = os.path.join(root, "docs", "evidence", "sjl-14-001", "corrections") + "/"
 op = lambda p: gzip.open(p, "rt", encoding="utf-8", newline="\n") if p.endswith(".gz") else open(p, encoding="utf-8", newline="\n")
 
@@ -432,7 +454,7 @@ for key in order:
             else:
                 bad = {k: v for k, v in readings_here.items() if not k.startswith("S-")}
                 rev = None
-                if revised and set(bad) == {"P-eof-same-text"}:
+                if revised and set(bad) == {"P-eof-same-text"} and key in REV_EOF:
                     rev = "rev-eof"
                 elif revised and set(bad) == {"B-short-bracket"} and key[0] in REV_BRACKET and key[1] in REV_VARIANTS:
                     rev = "rev-bracket"
