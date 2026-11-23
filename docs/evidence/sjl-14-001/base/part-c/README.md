@@ -28,7 +28,7 @@ difference no class admits is listed below as unclassified.
 ## What is here
 
 Each written by [`scripts/read_base.sh`](scripts/read_base.sh), run twice through the machine's lock and gate with the
-same bytes both times ([`logs/`](logs/runs.tsv)):
+same bytes both times ([`logs/`](logs/runs.tsv), runs `w2c-read-base-3` and `w2c-read-base-4`):
 - [`counts.txt`](counts.txt), [`messages-p-b.tsv.gz`](messages-p-b.tsv.gz), [`messages-k.tsv.gz`](messages-k.tsv.gz):
   the tool's `compare.py`, as at W1 (the pairs' counts; class M's generated message tables, decision D46, with both
   texts); [`text-run-identity.txt`](text-run-identity.txt): the `--text` run's P and B rows are the first run's, byte
@@ -47,8 +47,13 @@ same bytes both times ([`logs/`](logs/runs.tsv)):
   production an input's refused construct is, with that construct.
 
 [`hashes.txt`](hashes.txt) gives the SHA-256 of every file here. Each count is in these files, not in this README. The
-classifier's earlier runs while it was written, over the same inputs, are not retained; the two runs in `logs/` are of
-the scripts as they are here.
+classifier's earlier runs while it was written, over the same inputs, are not retained; runs `w2c-read-base-3` and
+`w2c-read-base-4` in `logs/` are of the scripts as they are here. *(Changed the same day, after review, before this record merged: the sentence before read "the two runs in
+`logs/` are of the scripts as they are here". Runs `w2c-read-base-1` and `w2c-read-base-2`, kept in `logs/`, are of
+`classify_c.py` as commit `d58b0097bedbed2864c175410cd7b437da49e54a` holds it, which read two span readings as S that
+are not (below) and did not mark class E provisional; that commit holds their outputs. `counts.txt`, the message tables,
+`text-run-identity.txt` and `tests-and-test262/` are the same bytes in both; `differences.tsv.gz`,
+`span-readings.tsv.gz`, `unclassified.tsv` and `classes.txt` are written again.)*
 
 ## How each class is read
 
@@ -64,19 +69,43 @@ the scripts as they are here.
   message identifier renders it, narrowed to those the classification lists first when any are. When every such row
   qualifies, the move is E; when only some do, the row the input's construct matches is read by hand
   ([`scripts/readings.tsv`](scripts/readings.tsv)); otherwise it is unclassified. This is a reader's reading, weaker
-  than the code would be.
+  than the code would be. **Every E is therefore provisional**, and its basis in `differences.tsv.gz` says so. Where
+  B's text also renders rows that would not qualify, which only the narrowing to the classification's first rows sets
+  aside (reading the library's code as one the classification expects first, the very condition the header's
+  `partly`/`no` branch tests), the basis names those rows and `classes.txt` counts the moves. Each E is listed with the
+  rows B's text gives, not with its one row, and **the unclassified list below is a lower bound**: a move read E here
+  may be unclassified by its code. The run that would settle it is the `tools` step's reading aid
+  ([`../local/scripts/bridge-codes/`](../local/scripts/bridge-codes/Program.cs)) with the bridge's type looked up in
+  the assembly that holds it (`Broiler.JavaScript.Parser`, where `SharedSyntaxBridge` is, not `Broiler.JavaScript.Ast`),
+  on a build of the base commit taken behind the gate when the orchestrator decides; E is then read by code, each move
+  with its single row. A build is needed, as the base build's `bin` and `obj` trees are deleted
+  ([`../local/retained.txt`](../local/retained.txt)). *(Changed the same day, after review, before this record merged: the bullet ended at "weaker than the code would
+  be."; the sentences after it are added.)*
 - **Message differences** of a refusal with the same type are M, each in the generated tables. No exception type
   differs at either pair; the switch-on compile's crashes that the switch-off compile shares have the same type and
-  message.
+  message. The rule applies the canonical dump to P's and B's trees only, and no K or K-on row carries a dump, so K-off
+  against K-on is compared on outcome, exception type and message: the "same-dump" `counts.txt` gives that pair
+  compares no dump. *(Added the same day, after review, before this record merged.)*
 - **Tree differences.** The inputs whose trees differ outside spans are exactly those W1a to W1c cite: C1 (K10). Every
   other tree difference is of spans alone; `spancheck.py` reads most lines S and lists the rest `both-agree`, which its
   check cannot decide. Each `both-agree` line is read here from its kind, its field and both texts (the readings are
-  named in `classify_c.py`'s docstring): P's span ending at the end-of-input token where B's ends at the node's last
-  token; a declaration in a `for` head whose P span takes the head's `;`; P's span beginning inside the node's first
-  operand (after `new X`, `[` or `{`); P's span taking punctuation or a comment that follows the node; a `break` or
-  `continue` whose P span leaves out its own `;`; and a member, optional chain or import call whose end the AST type
-  takes from a child whose own line is one of those. In each, P's span disagrees with the node's source text and B's
-  agrees, so each line is S, and no `both-agree` line is left undecided.
+  named in `classify_c.py`'s docstring). Four readings are S, P's span disagreeing with the node's source text and B's
+  agreeing: a declaration in a `for` head whose P span takes the head's `;`; P's span beginning inside the node's first
+  operand (after `new X`, `[` or `{`); P's span taking punctuation or a comment that follows the node; and a `break` or
+  `continue` whose P span leaves out its own `;`. Two are not S, as P's span agrees with the node's text: P's span
+  ending at the end-of-input token where B's gives the same offset as a number, so that both give exactly the node's
+  text (`P-eof-same-text`); and a member, optional chain or import call whose end the AST type takes from a child whose
+  own P span takes the bracket that follows it, where P's span ends after the node's closing bracket and B's leaves it
+  out (`B-short-bracket`). A tree difference with a line of either is unclassified (items 8 and 9 below), and no
+  `both-agree` line is left undecided. `spancheck.py`'s own S lines are taken as it reads them: for an edge the AST
+  type fixes, it admits a B text that leaves a bracket open or unopened, so in some of those lines B's text is not the
+  node's balanced text. *(Changed the same day, after review, before this record merged: from "named in" the bullet read "named in `classify_c.py`'s docstring): P's span
+  ending at the end-of-input token where B's ends at the node's last token; [the four readings above]; and a member,
+  optional chain or import call whose end the AST type takes from a child whose own line is one of those. In each, P's
+  span disagrees with the node's source text and B's agrees, so each line is S, and no `both-agree` line is left
+  undecided." Checked against the text, P's span agrees with the node's text in the first and the last of those, so
+  neither is S by the rule's words, as W1's README already read a `both-agree` row; the sentence on `spancheck.py`'s
+  own S lines is added.)*
 - **Tests** that pass off and fail on, refused for nesting past the library's bound, are C3; they are the tests
   `corrections/k-rows.tsv`'s row R12 names ("class C3 or revised at SJL-14"). **test262 cases** that fail off and pass
   on, whose path `corrections/k-paths.tsv` lists for a row of K1 to K10, are C1.
@@ -88,8 +117,10 @@ the scripts as they are here.
   only"), which is K8's, and `J001072` and `J001780` D37 ("yield and await as names, strict reserved words, a static
   block's await"), which is K7's. Each is C1.
 - **The outcome moves the corrections' tables do not list** (inputs outside test262, which `test262-paths.tsv` does not
-  hold) are each C1, C3 or E by the classification, but for those listed unclassified below.
-- **The `both-agree` spans** are each S, by the readings above.
+  hold) are each C1, C3 or E (provisional, above) by the classification, but for those listed unclassified below.
+- **The `both-agree` spans** are each S by the readings above, but for the lines of the two readings that are not S,
+  whose tree differences are unclassified below (items 8 and 9). *(Changed the same day, after review, before this record merged: the bullet read "are each S, by the
+  readings above."; and the bullet before read "C1, C3 or E by the classification".)*
 - **W1's unlisted test262 moves** appear at the base as at W1: both variants of
   `test/staging/sm/regress/regress-610026.js` pass off and fail on, and the Terser variant of
   `test/language/expressions/dynamic-import/syntax/valid/new-covered-expression-is-valid.js` passes off and is skipped
@@ -127,21 +158,49 @@ with both sides. With each, the reading of its cause, which is a reading and not
    as the text requires; the gap is the correspondence's listing. The stage table's rows for the early errors the
    classification lists first (EE0051, EE0056) name D35 and D36, which are K7's rows; that is a reading only, and no
    class is taken from it.
-6. **`test/staging/sm/regress/regress-610026.js`, both variants**, pass off and fail on, with no output on either stream,
-   taking longer than with the switch off and ending near the runner's bound, though not recorded as timed out. The test
-   evaluates a source of empty blocks it builds by doubling, and then longer ones. The retained records do not show the
-   cause: a slower or heavier parse through the bridge for that source (the bridge's or the library's), or the runner's
-   handling of a process near its bound (the harness's). W1's run shows the same move.
+6. **`test/staging/sm/regress/regress-610026.js`, both variants**, pass off and fail on, with no output on either stream
+   and no reason, taking longer than with the switch off and ending near the runner's bound, though not recorded as
+   timed out. In the base commit's `run_test262.py`, a failure with no reason is its last branch: the shell exited
+   non-zero with no output; a time-out records "timed out after". The runner also limits each test process's CPU time
+   (`RLIMIT_CPU`) to the test's timeout, and a process that limit stops exits on a signal with no output, which that
+   branch records as a plain failure; the records do not keep the exit status. The test evaluates a source of empty
+   blocks it builds by doubling, and then longer ones. The reading: likely the bridge's or the library's parse of the
+   doubled-block source, slower with the switch on and ending near the bound, perhaps at the CPU-time limit; not shown
+   by the records. The check that would decide it: the one case run again alone through the switch-on shell, recording
+   its exit status or signal, its CPU time and its peak resident memory. W1's run shows the same move. *(Changed the same day, after review, before this record merged: from
+   "The test evaluates" the item read "The retained records do not show the cause: a slower or heavier parse through
+   the bridge for that source (the bridge's or the library's), or the runner's handling of a process near its bound
+   (the harness's).")*
 7. **`test/language/expressions/dynamic-import/syntax/valid/new-covered-expression-is-valid.js`, Terser variant**,
    passes off and is skipped on: with the switch on, the shell refuses the minified body with a SyntaxError, and the
    runner, finding that node cannot parse it either, skips the case as "minifier-invalid-output". The harness's: the
-   minifier's output is source no engine accepts, which the switch-off shell accepted.
+   minifier's output is source that node and the switch-on shell refuse and the switch-off shell accepted.
+   *(Changed the same day, after review, before this record merged: the last sentence read "the minifier's output is source no engine accepts, which the switch-off shell
+   accepted.")*
+8. **Tree differences with a line whose P span ends at the end-of-input token** (basis "span lines not S:
+   P-eof-same-text" in [`unclassified.tsv`](unclassified.tsv)): every input variant whose dumps differ in a
+   `both-agree` line where P's span ends at `eof` and B's at the same offset written as a number, as in `J000001`'s
+   last statement (`r.join(',');` in both). Both spans give exactly the node's text, so neither disagrees with it, the
+   line is not S, and no other class admits a tree difference. The reading of its cause: the old parser's dump names the
+   end-of-input token where the bridge's gives its offset, a difference in how the dump writes the span and not in the
+   span; not a bridge or library defect and not the harness. *(Added the same day, after review, before this record
+   merged; these were read S, "S-eof".)*
+9. **A member, an optional chain or an import call whose B span leaves out the closing bracket**: `T036087`,
+   `T039546` and `T051374`, each in both variants (basis "span lines not S: B-short-bracket"). P's span ends after the
+   node's `]` (`arr?.[0, 1]`) and B's before it (`arr?.[0, 1`): the AST type takes the node's end from its child, a
+   comma expression, whose B span rightly ends before the bracket and whose P span takes it. By the text P agrees and B
+   does not, the opposite of S; `spancheck.py` passes B only by its admission for a node whose end the AST type takes
+   from a child. The reading of its cause: the span B's tree carries for the node (the bridge's, or the AST type's
+   derivation it relies on), not the library's parse and not the harness. *(Added the same day, after review, before
+   this record merged; these were read S, "S-derived".)*
 
 ## Part C's reading
 
-**Read NOT MET on the retained runs**, for the unclassified differences above. Every run at the base commit is complete
-(the tool's report holds every input, variant and entry; both test runs ran every test project; both test262 runs hold
-every shard, merged, with the re-run), and every other difference is in C1, C3, E, M or S and is listed. Not judged
-beyond that (EX-30). Part C's "How it is read" reads "An unclassified difference is a bridge or library defect, fixed as
+**Read NOT MET on the retained runs**, for the unclassified differences listed above. Not judged beyond that (EX-30).
+The list is a lower bound, as class E is read from B's text and is provisional until it is read by the library's code
+(above). *(Changed the same day, after review, before this record merged: after "for the unclassified differences above." the paragraph read "Every run at the base commit is
+complete (the tool's report holds every input, variant and entry; both test runs ran every test project; both test262
+runs hold every shard, merged, with the re-run), and every other difference is in C1, C3, E, M or S and is listed.",
+which went beyond the reading the brief asks, and which items 8 and 9 and class E's reading contradict.)* Part C's "How it is read" reads "An unclassified difference is a bridge or library defect, fixed as
 a dark merge and run again before W2 merges"; what follows from each item above is the orchestrator's and the owner's
 to decide, not this record's.

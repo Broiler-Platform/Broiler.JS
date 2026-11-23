@@ -856,14 +856,22 @@ each is taken at the after commit (part I on the owner's lane, with the base com
 [`base/part-c/`](base/part-c/README.md) holds every difference of the runs above that part C's comparison names, each
 with its class or found unclassified, the generated message tables of class M, and the scripts that wrote them, run
 twice with the same bytes, from the retained runs alone; [`hashes.txt`](base/part-c/hashes.txt), SHA-256
-`ce949d7bafbbe170d60a7ff4ff4d6e23642816927305d42d5c8033f4c3930da1`. The corrections it reads are K1 to K10 as the base commit holds them,
-unchanged since `232230dc` (2026-11-03), before the first part C base step; this branch adds no row of K10, as reading
-B9's "before the first part C base run" has passed. How each class is read is in that folder's README; the library's
-code for a refusal is not in the run, so class E is read from the bridge's text, a reader's reading.
+`ce3b2ba550b0a4080f567ff75ce753e98f62354ac175badfded20021959bfa29`. The corrections it reads are K1 to K10 as the base commit holds them,
+unchanged since `232230dc` (`232230dcd2160803a3d97123abfb7e856441b442`, 2026-11-03), before the first part C base step;
+this branch adds no row of K10, as reading B9's "before the first part C base run" has passed. How each class is read
+is in that folder's README; the library's code for a refusal is not in the run, so class E is read from the bridge's
+text, a reader's reading: every E is provisional, listed with the rows B's text gives rather than its one row, and the
+unclassified list is a lower bound until E is read by code. The run that would settle it is the `tools` step's reading
+aid with the bridge's type looked up in `Broiler.JavaScript.Parser`, on a build of the base commit behind the gate,
+when the orchestrator decides. *(Changed the same day, after review, before this record merged: the digest read `ce949d7bafbbe170d60a7ff4ff4d6e23642816927305d42d5c8033f4c3930da1`,
+as `classify_c.py` was run again with two span readings no longer read S and class E marked provisional; the
+paragraph ended at "a reader's reading.", and named `232230dc` by eight digits only.)*
 - **W1's open items at the base.** `J000557` is C1 by K8 (the correspondence's P13, which the classification names),
   and `J001072` and `J001780` by K7 (D37); the outcome moves no corrections table lists are each C1, C3 or E, but for
-  those below; every `both-agree` span line is read S from its two texts; W1's unlisted test262 moves appear at the
-  base as at W1, and are unclassified below.
+  those below (E provisional, above); every `both-agree` span line is read S from its two texts but for two readings,
+  where P's span agrees with the node's text, which are unclassified below; W1's unlisted test262 moves appear at the
+  base as at W1, and are unclassified below. *(Changed the same day, after review, before this record merged: the bullet read "or E, but for those below; every
+  `both-agree` span line is read S from its two texts;".)*
 - **Unclassified**, each with both sides and a reading of its cause in that folder's README:
   - P accepting, B refusing and K refusing on both sides, where the code B's text gives is not one the classification
     lists first, so the header's class E does not admit it: a getter with a parameter (`T035220`, `T039055`,
@@ -876,13 +884,27 @@ code for a refusal is not in the run, so class E is read from the bridge's text,
   - `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js` (original), failing off and passing on,
     which no row of K1 to K10 lists: by part A's C1 line, "a C1 row that none explains is recorded as a finding against
     the correspondence";
-  - `test/staging/sm/regress/regress-610026.js` (both variants), passing off and failing on with no output: the
-    retained records do not show whether the bridge's or the library's parse of its source, or the runner near its
-    bound, is the cause;
+  - `test/staging/sm/regress/regress-610026.js` (both variants), passing off and failing on with no output and no
+    reason, a non-zero exit and not a time-out: read as likely the bridge's or the library's parse of its doubled-block
+    source, slower with the switch on and ending near the runner's bound, perhaps at its CPU-time limit; not shown by
+    the records, and decided by the one case run again with the switch-on shell recording its exit status, CPU time and
+    peak memory; *(changed the same day, after review, before this record merged: after "no output" the item read ":
+    the retained records do not show whether the bridge's or the library's parse of its source, or the runner near its
+    bound, is the cause;")*
   - `test/language/expressions/dynamic-import/syntax/valid/new-covered-expression-is-valid.js` (Terser), passing off and
-    skipped on, as the runner finds the minified body invalid: the harness's.
-- **Part C: read NOT MET on the retained runs**, for the unclassified differences above. Every run at the base commit is
-  complete, and every other difference is in C1, C3, E, M or S and is listed. Not judged beyond that (EX-30). Part C's
+    skipped on, as the runner finds the minified body invalid: the harness's;
+  - every tree difference with a span line where P's span ends at the end-of-input token and B's at the same offset as
+    a number, both giving exactly the node's text: not S, as P's span agrees with the text; read as the old parser's
+    dump writing the end as the token's name, not a bridge or library defect and not the harness;
+  - the member, optional-chain and import-call spans of `T036087`, `T039546` and `T051374` (both variants), where P's
+    span ends after the node's closing bracket and B's leaves it out, as the AST type takes the end from the child:
+    the opposite of S; read as the span B's tree carries for the node, not the library's parse and not the harness.
+    *(The last two items added the same day, after review, before this record merged; they were read S. The item
+    before them ended "the harness's.")*
+- **Part C: read NOT MET on the retained runs**, for the unclassified differences listed above. Not judged beyond that
+  (EX-30). *(Changed the same day, after review, before this record merged: after "above." the bullet read "Every run
+  at the base commit is complete, and every other difference is in C1, C3, E, M or S and is listed.", which went
+  beyond the reading and which the two items above and class E's reading contradict.)* Part C's
   "How it is read" sends "An unclassified difference" to "a bridge or library defect, fixed as a dark merge and run
   again before W2 merges"; what follows from each item is not decided here.
 

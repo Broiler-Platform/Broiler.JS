@@ -31,26 +31,38 @@ base commit holds them (no row is added here):
       it (early-errors.tsv's message_id, the bridge's message table). When every such row qualifies the move is E;
       when B's text renders rows the classification lists first, only those are read (the library's code read as one
       the classification expects first); when some do and some do not, the move is read by <readings.tsv> (the row the input's construct matches, by the
-      production each row names), or is unclassified
+      production each row names), or is unclassified. Every E is therefore provisional, a reading of B's text in place of
+      the code, and its basis says so; where B's text also renders rows that would not qualify, which only the narrowing
+      to the classification's first rows sets aside, the basis names them (changed 2026-11-23, after review: the basis
+      began "row(s) ..." and named no row the narrowing set aside)
   T   a move test262-paths.tsv or the classification explains by T (every candidate row a class T row), at K/K-on, or
       at P/B where K accepted at the base
   M   a refusal at both entries with the same exception type and another text (compare.py --messages' tables)
   S   a dump difference whose every differing line is a span difference where P's span disagrees with the node's
       source text and B's agrees: spancheck.py's S, or a line spancheck.py lists both-agree that the readings below
       decide, each by its kind and both texts:
-        S-eof       P's span ends at the end-of-input token, which is no part of the node, and B's at the node's last
-                    token; both texts are the same characters only because nothing follows the node
         S-head      a declaration in a for head: P's text takes the head's ";" (or the "in"/"of" side), which is no part
                     of the declaration; B's ends at its last declarator
         S-start     P's span begins inside the node's first operand (after "new X", "[" or "{"), B's at its start
         S-punct     P's span takes punctuation or a comment that follows the node and is no part of it (an expression's
                     ";", ")", "]", "}" or ":"; a statement's trailing comment or the enclosing block's "}")
         S-semi      a break or continue statement: P's span leaves out the statement's own ";", B's takes it
-        S-derived   a node whose end the AST type takes from its child (a member, an optional chain, an import call),
-                    where the child's line in the same dump is S-punct: P's end is its child's wrong end
-      and a both-agree line no reading decides is "both-agree-undecided"; a declaration in statement position whose B
-      span leaves out the statement's ";" while P's takes it is "B-short-semicolon": P's agrees with the text and B's
-      does not, so it is not S
+      and a both-agree line no reading decides is "undecided". Three readings are named but are not S, as P's span agrees
+      with the node's text:
+        B-short-semicolon  a declaration in statement position whose B span leaves out the statement's ";" while P's
+                    takes it: B's does not agree
+        P-eof-same-text    P's span ends at the end-of-input token ("eof") where B's gives the same offset as a number:
+                    both spans give exactly the node's text, so neither disagrees; the dumps differ in how the end is
+                    written, not in the span
+        B-short-bracket    a node whose end the AST type takes from its child (a member, an optional chain, an import
+                    call), where the child's line in the same dump is S-punct: P's span is the construct's whole text,
+                    and B's leaves out its closing bracket, which spancheck.py admits for a child-end kind
+      A dump difference with any line read as one of these is unclassified. (Changed 2026-11-23, after review: the last
+      two were read S, as "S-eof" ("P's span ends at the end-of-input token, which is no part of the node, and B's at
+      the node's last token; both texts are the same characters only because nothing follows the node") and "S-derived"
+      ("P's end is its child's wrong end"); checked against the text, P's span agrees in both, so neither is S by the
+      rule's words.) spancheck.py's own S lines are taken as it reads them: for an edge the AST type fixes, it admits
+      a B text that leaves a bracket open or unopened, so B's text in such a line may not be the node's balanced text
 Anything else is unclassified, with the reason. Writes differences.tsv.gz, span-readings.tsv.gz (every both-agree
 line with its reading), unclassified.tsv (every unclassified difference, with both sides) and classes.txt. The gzip
 files are written with no name and mtime 0, so the same inputs give the same bytes. Run with python3 -I.
@@ -230,11 +242,13 @@ def move(pair, key, x, y, e):
             how = "B's text and the classification's first rows" if rendered & set(first) else "B's text"
             ok = {r for r in cand if qualifies(r, first)}
             if cand and ok == cand:
-                return "E", "row(s) %s by %s, every one qualifying, K refusing on both sides (%s's %s)" % (";".join(sorted(ok)), how, src_, eb)
+                aside = sorted(r for r in rendered - cand if not qualifies(r, first))
+                note = ("; B's text also renders %s, which would not qualify, set aside only by reading the library's code as one of the classification's first rows" % ";".join(aside)) if aside else ""
+                return "E", "provisional (the library's code is not in the run): row(s) %s by %s, every one qualifying, K refusing on both sides (%s's %s)%s" % (";".join(sorted(ok)), how, src_, eb, note)
             rd = readings.get(key)
             if rd and rd["row"] in rendered:
                 if qualifies(rd["row"], first):
-                    return "E", "row %s by the reading of the input's construct (readings.tsv: %s), K refusing on both sides (%s's %s)" % (rd["row"], rd["basis"], src_, eb)
+                    return "E", "provisional (the library's code is not in the run): row %s by the reading of the input's construct (readings.tsv: %s), K refusing on both sides (%s's %s)" % (rd["row"], rd["basis"], src_, eb)
                 return "unclassified", "row %s by the reading of the input's construct (readings.tsv: %s) does not qualify as class E (%s's %s; first %s)" % (
                     rd["row"], rd["basis"], src_, eb, ";".join(first) or "-")
             return "unclassified", "%s's %s: by %s the rows %s, of which %s qualify as class E (first %s)" % (
@@ -291,7 +305,7 @@ def read_span(r, by_line):
     sp, sb = r["span-P"].split(".."), r["span-B"].split("..")
     label, parent = labels.get((r["id"], r["variant"], int(r["line"])), ("?", "?"))
     if sp[1] == "eof" and sb[1] != "eof" and sp[0] == sb[0] and tp == tb:
-        return "S-eof"
+        return "P-eof-same-text"
     if kind == "VariableDeclaration" and sp[0] == sb[0] and tp.startswith(tb):
         tail = tp[len(tb):]
         if re.fullmatch(r"(?:\s|/\*.*?\*/)*;", tail, re.S):
@@ -313,7 +327,7 @@ def read_span(r, by_line):
         if kind in ("MemberExpression", "OptionalChain", "ImportCall") and re.fullmatch(r"[\])]", tail):
             child = [o for o in by_line if o is not r and o["kind"] == "SequenceExpression" and unq(o["text-P"]).endswith(tail)
                      and read_span(o, []) == "S-punct"]
-            return "S-derived" if child else "undecided"
+            return "B-short-bracket" if child else "undecided"
     if sp[0] == sb[0] and tb.startswith(tp) and len(tb) > len(tp):
         if kind in ("BreakStatement", "ContinueStatement") and re.fullmatch(r"\s*;", tb[len(tp):]):
             return "S-semi"
@@ -380,6 +394,8 @@ with open(os.path.join(out, "unclassified.tsv"), "w", encoding="utf-8", newline=
 lines = ["# classify_c.py's counts: differences by entry pair, kind and class; both-agree span lines by kind and reading"]
 lines += ["%d\t%s\t%s\t%s" % (v, *k) for k, v in sorted(counts.items())]
 lines += ["%d\tspan\t%s\t%s" % (v, *k) for k, v in sorted(span_counts.items())]
+lines.append("%d\tE moves set aside B's text's rows that would not qualify, by reading the library's code as one of the classification's first rows" % sum(
+    1 for l in diff_lines[1:] if l.split("\t")[10] == "E" and "which would not qualify" in l))
 lines.append("%d\tunclassified differences (unclassified.tsv)" % (len(uncl) - 1))
 lines.append("%d\tinput variants with an unclassified difference" % len({(l.split("\t")[1], l.split("\t")[2]) for l in uncl[1:]}))
 with open(os.path.join(out, "classes.txt"), "w", encoding="utf-8", newline="\n") as w:
