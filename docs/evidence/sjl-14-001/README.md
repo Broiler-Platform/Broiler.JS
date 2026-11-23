@@ -738,7 +738,7 @@ step ([`driver.log`](base/local/driver.log)), every test, test262 and tool run u
 at the same path, but the files over 2 MB, retained by digest only ([`retained.txt`](base/local/retained.txt),
 [`not-retained.sha256.txt`](base/local/not-retained.sha256.txt)), with the chain's log, the memory log, the drivers and
 scripts as they were on disk, a `.gitattributes`, and [`hashes.txt`](base/local/hashes.txt), SHA-256
-`a1c689230a5f04f625ff5e40dd5329521542435bb80b78291f9083350fb673d7`. Each step's command line is in
+`f49f3ac48270313364641378dec6f8ce1f1c2bff852bef41f9b9b01edc34f21c`. Each step's command line is in
 [`logs/commands.log`](base/local/logs/commands.log) and in its own `logs-<step>/commands.log`, its exit in
 `logs/runs.tsv`, and its machine records before and after in `logs/<label>.machine.txt` and `.machine-sh.txt`.
 - **Part C, the side-by-side tool** (step `tools`, 2026-11-23): the tool built in Release outside the tree and run
@@ -812,11 +812,16 @@ scripts as they were on disk, a `.gitattributes`, and [`hashes.txt`](base/local/
 
 **What each shows**, in words (the counts are in the files):
 - **Part E's collector** reports "offline compiler output differs from the checked-in program". The regenerated program
-  differs from the checked-in `FibonacciProgram.g.cs` only in the form of its constants: the checked-in copy was last
-  written at `68f9a87a` (Broiler-Platform/Broiler.JS#1061), before `588ca262` (SJL-12.5), whose emitter writes each
-  constant as `System.BitConverter.UInt64BitsToDouble(0x...UL)`. The sample published with Native AOT and ran, with no
-  dynamic code (the report's `nativeAot` fields). Part E is judged at the after commit only; at the base this is its
-  record. Regenerating the sample is a separate W2 stage's, not this record's.
+  differs from the checked-in `FibonacciProgram.g.cs` only in the form of its constants: by the repository's full
+  history, the checked-in copy was last written at `3a8f3022` (2026-07-17), before `ef676932` (SJL-3.7, 2026-10-13),
+  since which the portable compiler writes each number constant as `System.BitConverter.UInt64BitsToDouble(0x...UL)`.
+  The sample published with Native AOT and ran, with no dynamic code (the report's `nativeAot` fields). Part E is judged
+  at the after commit only; at the base this is its record. Regenerating the sample is a separate W2 stage's, not this
+  record's. *(Changed the same day, before this record merged: the sentence after the colon read "the checked-in copy
+  was last written at `68f9a87a` (Broiler-Platform/Broiler.JS#1061), before `588ca262` (SJL-12.5), whose emitter writes
+  each constant as `System.BitConverter.UInt64BitsToDouble(0x...UL)`", names read from this machine's shallow clone, at
+  whose graft boundaries both commits stand; the chain's log records the correction at 2026-11-23T12:28:11Z, and
+  `scripts/chain2.sh`, retained as it ran, keeps the earlier names. The part E record itself is unchanged.)*
 - **Part G**: both suites ran against the base candidate; Broiler.JSeal's consumer completed, and every test of
   Broiler.HtmlBridge that ran passed. **The after run must use the same harness**: Broiler.JSeal restored in Release-VM
   first, and a candidate directory holding every package the after commit's packages introduce, at the versions they

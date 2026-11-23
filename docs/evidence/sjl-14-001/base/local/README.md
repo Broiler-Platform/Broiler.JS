@@ -55,10 +55,15 @@ A reading; part C's classes are in [`../part-c/`](../part-c/README.md), and part
   attempts, each stopped by an omission of the session's harness, before the attempt that passed. Both builds succeeded with no warning. Every test262 shard of both runs wrote its report and
   passed its self-check, with the same shell binaries in every shard.
 - **Part E.** The regenerated program differs from the checked-in `FibonacciProgram.g.cs` only in the form of its
-  constants: the copy checked in was last written at `68f9a87a` (Broiler-Platform/Broiler.JS#1061), before `588ca262`
-  (SJL-12.5), whose emitter writes each constant as `System.BitConverter.UInt64BitsToDouble(0x...UL)`, and the
-  regenerated program has that form. The sample published with Native AOT and ran, with no dynamic code (the report's
-  `nativeAot` fields). Part E is judged at the after commit only; this is its base record.
+  constants: by the repository's full history, the copy checked in was last written at `3a8f3022` (2026-07-17), before
+  `ef676932` (SJL-3.7, 2026-10-13), since which the portable compiler writes each number constant as
+  `System.BitConverter.UInt64BitsToDouble(0x...UL)`, and the regenerated program has that form. The sample published
+  with Native AOT and ran, with no dynamic code (the report's `nativeAot` fields). Part E is judged at the after commit
+  only; this is its base record. *(Changed the same day, before this record merged: the bullet's first sentence named
+  "`68f9a87a` (Broiler-Platform/Broiler.JS#1061)" and "`588ca262` (SJL-12.5), whose emitter writes each constant as" that
+  form, names read from this machine's shallow clone, at whose graft boundaries both commits stand; the chain's log
+  records the correction at 2026-11-23T12:28:11Z, and `scripts/chain2.sh`, retained as it ran, keeps the earlier
+  names.)*
 - **Part G.** Both suites ran against the base candidate: Broiler.JSeal's consumer completed, and every test of
   Broiler.HtmlBridge that ran passed (its TRX by digest). The after run must use the same harness: Broiler.JSeal restored
   in Release-VM first, and a candidate directory that holds every package the after commit's packages introduce, at the
