@@ -25,7 +25,7 @@ Broiler.JS `33d3093b` and Broiler.VM `c5bde2b`, each repository's default branch
 | [`side-by-side/w1/`](side-by-side/w1/README.md) | Part C's tool run at W1, every entry point with the dumps, and its readings (outcome pairs, the generated message tables, the outcome moves against the corrections' listing, the span check), read and not judged *(added 2026-11-15, at SJL-14.2's tail)* |
 | [`base/part-a/`](base/part-a/imported.txt) | Part A's base run, `.github/workflows/test262-evidence.yml` run 44639106095 at `69a8a13b`, its artifact's entries imported unchanged (the one over 2 MB by its digest), with its run's artifacts and digests, the jobs' runner images and `hashes.txt`; read, not judged *(added 2026-11-22, during W2's base runs)* |
 | [`side-by-side/w1/tests-and-test262/`](side-by-side/w1/tests-and-test262/README.md) | Part C's other runs at W1, the test projects and test262 with the switch off and on, taken during W2's base phase, with their logs, machine records, scripts and `hashes.txt` (the files over 2 MB by digest), and a reading of them that classifies nothing; read, not judged *(added 2026-11-22, during W2's base runs)* |
-| [`base/local/`](base/local/README.md) | The base commit's local runs at `69a8a13b`: part C's side-by-side tool, test projects and test262 with the switch off and on; part D's tool; part E's collector; part G's base candidate feed with Broiler.JSeal's and Broiler.HtmlBridge's suites against it; part H's API lister; with the chain's logs, machine records, scripts and `hashes.txt` (the files over 2 MB by digest) *(added 2026-11-23, during W2's hold)* |
+| [`base/local/`](base/local/README.md) | The base commit's local runs at `69a8a13b`: part C's side-by-side tool, test projects and test262 with the switch off and on; part D's tool; part E's collector; part G's base candidate feed with Broiler.JSeal's and Broiler.HtmlBridge's suites against it; part H's API lister; with the chain's logs, machine records, scripts and `hashes.txt` (the files over 2 MB by digest) *(added 2026-11-23, during W2's hold)* *(Noted 2026-11-23, records part 4: the three of those files the after comparisons read, part C's side-by-side report, part D's dump report and Broiler.HtmlBridge's TRX, are now kept whole there; "the files over 2 MB by digest" is left as written)* |
 | [`base/part-c/`](base/part-c/README.md) | Part C at the base commit: every difference of those runs with its class, or unclassified with its reading, the generated message tables of class M, and the scripts that wrote them; part C read NOT MET on the retained runs *(added 2026-11-23, during W2's hold)* |
 
 ## What it will hold
@@ -741,7 +741,11 @@ scripts as they were on disk, a `.gitattributes`, and [`hashes.txt`](base/local/
 `f9819e16d86651ed3dead2c3ca1f9b829a8f523161b2554a243eac7f8d634628`. *(Changed the same day, after review, before this
 record merged: the digest read `f49f3ac48270313364641378dec6f8ce1f1c2bff852bef41f9b9b01edc34f21c`, before
 `retained.txt` and the folder's README added the records below on Broiler.JSeal's per-test results, the files kept
-by digest only that the after comparisons read, and the build trees.)* Each step's command line is in
+by digest only that the after comparisons read, and the build trees.)* *(Noted 2026-11-23, records part 4: the
+sentence above reads "but the files over 2 MB, retained by digest only"; three of them, part C's side-by-side report,
+part D's dump report and Broiler.HtmlBridge's TRX, are now kept whole in `base/local/` at their paths, and the
+folder's `hashes.txt` digest is the one "W2's base, records part 4" below gives. The sentence and the digest above
+are left as written.)* Each step's command line is in
 [`logs/commands.log`](base/local/logs/commands.log) and in its own `logs-<step>/commands.log`, its exit in
 `logs/runs.tsv`, and its machine records before and after in `logs/<label>.machine.txt` and `.machine-sh.txt`.
 - **Part C, the side-by-side tool** (step `tools`, 2026-11-23): the tool built in Release outside the tree and run
@@ -863,7 +867,13 @@ the orchestrator's to decide, and either way the after run's harness should keep
 kept by digest only are read by the after comparisons, and their only copy is in the run folder in the session's
 scratch space, which is not durable: part C's report, part D's dump report and Broiler.HtmlBridge's TRX
 ([`retained.txt`](base/local/retained.txt)); the run folder is to be kept until those comparisons are taken, unless the
-orchestrator has them kept whole in the bundle, as `side-by-side/w1/` and `bridge/` kept such files. And, a departure
+orchestrator has them kept whole in the bundle, as `side-by-side/w1/` and `bridge/` kept such files. *(Noted
+2026-11-23, records part 4: the sentence before reads "Three files kept by digest only are read by the after
+comparisons, and their only copy is in the run folder in the session's scratch space, which is not durable" and "the
+run folder is to be kept until those comparisons are taken, unless the orchestrator has them kept whole in the
+bundle". They are now kept whole in [`base/local/`](base/local/README.md) at their paths, unchanged, by a decision
+taken under the owner's direction ("W2's base, records part 4" below), so the run folder no longer holds their only
+copy. The sentence is left as written.)* And, a departure
 from this stage's brief: the `bin` and `obj` trees of the base build and of W1's build, outside the bundle, were deleted
 by this stage after its first commits and before review, where the brief kept that folder read-only until the commit
 was verified. Nothing retained lived there, but the shell binaries' digests can no longer be checked against the
@@ -945,22 +955,36 @@ nothing here is a verdict. Part C's reading stands as taken: read NOT MET on the
 [`corrections.md`](corrections.md) or its tables. Every file is in [`base/part-c/aids/`](base/part-c/aids/logs/runs.tsv)
 and [`base/part-c/scripts/`](base/part-c/scripts/read_base.sh), described in [`base/part-c/README.md`](base/part-c/README.md)'s
 "Records part 4"; that folder's [`hashes.txt`](base/part-c/hashes.txt) now reads SHA-256
-`491803453c610a1401f9e1ddd03176f056bcd692b2bd3f9bbe4cc67af815cce6`, and [`base/local/`](base/local/README.md)'s
+`992e87c1e547fe4b97e1e4a1b49cb9baa182296a120c186703ddf7a05c2c806c`, and [`base/local/`](base/local/README.md)'s
 [`hashes.txt`](base/local/hashes.txt) `8952bf24ab404e788d6975cb19261166125eef0795ffcb528092e6730048145e`. *(The two
-digests the section "W2's base, recorded on 2026-11-23" names for those files,
-`f9819e16d86651ed3dead2c3ca1f9b829a8f523161b2554a243eac7f8d634628` and
+digests the section "W2's base, recorded on 2026-11-23" names for those files, base/local's
+`f9819e16d86651ed3dead2c3ca1f9b829a8f523161b2554a243eac7f8d634628` and base/part-c's
 `b9a8fd92c477cb64d7ee91695ba7dc7700b336501bd6acb07cec989dc4660c47`, are of the folders before this record; they are
-left as written there.)*
+left as written there.)* *(Changed the same day, after review, before this record merged: part C's folder's digest
+read `491803453c610a1401f9e1ddd03176f056bcd692b2bd3f9bbe4cc67af815cce6`, before that folder's README took the
+review's corrections; and the parenthesis named the two earlier digests "`f9819e16…` and `b9a8fd92…`" without their
+folders.)*
 
 **Each aid and re-run**, every step by `stepD.sh` through the machine-wide lock and idle gate, its command line, exit
 and machine records in [`base/part-c/aids/logs/`](base/part-c/aids/logs/commands.log), every engine run under `env -i`
-with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*` variable:
+with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*` variable *(changed the same day, after review, before this record
+merged: of these, the table re-runs `d-read-*` were taken by `readD.sh`, not `stepD.sh`, under the same `run.sh`, as
+[`base/part-c/aids/logs/commands.log`](base/part-c/aids/logs/commands.log) shows; the sentence read "every step by
+`stepD.sh`" alone)*:
 - **A build of the base commit** `69a8a13bc446a1714d3c8be9be3cfd742aebee6e` (steps `d-base-archive`, `d-base-build`,
   `d-base-terser`, 2026-11-23): a clean `git archive` on disk outside every working tree, `dotnet build Broiler.JS.slnx
   -c Release --disable-build-servers` as the base runs' `build-off` took it, exit 0 with no warning
   ([`build.log`](base/part-c/aids/base/build.log), [`archive.txt`](base/part-c/aids/base/archive.txt), the shell's
   binaries' digests in [`shell-binaries.sha256`](base/part-c/aids/base/shell-binaries.sha256)); its trees were removed
-  when the runs ended.
+  when the runs ended. *(Added the same day, after review, before this record merged:)* Built the same way, but not
+  the same bytes: every assembly of the rebuilt shell built from the repository's sources differs by digest from those
+  of the shell the retained runs used ([`shell-binaries-off.sha256`](base/local/shell-binaries-off.sha256)); only the
+  package assemblies match. The likely cause, not confirmed, is the build tree's path compiled into them
+  (`/home/user/js-w2baseD-build/69a8a13b/tree` here, `/home/user/js-w2base-build/69a8a13b/tree` for the retained
+  runs). The bridge-codes and parse-time aids ran on their own builds of the library from the same sources
+  ([`codes-binaries.sha256`](base/part-c/aids/base/codes-binaries.sha256),
+  [`ptime-binaries.sha256`](base/part-c/aids/base/ptime-binaries.sha256)), whose library assembly's digests differ
+  again. The re-runs and the aids' outputs are read as from the same commit's sources, not from the same bytes.
 - **The bridge-codes reading aid, corrected** (step `d-base-codes`): the `tools` step's aid with the bridge's types
   looked up in `Broiler.JavaScript.Parser`, where they are ([`base/part-c/scripts/bridge-codes/`](base/part-c/scripts/bridge-codes/Program.cs);
   the aid as it ran at the base step is kept in [`base/local/scripts/bridge-codes/`](base/local/scripts/bridge-codes/Program.cs)),
@@ -969,7 +993,11 @@ with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*` variable:
   `48c299af425bda5a104f74ab84ef1940778afe0a2425b5b7a07a16b2a15c3f43`.
 - **Part C's tables, written again** with class E read by that code (runs `d-read-nocodes` and `d-read-codes-1` to
   `d-read-codes-4` of [`base/part-c/scripts/read_base.sh`](base/part-c/scripts/read_base.sh), exit 0 each): without
-  the code the scripts write every earlier table byte for byte; with it, the same bytes in each run. Three tables
+  the code the scripts write every earlier table byte for byte; with it, the same bytes in each run (runs
+  `d-read-codes-1` and `-2` read the code file at `base/part-c/aids/bridge-codes/bridge-codes.tsv`, from where it was
+  moved to `base/part-c/aids/base/` before `d-read-codes-3`; its digest there was not recorded, the four runs' outputs
+  are the same bytes, and the file is `48c299af…` above; *added the same day, after review, before this record
+  merged*). Three tables
   changed, each digest before and after in that folder's README: `differences.tsv.gz` (it was
   `b6fcb0389ec57f68987bd97d3895cd846575d2d281b8631ba908e5c5791f6c7d`, now
   `e918f46254ae5de50a2705927864cd8af311e8c026b5ae30dc23ecb20cfbee0e`), `classes.txt` (it was
@@ -1012,20 +1040,31 @@ with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*` variable:
 - **`regress-610026.js`.** With the switch off both variants pass alone. With it on, and at W2's head, each variant's
   shell process ends on `SIGXCPU`, the signal of the CPU-time limit the runner sets to the test's timeout, with no
   output, which the runner records as a plain failure with no reason. The parse-time aid shows the library's parse
-  alone close to the old parser's, and the bridge's, which adds the tree's construction, far above both: the runner's
-  limit stops the case, reached by the bridge's cost on these sources, not the library's. W2 does not change it.
+  alone close to the old parser's, and the bridge's, which adds the bridge's work beyond the library's parse (the
+  token chain and the tree's construction, which the aid does not separate), far above both: the runner's
+  limit stops the case, reached by the bridge's cost on these sources, not the library's. W2 does not change it. The
+  aid parses each source under the script goal in a fresh process, not inside the case. *(Changed the same day, after
+  review, before this record merged: "which adds the bridge's work ... does not separate)" read "which adds the tree's
+  construction"; the last sentence is added.)*
 - **`B-short-bracket`.** B's span is the AST type's derivation, a member ending where its property ends
   (`AstMemberExpression.cs:9` at the base commit, built by the bridge at `BridgeTreeBuilder.Expressions.cs:331`), the
   same derivation by which both trees end every other computed member before its `]`; P takes the bracket only through
   its comma expression's span. A span the bridge's tree carries, in `Broiler.JS/`, not the library's.
 - **`for`-`of`, `head-await-using-bound-names-in-stmt.js`.** The early error is EE0056, the library's code its own; with
-  the switch off the module host runs the body, as the old parser and compiler do not check it, and the corpus's K
+  the switch off the module host runs the body, as the old parser, which checks EE0056 by the stage table's row,
+  misses it for this input (an `await using` head), as P's acceptance in the side-by-side report and the retained
+  switch-off test262 record show; and the corpus's K
   refuses the input only for awaiting at the top level without the permission, so the corrections' tables explain it
-  by the correspondence's D31 bucket and list no K row for it; as written, none does.
+  by the correspondence's D31 bucket and list no K row for it; as written, none does. (The library's row table says in
+  EE0056's notes that the `using` heads, this test by name, "are EP rows"; the code it gives is EE0056's, `JSE1417`.)
+  *(Changed the same day, after review, before this record merged: after "runs the body," the bullet read "as the old
+  parser and compiler do not check it, and the corpus's K"; the parenthesis is added.)*
 - **`P-eof-same-text`.** The canonical dump writes an end token of the end-of-file type as `eof` and any other as an
   offset, in one function; P's tree ends those nodes at the end-of-file token and B's at the node's last token. The
   tool's README and its rule describe the form, and say nothing of how `eof` is read against the same offset written
-  as a number.
+  as a number. This bundle's own span check, [`spancheck.py`](tools/side-by-side/spancheck.py), reads `eof` as the
+  source's length, which is why these lines come out `both-agree` with identical texts; a reading only. *(Added the
+  same day, after review, before this record merged.)*
 
 What follows from each remaining unclassified item, under part C's "How it is read" and readings B8 and B9, is the
 owner's to decide; nothing here decides it.
