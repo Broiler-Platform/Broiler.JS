@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Part C's classes over the side-by-side tool's run at the base commit (bundle sjl-14-001, decision rule part C).
 
-    classify_c.py <repo root> <report.tsv.gz> <spans.tsv> <dumps-p-b.txt.gz> <readings.tsv> <out dir> [<bridge-codes.tsv>]
+    classify_c.py <repo root> <report.tsv.gz> <spans.tsv> <dumps-p-b.txt.gz> <readings.tsv> <out dir> [<bridge-codes.tsv> [revised-2026-11-23]]
 
 <repo root> is a checkout whose records are the base commit's: corrections/ (K1 to K10, classes E and T, partly.tsv,
 test262-paths.tsv, k-paths.tsv, k-rows.tsv), Broiler.ECMAScript/docs/frontend/stages.tsv and early-errors.tsv, bundle
@@ -70,6 +70,21 @@ base commit holds them (no row is added here):
   unclassified; <readings.tsv> is not read for it, and no E is provisional. A variant B refused that the aid finds the
   library accepting, or with no diagnostic, is unclassified (the refusal is the bridge's own). Without the file, class E
   is read from B's text as above.
+  Under the rule's revision of 2026-11-23 (added 2026-11-23, records part 5): given the word revised-2026-11-23 after
+  <bridge-codes.tsv>, the classes decision-rule-revised-2026-11-23.md adds to part C are read too, each only for the
+  inputs it names, and nothing else changes:
+    rev-code     an outcome move at P/B of one of the eleven inputs that revision names, in its strict or sloppy
+                 variant, P accepting, B refusing and K refusing on both sides, whose first diagnostic by the library's
+                 code is the one it names for that input: EX0009 (JSE9109) for T035220, T039055, T047023, J000058 and
+                 J001174; EX0008 (JSE9108) for T034966, T034969, T046767 and T046770; EE0033 (JSE1329) for J000040
+                 and J001147; read only where class E is not
+    rev-eof      a dump difference, in any variant, whose every differing line is S or the P-eof-same-text reading
+                 above, with at least one of the latter (the end written eof read as the same offset written as the
+                 source's length: one span); on these runs, exactly the input variants the earlier unclassified.tsv
+                 (SHA-256 1622df7102aa57fa94730542b05df91843f5c2f8099feeefc8dc26166820194f) lists with that reading
+    rev-bracket  a dump difference of T036087, T039546 or T051374, in its strict or sloppy variant, whose every
+                 differing line is S or the B-short-bracket reading above, with at least one of the latter
+  Without the word, nothing of the revision is read, and the script writes the tables it wrote before it.
 Anything else is unclassified, with the reason. Writes differences.tsv.gz, span-readings.tsv.gz (every both-agree
 line with its reading), unclassified.tsv (every unclassified difference, with both sides) and classes.txt. The gzip
 files are written with no name and mtime 0, so the same inputs give the same bytes. Run with python3 -I.
@@ -78,6 +93,16 @@ import collections, gzip, json, os, re, sys
 
 root, report, spans_path, dumps_path, readings_path, out = sys.argv[1:7]
 codes_path = sys.argv[7] if len(sys.argv) > 7 else None
+revised = sys.argv[8] if len(sys.argv) > 8 else None
+if revised not in (None, "revised-2026-11-23") or (revised and not codes_path):
+    sys.exit("classify_c.py: the eighth argument is revised-2026-11-23, after <bridge-codes.tsv>")
+# The rule's revision of 2026-11-23: the inputs it names, each with its row and the library's code (rev-code), and the
+# inputs whose B-short-bracket lines it admits (rev-bracket); both variants of each.
+REV_VARIANTS = ("strict", "sloppy")
+REV_CODE = {i: ("EX0009", "JSE9109") for i in ("T035220", "T039055", "T047023", "J000058", "J001174")}
+REV_CODE.update({i: ("EX0008", "JSE9108") for i in ("T034966", "T034969", "T046767", "T046770")})
+REV_CODE.update({i: ("EE0033", "JSE1329") for i in ("J000040", "J001147")})
+REV_BRACKET = {"T036087", "T039546", "T051374"}
 B = os.path.join(root, "docs", "evidence", "sjl-14-001", "corrections") + "/"
 op = lambda p: gzip.open(p, "rt", encoding="utf-8", newline="\n") if p.endswith(".gz") else open(p, encoding="utf-8", newline="\n")
 
@@ -266,6 +291,9 @@ def move(pair, key, x, y, e):
                 if qualifies(row, first):
                     why = "class-e.tsv" if row in class_e else "js_compiler_only %s, among the classification's first rows" % s_["js_compiler_only"]
                     return "E", "row %s by the library's code %s (%s; %s), K refusing on both sides (%s's %s)" % (row, code, mid, why, src_, eb)
+                if revised and key[0] in REV_CODE and key[1] in REV_VARIANTS and REV_CODE[key[0]] == (row, code):
+                    return "rev-code", "row %s by the library's code %s (%s), K refusing on both sides, which decision-rule-revised-2026-11-23.md names for %s; not class E: stage %s, js_compiler_only %s, %s the classification's first rows %s (%s's %s)" % (
+                        row, code, mid, key[0], s_.get("stage"), s_.get("js_compiler_only"), "among" if row in first else "not among", ";".join(first) or "-", src_, eb)
                 return "unclassified", "row %s by the library's code %s (%s) does not qualify as class E: stage %s, js_compiler_only %s, %s the classification's first rows %s (%s's %s)" % (
                     row, code, mid, s_.get("stage"), s_.get("js_compiler_only"), "among" if row in first else "not among", ";".join(first) or "-", src_, eb)
             rendered = rows_of_text(y[5])
@@ -403,10 +431,20 @@ for key in order:
                     "unclassified", "a tree difference outside spans (%s)" % ", ".join("%s %d" % kv for kv in sorted(cl.items())))
             else:
                 bad = {k: v for k, v in readings_here.items() if not k.startswith("S-")}
+                rev = None
+                if revised and set(bad) == {"P-eof-same-text"}:
+                    rev = "rev-eof"
+                elif revised and set(bad) == {"B-short-bracket"} and key[0] in REV_BRACKET and key[1] in REV_VARIANTS:
+                    rev = "rev-bracket"
                 if not bad:
                     parts = ["S %d" % cl["S"]] if cl.get("S") else []
                     parts += ["%s %d" % kv for kv in sorted(readings_here.items())]
                     cls, basis = "S", "every differing line S (%s)" % ", ".join(parts)
+                elif rev:
+                    parts = ["S %d" % cl["S"]] if cl.get("S") else []
+                    parts += ["%s %d" % kv for kv in sorted(readings_here.items())]
+                    cls, basis = rev, "every differing line S or the %s reading decision-rule-revised-2026-11-23.md admits (%s)" % (
+                        next(iter(bad)), ", ".join(parts))
                 else:
                     cls, basis = "unclassified", "span lines not S: %s" % ", ".join("%s %d" % kv for kv in sorted(bad.items()))
         else:

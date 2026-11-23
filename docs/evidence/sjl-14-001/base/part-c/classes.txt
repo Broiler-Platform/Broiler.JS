@@ -4,12 +4,13 @@
 6	K/K-on	outcome	C3
 10	P/B	dump	C1
 81967	P/B	dump	S
-3631	P/B	dump	unclassified
+6	P/B	dump	rev-bracket
+3625	P/B	dump	rev-eof
 5415	P/B	message	M
 1223	P/B	outcome	C1
 6	P/B	outcome	C3
 1985	P/B	outcome	E
-22	P/B	outcome	unclassified
+22	P/B	outcome	rev-code
 10	span	ArrayExpression	P-eof-same-text
 4	span	BinaryExpression	P-eof-same-text
 4488	span	BinaryExpression	S-start
@@ -42,5 +43,5 @@
 13	span	YieldExpression	S-punct
 8646	P/B variants B refused whose library code the reading aid gives (bridge-codes.tsv)
 10	P/B outcome moves to refused where the message identifier of the library's first code is not one B's text renders
-3653	unclassified differences (unclassified.tsv)
-3653	input variants with an unclassified difference
+0	unclassified differences (unclassified.tsv)
+0	input variants with an unclassified difference

@@ -55,7 +55,11 @@ classifier's earlier runs while it was written, over the same inputs, are not re
 `classify_c.py` as commit `d58b0097bedbed2864c175410cd7b437da49e54a` holds it, which read two span readings as S that
 are not (below) and did not mark class E provisional; that commit holds their outputs. `counts.txt`, the message tables,
 `text-run-identity.txt` and `tests-and-test262/` are the same bytes in both; `differences.tsv.gz`,
-`span-readings.tsv.gz`, `unclassified.tsv` and `classes.txt` are written again.)*
+`span-readings.tsv.gz`, `unclassified.tsv` and `classes.txt` are written again.)* *(Noted 2026-11-23, records part 5:
+the sentence before reads "runs `w2c-read-base-3` and `w2c-read-base-4` in `logs/` are of the scripts as they are
+here". The scripts are now taught the rule's revision of 2026-11-23, and `differences.tsv.gz`, `classes.txt`,
+`unclassified.tsv`, `tests-and-test262/local-differences.tsv` and `tests-and-test262/classes.txt` are written with its
+classes by the runs in [`logs-revised/`](logs-revised/runs.tsv); see "Records part 5" below.)*
 
 ## How each class is read
 
@@ -137,7 +141,10 @@ are not (below) and did not mark class E provisional; that commit holds their ou
 Every one is in [`unclassified.tsv`](unclassified.tsv) or [`tests-and-test262/local-differences.tsv`](tests-and-test262/local-differences.tsv)
 with both sides. With each, the reading of its cause, which is a reading and not a finding: *(Noted 2026-11-23,
 records part 4: items 1 to 3 are read by the library's code, item 6 by the one case run again, and items 5, 8 and 9 at
-their sites, in "Records part 4" below; the items here are left as written.)*
+their sites, in "Records part 4" below; the items here are left as written.)* *(Noted 2026-11-23, records part 5:
+the rule's revision of 2026-11-23, [`../../decision-rule-revised-2026-11-23.md`](../../decision-rule-revised-2026-11-23.md),
+admits items 1 to 5 and 7 to 9, each by a class that names its entries, and item 6 by nothing; read under it, item 6
+alone is unclassified ("Records part 5" below). The items here are left as written.)*
 1. **A getter with a parameter**, P accepting, B refusing with "Expected )", K refusing on both sides (with the switch
    off, "Getter must not have any formal parameters"): `T035220` (`test/language/expressions/class/getter-param-dflt.js`),
    `T039055` (`test/language/expressions/object/getter-param-dflt.js`), `T047023`
@@ -212,7 +219,10 @@ complete (the tool's report holds every input, variant and entry; both test runs
 runs hold every shard, merged, with the re-run), and every other difference is in C1, C3, E, M or S and is listed.",
 which went beyond the reading the brief asks, and which items 8 and 9 and class E's reading contradict.)* Part C's "How it is read" reads "An unclassified difference is a bridge or library defect, fixed as
 a dark merge and run again before W2 merges"; what follows from each item above is the orchestrator's and the owner's
-to decide, not this record's.
+to decide, not this record's. *(Noted 2026-11-23, records part 5: the reading above, "Read NOT MET on the retained
+runs, for the unclassified differences listed above", is of the rule as written. The owner decided by answers 10 and
+11 of 2026-11-23, and part C is read again under the rule's revision of that day in "Records part 5" below: **read NOT
+MET on the retained runs**, for item 6 alone. The reading above stays on record as taken.)*
 
 ## Records part 4: the reading aids and single-case re-runs of 2026-11-23
 
@@ -416,3 +426,85 @@ bundle's own span check does read `eof` as the end of the source:
 length (lines 163 to 166, and line 203 where it shows a span's text), which is why these lines come out `both-agree`
 with identical texts; that supports reading them as a difference of representation, not of span, and is a reading
 only. *(Added the same day, after review, before this record merged.)*
+
+## Records part 5: part C read again under the rule's revision of 2026-11-23
+
+**Written:** 2026-11-23, on branch `sjl-14-w2-base`, with the default branch's head read as
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` by `git ls-remote` before the commit. **What it is:** part C read again on
+the same retained runs under [`../../decision-rule-revised-2026-11-23.md`](../../decision-rule-revised-2026-11-23.md),
+the rule's dated revision filed by the owner's answers 10 and 11 of 2026-11-23, which that file quotes whole. Nothing
+was built, run or dispatched for it: the scripts read the retained runs, the tools step's `--text` run and records part
+4's code file, as before. [`../../decision-rule.md`](../../decision-rule.md) is not edited, and no row is added to
+[`../../corrections.md`](../../corrections.md) or its tables.
+
+**The scripts, taught the revision.** [`scripts/classify_c.py`](scripts/classify_c.py) reads the classes rev-code,
+rev-eof and rev-bracket, and [`scripts/classify_local.py`](scripts/classify_local.py) rev-switch-test, rev-for-of and
+rev-minifier, each only for the entries the revision names (each docstring, "Under the rule's revision of
+2026-11-23"), when given the word `revised-2026-11-23`; [`scripts/read_base.sh`](scripts/read_base.sh) passes it as
+its sixth argument, after the code file. Without the word they write the earlier tables byte for byte.
+
+**The runs**, each through the machine-wide lock and idle gate (`run.sh`, as [`../local/scripts/run.sh`](../local/scripts/run.sh)),
+by the wrapper [`logs-revised/readE.sh`](logs-revised/readE.sh) around `read_base.sh`, with the code file
+[`aids/base/bridge-codes.tsv`](aids/base/bridge-codes.tsv); each run's command line, exit and machine records are in
+[`logs-revised/`](logs-revised/runs.tsv):
+- `e-base-read`, before any change: the scripts as commit `de1951e8e277b3036ddf4b94125bec42fa24d802` holds them wrote
+  every table of this folder byte for byte.
+- `e-read-unrevised`, taken twice under the same label (after the first text of the change and after its correction,
+  below; `runs.tsv` and `commands.log` keep both lines, and the second run's records replaced the first's): the changed
+  scripts without the word wrote every earlier table byte for byte both times.
+- `e-read-revised-1` and `e-read-revised-2`: a first text of `classify_c.py`, which read rev-eof only in the strict and
+  sloppy variants, left module variants of item 8 unclassified that the revision names; the script was corrected to
+  read rev-eof in every variant, as the revision does, and those two runs' outputs are not the tables here (they are
+  in the session's notes, not retained).
+- `e-read-revised-3` and `e-read-revised-4`: the scripts as they are here, with the word, wrote the same bytes both
+  times; those are the tables in this folder now.
+
+**The tables that changed**, each digest before and after; every other table is unchanged, and the earlier bytes are at
+commit `de1951e8` of this branch:
+- [`differences.tsv.gz`](differences.tsv.gz): it was `e918f46254ae5de50a2705927864cd8af311e8c026b5ae30dc23ecb20cfbee0e`,
+  now `17f182d1515f889e84b242feee088b1c3b968cb99d394a47f88096eb0c276525`;
+- [`classes.txt`](classes.txt): it was `2bb2c4659bf01cbaa383f92f12dfc596540f30b6ec2a6e0d97717ebcffccda76`, now
+  `4877f2950ae9e7aab058209cd06f06fb48226f192f54b43c1a0f187bdedde954`;
+- [`unclassified.tsv`](unclassified.tsv): it was `1622df7102aa57fa94730542b05df91843f5c2f8099feeefc8dc26166820194f`,
+  now `7bc470fe02487904e5400acdf380d738ad5ed0d7264fd5805b2811f520dcd741`, its header alone;
+- [`tests-and-test262/local-differences.tsv`](tests-and-test262/local-differences.tsv): it was
+  `b4c8f655bff20b753802737b2ab911a9f30c6a1b1edaa50fb226bad28ca3421c`, now
+  `2904e92f9fb657c3c3dbb4c015444651779cc49d59a20100e7c3ca4dac4a3ac0`;
+- [`tests-and-test262/classes.txt`](tests-and-test262/classes.txt): it was
+  `ad86acca9c4be1c16e8f3f8b0ff19c551d46d217fb3a694eb2e842738589a4d3`, now
+  `fd51a74018dd12af53c0025d31c4eb9ac5112cc36c33d74f5d9b364d19d9c7ec`.
+
+This folder's `hashes.txt` read `992e87c1e547fe4b97e1e4a1b49cb9baa182296a120c186703ddf7a05c2c806c` before.
+
+**Checked against the earlier tables.** Row for row, `differences.tsv.gz` and `local-differences.tsv` differ from the
+earlier ones only in rows that were unclassified: the rows read rev-code, rev-eof and rev-bracket are exactly the
+input variants the earlier `unclassified.tsv` lists for items 1 to 3, 8 and 9, by input, variant and reading, and the
+local rows read rev-switch-test, rev-for-of and rev-minifier are items 4, 5 and 7; every other row's class and basis
+is unchanged.
+
+**What it shows**, read under the revision and not judged:
+- Items 1 to 3 are rev-code, each with its row and the library's code; item 8 rev-eof; item 9 rev-bracket; item 4
+  rev-switch-test; item 5 rev-for-of, listed with K7 and its row D35; item 7 rev-minifier.
+- **Item 6**, `test/staging/sm/regress/regress-610026.js`, both variants, passing off and failing on, stays
+  unclassified: the revision does not name it. It is a bridge defect the bundle's decision B8 (recorded with W2 on
+  branch `sjl-14-w2`) sends inside W2, which fixes it by `e0b2d17bda6e578c0a8213f5263374f0fdb13ded` with its review fix
+  `80b04d26fca6138c4337b000bc621876ec78cd7e`; that does not change this reading at the base, as B8 says: "part C reads
+  NOT MET for that input unless a class admits it".
+- **Finding S14-F2, against the correspondence** (part A's C1 line: "a C1 row that none explains is recorded as a
+  finding against the correspondence"): `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js`,
+  original variant, fails with the switch off and passes with it on, and no row of K1 to K10 explains it. The
+  corrections' tables, written from Broiler.VM's `docs/evidence/sjl-13-001/correspondence.md` and bundle
+  `sjl-13-001`'s classification, explain the path by the correspondence's D31 bucket, as the corpus's K at the base
+  refuses the input only for awaiting at the top level without the permission; what the shell shows is the early error
+  EE0056 the old parser misses for an `await using` head and the library reports (`JSE1417`), which K7's D35
+  ("Lexical redeclarations Broiler.JS misses") describes; and the library's row table reads in EE0056's notes that the
+  `using` heads, this test by name, "are EP rows". The corrections' tables list the path under D31 alone
+  ([`../../corrections/test262-paths.tsv`](../../corrections/test262-paths.tsv)), and
+  [`../../corrections/k-paths.tsv`](../../corrections/k-paths.tsv) does not list it. The finding is recorded here and is the correspondence's owner's to answer; the revision lists the path with K7 and
+  D35 for part C alone, and part A's lines are not revised.
+
+**Part C: read NOT MET on the retained runs**, under the rule's revision of 2026-11-23, for item 6 alone,
+`test/staging/sm/regress/regress-610026.js` (both variants), which no class admits; the tables here read every other
+difference in a class, as [`classes.txt`](classes.txt) and [`tests-and-test262/classes.txt`](tests-and-test262/classes.txt)
+count them. Not judged beyond that (EX-30). The first reading, above, stays on
+record as taken.
