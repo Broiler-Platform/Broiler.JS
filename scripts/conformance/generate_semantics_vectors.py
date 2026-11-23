@@ -862,13 +862,14 @@ def eval_code() -> None:
 
 def probe_inputs() -> None:
     """Revision 44: the eval-code inputs of bundle sjl-15-001's probes V029, V030 and V046 (its probes.js, each source
-    without the probe's first statement, `__reached = true;`), as eval code a direct eval at a Script's top level
-    evaluates. The probes compiled each by an indirect eval, whose eval code, sloppy unless it says otherwise, has the
-    global environment as its variable environment and a new declarative environment under the global one as its lexical
-    environment, as a sloppy direct eval's at a Script's top level has (PerformEval's steps 16 to 18). As Scripts, V029's and V030's are
-    revision 42's `semantics/annex-b/ab1/0009` and `0011`; V046's is revision 42's `semantics/scopes/ea0006/0003`, a
-    Script whose `let` is the global record's (row EA0006), while in eval code the `let` is the calling eval code's own,
-    and the refusal is EvalDeclarationInstantiation's step 3.d.i.2.a.i (row EA0007), as the bundle's probes README notes."""
+    without the probe's statement `__reached = true;`, which follows V030's directive `'use strict';`), as eval code a
+    direct eval at a Script's top level evaluates. The probes compiled each by an indirect eval, whose eval code, sloppy
+    unless it says otherwise, has the global environment as its variable environment and a new declarative environment
+    under the global one as its lexical environment, as a sloppy direct eval's at a Script's top level has (PerformEval's
+    steps 16 to 18). As Scripts, V029's and V030's are revision 42's `semantics/annex-b/ab1/0009` and `0011`; V046's is
+    revision 42's `semantics/scopes/ea0006/0003`, a Script whose `let` is the global record's (row EA0006), while in eval
+    code the `let` is the calling eval code's own, and the refusal is EvalDeclarationInstantiation's step 3.d.i.2.a.i
+    (row EA0007), as the bundle's probes README notes; the catalogue cites that step's sub-step 3.d.i.2.a.i.1, the throw."""
     note = "in eval code a direct eval at a Script's top level evaluates (bundle sjl-15-001's probe {probe})"
     add("annex-b", "ab1", "eval('function f() { { let g = 1; { function g() {} } } return typeof g; } f()')",
         V("undefined"), op="DirectEval", corr=("AB1",), clauses=C(ANNEX_B_FN, FDI, PERFORM_EVAL),

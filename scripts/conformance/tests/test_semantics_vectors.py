@@ -123,7 +123,14 @@ class GeneratorTests(unittest.TestCase):
 
     def test_without_the_vectors_revision_44_adds_it_writes_revision_43_byte_for_byte(self) -> None:
         # The same convention for the next revision: revision 43's files (commit 1f1f2bab, as main's head 69a8a13b holds
-        # them), each by its SHA-256, are what the vectors added at revisions 42 and 43 write with the divergences file.
+        # them), each by its SHA-256, are what the vectors added at revisions 42 and 43 write with revision 43's
+        # divergences file. That file is read from a byte-for-byte copy beside this test, checked by its SHA-256 at
+        # 1f1f2bab, not from scripts/conformance/semantics-divergences.txt, which later revisions change: a line that
+        # classifies a vector added later, or a line retired or changed, would otherwise fail this check or alter the
+        # bytes it compares.
+        divergences = Path(__file__).resolve().parent / "semantics-divergences-revision-43.txt"
+        self.assertEqual("d67faef209f12982dfd3157d54a71df1bd5da67a6a0cc2616b612655e6242821",
+                         hashlib.sha256(divergences.read_bytes()).hexdigest())
         revision_43 = {
             "annex-b": "e09430c0154954c5bea5d7dd53c0b9c530d32f425816e6b77f8c3ba8a696a2bb",
             "arguments": "b4d627782a5f18c558af75716a9203cc2f25fdf70022f510424dd778b7e4fedf",
@@ -136,8 +143,7 @@ class GeneratorTests(unittest.TestCase):
         }
         cases = [case for case in generator.build() if case.since in (generator.SINCE, generator.EVAL_CODE)]
         with tempfile.TemporaryDirectory() as scratch:
-            generator.write_files(generator.identifiers(cases), Path(scratch),
-                                  generator.read_divergences(generator.DIVERGENCES))
+            generator.write_files(generator.identifiers(cases), Path(scratch), generator.read_divergences(divergences))
             produced = {p.stem: hashlib.sha256(p.read_bytes()).hexdigest() for p in Path(scratch).glob("*.vectors")}
         self.assertEqual(revision_43, produced)
 
