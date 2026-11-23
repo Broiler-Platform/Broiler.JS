@@ -1,0 +1,21 @@
+# Bundle sjl-14-001, part C at the base commit: readings by hand of the row an input's construct matches, for a refusal
+# whose text the bridge renders for several catalogue rows of which only some qualify as class E. Each row is the one
+# whose production (early-errors.tsv's productions column) the input's refused construct is; the library's code itself
+# is not in the run. Written 2026-11-23 by a reader of each input's source; read by scripts/classify_c.py.
+id	variant	row	basis
+T047544	strict	EE0048	do label1: label2: function f() {} while (false): DoWhileStatement, IsLabelledFunction(Statement)
+T047544	sloppy	EE0048	do label1: label2: function f() {} while (false): DoWhileStatement, IsLabelledFunction(Statement)
+T050815	strict	EE0045	if (false) label1: label2: function test262() {} else ;: IfStatement with else, the first Statement
+T050815	sloppy	EE0045	if (false) label1: label2: function test262() {} else ;: IfStatement with else, the first Statement
+T050816	strict	EE0047	if (false) label1: label2: function test262() {}: IfStatement without else
+T050816	sloppy	EE0047	if (false) label1: label2: function test262() {}: IfStatement without else
+T050817	strict	EE0046	if (true) ; else label1: label2: function test262() {}: IfStatement with else, the second Statement
+T050817	sloppy	EE0046	if (true) ; else label1: label2: function test262() {}: IfStatement with else, the second Statement
+T051623	strict	EE0049	while (false) label1: label2: function f() {}: WhileStatement, IsLabelledFunction(Statement)
+T051623	sloppy	EE0049	while (false) label1: label2: function f() {}: WhileStatement, IsLabelledFunction(Statement)
+J001200	strict	EE0047	if (0) label: function f() {}: IfStatement without else
+J001200	sloppy	EE0047	if (0) label: function f() {}: IfStatement without else
+J000040	strict	EE0033	([a, b]) = [1, 2]: AssignmentExpression whose LeftHandSideExpression is a ParenthesizedExpression, neither an ObjectLiteral nor an ArrayLiteral
+J000040	sloppy	EE0033	([a, b]) = [1, 2]: AssignmentExpression whose LeftHandSideExpression is a ParenthesizedExpression, neither an ObjectLiteral nor an ArrayLiteral
+J001147	strict	EE0033	({a, b}) = { a: 1, b: 2 }: AssignmentExpression whose LeftHandSideExpression is a ParenthesizedExpression, neither an ObjectLiteral nor an ArrayLiteral
+J001147	sloppy	EE0033	({a, b}) = { a: 1, b: 2 }: AssignmentExpression whose LeftHandSideExpression is a ParenthesizedExpression, neither an ObjectLiteral nor an ArrayLiteral
