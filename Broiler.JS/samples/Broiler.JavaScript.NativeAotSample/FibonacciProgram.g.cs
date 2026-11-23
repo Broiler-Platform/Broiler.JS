@@ -14,7 +14,7 @@ internal static class FibonacciProgram
         {
             new(PortableOpCode.PushConstant),
             new(PortableOpCode.StoreLocal),
-            new(PortableOpCode.PushConstant, 0, 1),
+            new(PortableOpCode.PushConstant, 0, System.BitConverter.UInt64BitsToDouble(0x3FF0000000000000UL)),
             new(PortableOpCode.StoreLocal, 1),
             new(PortableOpCode.PushConstant),
             new(PortableOpCode.StoreLocal, 2),
@@ -35,7 +35,7 @@ internal static class FibonacciProgram
             new(PortableOpCode.StoreLocal, 1),
             new(PortableOpCode.Pop),
             new(PortableOpCode.LoadLocal, 2),
-            new(PortableOpCode.PushConstant, 0, 1),
+            new(PortableOpCode.PushConstant, 0, System.BitConverter.UInt64BitsToDouble(0x3FF0000000000000UL)),
             new(PortableOpCode.Add),
             new(PortableOpCode.Duplicate),
             new(PortableOpCode.StoreLocal, 2),
