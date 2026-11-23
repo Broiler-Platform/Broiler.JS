@@ -236,6 +236,24 @@ exit 0 with no warning ([`aids/base/build.log`](aids/base/build.log); the shell'
 engine run is under `env -i` with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*` variable. The build trees, with their
 `bin` and `obj` folders and the aids' build outputs, were removed when the runs ended.
 
+*(Added 2026-11-23, records part 4, after review, before this record merged.)* **Not the same bytes.** The rebuilt
+shell's assemblies built from the repository's sources (`BroilerJS.dll`, `Broiler.JavaScript.Parser.dll`,
+`Broiler.ECMAScript.Frontend.dll` and every other `Broiler.*` assembly) differ by digest from those of the shell the
+retained runs used ([`../local/shell-binaries-off.sha256`](../local/shell-binaries-off.sha256), which every retained
+test262 shard's digest file also matches) against [`aids/base/shell-binaries.sha256`](aids/base/shell-binaries.sha256);
+only the package assemblies match. The likely cause, not confirmed, is the build tree's path, which is compiled into
+them: `/home/user/js-w2baseD-build/69a8a13b/tree` here ([`aids/base/build.log`](aids/base/build.log)) and
+`/home/user/js-w2base-build/69a8a13b/tree` for the retained runs ([`../local/build-off.log`](../local/build-off.log)).
+The bridge-codes and parse-time aids ran on their own builds of the library from the same sources
+([`aids/base/codes-binaries.sha256`](aids/base/codes-binaries.sha256),
+[`aids/base/ptime-binaries.sha256`](aids/base/ptime-binaries.sha256)), whose `Broiler.ECMAScript.Frontend.dll`
+digests differ again from both shells' and from each other's (their reference assemblies match each other). So the
+re-runs and the aids' outputs are read as from the same commit's sources, not from the bytes the retained runs ran.
+**The table re-runs** (`d-read-nocodes` and `d-read-codes-1` to `d-read-codes-4`) were not taken by `stepD.sh`, as
+the sentence above reads "Every step by", but by [`aids/scripts/readD.sh`](aids/scripts/readD.sh) under the same
+`run.sh` ([`aids/logs/commands.log`](aids/logs/commands.log)); `driveD.log` lists only the `d-base-*` and `d-w2-*`
+steps.
+
 ### Class E by the library's code
 
 - **The aid, corrected.** [`scripts/bridge-codes/`](scripts/bridge-codes/Program.cs) is the `tools` step's reading aid
@@ -257,8 +275,12 @@ engine run is under `env -i` with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*` 
   diagnostic's code, and the move is E when that row qualifies by the rule's header as the docstring reads it, else
   unclassified; [`scripts/readings.tsv`](scripts/readings.tsv) is then not read. [`scripts/read_base.sh`](scripts/read_base.sh)
   passes the file as its fifth argument. Without it the scripts write every earlier table byte for byte (run
-  `d-read-nocodes`); with it, runs `d-read-codes-1` to `d-read-codes-4` (the last two with the file at its path here)
-  wrote the same bytes each time, and those are the tables in this folder now. Only three changed:
+  `d-read-nocodes`); with it, runs `d-read-codes-1` to `d-read-codes-4` (the last two with the file at its path here;
+  the first two with it at `aids/bridge-codes/bridge-codes.tsv`, from where it was moved to `aids/base/` before run
+  `d-read-codes-3`; its digest at the first path was not recorded then, and the aid's output in the notes folder from
+  which it was copied, and the file here, are `48c299af425bda5a104f74ab84ef1940778afe0a2425b5b7a07a16b2a15c3f43`)
+  wrote the same bytes each time, and those are the tables in this folder now. *(Changed the same day, after review,
+  before this record merged: the parenthesis read "(the last two with the file at its path here)".)* Only three changed:
   [`differences.tsv.gz`](differences.tsv.gz) (`e918f46254ae5de50a2705927864cd8af311e8c026b5ae30dc23ecb20cfbee0e`; it
   was `b6fcb0389ec57f68987bd97d3895cd846575d2d281b8631ba908e5c5791f6c7d`), [`classes.txt`](classes.txt)
   (`2bb2c4659bf01cbaa383f92f12dfc596540f30b6ec2a6e0d97717ebcffccda76`; it was
@@ -305,20 +327,31 @@ engine run is under `env -i` with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*` 
   (`runner.time.txt` beside each).
 - **A parse-time aid.** [`scripts/parse-time/`](scripts/parse-time/Program.cs) parses the test's three eval sources,
   built as the test builds them, at the old parser (P), the library alone (L, `SyntaxParser.Parse` of the bridge's own
-  request) and the bridge (B, the library's parse and the tree's construction), each entry and source in its own
-  process, under the script goal (step `d-base-ptime`, exit 0): [`aids/base/ptime.tsv`](aids/base/ptime.tsv),
+  request) and the bridge (B, `SharedSyntaxBridge.Parse`: the library's parse with the bridge's work around it, the
+  token chain's scan and link (`BridgeTokens`, `tokens.Link()`), the hop to the parse thread and the tree's
+  construction), each entry and source in its own process, under the script goal (step `d-base-ptime`, exit 0):
+  [`aids/base/ptime.tsv`](aids/base/ptime.tsv),
   `054bec53d5bd1cb7a79d08463c79a235d9d72504176cfea271d3734813ca4ff3`, and each process's own record in
-  [`aids/base/ptime.time.txt`](aids/base/ptime.time.txt).
+  [`aids/base/ptime.time.txt`](aids/base/ptime.time.txt). The test parses those sources by direct eval inside the case;
+  the aid parses them under the script goal (its comment reads the eval goal's inherited context as empty there), each
+  in a fresh process. *(Changed the same day, after review, before this record merged: B's parenthesis read "(B, the
+  library's parse and the tree's construction)"; the last sentence is added.)*
 - **What it shows**, read and not judged: with the switch off both variants pass alone, as in the retained runs. With
   it on, each variant's shell process ends on `SIGXCPU`, the signal of the CPU-time limit (`RLIMIT_CPU`) the runner
   sets to the test's timeout, with no output on either stream, so the runner records a plain failure with no reason,
-  as the retained runs record it; its peak resident set is far above the switch-off run's (the figures are in the files). At W2's head the same
+  the same record the retained runs give (from a rebuilt shell, not the same bytes; above); its peak resident set is
+  far above the switch-off run's (the figures are in the files). At W2's head the same
   holds: W2 does not change it. The parse-time aid shows where the processor time goes: the library's parse alone
-  takes about what the old parser takes, and the bridge's parse, which adds the tree's construction from the library's
-  tree, takes markedly more time and memory (the figures are in the files). So the records show **the runner's limit**
-  stopping the case, reached because of **the bridge's** cost on these sources (its tree construction, not the
-  library's parse); not the library. This is a reading of single-case re-runs on an idle machine, not of the shards'
-  runs, which ran beside other cases.
+  takes about what the old parser takes, and the bridge's parse, which adds the bridge's work beyond the library's
+  parse, takes markedly more time and memory (the figures are in the files). So the records show **the runner's limit**
+  stopping the case, reached because of **the bridge's** cost on these sources (its work beyond the library's parse,
+  the token chain and the tree's construction, which the aid does not separate; not the library's parse); not the
+  library. The aid parses under the script goal, each source in a fresh process, not inside the case. This is a
+  reading of single-case re-runs on an idle machine, not of the shards'
+  runs, which ran beside other cases. *(Changed the same day, after review, before this record merged: after "no
+  reason," the item read "as the retained runs record it;"; after "the bridge's parse, which adds" it read "the tree's
+  construction from the library's tree, takes"; the parenthesis after "on these sources" read "(its tree construction,
+  not the library's parse)"; the sentence on the script goal is added.)*
 
 ### Items 9 and 5, read at their sites
 
@@ -341,18 +374,30 @@ engine run is under `env -i` with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*` 
 - **`for-of/head-await-using-bound-names-in-stmt.js`** (item 5, `T049530`, a module test). The early error is EE0056
   (`ForInOfStatement`: "any element of the BoundNames of ForDeclaration also occurs in the VarDeclaredNames of
   Statement"); the library's code is `JSE1417`, EE0056's ([`aids/base/bridge-codes.tsv`](aids/base/bridge-codes.tsv)).
-  With the switch off the shell's module host compiles the module with top-level await permitted, the old parser and
-  compiler do not check that rule, and the body runs to `$DONOTEVALUATE()` ("This statement should not be evaluated");
-  with it on the library refuses the parse with EE0056, as the test expects. In the side-by-side report, K at the base
-  refuses this input with "Unexpected await" (`SyntaxValidation.cs:32`, the check of a program that awaits at its top
-  level without the permission, which the K entry does not give), so
+  With the switch off the shell's module host compiles the module with top-level await permitted; the old parser,
+  which checks EE0056 by the stage table's row (`Broiler.ECMAScript/docs/frontend/stages.tsv`: at
+  `Broiler.JavaScript.Parser/FastScopeItem.cs:188` and `:121`, not in the compiler alone), misses it for this input
+  (an `await using` head), as P's acceptance of `T049530` in the side-by-side report and the retained switch-off
+  test262 record show; and the body runs to `$DONOTEVALUATE()` ("This statement should not be evaluated");
+  with it on the library refuses the parse with EE0056, as the test expects. (The library's row table,
+  `Broiler.ECMAScript/docs/frontend/early-errors.tsv`, says in EE0056's notes that "The `using` heads
+  (for-of/head-using-bound-names-in-stmt.js, head-await-using-bound-names-in-stmt.js) are EP rows", this test by name;
+  the code the library gives here is EE0056's, `JSE1417` (`Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Rows.cs:289`),
+  and the table's EP rows on `using` declarations state their own bindings' bound names (EP0001 to EP0005), not a
+  collision with the statement's var-declared names.) In the side-by-side report, K at the base
+  refuses this input with "Unexpected await" (`Broiler.JS/Broiler.JavaScript.Compiler/SyntaxValidation.cs:31-32`, the
+  check, and the throw, of a program that awaits at its top level without the permission, which the K entry does not
+  give), so
   [`../../corrections/test262-paths.tsv`](../../corrections/test262-paths.tsv) reads the move as the stage kind and
   explains it by the correspondence's D31 bucket ("Broiler.JS refusing only in its compiler"), and
   [`../../corrections/k-paths.tsv`](../../corrections/k-paths.tsv), written from those tables, lists no K row for it.
   As written, no K row lists it: K7's D35 ("Lexical redeclarations Broiler.JS misses", which the stage table names for
   EE0051 and EE0056) describes what the shell shows, but the tables explain the path by D31, and a K10 row can no
   longer be added before the first part C base run. Part A's C1 line, "a C1 row that none explains is recorded as a
-  finding against the correspondence", is the record it fits.
+  finding against the correspondence", is the record it fits. *(Changed the same day, after review, before this
+  record merged: after "top-level await permitted," the bullet read "the old parser and compiler do not check that
+  rule, and the body runs"; the parenthesis on the library's row table is added; the site read "(`SyntaxValidation.cs:32`,
+  the check of a program".)*
 
 ### Item 8, the canonical dump
 
@@ -365,4 +410,9 @@ offset. The tool's comment at lines 294 and 295 says why the end-of-file token i
 it is one object shared by every parse (FastScanner.EOF), and nothing of it is read"), and its README's "The canonical
 dump" says `<end>` is "the last token's offset plus its length ... or `eof` for the end-of-file token". Neither the
 tool's README nor bundle `sjl-12-001`'s rule says how a dump that writes `eof` is read against one that writes the same
-offset as a number: the tool compares dumps by hash, and the two hashes differ. That tool is not changed.
+offset as a number: the tool compares dumps by hash, and the two hashes differ. That tool is not changed. This
+bundle's own span check does read `eof` as the end of the source:
+[`../../tools/side-by-side/spancheck.py`](../../tools/side-by-side/spancheck.py) takes an end of `eof` as the source's
+length (lines 163 to 166, and line 203 where it shows a span's text), which is why these lines come out `both-agree`
+with identical texts; that supports reading them as a difference of representation, not of span, and is a reading
+only. *(Added the same day, after review, before this record merged.)*
