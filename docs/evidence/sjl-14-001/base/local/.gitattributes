@@ -2,3 +2,8 @@
 # reports, machine records) and each named by its SHA-256 in hashes.txt, so they are checked out exactly as committed
 # (no end-of-line conversion), and git's whitespace checks skip them. Added 2026-11-23.
 * -text -whitespace
+# Added 2026-11-23 (records part 4): the three files the after comparisons read, kept whole here instead of by digest
+# only, are binary to git (no diff, merge or end-of-line conversion).
+part-c-tool/side-by-side.tsv.gz binary
+part-d/parse-corpus-d1.tsv.gz binary
+part-g/htmlbridge/trx/htmlbridge.trx binary

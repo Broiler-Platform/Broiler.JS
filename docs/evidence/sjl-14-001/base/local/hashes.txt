@@ -1,6 +1,6 @@
-5b613cf9f700f7b22ebbf1b1fdf10c5a7806215ba9968f143826dacfd461a7bf  ./.gitattributes
+d8c203665d547e6dae273b526452ed352962222c4c56f47befdf19929f0012b1  ./.gitattributes
 0fd8a61a9dccc199e7a862db6c958eae7d92ca12d6ba7ae2d1ef1a797850006c  ./FAILED
-53357565081dbbdba9198c994f9972cb2be809bc2584b84c9fd83b4b71309589  ./README.md
+900e54cb299c708d3ccbd5102810e4a4d8eb6b7fd355e26623a296f9e8269833  ./README.md
 772039c402c0726c6feb8990593c5a88a3eac4f125c5de804a9fe351d46fef6f  ./archive.txt
 de9eb4d926d7dd6d75929f7f09e4e71eb6dc622882781229cab59588103c72d5  ./build-off-summary.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./build-off-warnings.txt
@@ -334,12 +334,14 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/w2b-bas
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./logs/w2b-base-tests-on.out.txt
 1eb834f24cab1057aab2987606a1c1bbc3cb5900828496b05fd4911590ff81fa  ./logs/w2b-base-tests-on.time.txt
 15bf3e5a34e8441b05ce7b4d3bc859e7f6fbb60e661b4dbacdf4e7097a6b2ba1  ./memwatch.log
-a669bf2e874b938ceb7dec1c0dea463130e40aacb2a7c3e608630120c136e7d6  ./not-retained.sha256.txt
+4e3dc27ee4e34e1e9552ebf2ede0bd563cdb42284ab083203c1a324c9ffe1e63  ./not-retained.sha256.txt
 97033dd3403d570c7a81c0651289a902ea899058104ea08819ff9b75c5d757ab  ./part-c-tool/bridge-codes-ids.tsv
 26da4640004ad1b7927d5f014afdc2894968fd2d860fcf17bd86c538517ae0af  ./part-c-tool/not-retained.sha256.txt
+443fbdbf08d0e4f778b91a174f0b8ba1c384fd3df0bf046a02364aabc2808e72  ./part-c-tool/side-by-side.tsv.gz
 2e52f79792a5ac1cb30c79730452aee16d153c5806b1cd8ac05c1831d3823224  ./part-c-tool/spancheck-counts.txt
 f01006426d3636fad7b8f4a0033381148c2fa8c946b0cb4f8be2d4aaaa91fd0f  ./part-c-tool/spans-not-s.tsv.gz
 defb09e1824091f81ebbd6142a5ff365792864421bf4ccac954ffc25354ab3cb  ./part-d/parse-corpus-c.tsv.gz
+d0a7be4b79f65cdd70942362dfd9db8cbd153b08062f630b63d4d1c17188a4f4  ./part-d/parse-corpus-d1.tsv.gz
 1e7e5565f4bbee3624149f6883e3c7ecadb2c52817755cea52b7a8896441e3f0  ./part-e/FibonacciProgram.generated.g.cs
 5fb0ad715fb810b87f7faf57f8ffc2b3cce6f67e9f5db3b7c04765d303cc21c4  ./part-e/checked-in.sha256.txt
 cbac8f2e89e6ff07fb4f3cc5d4134f6eb28d2db1de0d6ccea5a27ad0432d3cc8  ./part-e/native-aot-files.sha256.txt
@@ -347,6 +349,7 @@ cbac8f2e89e6ff07fb4f3cc5d4134f6eb28d2db1de0d6ccea5a27ad0432d3cc8  ./part-e/nativ
 e2dd33e1f2f975d9b560410993ae7ecbdbe2d9b3e494a900d3c30cbe5187d63e  ./part-g/candidate-feed.sha256.txt
 6172d955d15a27e1c4e2d952ad84bee3ed2c12aeda085479637a7759719f4fb8  ./part-g/htmlbridge/resolved-broiler-javascript.txt
 efa31b4feecf86d502b3a6e5504a3615f37624c4cfba499d01f44da715381348  ./part-g/htmlbridge/scratch-overrides.diff
+0ffa01cb166919951163075ec18b9c059907bf569c88dba902b89524c504ba31  ./part-g/htmlbridge/trx/htmlbridge.trx
 909a0a9a99061577082f8c652ff7620e8339438b5fb5a2aa07edfc1cfbd3fc05  ./part-g/jseal-attempt-1/report.json
 eb3e2bb326bcdd287eab4c1306228380d26e858f6cbbcc5b397f186298e77dc1  ./part-g/jseal-attempt-2/report.json
 dfe635bd37a2d6984c635e0a976be472de8927a2563ae6b7ef7096c43d65c3b0  ./part-g/jseal-candidate-external.txt
@@ -384,7 +387,7 @@ c68c62f041720dc830fdc46ad6db53d9a2bec0d4fec386e03644624c63cfc7e7  ./part-h/api/B
 b0aecb76b7f653a11363af7054756f0671d75242d1b6a8bb855be018ce68ff47  ./part-h/api/Broiler.JavaScript.Runtime.txt
 9e042ce1d772ebe1b29d908f9d26821a560836f10e18b3fb463512bdd928be5d  ./part-h/api/Broiler.JavaScript.Storage.txt
 313b3b7b2a02d7602111d123854d7eb3eb041dfca2473e2bb5ef7649d6f25719  ./part-h/projects.txt
-ca8b7660a3353d95819fd110c2d3715339b13cfd096e0fc39a4b5391ac1212cd  ./retained.txt
+4cb6d7ba042b52da0ac29091324a925371fb662e3a1d38a9ffd24777eb96c476  ./retained.txt
 b78866aad6681b4be68783fcff7f5e3918d31aab9a9cded12a5d1aa19fd919ad  ./scripts/bdrive.sh
 1826a961d09ad27e541a88da3727b787cf69f67352a11a1321b181ad4fc0e0c3  ./scripts/bridge-codes/Program.cs
 ba561538487c51321c0038c54d5a02404487c07ea7c9c39a872ea87c80e6a6fb  ./scripts/bridge-codes/bridge-codes.csproj

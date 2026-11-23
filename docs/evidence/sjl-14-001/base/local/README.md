@@ -52,7 +52,17 @@ part D's dump report and Broiler.HtmlBridge's TRX; the run folder is to be kept 
 unless the orchestrator has them kept whole here. The build trees' `bin` and `obj` folders, outside the bundle, were
 deleted by this stage before review, against its brief; nothing retained lived there, but the shell binaries' digests
 can no longer be checked against the binaries that ran, and any further run needs a build behind the gate
-([`retained.txt`](retained.txt)). *(Both added the same day, after review.)*
+([`retained.txt`](retained.txt)). *(Both added the same day, after review.)* *(Noted 2026-11-23, records part 4:
+those three files are now kept whole here at their paths, [`part-c-tool/side-by-side.tsv.gz`](part-c-tool/side-by-side.tsv.gz),
+[`part-d/parse-corpus-d1.tsv.gz`](part-d/parse-corpus-d1.tsv.gz) and
+[`part-g/htmlbridge/trx/htmlbridge.trx`](part-g/htmlbridge/trx/htmlbridge.trx), copied unchanged from the run folder
+and each matching the digest `not-retained.sha256.txt` gave it; their lines leave that file, their digests are in
+`hashes.txt`, and `.gitattributes` marks them binary. A decision taken under the owner's direction; the alternative not
+taken was to keep them only in the run folder, which the session's container does not keep. The sentence "the run
+folder is to be kept until those comparisons are taken, unless the orchestrator has them kept whole here" read the
+folder before it. The other files over 2 MB are still kept by digest only. The build trees are not rebuilt here: part
+C's records part 4 took a fresh build of the base commit for its reading aids, recorded in
+[`../part-c/README.md`](../part-c/README.md).)*
 
 ## What it shows
 
