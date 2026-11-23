@@ -1,0 +1,5 @@
+[31;1mException: [0m/home/user/js-w2base-build/69a8a13b/jseal/eng/test-package-consumer.ps1:233[0m
+[31;1m[0m[36;1mLine |[0m
+[31;1m[0m[36;1m[36;1m 233 | [0m … -PathType Leaf)) { [36;1mthrow "Restore $project before a candidate run."[0m }[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mRestore Broiler.JSeal before a candidate run.[0m

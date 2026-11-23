@@ -1,0 +1,19 @@
+  Determining projects to restore...
+  Restored /home/user/js-w2base-build/69a8a13b/tools/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 456 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tools/Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj (in 456 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/bridge-codes/bridge-codes.csproj (in 456 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tools/Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj (in 456 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tools/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj (in 3 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tools/Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj (in 5 ms).
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/art-tools/codes/bin/Broiler.ECMAScript.Algorithms/release/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/art-tools/codes/bin/Broiler.ECMAScript.Frontend/release/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/art-tools/codes/bin/Broiler.JavaScript.Expressions/release/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/art-tools/codes/bin/Broiler.JavaScript.Ast/release/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/art-tools/codes/bin/Broiler.JavaScript.Parser/release/Broiler.JavaScript.Parser.dll
+  bridge-codes -> /home/user/js-w2base-build/69a8a13b/art-tools/codes/bin/bridge-codes/release/bridge-codes.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:32.54

@@ -1,0 +1,32 @@
+#!/usr/bin/python3 -I
+# A recording shim for one test262 case (records part 4, 2026-11-23): found first on PATH by run_test262.py's
+# "dotnet <shell> ..." command, it runs the real dotnet with the same arguments, file descriptors and resource limits
+# (the runner sets RLIMIT_CPU and RLIMIT_CORE before it execs "dotnet", and both are inherited), waits for it, appends
+# one line to shim.log beside it (its arguments, how it ended, its processor time, peak resident set, wall time and the
+# CPU limit it ran under), and ends the same way: the same exit status, or the same signal raised on itself.
+import os, resource, signal, sys, time
+real = "/root/.dotnet/dotnet"
+log = os.path.join(os.path.dirname(os.path.abspath(__file__)), "shim.log")
+lim = resource.getrlimit(resource.RLIMIT_CPU)
+t0 = time.time()
+pid = os.fork()
+if pid == 0:
+    os.execv(real, [real] + sys.argv[1:])
+_, st, ru = os.wait4(pid, 0)
+wall = time.time() - t0
+if os.WIFSIGNALED(st):
+    end = "signal=%d(%s)" % (os.WTERMSIG(st), signal.Signals(os.WTERMSIG(st)).name)
+else:
+    end = "exit=%d" % os.WEXITSTATUS(st)
+args = " ".join(sys.argv[1:])
+with open(log, "a") as f:
+    f.write("%s\tend=%s\tuser=%.2fs\tsys=%.2fs\tmaxrss=%dMB\twall=%.2fs\trlimit_cpu=%s\targs=%s\n" % (
+        time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(t0)), end, ru.ru_utime, ru.ru_stime, ru.ru_maxrss // 1024, wall, lim, args[:400]))
+if os.WIFSIGNALED(st):
+    sig = os.WTERMSIG(st)
+    signal.signal(sig, signal.SIG_DFL)
+    resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+    os.kill(os.getpid(), sig)
+    time.sleep(1)
+    sys.exit(128 + sig)
+sys.exit(os.WEXITSTATUS(st))

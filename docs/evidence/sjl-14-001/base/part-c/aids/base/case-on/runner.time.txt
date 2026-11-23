@@ -1,0 +1,1 @@
+wall=59.0s user=51.8s sys=12.7s maxrss=5027MB exit=1

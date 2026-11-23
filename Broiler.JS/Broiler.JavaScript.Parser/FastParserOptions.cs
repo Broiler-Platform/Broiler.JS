@@ -30,6 +30,7 @@ namespace Broiler.JavaScript.Parser;
 /// name the same provider.
 /// </para>
 /// </remarks>
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public sealed record FastParserOptions
 {
     private readonly FastParserGoal goal;

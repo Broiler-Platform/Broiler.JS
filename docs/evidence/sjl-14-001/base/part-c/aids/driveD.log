@@ -1,0 +1,25 @@
+2026-11-23T14:00:18Z d-base-archive start head=69a8a13bc446a1714d3c8be9be3cfd742aebee6e free=12G
+2026-11-23T14:00:25Z d-base-archive end rc=0
+2026-11-23T14:00:26Z d-base-build start head=69a8a13bc446a1714d3c8be9be3cfd742aebee6e free=11G
+2026-11-23T14:03:26Z d-base-build end rc=0
+2026-11-23T14:03:26Z d-base-terser start head=69a8a13bc446a1714d3c8be9be3cfd742aebee6e free=10G
+2026-11-23T14:04:40Z d-base-terser end rc=0
+2026-11-23T14:04:41Z d-base-codes start head=69a8a13bc446a1714d3c8be9be3cfd742aebee6e free=10G
+2026-11-23T14:05:16Z d-base-codes end rc=0
+2026-11-23T14:05:17Z d-base-ptime start head=69a8a13bc446a1714d3c8be9be3cfd742aebee6e free=10G
+2026-11-23T14:07:48Z d-base-ptime end rc=0
+2026-11-23T14:07:49Z d-base-case-off start head=69a8a13bc446a1714d3c8be9be3cfd742aebee6e free=10G
+2026-11-23T14:08:42Z d-base-case-off end rc=0
+2026-11-23T14:08:43Z d-base-case-on start head=69a8a13bc446a1714d3c8be9be3cfd742aebee6e free=10G
+2026-11-23T14:09:44Z d-base-case-on end rc=0
+2026-11-23T14:09:44Z base done
+2026-11-23T14:10:04Z d-w2-archive start head=69a8a13bc446a1714d3c8be9be3cfd742aebee6e free=10G
+2026-11-23T14:10:11Z d-w2-archive end rc=0
+2026-11-23T14:10:12Z d-w2-build start head=69a8a13bc446a1714d3c8be9be3cfd742aebee6e free=9G
+2026-11-23T14:13:01Z d-w2-build end rc=0
+2026-11-23T14:13:02Z d-w2-terser start head=69a8a13bc446a1714d3c8be9be3cfd742aebee6e free=8G
+2026-11-23T14:14:46Z d-w2-terser end rc=0
+2026-11-23T14:14:47Z d-w2-case-w2 start head=69a8a13bc446a1714d3c8be9be3cfd742aebee6e free=8G
+2026-11-23T14:15:48Z d-w2-case-w2 end rc=0
+2026-11-23T14:15:48Z w2 done
+2026-11-23T14:16:18Z removed /home/user/js-w2baseD-build (both trees, their bin and obj, and the aids' artifacts)

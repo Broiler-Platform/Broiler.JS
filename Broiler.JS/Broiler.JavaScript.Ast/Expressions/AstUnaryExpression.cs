@@ -5,6 +5,7 @@ namespace Broiler.JavaScript.Ast.Expressions;
 // Broiler-AI:           Origin=Ported; IP=Medium; Security=High; Resources=5; Fingerprint=TBF
 // Broiler-Falsified-If: an update expression whose operand is not a valid assignment target, such as `++this` in sloppy code, is accepted and executed instead of raising the early SyntaxError
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstUnaryExpression : AstExpression
 {
     public readonly AstExpression Argument;

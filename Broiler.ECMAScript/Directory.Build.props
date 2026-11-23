@@ -22,10 +22,15 @@
 
   <!-- The shared packages' own version stream (decision SJL-D-3), apart from the engine's lockstep
        version in the packaging file: eng/pack.ps1 -ProjectSet Shared packs it, and
-       eng/resolve-preview-version.mjs resolves it against the ecmascript-v* tags. -->
+       eng/resolve-preview-version.mjs resolves it against the ecmascript-v* tags. The suffix names the stream's last
+       published version, preview.12 (tag ecmascript-v0.1.0-preview.12, whose Broiler.ECMAScript/ equals this tree's but for
+       this file's suffix and comment),
+       since window W2 of milestone SJL-14: from W2 Broiler.JavaScript.Parser's package depends on
+       Broiler.ECMAScript.Frontend at this version, which must be one a consumer can restore (decision D30; the session's
+       decision B5 of 2026-11-19). It read preview.8, which nuget.org never had for Frontend. Moving it publishes nothing. -->
   <PropertyGroup>
     <VersionPrefix>0.1.0</VersionPrefix>
-    <VersionSuffix>preview.8</VersionSuffix>
+    <VersionSuffix>preview.12</VersionSuffix>
   </PropertyGroup>
 
   <PropertyGroup>

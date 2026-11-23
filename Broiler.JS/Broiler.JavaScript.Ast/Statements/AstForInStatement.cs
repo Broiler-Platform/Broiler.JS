@@ -5,6 +5,7 @@ using Broiler.JavaScript.ExpressionCompiler.Core;
 namespace Broiler.JavaScript.Ast.Statements;
 
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstForInStatement(FastToken token, FastToken previousToken, AstNode beginNode, AstExpression target, AstStatement statement) : AstStatement(token, FastNodeType.ForInStatement, previousToken)
 {
     public IFastEnumerable<StringSpan>? HeadTdzNames;

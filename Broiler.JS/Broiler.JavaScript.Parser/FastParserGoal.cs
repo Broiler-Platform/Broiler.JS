@@ -11,6 +11,7 @@ namespace Broiler.JavaScript.Parser;
 /// PerformEval parses it; the Function constructor assembles its source and parses that as a
 /// <see cref="Script"/> too.
 /// </remarks>
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public enum FastParserGoal
 {
     /// <summary>The <i>Script</i> goal: script code, eval code and the Function constructor's source.</summary>

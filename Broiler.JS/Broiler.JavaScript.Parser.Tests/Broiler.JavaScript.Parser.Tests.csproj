@@ -22,7 +22,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Broiler.JavaScript.Parser\Broiler.JavaScript.Parser.csproj" />
-    <!-- The bridge's library, which the parser references privately (milestone SJL-14.2): these tests run the bridge. -->
+    <!-- The bridge's library: these tests read its request (milestone SJL-14.2). The parser has referenced it as an
+         ordinary reference since window W2, so it flows here too; the reference is kept because the tests name its types. -->
     <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Frontend\Broiler.ECMAScript.Frontend.csproj" />
   </ItemGroup>
   <ItemGroup>

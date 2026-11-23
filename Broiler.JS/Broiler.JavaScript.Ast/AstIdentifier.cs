@@ -7,6 +7,7 @@ namespace Broiler.JavaScript.Ast;
 // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
 // Broiler-Falsified-If: an identifier spelled with a Unicode escape such as `\u0061` is named by its raw escape text instead of `a`, so it binds a different variable than the plain spelling
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstIdentifier : AstExpression
 {
     public readonly StringSpan Name;

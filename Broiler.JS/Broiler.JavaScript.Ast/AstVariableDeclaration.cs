@@ -5,6 +5,7 @@ using Broiler.JavaScript.ExpressionCompiler.Core;
 namespace Broiler.JavaScript.Ast;
 
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public enum FastVariableKind
 {
     None,
@@ -20,6 +21,7 @@ public enum FastVariableKind
     Function,
 }
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstVariableDeclaration : AstStatement
 {
     public readonly IFastEnumerable<VariableDeclarator> Declarators;

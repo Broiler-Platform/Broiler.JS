@@ -1,0 +1,4 @@
+# Bundle sjl-14-001's base/part-a/: part A's base run, its artifact's entries imported unchanged and each named by its
+# SHA-256 in hashes.txt, so they are checked out exactly as committed (no end-of-line conversion), and git's whitespace
+# checks skip them (a run's output keeps the whitespace it was written with). Added 2026-11-22.
+* -text -whitespace

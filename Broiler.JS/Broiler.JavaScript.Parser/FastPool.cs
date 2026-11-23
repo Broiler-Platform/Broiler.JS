@@ -6,10 +6,12 @@ using System.Text;
 
 namespace Broiler.JavaScript.Parser;
 
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class FastPool
 {
     public void Dispose() => pools.Clear();
 
+    [System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
     public class Scope(FastPool pool) : DisposableList
     {
         public FastList<T> AllocateList<T>(int size = 0)
@@ -139,6 +141,7 @@ public class FastPool
     }
 }
 
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public readonly struct FastStringBuilder
 {
     public readonly StringBuilder Builder;

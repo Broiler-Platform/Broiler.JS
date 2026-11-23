@@ -23,10 +23,60 @@ namespace Broiler.JavaScript.Architecture.Tests;
 /// walkers and the <c>for (let …)</c> fixture), and the list went with it. Every violation a run finds
 /// is written to the test's output and named in the failure, so a run over the rule commit's parser
 /// (<c>BROILER_ARCH_PARSER_ASSEMBLY</c>) fails naming each one, as part B expects at the base.
+/// <para>
+/// <b>Retargeted at window W2 of milestone SJL-14</b> (decision D54): the subject is the adapter <c>Parser</c> assembly,
+/// the obsolete facade over the bridge to the shared syntax library, and the fixtures drive the facade
+/// (<c>new FastParser(new FastTokenStream(source)).ParseProgram()</c>, which parses through the bridge). The library itself
+/// is held by its own rules SL2 and SL9 (<c>Broiler.ECMAScript.Architecture.Tests</c>). The test below holds that the
+/// subject is the adapter: it references the library and its <c>FastParser</c> declares no member of the old
+/// recursive-descent parser.
+/// </para>
 /// </remarks>
 public sealed class ParserArchitectureTests(ITestOutputHelper output)
 {
     private const string Assembly = Subject.AssemblyName;
+
+    // Members the old recursive-descent parser declared and the facade does not (SJL-14.5's deletion list).
+    private static readonly string[] OldParserMembers = ["Statement", "Expression", "SingleExpression", "Block", "Program", "NextExpression"];
+
+    /// <summary>Decision D54: the subject is the adapter over the bridge, not the old parser.</summary>
+    [Fact]
+    public void The_subject_is_the_adapter_over_the_shared_syntax_library()
+    {
+        var path = Subject.Locate();
+        var references = ReferencedAssemblies(path);
+        Assert.Contains("Broiler.ECMAScript.Frontend", references);
+
+        var declared = MethodNames(path, "Broiler.JavaScript.Parser.FastParser");
+        Assert.Contains("ParseProgram", declared);
+        foreach (var member in OldParserMembers)
+            Assert.DoesNotContain(member, declared);
+    }
+
+    // The metadata reads of the adapter test, from the assembly's file, loading nothing.
+    private static List<string> ReferencedAssemblies(string path)
+    {
+        using var stream = File.OpenRead(path);
+        using var pe = new System.Reflection.PortableExecutable.PEReader(stream);
+        var reader = System.Reflection.Metadata.PEReaderExtensions.GetMetadataReader(pe);
+        return reader.AssemblyReferences.Select(h => reader.GetString(reader.GetAssemblyReference(h).Name)).ToList();
+    }
+
+    private static HashSet<string> MethodNames(string path, string typeName)
+    {
+        using var stream = File.OpenRead(path);
+        using var pe = new System.Reflection.PortableExecutable.PEReader(stream);
+        var reader = System.Reflection.Metadata.PEReaderExtensions.GetMetadataReader(pe);
+        foreach (var handle in reader.TypeDefinitions)
+        {
+            var type = reader.GetTypeDefinition(handle);
+            if (reader.GetString(type.Namespace) + "." + reader.GetString(type.Name) != typeName)
+                continue;
+            return type.GetMethods().Select(m => reader.GetString(reader.GetMethodDefinition(m).Name)).ToHashSet(StringComparer.Ordinal);
+        }
+
+        throw new InvalidOperationException(typeName + " is not in " + path);
+    }
 
     private static readonly Lazy<ClauseReading> WitnessReading = new(static () =>
         ParserClauses.Read(WitnessImage.Compile("parser-ambient-state.cs.witness"), AppContext.BaseDirectory));

@@ -2,6 +2,7 @@
 
 // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public enum FastNodeType
 {
     Node,

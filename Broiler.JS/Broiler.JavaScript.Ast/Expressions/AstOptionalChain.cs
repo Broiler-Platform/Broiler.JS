@@ -10,6 +10,7 @@ namespace Broiler.JavaScript.Ast.Expressions;
 /// </summary>
 // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=5; Fingerprint=TBF
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstOptionalChain(AstExpression expression) :
     AstExpression(expression.Start, FastNodeType.OptionalChain, expression.End)
 {

@@ -1,0 +1,20 @@
+== P B
+85608	accepted/accepted dump-differs
+12601	accepted/accepted same-dump
+3231	accepted/refused
+5	refused/accepted
+5415	refused/refused message-differs
+103	refused/refused same-message
+== K K-on
+97247	accepted/accepted same-dump
+1077	accepted/refused
+8	crashed/crashed
+141	crashed/refused
+2	refused/accepted
+6833	refused/refused message-differs
+1655	refused/refused same-message
+== P K
+98324	accepted/accepted dump-differs
+149	accepted/crashed
+2967	accepted/refused
+5523	refused/refused type-differs

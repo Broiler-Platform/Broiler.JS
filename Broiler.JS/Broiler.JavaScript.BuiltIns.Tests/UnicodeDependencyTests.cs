@@ -50,11 +50,11 @@ public class UnicodeDependencyTests
             Assert.DoesNotContain(retired, references);
     }
 
-    // The assembly that holds the tables calls the owner's algorithms over them: Ast's since milestone SJL-12.5,
-    // where it was the runtime's.
+    // The assembly that holds the tables calls the owner's algorithms over them: Expressions' since window W2 of
+    // milestone SJL-14 (decision D50), where it was Ast's from milestone SJL-12.5, and the runtime's before.
     [Fact]
     public void The_assembly_holding_the_tables_calls_the_owner_s_algorithms()
-        => Assert.Contains("Broiler.Unicode.Algorithms", References("Broiler.JavaScript.Ast"));
+        => Assert.Contains("Broiler.Unicode.Algorithms", References("Broiler.JavaScript.Expressions"));
 
     // Segmentation is the built-ins' alone: Ast, the parser and the runtime do not carry it.
     [Fact]

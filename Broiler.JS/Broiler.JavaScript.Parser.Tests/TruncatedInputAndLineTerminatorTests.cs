@@ -14,14 +14,15 @@ namespace Broiler.JavaScript.Parser.Tests;
 //    LF, CR, U+2028 and U+2029, with CRLF one sequence (§12.3), so every position after a lone
 //    CR, LS or PS was on the wrong line.
 //  - An unterminated string, template or comment was blamed on the previously scanned token,
-//    whose line the compile frame then reported — not the line the failure was found on, which
-//    the message named.
+//    whose line the compile frame then reported — not the line the message named. Since window
+//    W2 of milestone SJL-14 the token and the message both name the line the string, template or
+//    comment begins on, as the shared syntax library reports it.
 public class TruncatedInputAndLineTerminatorTests
 {
     private static FastParseException ParseError(string source)
     {
-        // The scanner reads its first two tokens while the stream is constructed, so a failure
-        // there surfaces from the constructor rather than from ParseProgram.
+        // Since window W2 of milestone SJL-14 the stream reads no token when it is constructed, and
+        // ParseProgram parses the text through the bridge, so the refusal surfaces from ParseProgram.
         return Assert.Throws<FastParseException>(
             () => new FastParser(new FastTokenStream(new StringSpan(source))).ParseProgram());
     }
@@ -98,10 +99,16 @@ public class TruncatedInputAndLineTerminatorTests
     [Theory]
     [InlineData("a = 1;\nb = 2;\nc = \"abc\nd\";", "Unterminated string literal", 3)]
     [InlineData("a = 1;\n\nc = 'abc", "Unterminated string literal", 3)]
-    [InlineData("a = 1;\nb = `abc\n\ndef", "Unterminated template literal", 4)]
-    [InlineData("a = 1;\n/* abc\n\nx", "Unterminated comment", 4)]
-    [InlineData("a = 1;\r/* abc\u2028x", "Unterminated comment", 3)]
-    public void UnterminatedTokensAreReportedWhereScanningStopped(string source, string message, int line)
+    [InlineData("a = 1;\nb = `abc\n\ndef", "Unterminated template literal", 2)]
+    [InlineData("a = 1;\n/* abc\n\nx", "Unterminated comment", 2)]
+    [InlineData("a = 1;\r/* abc\u2028x", "Unterminated comment", 2)]
+    // Window W2 of milestone SJL-14 (decision D46, class M: a position move): the shared syntax library reports an
+    // unterminated comment or template where it begins, where the old scanner reported the line it had reached when the
+    // input ran out (the three cases read 4, 4 and 3 until then); the texts are kept, and so is an unterminated string's
+    // line, which is the line the string begins on.
+    // Named UnterminatedTokensAreReportedWhereScanningStopped until review of window W2 (2026-11-19), when the name
+    // still described the old scanner's report.
+    public void UnterminatedTokensAreReportedOnTheLineTheyBegin(string source, string message, int line)
     {
         var error = ParseError(source);
         Assert.StartsWith(message, error.Message);

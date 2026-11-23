@@ -6,6 +6,7 @@ namespace Broiler.JavaScript.Ast.Expressions;
 // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=5; Fingerprint=TBF
 // Broiler-Falsified-If: a plain call that follows an optional link, the trailing `()` in `a?.b()()`, is built with InOptionalChain false, so a nullish `a` throws instead of evaluating to undefined
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstCallExpression(AstExpression previous, IFastEnumerable<AstExpression> plist, bool coalesce = false, bool inOptionalChain = false) :
     AstExpression(previous.Start, FastNodeType.CallExpression, plist.Count > 0 ? plist.Last().End : previous.End)
 {

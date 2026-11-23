@@ -50,6 +50,7 @@ public class SharedSyntaxBridgeTests
     [InlineData("(a) => { var a; var b; }")]
     [InlineData("({ m(p) { var p, q; } })")]
     [InlineData("function f() { { let x; function y() {} } switch (0) { case 0: let s; } }")]
+    [InlineData("function f(g, h) { if (x) function g() {} if (x) function h() { var v; } if (x) function k() { let w; } }")]
     public void A_functions_and_its_blocks_hoisting_scopes_are_the_old_parsers(string source)
     {
         var old = Old(source);
@@ -554,6 +555,70 @@ public class SharedSyntaxBridgeTests
         {
             Broiler.JavaScript.ExpressionCompiler.CompilationStack.SizeBytes = configured;
         }
+    }
+
+    // ---- The cost of what the tree drops (decision B8, test262's regress-610026.js) ------------------------------------
+
+    [Fact]
+    public void A_dropped_empty_statement_or_block_adds_nothing_to_the_tree_or_the_chain()
+    {
+        // test262's staging/sm/regress/regress-610026.js evals millions of empty blocks; the bridge built a node, a scope
+        // frame and two chained tokens for each before the list dropped it. Only the first, held while the directive
+        // prologue is open, is built now, so the chain does not grow with the dropped ones.
+        var source = new StringBuilder().Insert(0, "{};", 50_000).Append("x;").ToString();
+        var program = Bridged(source);
+        var statement = Assert.IsType<AstExpressionStatement>(Assert.Single(program.Statements));
+        Assert.Equal(source.Length - 2, statement.Start.Span.Offset);
+        Assert.True(Chain(program).Count < 10, "the chain holds " + Chain(program).Count + " tokens");
+        Assert.Empty(Bridged(new StringBuilder().Insert(0, "{}", 50_000).ToString()).Statements);
+    }
+
+    [Fact]
+    public void The_dropped_statement_the_prologue_holds_is_still_kept_where_a_directive_follows_it()
+    {
+        // 'a'; {}; {} 'b'; {}  (offsets 0, 5, 7, 9, 12 and 17): the first empty block after a directive is kept before
+        // the next directive, as the old parser kept it; the others are dropped and leave no token in the chain.
+        var program = Bridged("'a'; {}; {} 'b'; {}");
+        Assert.Equal(3, program.Statements.Count);
+        Assert.IsType<AstLiteral>(Assert.IsType<AstExpressionStatement>(program.Statements[0]).Expression);
+        var held = Assert.IsType<AstBlock>(program.Statements[1]);
+        Assert.Equal(5, held.Start.Span.Offset);
+        Assert.Equal(7, held.End.Span.Offset + held.End.Span.Length);
+        Assert.IsType<AstLiteral>(Assert.IsType<AstExpressionStatement>(program.Statements[2]).Expression);
+        var offsets = Chain(program).Select(token => token.Span.Offset).ToHashSet();
+        Assert.Contains(5, offsets);
+        Assert.DoesNotContain(7, offsets);
+        Assert.DoesNotContain(9, offsets);
+        Assert.DoesNotContain(17, offsets);
+    }
+
+    [Fact]
+    public void A_block_of_dropped_statements_still_has_its_hoisting_scope()
+    {
+        // The scope index keeps only the scopes that declare a name; a block among thousands of empty ones keeps its own.
+        var source = new StringBuilder("x;").Insert(2, "{}", 10_000).Append("{ let y; }").ToString();
+        var block = Assert.IsType<AstBlock>(Bridged(source).Statements[1]);
+        Assert.Equal("y,", Names(block.HoistingScope));
+    }
+
+    [Fact]
+    public void The_scope_index_holds_only_the_scopes_that_declare_a_name()
+    {
+        // The side table has a scope for the program and one for each block; only the block that declares y is indexed,
+        // where the index held every scope, one per empty block, before decision B8.
+        var span = new StringSpan(new StringBuilder("x;").Insert(2, "{}", 10_000).Append("{ let y; }").ToString());
+        var result = Broiler.ECMAScript.Syntax.SyntaxParser.Parse(SharedSyntaxBridge.Request(span, BridgeRequest.Script));
+        Assert.NotNull(result.Declarations);
+        Assert.Equal(10_002, result.Declarations.Scopes.Count);
+        Assert.Equal(1, new BridgeScopes(result.Declarations, new BridgeTokens(span)).IndexedScopeCount);
+    }
+
+    private static List<FastToken> Chain(AstProgram program)
+    {
+        var tokens = new List<FastToken>();
+        for (var token = program.End; token != null; token = token.Previous)
+            tokens.Add(token);
+        return tokens;
     }
 
     /// <summary>Every node of a tree, through its fields, in order.</summary>

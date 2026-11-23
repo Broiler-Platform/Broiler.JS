@@ -1,0 +1,70 @@
+2026-11-23T14:00:18Z lock d-base-archive WAIT
+2026-11-23T14:00:18Z lock d-base-archive HELD
+2026-11-23T14:00:18Z gate d-base-archive PASS load1=0.04 procs=none checks=0
+2026-11-23T14:00:25Z stop-servers: done, remaining:
+2026-11-23T14:00:26Z lock d-base-build WAIT
+2026-11-23T14:00:26Z lock d-base-build HELD
+2026-11-23T14:00:26Z gate d-base-build PASS load1=0.12 procs=none checks=0
+2026-11-23T14:03:26Z stop-servers: done, remaining:
+2026-11-23T14:03:26Z lock d-base-terser WAIT
+2026-11-23T14:03:26Z lock d-base-terser HELD
+2026-11-23T14:03:27Z gate d-base-terser WAIT load1=2.99 procs=none
+2026-11-23T14:04:28Z gate d-base-terser WAIT load1=1.10 procs=none
+2026-11-23T14:04:38Z gate d-base-terser PASS load1=0.93 procs=none checks=7
+2026-11-23T14:04:40Z stop-servers: done, remaining:
+2026-11-23T14:04:41Z lock d-base-codes WAIT
+2026-11-23T14:04:41Z lock d-base-codes HELD
+2026-11-23T14:04:41Z gate d-base-codes PASS load1=0.93 procs=none checks=0
+2026-11-23T14:05:16Z stop-servers: done, remaining:
+2026-11-23T14:05:17Z lock d-base-ptime WAIT
+2026-11-23T14:05:17Z lock d-base-ptime HELD
+2026-11-23T14:05:17Z gate d-base-ptime WAIT load1=1.88 procs=none
+2026-11-23T14:05:58Z gate d-base-ptime PASS load1=0.96 procs=none checks=4
+2026-11-23T14:07:48Z stop-servers: done, remaining:
+2026-11-23T14:07:49Z lock d-base-case-off WAIT
+2026-11-23T14:07:49Z lock d-base-case-off HELD
+2026-11-23T14:07:49Z gate d-base-case-off WAIT load1=1.38 procs=none
+2026-11-23T14:08:09Z gate d-base-case-off PASS load1=0.99 procs=none checks=2
+2026-11-23T14:08:42Z stop-servers: done, remaining:
+2026-11-23T14:08:43Z lock d-base-case-on WAIT
+2026-11-23T14:08:43Z lock d-base-case-on HELD
+2026-11-23T14:08:43Z gate d-base-case-on PASS load1=0.99 procs=none checks=0
+2026-11-23T14:09:44Z stop-servers: done, remaining:
+2026-11-23T14:10:04Z lock d-w2-archive WAIT
+2026-11-23T14:10:04Z lock d-w2-archive HELD
+2026-11-23T14:10:05Z gate d-w2-archive PASS load1=0.88 procs=none checks=0
+2026-11-23T14:10:11Z stop-servers: done, remaining:
+2026-11-23T14:10:12Z lock d-w2-build WAIT
+2026-11-23T14:10:12Z lock d-w2-build HELD
+2026-11-23T14:10:12Z gate d-w2-build PASS load1=0.90 procs=none checks=0
+2026-11-23T14:13:01Z stop-servers: done, remaining:
+2026-11-23T14:13:02Z lock d-w2-terser WAIT
+2026-11-23T14:13:02Z lock d-w2-terser HELD
+2026-11-23T14:13:02Z gate d-w2-terser WAIT load1=5.09 procs=none
+2026-11-23T14:14:03Z gate d-w2-terser WAIT load1=1.93 procs=none
+2026-11-23T14:14:44Z gate d-w2-terser PASS load1=0.99 procs=none checks=10
+2026-11-23T14:14:46Z stop-servers: done, remaining:
+2026-11-23T14:14:47Z lock d-w2-case-w2 WAIT
+2026-11-23T14:14:47Z lock d-w2-case-w2 HELD
+2026-11-23T14:14:47Z gate d-w2-case-w2 PASS load1=0.91 procs=none checks=0
+2026-11-23T14:15:48Z stop-servers: done, remaining:
+2026-11-23T14:16:34Z lock d-read-nocodes WAIT
+2026-11-23T14:16:34Z lock d-read-nocodes HELD
+2026-11-23T14:16:35Z gate d-read-nocodes PASS load1=0.58 procs=none checks=0
+2026-11-23T14:17:10Z stop-servers: done, remaining:
+2026-11-23T14:17:10Z lock d-read-codes-1 WAIT
+2026-11-23T14:17:10Z lock d-read-codes-1 HELD
+2026-11-23T14:17:10Z gate d-read-codes-1 PASS load1=0.76 procs=none checks=0
+2026-11-23T14:17:45Z stop-servers: done, remaining:
+2026-11-23T14:17:45Z lock d-read-codes-2 WAIT
+2026-11-23T14:17:45Z lock d-read-codes-2 HELD
+2026-11-23T14:17:45Z gate d-read-codes-2 PASS load1=0.87 procs=none checks=0
+2026-11-23T14:18:19Z stop-servers: done, remaining:
+2026-11-23T14:20:18Z lock d-read-codes-3 WAIT
+2026-11-23T14:20:18Z lock d-read-codes-3 HELD
+2026-11-23T14:20:18Z gate d-read-codes-3 PASS load1=0.24 procs=none checks=0
+2026-11-23T14:20:52Z stop-servers: done, remaining:
+2026-11-23T14:20:53Z lock d-read-codes-4 WAIT
+2026-11-23T14:20:53Z lock d-read-codes-4 HELD
+2026-11-23T14:20:53Z gate d-read-codes-4 PASS load1=0.58 procs=none checks=0
+2026-11-23T14:21:27Z stop-servers: done, remaining:

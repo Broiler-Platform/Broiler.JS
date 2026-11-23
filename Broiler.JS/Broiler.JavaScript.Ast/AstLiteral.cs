@@ -7,6 +7,7 @@ namespace Broiler.JavaScript.Ast;
 // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
 // Broiler-Falsified-If: a string literal containing an escape such as `'\x41'` reads back from StringValue as its raw source text instead of `A`
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstLiteral(TokenTypes tokenType, FastToken token) : AstExpression(token, FastNodeType.Literal, token)
 {
     public readonly TokenTypes TokenType = tokenType;
@@ -32,6 +33,7 @@ public class AstLiteral(TokenTypes tokenType, FastToken token) : AstExpression(t
 // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=0; Fingerprint=TBF
 // Broiler-Falsified-If: a `super` node reports a Type other than FastNodeType.Super, so `super.x` outside a method is not rejected as an early SyntaxError
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstSuper(FastToken token) : AstExpression(token, FastNodeType.Super, token)
 {
     public readonly TokenTypes TokenType;

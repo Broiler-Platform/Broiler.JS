@@ -1,0 +1,104 @@
+=== d-read-nocodes before
+time: 2026-11-23T14:16:35Z
+loadavg: 0.58 2.08 1.72 1/114 21341
+nproc: 4
+sdk: 10.0.404
+os: Ubuntu 24.04.5 LTS
+disk: 12060 MiB free
+procs-matching:
+kernel: Linux 6.18.44-fc-v726 x86_64
+processes:
+      1       21:44 process_api     /process_api --firecracker-init --addr 0.0.0.0:2024 --max-ws-buffer-size 32768 --block-local-connections --log-vsock-port 5002 --control-vsock-port 5001 --listen-vsoc
+      2       21:44 kthreadd        [kthreadd]
+      3       21:44 pool_workqueue_ [pool_workqueue_release]
+      4       21:44 kworker/R-rcu_g [kworker/R-rcu_gp]
+      5       21:44 kworker/R-sync_ [kworker/R-sync_wq]
+      6       21:44 kworker/R-kvfre [kworker/R-kvfree_rcu_reclaim]
+      7       21:44 kworker/R-slub_ [kworker/R-slub_flushwq]
+      8       21:44 kworker/R-netns [kworker/R-netns]
+     10       21:44 kworker/0:0H-ev [kworker/0:0H-events_highpri]
+     11       21:44 kworker/0:1-eve [kworker/0:1-events]
+     12       21:44 kworker/u16:0-i [kworker/u16:0-iou_exit]
+     13       21:44 kworker/R-mm_pe [kworker/R-mm_percpu_wq]
+     14       21:44 ksoftirqd/0     [ksoftirqd/0]
+     15       21:44 rcu_preempt     [rcu_preempt]
+     16       21:44 rcu_exp_par_gp_ [rcu_exp_par_gp_kthread_worker/0]
+     17       21:44 rcu_exp_gp_kthr [rcu_exp_gp_kthread_worker]
+     18       21:44 migration/0     [migration/0]
+     19       21:44 cpuhp/0         [cpuhp/0]
+     20       21:44 cpuhp/1         [cpuhp/1]
+     21       21:44 migration/1     [migration/1]
+     22       21:44 ksoftirqd/1     [ksoftirqd/1]
+     24       21:44 kworker/1:0H-ev [kworker/1:0H-events_highpri]
+     25       21:44 cpuhp/2         [cpuhp/2]
+     26       21:44 migration/2     [migration/2]
+     27       21:44 ksoftirqd/2     [ksoftirqd/2]
+     28       21:44 kworker/2:0-mm_ [kworker/2:0-mm_percpu_wq]
+     29       21:44 kworker/2:0H-kb [kworker/2:0H-kblockd]
+     30       21:44 cpuhp/3         [cpuhp/3]
+     31       21:44 migration/3     [migration/3]
+     32       21:44 ksoftirqd/3     [ksoftirqd/3]
+     34       21:44 kworker/3:0H-ev [kworker/3:0H-events_highpri]
+     35       21:44 kdevtmpfs       [kdevtmpfs]
+     36       21:44 kworker/R-inet_ [kworker/R-inet_frag_wq]
+     37       21:44 rcu_tasks_kthre [rcu_tasks_kthread]
+     38       21:44 rcu_tasks_rude_ [rcu_tasks_rude_kthread]
+     39       21:44 rcu_tasks_trace [rcu_tasks_trace_kthread]
+     40       21:44 kauditd         [kauditd]
+     41       21:44 khungtaskd      [khungtaskd]
+     42       21:44 oom_reaper      [oom_reaper]
+     44       21:44 kworker/R-write [kworker/R-writeback]
+     46       21:44 kcompactd0      [kcompactd0]
+     47       21:44 ksmd            [ksmd]
+     48       21:44 khugepaged      [khugepaged]
+     49       21:44 kworker/R-kbloc [kworker/R-kblockd]
+     50       21:44 kworker/R-blkcg [kworker/R-blkcg_punt_bio]
+     51       21:44 kworker/2:1-eve [kworker/2:1-events]
+     52       21:44 kworker/1:1-eve [kworker/1:1-events]
+     53       21:44 watchdogd       [watchdogd]
+     54       21:44 kworker/R-quota [kworker/R-quota_events_unbound]
+     55       21:44 kworker/3:1H-kb [kworker/3:1H-kblockd]
+     56       21:44 kswapd0         [kswapd0]
+     57       21:44 kworker/R-xfsal [kworker/R-xfsalloc]
+     58       21:44 kworker/R-xfs_m [kworker/R-xfs_mru_cache]
+     59       21:44 kworker/u17:0   [kworker/u17:0]
+     60       21:44 kworker/R-kthro [kworker/R-kthrotld]
+     61       21:44 irq/24-ACPI:Ged [irq/24-ACPI:Ged]
+     62       21:44 irq/25-ACPI:Ged [irq/25-ACPI:Ged]
+     63       21:44 kworker/3:1-eve [kworker/3:1-events]
+     64       21:44 hwrng           [hwrng]
+     65       21:44 kworker/R-kstrp [kworker/R-kstrp]
+     68       21:44 kworker/0:1H-kb [kworker/0:1H-kblockd]
+     70       21:44 kworker/1:1H-kb [kworker/1:1H-kblockd]
+     84       21:44 kworker/R-ext4- [kworker/R-ext4-rsv-conversion]
+     86       21:44 kworker/R-ext4- [kworker/R-ext4-rsv-conversion]
+     87       21:44 kworker/R-ext4- [kworker/R-ext4-rsv-conversion]
+     89       21:43 7               sbx-telemetry-collector
+     90       21:43 sh              /bin/sh -c if ! { [ ! -L /var/lib/ccr-ca-store ] && { [ ! -e /var/lib/ccr-ca-store ] || { [ -d /var/lib/ccr-ca-store ] && [ -O /var/lib/ccr-ca-store ] ; } ; } ; } ; t
+     91       21:43 kworker/2:1H-kb [kworker/2:1H-kblockd]
+     94       21:43 environment-man /usr/local/bin/environment-manager task-run --stdin --session cse_01EvynDJNoDfZb8zqpgEWykW --session-mode resume --upgrade-claude-code=False
+    102       21:43 claude          /opt/claude-code/bin/claude --preload /home/claude/.claude/remote/spare.sock
+   2423       15:40 kworker/u16:3-i [kworker/u16:3-iou_exit]
+   9552       08:56 kworker/3:2-mm_ [kworker/3:2-mm_percpu_wq]
+  10260       08:46 kworker/0:2-eve [kworker/0:2-events]
+  11082       08:05 kworker/1:0-mm_ [kworker/1:0-mm_percpu_wq]
+  12324       06:52 kworker/u16:5-i [kworker/u16:5-iou_exit]
+  15466       04:55 kworker/2:2-eve [kworker/2:2-events]
+  20381       00:47 kworker/u16:1-k [kworker/u16:1-kvfree_rcu_reclaim]
+  20382       00:47 kworker/u16:2-i [kworker/u16:2-iou_exit]
+  20383       00:47 kworker/u16:4-e [kworker/u16:4-events_unbound]
+  20384       00:47 kworker/u16:6   [kworker/u16:6]
+  20930       00:40 kworker/0:0     [kworker/0:0]
+  20953       00:00 bash            /bin/bash -c source /root/.claude/shell-snapshots/snapshot-bash-1795442099753-md1hma.sh 2>/dev/null || true && \builtin export BUN_OPTIONS="--smol${BUN_OPTIONS:+ $BUN
+  20960       00:00 bash            bash /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/s2/ev2/scripts/run.sh d-read-nocodes /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce
+  21526       00:00 ps              ps -eo pid=,etime=,comm=,args=
+  21527       00:00 cut             cut -c1-200
+  21528       00:00 sed             sed s/^/  /
+=== d-read-nocodes after (rc=0 started=2026-11-23T14:16:35Z)
+time: 2026-11-23T14:17:09Z
+loadavg: 0.76 1.96 1.69 1/113 21553
+nproc: 4
+sdk: 10.0.404
+os: Ubuntu 24.04.5 LTS
+disk: 12058 MiB free
+procs-matching:

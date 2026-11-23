@@ -13,6 +13,7 @@ namespace Broiler.JavaScript.Ast;
 // Broiler-AI:           Origin=AI; Spec=ECMA-262 s15.3.1; IP=Low; Security=High; Resources=5; Fingerprint=TBF
 // Broiler-Falsified-If: an await or yield inside a class heritage or a computed class-member key within arrow parameters, such as `(a = class extends (await 0) {}) => 0` in an async function, is accepted instead of raising the early SyntaxError
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public sealed class AwaitYieldParameterDetector : AstReduce
 {
     private bool found;

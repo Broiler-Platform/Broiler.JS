@@ -5,6 +5,7 @@ namespace Broiler.JavaScript.Ast.Expressions;
 
 // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=5; Fingerprint=TBF
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstNewExpression(FastToken begin, AstExpression node, IFastEnumerable<AstExpression> arguments) : AstExpression(begin, FastNodeType.NewExpression, node.End)
 {
     public readonly AstExpression Callee = node;

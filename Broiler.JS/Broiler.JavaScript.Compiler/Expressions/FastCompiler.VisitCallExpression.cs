@@ -14,8 +14,8 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     private static readonly System.Reflection.MethodInfo DirectEvalMethod = typeof(DirectEvalSupport)
-        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(FrameToken), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool), typeof(JSValue), typeof(bool), typeof(bool), typeof(JSValue), typeof(JSVariable), typeof(string[]), typeof(JSValue), typeof(string[]), typeof(int), typeof(bool)])
-        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, FrameToken, bool, bool, string[], JSVariable[], JSVariable[], string[], string[], string[], bool, bool, bool, JSValue, bool, bool, JSValue, JSVariable, string[], JSValue, string[], int, bool) not found");
+        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(FrameToken), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool), typeof(JSValue), typeof(bool), typeof(bool), typeof(JSValue), typeof(JSVariable), typeof(string[]), typeof(JSValue), typeof(string[]), typeof(int), typeof(bool), typeof(bool)])
+        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, FrameToken, bool, bool, string[], JSVariable[], JSVariable[], string[], string[], string[], bool, bool, bool, JSValue, bool, bool, JSValue, JSVariable, string[], JSValue, string[], int, bool, bool) not found");
 
     protected override BExpression VisitCallExpression(AstCallExpression callExpression)
     {
@@ -134,6 +134,17 @@ partial class FastCompiler
             var allowSuperCall = allowSuperProperty
                 && !inMemberInitializer
                 && (scope.Top.RootScope.MemberInits != null || nestedEvalInheritsSuperCall);
+            // MemberInits is set in every class constructor's scope, a base class's included, so allowSuperCall does not
+            // tell a derived constructor from a base one. The class's heritage does: only a derived constructor's scope
+            // has a superclass constructor binding (CreateClass). Window W2 (decision D44; row R24) passes it to the
+            // eval, whose super() is then an early error in a base class's constructor, as the specification has it,
+            // and not a TypeError at run time. A nested eval inherits it from the binding its outer eval shares: the
+            // innermost on the context's stack, which a base class's constructor pushes too, so that an enclosing derived
+            // constructor's grant does not reach the eval code of the base constructor its super() runs.
+            var inDerivedConstructor = allowSuperCall
+                && (nestedEvalInheritsSuperCall
+                    ? ((JSContext)JSEngine.Current).DirectEvalSuperCallInDerivedConstructor
+                    : scope.Top.RootScope.SuperConstructor != null);
             var useActivationBinding = scope.Top.Function?.IsArrowFunction == true && parameterInitializerDepth > 0;
             var activationOwner = disallowArgumentsDeclaration || useActivationBinding
                 ? scope.Top.StackItem
@@ -167,6 +178,10 @@ partial class FastCompiler
             var thisArg = scope.Top.ThisExpression;
             BExpression directEvalSuperConstructor = BExpression.Constant(null, typeof(JSValue));
             BExpression directEvalThisBinding = BExpression.Constant(null, typeof(JSVariable));
+            // Every class constructor's eval shares the binding, a base class's included, whose `this` is initialised
+            // before any of its code runs: the eval code then reads its own constructor's binding, the innermost one the
+            // context holds, and not that of a derived constructor whose eval's super() reached this constructor. Only a
+            // derived constructor's eval can call super() since window W2 (row R24); inDerivedConstructor says which.
             if (allowSuperCall && (scope.Top.ThisExpression as BPropertyExpression)?.Target is { } thisBindingTarget
                 && thisBindingTarget.Type == typeof(JSVariable))
             {
@@ -187,7 +202,7 @@ partial class FastCompiler
             // call, so a function compiled here names its eval code's temporaries apart from its own
             // whenever it is called (decision D22). tailCall, the last parameter, is left to the IL
             // generator, which passes true in a tail position.
-            return BExpression.Call(null, DirectEvalMethod, paramArray, evalCallee, thisArg, activationOwner, BExpression.Constant(IsStrictMode), BExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, shadowedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, BExpression.Constant(allowSuperProperty), BExpression.Constant(allowSuperCall), BExpression.Constant(useActivationBinding), superValue, BExpression.Constant(inMemberInitializer), BExpression.Constant(rejectNewTarget), directEvalSuperConstructor, directEvalThisBinding, evalVarEnvNames, directEvalNewTarget, catchParameterNames, BExpression.Constant(directEvalDepth + 1));
+            return BExpression.Call(null, DirectEvalMethod, paramArray, evalCallee, thisArg, activationOwner, BExpression.Constant(IsStrictMode), BExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, shadowedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, BExpression.Constant(allowSuperProperty), BExpression.Constant(allowSuperCall), BExpression.Constant(useActivationBinding), superValue, BExpression.Constant(inMemberInitializer), BExpression.Constant(rejectNewTarget), directEvalSuperConstructor, directEvalThisBinding, evalVarEnvNames, directEvalNewTarget, catchParameterNames, BExpression.Constant(directEvalDepth + 1), BExpression.Constant(inDerivedConstructor));
         }
 
         // A parenthesized optional chain closes the chain at the parens (per spec ECMAScript

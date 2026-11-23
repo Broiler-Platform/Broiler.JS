@@ -2,6 +2,7 @@
 
 namespace Broiler.JavaScript.Ast.Statements;
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstStatement(FastToken start, FastNodeType type, FastToken end) : AstNode(start, type, end, isStatement: true)
 {
     /// <summary>

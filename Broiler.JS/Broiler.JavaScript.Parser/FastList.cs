@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.Parser;
 
+[System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class FastList<T> : IList<T>, IDisposable
 {
     private T[] items = null;
@@ -127,6 +128,7 @@ public class FastList<T> : IList<T>, IDisposable
 
     public ReverseEnumerator GetReverseEnumerator() => new(this);
 
+    [System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
     public struct ReverseEnumerator(FastList<T> list)
     {
         private readonly T[] items = list.items;
@@ -146,6 +148,7 @@ public class FastList<T> : IList<T>, IDisposable
         }
     }
 
+    [System.Obsolete(ObsoleteMarks.Parser, DiagnosticId = ObsoleteMarks.DiagnosticId)]
     public struct FastEnumerator(FastList<T> list) : IEnumerator<T>
     {
         private readonly T[] items = list.items;

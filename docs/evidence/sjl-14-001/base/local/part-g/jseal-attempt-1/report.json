@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 2,
+  "lane": "candidate",
+  "capturedUtc": "2026-11-23T11:20:42.6528411Z",
+  "os": "Ubuntu 24.04.5 LTS",
+  "powerShell": "7.6.10",
+  "workspace": "/tmp/jseal-package-consumer-ca493c3b5c47473aa9ec3529bf684a0a",
+  "workspaceRetained": false,
+  "completed": false,
+  "inputs": [
+    {
+      "path": "eng/test-package-consumer.ps1",
+      "sha256": "f543776b8a7f301b0b4f26272255f81a871d87e77bd8e800b2a8a75ba10eba57"
+    },
+    {
+      "path": "eng/pack.ps1",
+      "sha256": "34e075e81f79879ae0f6cff848b62fd4601bb06ad7e66850c4ac145f1c8e080c"
+    },
+    {
+      "path": "eng/package-gate.mjs",
+      "sha256": "b3ef2821ee2d26149241094de1150585ec55b8f2fcb6f8fdf1033f276d9c08c1"
+    },
+    {
+      "path": "eng/package-consumer/Consumer.csproj",
+      "sha256": "c0dda5f9766d4acf34483813894d74f90be25ddd7163023e6f50bca76c5c8f59"
+    },
+    {
+      "path": "eng/package-consumer/Program.cs",
+      "sha256": "8924b62eabb66de05be1c7b7e3f9f6f0ec2bb07a7c8e000d55cfcd269ec4610e"
+    }
+  ],
+  "commands": [
+    {
+      "name": "revision",
+      "executable": "git",
+      "arguments": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "workingDirectory": "/home/user/js-w2base-build/69a8a13b/jseal",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 10,
+      "expectFailure": false,
+      "stdout": "a1216a80034e185d69d0d76d9ef855105698c00b\n",
+      "stderr": ""
+    },
+    {
+      "name": "working-tree",
+      "executable": "git",
+      "arguments": [
+        "status",
+        "--porcelain=v1"
+      ],
+      "workingDirectory": "/home/user/js-w2base-build/69a8a13b/jseal",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 10,
+      "expectFailure": false,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "sdk",
+      "executable": "dotnet",
+      "arguments": [
+        "--version"
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-ca493c3b5c47473aa9ec3529bf684a0a",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 10,
+      "expectFailure": false,
+      "stdout": "10.0.404\n",
+      "stderr": ""
+    },
+    {
+      "name": "node",
+      "executable": "node",
+      "arguments": [
+        "--version"
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-ca493c3b5c47473aa9ec3529bf684a0a",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 10,
+      "expectFailure": false,
+      "stdout": "v22.23.4\n",
+      "stderr": ""
+    },
+    {
+      "name": "candidate-source-files",
+      "executable": "git",
+      "arguments": [
+        "ls-files",
+        "-z",
+        "--cached",
+        "--others",
+        "--exclude-standard"
+      ],
+      "workingDirectory": "/home/user/js-w2base-build/69a8a13b/jseal",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 30,
+      "expectFailure": false,
+      "stdout": ".gitattributes\u0000.github/workflows/ci.yml\u0000.github/workflows/publish.yml\u0000.gitignore\u0000Broiler.JSeal.BroilerJs/Broiler.JSeal.BroilerJs.csproj\u0000Broiler.JSeal.BroilerJs/BroilerJsEngineProvider.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsExoticObject.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsMarshal.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsModuleAnalysis.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsModuleMap.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Calls.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Clone.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Execution.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Jobs.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Members.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Modules.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Source.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Values.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.cs\u0000Broiler.JSeal.Tests/Broiler.JSeal.Tests.csproj\u0000Broiler.JSeal.Tests/BroilerJsLifetimeTests.cs\u0000Broiler.JSeal.Tests/BroilerJsModuleAdapterTests.cs\u0000Broiler.JSeal.Tests/Jseal/VmProviderRegistration.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.BigInt.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.CallableProxies.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.CallbackArguments.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.Capabilities.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.CoercionAndJobs.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.DynamicImport.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.ExoticIndexedSet.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.ExoticIndices.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.ExoticObjects.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.ExoticPrecedence.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.GuestEvalRoutes.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.Lifetime.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.MemberExceptions.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.Members.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.MissingValues.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.Modules.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.Realms.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.ScriptGoal.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.Source.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.SourceAuthorization.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.SourceIdentity.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.StructuredClone.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.cs\u0000Broiler.JSeal.Tests/JsealRegistryTests.cs\u0000Broiler.JSeal.Tests/VmModuleAdapterTests.cs\u0000Broiler.JSeal.Vm/Broiler.JSeal.Vm.csproj\u0000Broiler.JSeal.Vm/VmEngineProvider.cs\u0000Broiler.JSeal.Vm/VmExoticObject.cs\u0000Broiler.JSeal.Vm/VmHostBridge.cs\u0000Broiler.JSeal.Vm/VmMarshal.cs\u0000Broiler.JSeal.Vm/VmModuleMap.cs\u0000Broiler.JSeal.Vm/VmRealm.Calls.cs\u0000Broiler.JSeal.Vm/VmRealm.Clone.cs\u0000Broiler.JSeal.Vm/VmRealm.Jobs.cs\u0000Broiler.JSeal.Vm/VmRealm.Members.cs\u0000Broiler.JSeal.Vm/VmRealm.Modules.cs\u0000Broiler.JSeal.Vm/VmRealm.Source.cs\u0000Broiler.JSeal.Vm/VmRealm.Values.cs\u0000Broiler.JSeal.Vm/VmRealm.cs\u0000Broiler.JSeal.Vm/VmSourceProvider.cs\u0000Broiler.JSeal.slnx\u0000Broiler.JSeal/Broiler.JSeal.csproj\u0000Broiler.JSeal/Hosting/IJsEngineProvider.cs\u0000Broiler.JSeal/Hosting/IJsRealmAdoption.cs\u0000Broiler.JSeal/Hosting/JsCapabilities.cs\u0000Broiler.JSeal/Hosting/JsEngineRegistry.cs\u0000Broiler.JSeal/Hosting/JsEngineRegistryState.cs\u0000Broiler.JSeal/Hosting/JsErrors.cs\u0000Broiler.JSeal/Modules/IJsModules.cs\u0000Broiler.JSeal/Modules/JsModuleTypes.cs\u0000Broiler.JSeal/Realm/IJsClone.cs\u0000Broiler.JSeal/Realm/IJsExotic.cs\u0000Broiler.JSeal/Realm/IJsRealm.cs\u0000Broiler.JSeal/Realm/IJsRealmCapabilities.cs\u0000Broiler.JSeal/Values/JsCall.cs\u0000Broiler.JSeal/Values/JsPropertyFlags.cs\u0000Broiler.JSeal/Values/JsProviderClone.cs\u0000Broiler.JSeal/Values/JsProviderValue.cs\u0000Broiler.JSeal/Values/JsValue.cs\u0000Broiler.JSeal/Values/JsValueKind.cs\u0000Directory.Build.props\u0000Directory.Packages.props\u0000HUMAN_REVIEW.md\u0000LICENSE\u0000NuGet.config\u0000README.md\u0000diagnostics/I02-I04/BufferTransfer/BufferTransfer.csproj\u0000diagnostics/I02-I04/BufferTransfer/Program.cs\u0000diagnostics/I02-I04/README.md\u0000diagnostics/I02-I04/before.json\u0000diagnostics/J00/ProviderProbes/Program.cs\u0000diagnostics/J00/ProviderProbes/ProviderProbes.csproj\u0000diagnostics/J00/README.md\u0000diagnostics/J00/baseline-2026-09-19.json\u0000diagnostics/J00/language.js\u0000diagnostics/J00/run.ps1\u0000diagnostics/J12/CallbackAllocations/CallbackAllocations.csproj\u0000diagnostics/J12/CallbackAllocations/Program.cs\u0000diagnostics/J12/README.md\u0000diagnostics/J12/after.json\u0000diagnostics/J12/before.json\u0000diagnostics/J14/README.md\u0000diagnostics/J14/check_docs.py\u0000diagnostics/J15/PublicApi/Program.cs\u0000diagnostics/J15/PublicApi/PublicApi.csproj\u0000diagnostics/J15/README.md\u0000diagnostics/J15/api-after-b06.txt\u0000diagnostics/J15/api-after.txt\u0000diagnostics/J15/api-before-b06.txt\u0000diagnostics/J15/api-before.txt\u0000docs/jseal.md\u0000docs/jseal.modules.md\u0000docs/roadmap.integration.md\u0000docs/roadmap.jseal.md\u0000docs/roadmap.md\u0000docs/roadmap.vm-features.md\u0000docs/roadmap.vm-semantics.md\u0000eng/Broiler.ConfigurationNames.targets\u0000eng/Broiler.Configurations.props\u0000eng/Broiler.Packaging.props\u0000eng/icon.png\u0000eng/nuget/README.md\u0000eng/pack.ps1\u0000eng/package-consumer/Consumer.csproj\u0000eng/package-consumer/Program.cs\u0000eng/package-consumer/README.md\u0000eng/package-gate.mjs\u0000eng/package-gate.test.mjs\u0000eng/resolve-preview-version.mjs\u0000eng/resolve-preview-version.test.mjs\u0000eng/run-tests.ps1\u0000eng/run-tests.sh\u0000eng/test-package-consumer.ps1\u0000eng/verify-feed.ps1\u0000",
+      "stderr": ""
+    },
+    {
+      "name": "candidate-pins",
+      "executable": "node",
+      "arguments": [
+        "/home/user/js-w2base-build/69a8a13b/jseal/eng/package-gate.mjs",
+        "candidate-props",
+        "/home/user/js-w2base-build/69a8a13b/jseal/Directory.Packages.props",
+        "/tmp/jseal-package-consumer-ca493c3b5c47473aa9ec3529bf684a0a/source/Directory.Packages.props",
+        "Broiler.JavaScript=0.1.0-preview.1401"
+      ],
+      "workingDirectory": "/home/user/js-w2base-build/69a8a13b/jseal",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 30,
+      "expectFailure": false,
+      "stdout": "{\"candidates\":{\"Broiler.JavaScript\":\"0.1.0-preview.1401\"},\"patterns\":[\"Broiler.JavaScript.*\"]}\n",
+      "stderr": ""
+    }
+  ],
+  "packages": [],
+  "consumers": [],
+  "revision": "a1216a80034e185d69d0d76d9ef855105698c00b",
+  "workingTree": "",
+  "dotnetSdk": "10.0.404",
+  "node": "v22.23.4",
+  "failure": "Restore Broiler.JSeal before a candidate run."
+}

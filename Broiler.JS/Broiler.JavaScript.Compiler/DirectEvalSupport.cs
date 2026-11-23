@@ -100,7 +100,17 @@ public static class DirectEvalSupport
     // neither is observable. (Corrected at milestone SJL-14.2, decision D55: the remark said "validated and compiled
     // at" without the two paths.) tailCall stays the last parameter: the IL generator re-emits a call in tail position
     // with one more argument, true, after all the others.
+    // The signature every compile emitted before window W2 (milestone SJL-14), kept so that code compiled against it still
+    // binds: it reads the derived-constructor flag as that code computed it, the super-call flag (row R24 uncorrected).
     public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, FrameToken activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, JSVariable[] shadowedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, JSValue directEvalSuperConstructor = null, JSVariable directEvalThisBinding = null, string[] evalVarEnvNames = null, JSValue directEvalNewTarget = null, string[] catchParameterNames = null, int directEvalDepth = 1, bool tailCall = false)
+        => Execute(arguments, callee, @this, activationOwner, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, capturedBindings, shadowedBindings, capturedLexicalBindingNames, parameterBindings, privateNamesInScope, allowSuperProperty, allowSuperCall, useActivationBinding, directEvalSuper, inFieldInitializer, rejectNewTarget, directEvalSuperConstructor, directEvalThisBinding, evalVarEnvNames, directEvalNewTarget, catchParameterNames, directEvalDepth, inDerivedConstructor: allowSuperCall, tailCall);
+
+    // inDerivedConstructor (window W2, milestone SJL-14; decision D44 and row R24): whether the code that calls eval is a
+    // derived class's constructor, from the class's heritage, as the compiler reads it where it emits the call (a
+    // nested eval inherits it). allowSuperCall alone holds in a base class's constructor too, where super() is an early
+    // error in the eval code, not a TypeError at run time; the library's inherited context receives this flag, and the
+    // super-call early error below reads both.
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, FrameToken activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, JSVariable[] shadowedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding, JSValue directEvalSuper, bool inFieldInitializer, bool rejectNewTarget, JSValue directEvalSuperConstructor, JSVariable directEvalThisBinding, string[] evalVarEnvNames, JSValue directEvalNewTarget, string[] catchParameterNames, int directEvalDepth, bool inDerivedConstructor, bool tailCall = false)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(directEvalDepth);
 
@@ -129,10 +139,10 @@ public static class DirectEvalSupport
         {
             (JSEngine.Current as IJSExecutionContext)?.DispatchEvalEvent(ref text, ref location);
 
-            if (inheritStrictMode)
-                text = "\"use strict\";\n" + text;
-
-            program = Validate(text, directEvalDepth, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope, allowSuperProperty, allowSuperCall, rejectArguments: inFieldInitializer, rejectNewTarget: rejectNewTarget);
+            // The caller's strictness reaches the eval code as the library's forced strictness, in the validating parse
+            // and in the compile's (window W2; decision D44, as JSD-0083 revised it, and decision D41). Until W2 the code
+            // was prefixed with "use strict"; and two places skipped the prefixed directive; the prefix and both go here.
+            program = Validate(text, directEvalDepth, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope, allowSuperProperty, allowSuperCall && inDerivedConstructor, rejectArguments: inFieldInitializer, rejectNewTarget: rejectNewTarget);
 
             // Nothing to run: PerformEval owes an empty StatementList the undefined completion,
             // and a body with no statements declares nothing, so none of the scope, activation
@@ -149,13 +159,13 @@ public static class DirectEvalSupport
             // annexB RegExp-{leading,trailing}-escape-BMP), and staging/sm/class/newTargetEval runs
             // `eval('new.target')` 4 400 times — where it decides between four CPU-minutes and two
             // seconds, and the runner caps a test at 30 CPU-seconds.
-            if (TryEvaluateInertProgram(program, inheritStrictMode, directEvalNewTarget, out var inertCompletion))
+            if (TryEvaluateInertProgram(program, directEvalNewTarget, out var inertCompletion))
                 return inertCompletion;
 
             // A body that is nothing but `eval("…")` over a constant is the same evaluation as
             // that constant, so run it as one instead of compiling the call. See
             // TryGetNestedDirectEvalText for why the level is not observable and what it costs.
-            if (!TryGetNestedDirectEvalText(program, inheritStrictMode, lexicalBindings, capturedBindings, capturedLexicalBindingNames, parameterBindings, catchParameterNames, evalVarEnvNames, out var nestedText))
+            if (!TryGetNestedDirectEvalText(program, lexicalBindings, capturedBindings, capturedLexicalBindingNames, parameterBindings, catchParameterNames, evalVarEnvNames, out var nestedText))
                 break;
 
             text = nestedText;
@@ -192,8 +202,10 @@ public static class DirectEvalSupport
                 : null;
             // Share the derived constructor's superclass constructor and `this` binding
             // so a `super(...)` inside the eval initializes the constructor's own `this`.
+            // A base class's constructor shares its own binding with inDerivedConstructor false (window W2,
+            // row R24), so that its eval code reads its own `this` and inherits no super-call grant.
             using var superCallScope = directEvalThisBinding != null
-                ? context.PushDirectEvalSuperCall(directEvalSuperConstructor, directEvalThisBinding)
+                ? context.PushDirectEvalSuperCall(directEvalSuperConstructor, directEvalThisBinding, inDerivedConstructor)
                 : null;
             // Thread the caller's new.target so `new.target` at the eval's top level
             // (and a nested eval) observes it. Pushed unconditionally so a nested
@@ -212,7 +224,7 @@ public static class DirectEvalSupport
             // passes on, one deeper, to the direct evals it emits; a compile the eval code starts as it runs
             // (the Function constructor's, an indirect eval's) is at 0 again.
             JSFunctionDelegate compiled;
-            using (context.CompileDirectEvalCodeAt(directEvalDepth))
+            using (context.CompileDirectEvalCodeAt(directEvalDepth, inheritStrictMode))
                 compiled = CoreScript.Compile(text, location, null, new TransientCodeCache(), compilationOptions: context.CompilationOptions);
             var result = JSTailCall.Resolve(compiled(new Arguments(@this ?? context)));
             if (declaredBindings?.Length > 0 && capturedBindings?.Length > 0)
@@ -441,11 +453,6 @@ public static class DirectEvalSupport
     /// those values. Such a body has no declarations, no references and no calls, so evaluating it is
     /// exactly building that one value — see the call site for why that is worth short-circuiting.
     /// </summary>
-    /// <param name="injectedStrictDirective">
-    /// True when <see cref="Execute"/> prefixed the source with its own <c>"use strict";</c>. That
-    /// line is not part of the program the caller wrote and its value must not become the completion
-    /// value, so it is skipped; a body that is nothing else falls through to the ordinary path.
-    /// </param>
     /// <param name="directEvalNewTarget">
     /// The caller's [[NewTarget]], which PerformEval shares with the eval body. It is the whole
     /// meaning of a <c>new.target</c> at the eval's top level: the ordinary path threads the same
@@ -453,22 +460,14 @@ public static class DirectEvalSupport
     /// not legal here at all — indirect eval, or a direct eval outside function code — Validate has
     /// already rejected the body, so reaching this point means it is.
     /// </param>
-    private static bool TryEvaluateInertProgram(AstProgram program, bool injectedStrictDirective, JSValue directEvalNewTarget, out JSValue value)
+    private static bool TryEvaluateInertProgram(AstProgram program, JSValue directEvalNewTarget, out JSValue value)
     {
         value = JSUndefined.Value;
 
         var statements = program.Statements.GetFastEnumerator();
-        var first = true;
         var any = false;
         while (statements.MoveNext(out var statement))
         {
-            if (first)
-            {
-                first = false;
-                if (injectedStrictDirective)
-                    continue;
-            }
-
             if (statement is not AstExpressionStatement expressionStatement)
             {
                 value = JSUndefined.Value;
@@ -493,10 +492,10 @@ public static class DirectEvalSupport
             return false;
         }
 
-        // Reaching here with nothing found means the injected directive was the only statement, so
-        // the caller wrote a body with no statements of its own — PerformEval owes that the
-        // undefined completion, not the text of a directive it never wrote.
-        return any || injectedStrictDirective;
+        // Execute returns undefined for a body with no statements before it gets here, so nothing found means no
+        // statement was inert. (Until window W2 an injected "use strict"; directive could be the only statement, and was
+        // skipped above.)
+        return any;
     }
 
     /// <summary>
@@ -528,11 +527,11 @@ public static class DirectEvalSupport
     /// name (which the compiler would bind the reference to) rules it out here first.
     /// </para>
     /// </remarks>
-    private static bool TryGetNestedDirectEvalText(AstProgram program, bool injectedStrictDirective, string[] lexicalBindings, JSVariable[] capturedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] catchParameterNames, string[] evalVarEnvNames, out string text)
+    private static bool TryGetNestedDirectEvalText(AstProgram program, string[] lexicalBindings, JSVariable[] capturedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] catchParameterNames, string[] evalVarEnvNames, out string text)
     {
         text = null;
 
-        if (!TryGetSingleStatement(program, injectedStrictDirective, out var statement)
+        if (!TryGetSingleStatement(program, out var statement)
             || statement is not AstExpressionStatement { Expression: AstCallExpression call }
             || call.InOptionalChain
             || call.Callee is not AstIdentifier callee
@@ -560,17 +559,16 @@ public static class DirectEvalSupport
     }
 
     /// <summary>
-    /// The program's only statement, skipping the <c>"use strict";</c>
-    /// <see cref="Execute"/> prefixed when the eval inherits strict mode.
+    /// The program's only statement. (Until window W2 it skipped the <c>"use strict";</c> <c>Execute</c> prefixed
+    /// when the eval inherits strict mode, which W2 removes.)
     /// </summary>
-    private static bool TryGetSingleStatement(AstProgram program, bool injectedStrictDirective, out AstStatement statement)
+    private static bool TryGetSingleStatement(AstProgram program, out AstStatement statement)
     {
-        var expected = injectedStrictDirective ? 2 : 1;
         statement = null;
-        if (program.Statements.Count != expected)
+        if (program.Statements.Count != 1)
             return false;
 
-        statement = program.Statements[expected - 1];
+        statement = program.Statements[0];
         return true;
     }
 
@@ -693,7 +691,7 @@ public static class DirectEvalSupport
     /// <summary>
     /// Runs the indirect-eval early errors over <paramref name="text"/> and reports whether
     /// its body has any statements at all, so an inert body can skip compilation the same
-    /// way <see cref="Execute"/> does.
+    /// way <c>Execute</c> does.
     /// </summary>
     public static bool ValidateIndirectEval(string text)
         => Validate(text, 0, false, false, null, null, null, false, false, rejectNewTarget: true)
@@ -705,41 +703,30 @@ public static class DirectEvalSupport
     /// </summary>
     private static AstProgram Validate(string text, int directEvalDepth, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool rejectArguments = false, bool rejectNewTarget = false)
     {
+        // The token re-scan for a strict reserved word used as a binding went at window W2 (decision D41, as JSD-0083
+        // revised it): the library checks those rows at the parse, since the request carries the caller's strictness.
         var options = EvalOptions;
-        if (inheritStrictMode && ContainsStrictReservedWordUsage(text, options))
-            throw JSEngine.NewSyntaxError("Unexpected strict mode reserved word");
-
         try
         {
-            // With the test-only switch of milestone SJL-14.2 on (decision D43), the bridge parses the eval code as eval
-            // code, with the context it inherits from its caller (decision D44): the caller's strictness (the directive
-            // above it carries it too), the function, method, derived-constructor and field-initialiser flags, and the
-            // private names visible at the call, which this engine checks at the parse of eval code.
-            AstProgram parsed;
-            if ((JSEngine.Current as JSContext)?.CompilationOptions.ParsesThroughBridge ?? JSCompilationOptions.BridgeByDefault)
+            // The bridge parses the eval code as eval code (milestone SJL-14.3, window W2, which removes SJL-14.2's
+            // test-only switch), with the context it inherits from its caller (decision D44): the caller's strictness
+            // as its forced strictness, the function, method, derived-constructor and field-initialiser
+            // flags, and the private names visible at the call, which this engine checks at the parse of eval code.
+            var parsed = Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge.Parse(text, new Broiler.JavaScript.Parser.Bridge.BridgeRequest
             {
-                parsed = Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge.Parse(text, new Broiler.JavaScript.Parser.Bridge.BridgeRequest
-                {
-                    Goal = Broiler.JavaScript.Parser.Bridge.BridgeGoal.Eval,
-                    ForcedStrict = inheritStrictMode,
-                    InFunction = !rejectNewTarget,
-                    InMethod = allowSuperProperty,
-                    InDerivedConstructor = allowSuperCall,
-                    InClassFieldInitializer = rejectArguments,
-                    VisiblePrivateNames = privateNamesInScope,
-                });
-            }
-            else
-            {
-                var pool = new FastPool();
-                var parser = new FastParser(new FastTokenStream(pool, text, null, options), options);
-                parsed = parser.ParseProgram();
-            }
+                Goal = Broiler.JavaScript.Parser.Bridge.BridgeGoal.Eval,
+                ForcedStrict = inheritStrictMode,
+                InFunction = !rejectNewTarget,
+                InMethod = allowSuperProperty,
+                InDerivedConstructor = allowSuperCall,
+                InClassFieldInitializer = rejectArguments,
+                VisiblePrivateNames = privateNamesInScope,
+            });
 
             // The for-loop pass prepares the tree before any check reads it, as FastCompiler does.
             var program = ForLoopPreparation.Prepare(parsed, directEvalDepth);
             ValidateDirectEvalEarlyErrors(program, allowSuperProperty, allowSuperCall, rejectArguments, rejectNewTarget);
-            SyntaxValidation.ValidateProgram(program, text, options, inheritStrictMode, lexicalBindings, privateNamesInScope);
+            SyntaxValidation.ValidateProgram(program, options, inheritStrictMode, lexicalBindings, privateNamesInScope);
             if (parameterBindings?.Length > 0
                 && SyntaxValidation.ContainsDirectEvalVarConflict(program.Statements, parameterBindings))
             {
@@ -767,62 +754,6 @@ public static class DirectEvalSupport
             throw JSEngine.NewSyntaxError(ex.Message);
         }
     }
-
-    private static bool ContainsStrictReservedWordUsage(string text, FastParserOptions options)
-    {
-        var pool = new FastPool();
-        var stream = new FastTokenStream(pool, text, null, options);
-        FastToken previous = null;
-
-        while (stream.Current.Type != TokenTypes.EOF)
-        {
-            var token = stream.Current;
-            if (token.IsKeyword
-                && IsStrictReservedWord(token.Keyword)
-                && previous?.Type is not (TokenTypes.Dot or TokenTypes.QuestionDot))
-            {
-                var nextType = stream.Next?.Type ?? TokenTypes.EOF;
-                if (nextType is TokenTypes.Assign
-                    or TokenTypes.Increment
-                    or TokenTypes.Decrement
-                    or TokenTypes.AssignAdd
-                    or TokenTypes.AssignSubtract
-                    or TokenTypes.AssignMultiply
-                    or TokenTypes.AssignDivide
-                    or TokenTypes.AssignMod
-                    or TokenTypes.AssignBitwideAnd
-                    or TokenTypes.AssignBitwideOr
-                    or TokenTypes.AssignCoalesce
-                    or TokenTypes.AssignBooleanAnd
-                    or TokenTypes.AssignBooleanOr
-                    or TokenTypes.AssignLeftShift
-                    or TokenTypes.AssignPower
-                    or TokenTypes.AssignRightShift
-                    or TokenTypes.AssignUnsignedRightShift
-                    or TokenTypes.AssignXor)
-                {
-                    return true;
-                }
-            }
-
-            if (token.Type != TokenTypes.LineTerminator)
-                previous = token;
-
-            stream.Consume();
-        }
-
-        return false;
-    }
-
-    private static bool IsStrictReservedWord(FastKeywords keyword)
-        => keyword is FastKeywords.@implements
-            or FastKeywords.@interface
-            or FastKeywords.@package
-            or FastKeywords.@private
-            or FastKeywords.@protected
-            or FastKeywords.@public
-            or FastKeywords.@static
-            or FastKeywords.@yield;
 
     private static bool IsRestrictedDeclaration(AstStatement statement, bool inheritStrictMode, bool disallowArgumentsDeclaration)
     {

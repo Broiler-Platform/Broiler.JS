@@ -1,0 +1,10 @@
+Test run for /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+  Skipped Broiler.JavaScript.BuiltIns.Tests.HostCultureLocaleDataTests.InvariantChild [1 ms]
+  Skipped Broiler.JavaScript.BuiltIns.Tests.SharedIntlLocaleTests.InvariantChild [1 ms]
+  Skipped Broiler.JavaScript.BuiltIns.Tests.DecimalToLocaleStringTests.InvariantChild [1 ms]
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+Results File: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2base/base/tests-off/trx/Broiler.JavaScript.BuiltIns.Tests.trx
+
+Passed!  - Failed:     0, Passed:  3769, Skipped:     0, Total:  3769, Duration: 37 s - Broiler.JavaScript.BuiltIns.Tests.dll (net10.0)
+VSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.

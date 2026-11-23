@@ -42,10 +42,61 @@ internal sealed class BridgeScopes
     internal BridgeScopes(DeclarationTables tables, BridgeTokens tokens)
     {
         this.tokens = tokens;
-        foreach (var scope in tables.Scopes)
-            scopes.TryAdd(scope.Node, scope);
+        IndexScopes(tables.Scopes);
         foreach (var facts in tables.Functions)
             functions.TryAdd(facts.Node, facts);
+    }
+
+    // The side table's scopes by node, each node's first scope, as Hoisting reads them: only the scopes that declare a
+    // name are kept (decision B8, 2026-11-23), since Hoisting answers the empty list for a node whose first scope
+    // declares none as for a node with no scope, and a source of millions of empty blocks otherwise indexed a scope for
+    // each. A node's first scope still wins: the table lists its scopes in the source order of their nodes' starts, so
+    // the scopes of one node stand together among those that start where it does, and a later one of a node already
+    // seen there is passed over. Where the table is found out of that order, every scope is indexed as before. Neither
+    // guard is reached by the library's table as it is built today: it is sorted, and it gives each node one scope (an
+    // if-clause function's block scope and its function scope belong to two nodes that start at one offset, its
+    // FunctionDeclaration and its FunctionNode).
+    private void IndexScopes(IReadOnlyList<Scope> table)
+    {
+        var at = -1;
+        var here = new List<SyntaxNode>();
+        foreach (var scope in table)
+        {
+            var offset = scope.Node.Span.Offset;
+            if (offset < at)
+            {
+                scopes.Clear();
+                foreach (var each in table)
+                    scopes.TryAdd(each.Node, each);
+                return;
+            }
+
+            if (offset != at)
+            {
+                at = offset;
+                here.Clear();
+            }
+
+            if (ContainsNode(here, scope.Node))
+                continue;
+            here.Add(scope.Node);
+            if (scope.Declarations.Count > 0)
+                scopes.Add(scope.Node, scope);
+        }
+    }
+
+    /// <summary>How many scopes the index holds (the regression test of decision B8 reads it).</summary>
+    internal int IndexedScopeCount => scopes.Count;
+
+    private static bool ContainsNode(List<SyntaxNode> nodes, SyntaxNode node)
+    {
+        foreach (var each in nodes)
+        {
+            if (ReferenceEquals(each, node))
+                return true;
+        }
+
+        return false;
     }
 
     private enum FrameKind

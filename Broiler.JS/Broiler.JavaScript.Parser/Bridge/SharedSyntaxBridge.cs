@@ -16,9 +16,9 @@ namespace Broiler.JavaScript.Parser.Bridge;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>Behind a test-only switch</b> (decision D43): the compiler parses through the bridge only when its options'
-/// internal switch is on, which tests set and the shell's hidden flag sets; it is off by default, and with it off no
-/// product path reaches this class. Window W2 turns it on and removes it.
+/// <b>Every compile parses through it</b> from window W2 (milestone SJL-14.3), which removes the test-only switch of
+/// SJL-14.2 (decision D43): until W2 the compiler parsed through the bridge only when its options' internal switch was
+/// on, which tests and the shell's hidden flag set.
 /// </para>
 /// <para>
 /// <b>The request</b> carries what the old parser's options carried (the goal and the permission to await at the top
@@ -74,6 +74,31 @@ internal static class SharedSyntaxBridge
     }
 
     /// <summary>
+    /// Parses <paramref name="code"/> under <paramref name="request"/> and returns the shared library's own tree, with no
+    /// tree of this engine's built: for the readers that read the shared tree directly from window W2 (milestone SJL-14.3,
+    /// decision D41), the module analysis among them. The parse runs on the library's documented stack (decision D47 (a)),
+    /// as <see cref="Parse"/>'s does.
+    /// </summary>
+    /// <exception cref="FastParseException">The library refused the source.</exception>
+    internal static ProgramNode ParseSharedTree(string code, BridgeRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(code);
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.Goal is BridgeGoal.FormalParameters or BridgeGoal.FunctionBody)
+            throw new ArgumentException("The dynamic function's goals are checked by CheckDynamicFunction, not parsed to a tree.", nameof(request));
+
+        return OnParseThread(() =>
+        {
+            var span = new StringSpan(code);
+            var result = SyntaxParser.Parse(Request(span, request));
+            if (result.Outcome != ParseOutcome.Accepted || result.Tree is null)
+                throw Refusal(result, span, request, new BridgeTokens(span));
+
+            return result.Tree;
+        });
+    }
+
+    /// <summary>
     /// CreateDynamicFunction's two parses (ECMA-262 clause 20.2.1.1.1, steps 18 to 20): the parameter text under the
     /// FormalParameters goal and the body text under the FunctionBody goal, each alone, with the function's kind.
     /// </summary>
@@ -99,8 +124,29 @@ internal static class SharedSyntaxBridge
         }
     }
 
+    /// <summary>
+    /// The old scanner's token stream over <paramref name="code"/> under <paramref name="request"/>'s goal, made from the
+    /// library's (window W2, milestone SJL-14.5; <see cref="BridgeTokens.Chain"/>): its first token, linked to the end of
+    /// file. <c>FastScanner</c>'s and <c>FastTokenStream</c>'s facades read it. The parse runs on the library's stack.
+    /// </summary>
+    /// <exception cref="FastParseException">The library refused the source, which has no token stream then.</exception>
+    internal static FastToken TokenChain(in StringSpan code, BridgeRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var span = code;
+        return OnParseThread(() =>
+        {
+            var tokens = new BridgeTokens(span);
+            var result = SyntaxParser.Parse(Request(span, request, retainTokens: true));
+            if (result.Outcome != ParseOutcome.Accepted)
+                throw Refusal(result, span, request, tokens);
+
+            return tokens.Chain(result.Tokens);
+        });
+    }
+
     /// <summary>The library's request for <paramref name="request"/> over <paramref name="code"/>.</summary>
-    internal static ParseRequest Request(in StringSpan code, BridgeRequest request)
+    internal static ParseRequest Request(in StringSpan code, BridgeRequest request, bool retainTokens = false)
     {
         var goal = request.Goal switch
         {
@@ -119,7 +165,7 @@ internal static class SharedSyntaxBridge
         };
 
         var source = new SourceText(code.Value ?? string.Empty, string.Empty, code.Offset);
-        return new ParseRequest(source, goal, JSUnicodeTables.Instance, BridgeRegularExpressions.Instance)
+        return new ParseRequest(source, goal, request.UnicodeTables ?? JSUnicodeTables.Instance, BridgeRegularExpressions.Instance)
         {
             Switches = switches,
             Context = goal == ParseGoal.Eval
@@ -133,6 +179,7 @@ internal static class SharedSyntaxBridge
                 }
                 : null,
             Proposals = Proposals,
+            RetainTokens = retainTokens,
             Extensions = LexerExtensions.DecimalSuffix,
             Limits = ParseLimits.Default,
             FunctionKind = goal is ParseGoal.FormalParameters or ParseGoal.FunctionBody

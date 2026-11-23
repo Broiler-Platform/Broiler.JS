@@ -1,12 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Broiler.JavaScript.Ast;
-using Broiler.JavaScript.Ast.Expressions;
-using Broiler.JavaScript.Ast.Misc;
-using Broiler.JavaScript.Ast.Statements;
-using Broiler.JavaScript.ExpressionCompiler.Core;
-using Broiler.JavaScript.Parser;
-using Broiler.JavaScript.Runtime;
+using Broiler.ECMAScript.Syntax;
+using Broiler.JavaScript.Parser.Bridge;
 
 namespace Broiler.JavaScript.Modules;
 
@@ -30,6 +25,11 @@ internal sealed record ExportEntry(string ExportName, ModuleRequest Request, str
 /// (ES2024 16.2.1.6.1) does: its requested modules in source order, its import entries, and its
 /// export entries split into local, indirect and star entries.
 /// </summary>
+/// <remarks>
+/// It reads the shared syntax library's tree (milestone SJL-14.3, window W2; Broiler.VM's JSD-0083, decision D41),
+/// parsed with the module goal through the bridge's request on the library's documented stack (decision D47 (a),
+/// <see cref="SharedSyntaxBridge.ParseSharedTree"/>). Until W2 it read the tree <c>FastParser.ParseModule</c> built.
+/// </remarks>
 internal sealed class ModuleSourceAnalysis
 {
     public readonly List<ModuleRequest> RequestedModules = [];
@@ -47,26 +47,25 @@ internal sealed class ModuleSourceAnalysis
     /// source must already have compiled, so every early error has been reported.</summary>
     public static ModuleSourceAnalysis Parse(string code)
     {
-        var program = FastParser.ParseModule(code, FastParserOptions.Module);
-        var analysis = new ModuleSourceAnalysis { HasTopLevelAwait = program.IsAsync };
+        var program = SharedSyntaxBridge.ParseSharedTree(code, BridgeRequest.Module);
+        var analysis = new ModuleSourceAnalysis { HasTopLevelAwait = program.HasTopLevelAwait };
         analysis.Read(program);
         return analysis;
     }
 
-    private ModuleRequest Request(AstLiteral source, IFastEnumerable<(StringSpan key, AstLiteral value)> attributes)
+    private ModuleRequest Request(StringLiteral source, IReadOnlyList<ImportAttribute> attributes)
     {
         string type = null;
         if (attributes != null)
         {
-            var e = attributes.GetFastEnumerator();
-            while (e.MoveNext(out var attribute))
+            foreach (var attribute in attributes)
             {
-                if (attribute.key.Equals("type"))
-                    type = attribute.value.StringValue;
+                if (NameOf(attribute.Key) == "type")
+                    type = attribute.Value.Value;
             }
         }
 
-        var request = new ModuleRequest(source.StringValue, type);
+        var request = new ModuleRequest(source.Value, type);
         if (requests.TryGetValue(request.CacheKey, out var existing))
             return existing;
 
@@ -75,33 +74,42 @@ internal sealed class ModuleSourceAnalysis
         return request;
     }
 
-    private void Read(AstProgram program)
+    private void Read(ProgramNode program)
     {
         var exportEntries = new List<ExportEntry>();
-        var statements = program.Statements.GetFastEnumerator();
-        while (statements.MoveNext(out var statement))
+        foreach (var statement in program.Body)
         {
             switch (statement)
             {
-                case AstImportStatement import:
+                case ImportDeclaration import:
                     var importRequest = Request(import.Source, import.Attributes);
-                    if (import.Default != null)
-                        ImportEntries.Add(new ImportEntry(importRequest, "default", import.Default.Name.Value));
+                    if (import.DefaultBinding != null)
+                        ImportEntries.Add(new ImportEntry(importRequest, "default", import.DefaultBinding.Name));
 
-                    if (import.All != null)
-                        ImportEntries.Add(new ImportEntry(importRequest, null, import.All.Name.Value));
+                    if (import.NamespaceBinding != null)
+                        ImportEntries.Add(new ImportEntry(importRequest, null, import.NamespaceBinding.Name));
 
-                    if (import.Members != null)
+                    if (import.NamedImports != null)
                     {
-                        var members = import.Members.GetFastEnumerator();
-                        while (members.MoveNext(out var member))
-                            ImportEntries.Add(new ImportEntry(importRequest, member.name.Value, member.asName.Value));
+                        foreach (var member in import.NamedImports)
+                            ImportEntries.Add(new ImportEntry(importRequest, member.Imported == null ? member.Local.Name : NameOf(member.Imported), member.Local.Name));
                     }
 
                     break;
 
-                case AstExportStatement export:
+                case ExportNamedDeclaration export:
                     ReadExport(export, exportEntries);
+                    break;
+
+                case ExportAllDeclaration exportAll:
+                    // `export * as ns from 'm'` exports m's namespace as `ns`; `export * from 'm'` is a
+                    // star entry (all-but-default, no export name).
+                    exportEntries.Add(new ExportEntry(exportAll.Exported == null ? null : NameOf(exportAll.Exported),
+                        Request(exportAll.Source, exportAll.Attributes), null, null));
+                    break;
+
+                case ExportDefaultDeclaration exportDefault:
+                    ReadDefaultExport(exportDefault, exportEntries);
                     break;
             }
         }
@@ -131,96 +139,109 @@ internal sealed class ModuleSourceAnalysis
         }
     }
 
-    private void ReadExport(AstExportStatement export, List<ExportEntry> entries)
+    private void ReadExport(ExportNamedDeclaration export, List<ExportEntry> entries)
     {
         if (export.Source != null)
         {
-            var request = Request((AstLiteral)export.Source, export.Attributes);
+            var request = Request(export.Source, export.Attributes);
+            foreach (var member in export.Specifiers)
+                entries.Add(new ExportEntry(NameOf(member.Exported ?? member.Local), request, NameOf(member.Local), null));
 
-            if (export.Members != null)
-            {
-                var members = export.Members.GetFastEnumerator();
-                while (members.MoveNext(out var member))
-                    entries.Add(new ExportEntry(member.asName.Value, request, member.name.Value, null));
-
-                return;
-            }
-
-            // `export * as ns from 'm'` exports m's namespace as `ns`; `export * from 'm'` is a
-            // star entry (all-but-default, no export name).
-            var namespaceName = export.Declaration switch
-            {
-                AstIdentifier identifier => identifier.Name.Value,
-                AstLiteral literal => literal.StringValue,
-                _ => null,
-            };
-            entries.Add(new ExportEntry(namespaceName, request, null, null));
             return;
         }
 
-        if (export.Members != null)
+        if (export.Declaration == null)
         {
-            var members = export.Members.GetFastEnumerator();
-            while (members.MoveNext(out var member))
-                entries.Add(new ExportEntry(member.asName.Value, null, null, member.name.Value));
+            foreach (var member in export.Specifiers)
+                entries.Add(new ExportEntry(NameOf(member.Exported ?? member.Local), null, null, NameOf(member.Local)));
 
             return;
         }
 
         switch (export.Declaration)
         {
-            case AstVariableDeclaration declaration:
+            case VariableDeclaration declaration:
                 var names = new List<string>();
-                var declarators = declaration.Declarators.GetFastEnumerator();
-                while (declarators.MoveNext(out var declarator))
-                    BoundNames(declarator.Identifier, names);
+                foreach (var declarator in declaration.Declarations)
+                    BoundNames(declarator.Target, names);
 
                 foreach (var name in names)
                     entries.Add(new ExportEntry(name, null, null, name));
                 return;
 
-            case AstFunctionExpression { IsStatement: true, Id: { } id }:
-                entries.Add(new ExportEntry(export.IsDefault ? "default" : id.Name.Value, null, null, id.Name.Value));
+            case FunctionDeclaration { Function.Name: { } id }:
+                entries.Add(new ExportEntry(id.Name, null, null, id.Name));
                 return;
 
-            case AstClassExpression { IsDeclaration: true, Identifier: { } identifier }:
-                entries.Add(new ExportEntry(export.IsDefault ? "default" : identifier.Name.Value, null, null, identifier.Name.Value));
+            case ClassDeclaration { Class.Name: { } identifier }:
+                entries.Add(new ExportEntry(identifier.Name, null, null, identifier.Name));
+                return;
+        }
+    }
+
+    private static void ReadDefaultExport(ExportDefaultDeclaration export, List<ExportEntry> entries)
+    {
+        switch (export.Declaration)
+        {
+            case FunctionDeclaration { Function.Name: { } id }:
+                entries.Add(new ExportEntry("default", null, null, id.Name));
+                return;
+
+            case ClassDeclaration { Class.Name: { } identifier }:
+                entries.Add(new ExportEntry("default", null, null, identifier.Name));
                 return;
         }
 
-        if (export.IsDefault)
-            entries.Add(new ExportEntry("default", null, null, "*default*"));
+        entries.Add(new ExportEntry("default", null, null, "*default*"));
     }
 
-    private static void BoundNames(AstExpression target, List<string> names)
+    // A ModuleExportName or an AttributeKey: an IdentifierName's name or a string literal's value.
+    private static string NameOf(SyntaxNode name) => name switch
+    {
+        IdentifierName identifierName => identifierName.Name,
+        Identifier identifier => identifier.Name,
+        BindingIdentifier binding => binding.Name,
+        StringLiteral literal => literal.Value,
+        _ => throw new InvalidOperationException("Not a module export name: " + name.Kind),
+    };
+
+    private static void BoundNames(Pattern target, List<string> names)
     {
         switch (target)
         {
-            case AstIdentifier identifier:
-                names.Add(identifier.Name.Value);
+            case BindingIdentifier identifier:
+                names.Add(identifier.Name);
                 break;
 
-            case AstBinaryExpression assignment:
-                BoundNames(assignment.Left, names);
+            case AssignmentPattern assignment:
+                BoundNames(assignment.Target, names);
                 break;
 
-            case AstSpreadElement spread:
-                BoundNames(spread.Argument, names);
+            case RestElement rest:
+                BoundNames(rest.Argument, names);
                 break;
 
-            case Ast.Patterns.AstArrayPattern array:
-                var elements = array.Elements.GetFastEnumerator();
-                while (elements.MoveNext(out var element))
+            case ArrayPattern array:
+                foreach (var element in array.Elements)
                 {
                     if (element != null)
                         BoundNames(element, names);
                 }
                 break;
 
-            case Ast.Patterns.AstObjectPattern @object:
-                var properties = @object.Properties.GetFastEnumerator();
-                while (properties.MoveNext(out var property))
-                    BoundNames(property.Value, names);
+            case ObjectPattern @object:
+                foreach (var property in @object.Properties)
+                {
+                    switch (property)
+                    {
+                        case PatternProperty patternProperty:
+                            BoundNames(patternProperty.Value, names);
+                            break;
+                        case Pattern pattern:
+                            BoundNames(pattern, names);
+                            break;
+                    }
+                }
                 break;
         }
     }

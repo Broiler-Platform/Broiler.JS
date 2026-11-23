@@ -7,27 +7,26 @@
   </PropertyGroup>
 
   <!-- No reference to Broiler.JavaScript.Runtime (milestone SJL-12.5, Broiler.VM's JSD-0080, decision
-       D20): the Unicode tables and the regular-expression checks the parser reads are Ast's, and
-       Broiler.Unicode.Algorithms, whose IUnicodeTables types the options' provider, comes with Ast. -->
+       D20): the Unicode tables the parser reads are Expressions' (moved there from Ast at window W2 of milestone SJL-14,
+       decision D50), its regular-expression check is Broiler.Regex's validate entry, referenced below, and
+       Broiler.Unicode.Algorithms, whose IUnicodeTables types the options' provider, comes with Expressions. -->
   <!-- The bridge (milestone SJL-14.2, window W1; Broiler.VM's JSD-0083, decisions D41 and D44) parses with the shared
-       syntax library and builds this assembly's tree from the library's. It is internal: the compiler reaches it
-       through its test-only switch (decision D43), the dynamic function's check through BuiltIns, and the tests and
-       bundle sjl-14-001's side-by-side tool (by reflection) through the grants below. No public member is added at W1.
-       The library is a private reference (PrivateAssets="all"): it is not carried into this assembly's package, whose
-       dependencies stay as they were, because Broiler.ECMAScript.Frontend has no published version yet (decision D30)
-       and no product path loads it while the switch is off. A project that runs the bridge references it itself (the
-       tests, the shell, the side-by-side tool), and a build with the switch on for every compile (BroilerBridgeBuild,
-       Directory.Build.props) lets it flow to every project. -->
+       syntax library and builds this assembly's tree from the library's. It is internal: the compiler reaches it for
+       every compile (window W2, milestone SJL-14.3, which removes SJL-14.2's test-only switch, decision D43), the
+       dynamic function's check through BuiltIns, and the tests and bundle sjl-14-001's side-by-side tool (by
+       reflection) through the grants below. From W2 every product path loads the library, so it is an ordinary
+       reference that flows to every project that references this one, and this assembly's package depends on
+       Broiler.ECMAScript.Frontend (decision D30). Until W2 it was a private reference (PrivateAssets="all"), unless a
+       build turned the switch on for every compile. -->
   <ItemGroup>
-    <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Frontend\Broiler.ECMAScript.Frontend.csproj" PrivateAssets="all" Condition="'$(BroilerBridgeBuild)' != 'true'" />
-    <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Frontend\Broiler.ECMAScript.Frontend.csproj" Condition="'$(BroilerBridgeBuild)' == 'true'" />
+    <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Frontend\Broiler.ECMAScript.Frontend.csproj" />
     <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Ast\Broiler.JavaScript.Ast.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Expressions\Broiler.JavaScript.Expressions.csproj" />
   </ItemGroup>
   <!-- Broiler.Regex's validate entry checks a regular-expression literal (milestone SJL-11.5; Broiler.VM's JSD-0081,
-       decision D22). Its compile assets stay private here too, as in Ast, so that its namespace does not reach the
-       projects that reference the parser. -->
+       decision D22). Its compile assets stay private here, as in Expressions (Ast referenced it so until window W2), so
+       that its namespace does not reach the projects that reference the parser. -->
   <ItemGroup>
     <PackageReference Include="Broiler.Regex" PrivateAssets="compile" />
   </ItemGroup>
@@ -35,6 +34,8 @@
     <InternalsVisibleTo Include="Broiler.JavaScript.Compiler" />
     <InternalsVisibleTo Include="Broiler.JavaScript.BuiltIns" />
     <InternalsVisibleTo Include="Broiler.JavaScript.Parser.Tests" />
+    <!-- The module analysis reads the shared tree through the bridge's request (window W2, decision D41). -->
+    <InternalsVisibleTo Include="Broiler.JavaScript.Modules" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="Microsoft.CodeAnalysis.BannedApiAnalyzers">

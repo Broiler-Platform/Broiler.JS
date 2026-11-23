@@ -1,0 +1,1009 @@
+{
+  "version": 4,
+  "targets": {
+    "net10.0": {
+      "Broiler.ECMAScript.Algorithms/0.1.0-preview.8": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Broiler.ECMAScript.Algorithms.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.ECMAScript.Algorithms.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.ECMAScript.Intl/0.1.0-preview.8": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.ECMAScript.Algorithms": "0.1.0-preview.8",
+          "Broiler.Unicode.Algorithms": "0.1.0-preview.6"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.ECMAScript.Intl.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.ECMAScript.Intl.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JavaScript.Ast/0.1.0-preview.1401": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.ECMAScript.Algorithms": "0.1.0-preview.8",
+          "Broiler.JavaScript.Expressions": "0.1.0-preview.1401",
+          "Broiler.Regex": "0.1.0-preview.6",
+          "Broiler.Unicode.Algorithms": "0.1.0-preview.6"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.JavaScript.Ast.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JavaScript.Ast.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JavaScript.BuiltIns/0.1.0-preview.1401": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.ECMAScript.Algorithms": "0.1.0-preview.8",
+          "Broiler.ECMAScript.Intl": "0.1.0-preview.8",
+          "Broiler.JavaScript.Engine": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Extensions": "0.1.0-preview.1401",
+          "Broiler.JavaScript.LinqExpressions": "0.1.0-preview.1401",
+          "Broiler.Regex": "0.1.0-preview.6",
+          "Broiler.Unicode.Segmentation": "0.1.0-preview.6"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.JavaScript.BuiltIns.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JavaScript.BuiltIns.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JavaScript.Compiler/0.1.0-preview.1401": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.JavaScript.Engine": "0.1.0-preview.1401",
+          "Broiler.JavaScript.LinqExpressions": "0.1.0-preview.1401"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.JavaScript.Compiler.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JavaScript.Compiler.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JavaScript.Engine/0.1.0-preview.1401": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.JavaScript.Ast": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Expressions": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Parser": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Runtime": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Storage": "0.1.0-preview.1401"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.JavaScript.Engine.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JavaScript.Engine.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JavaScript.ExpressionCompiler/0.1.0-preview.1401": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.JavaScript.Expressions": "0.1.0-preview.1401"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.JavaScript.ExpressionCompiler.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JavaScript.ExpressionCompiler.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JavaScript.Expressions/0.1.0-preview.1401": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.ECMAScript.Algorithms": "0.1.0-preview.8"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.JavaScript.Expressions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JavaScript.Expressions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JavaScript.Extensions/0.1.0-preview.1401": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.JavaScript.Engine": "0.1.0-preview.1401",
+          "Broiler.JavaScript.LinqExpressions": "0.1.0-preview.1401"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.JavaScript.Extensions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JavaScript.Extensions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JavaScript.Globals/0.1.0-preview.1401": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.JavaScript.BuiltIns": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Compiler": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Engine": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Extensions": "0.1.0-preview.1401"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.JavaScript.Globals.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JavaScript.Globals.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JavaScript.LinqExpressions/0.1.0-preview.1401": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.JavaScript.Ast": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Engine": "0.1.0-preview.1401",
+          "Broiler.JavaScript.ExpressionCompiler": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Expressions": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Runtime": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Storage": "0.1.0-preview.1401"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.JavaScript.LinqExpressions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JavaScript.LinqExpressions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JavaScript.Modules/0.1.0-preview.1401": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.JavaScript.BuiltIns": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Engine": "0.1.0-preview.1401",
+          "Broiler.JavaScript.LinqExpressions": "0.1.0-preview.1401"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.JavaScript.Modules.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JavaScript.Modules.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JavaScript.Parser/0.1.0-preview.1401": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.ECMAScript.Algorithms": "0.1.0-preview.8",
+          "Broiler.JavaScript.Ast": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Expressions": "0.1.0-preview.1401",
+          "Broiler.Regex": "0.1.0-preview.6"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.JavaScript.Parser.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JavaScript.Parser.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JavaScript.Runtime/0.1.0-preview.1401": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.ECMAScript.Algorithms": "0.1.0-preview.8",
+          "Broiler.JavaScript.Ast": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Expressions": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Storage": "0.1.0-preview.1401"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.JavaScript.Runtime.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JavaScript.Runtime.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JavaScript.Storage/0.1.0-preview.1401": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.ECMAScript.Algorithms": "0.1.0-preview.8",
+          "Broiler.JavaScript.Ast": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Expressions": "0.1.0-preview.1401"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.JavaScript.Storage.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JavaScript.Storage.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JSeal/0.1.0-preview.1": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Broiler.JSeal.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JSeal.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.JSeal.BroilerJs/0.1.0-preview.1": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.JSeal": "0.1.0-preview.1",
+          "Broiler.JavaScript.BuiltIns": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Globals": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Modules": "0.1.0-preview.1401",
+          "Broiler.JavaScript.Storage": "0.1.0-preview.1401"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.JSeal.BroilerJs.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.JSeal.BroilerJs.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.Regex/0.1.0-preview.6": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.Unicode.Algorithms": "0.1.0-preview.6"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.Regex.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.Regex.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.Unicode.Algorithms/0.1.0-preview.6": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/Broiler.Unicode.Algorithms.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.Unicode.Algorithms.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Broiler.Unicode.Segmentation/0.1.0-preview.6": {
+        "type": "package",
+        "dependencies": {
+          "Broiler.Unicode.Algorithms": "0.1.0-preview.6"
+        },
+        "compile": {
+          "lib/net10.0/Broiler.Unicode.Segmentation.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Broiler.Unicode.Segmentation.dll": {
+            "related": ".xml"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Broiler.ECMAScript.Algorithms/0.1.0-preview.8": {
+      "sha512": "PdVUgci8R2znPPzOrC77pdn6GuOJuVW4Dq+oBcf1mO/fnarC9vhpUgSlPa1BWyQnhugnYSlY1Db/jKeDlULrOw==",
+      "type": "package",
+      "path": "broiler.ecmascript.algorithms/0.1.0-preview.8",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.ecmascript.algorithms.0.1.0-preview.8.nupkg.sha512",
+        "broiler.ecmascript.algorithms.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.ECMAScript.Algorithms.dll",
+        "lib/net10.0/Broiler.ECMAScript.Algorithms.xml"
+      ]
+    },
+    "Broiler.ECMAScript.Intl/0.1.0-preview.8": {
+      "sha512": "KIccIvqErbqjKuFkqcDWErqIQ5KhdhX0OzQxEi107z80zhGy4JXu9OZv4wgHmUJCfPmzZ0lQWo6KhAm7zkehVA==",
+      "type": "package",
+      "path": "broiler.ecmascript.intl/0.1.0-preview.8",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.ecmascript.intl.0.1.0-preview.8.nupkg.sha512",
+        "broiler.ecmascript.intl.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.ECMAScript.Intl.dll",
+        "lib/net10.0/Broiler.ECMAScript.Intl.xml"
+      ]
+    },
+    "Broiler.JavaScript.Ast/0.1.0-preview.1401": {
+      "sha512": "OeJsOBV6IQ6XxIMwAy6qFiybxdCO+jt8upx+6zqFoDUv6Gxb2wuQNTsH6j+sHuTiwmVwmBxj/5VI2f6gK4vDXA==",
+      "type": "package",
+      "path": "broiler.javascript.ast/0.1.0-preview.1401",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.javascript.ast.0.1.0-preview.1401.nupkg.sha512",
+        "broiler.javascript.ast.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JavaScript.Ast.dll",
+        "lib/net10.0/Broiler.JavaScript.Ast.xml"
+      ]
+    },
+    "Broiler.JavaScript.BuiltIns/0.1.0-preview.1401": {
+      "sha512": "E9vfHKyHkUIctRM1Ir3wIVIu7KUJPQl77PtWBSFNqK2x3r0GZ0xc/8727cqO+dBhhYQkXkLTPJVhnA2iWWcXiQ==",
+      "type": "package",
+      "path": "broiler.javascript.builtins/0.1.0-preview.1401",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.javascript.builtins.0.1.0-preview.1401.nupkg.sha512",
+        "broiler.javascript.builtins.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JavaScript.BuiltIns.dll",
+        "lib/net10.0/Broiler.JavaScript.BuiltIns.xml"
+      ]
+    },
+    "Broiler.JavaScript.Compiler/0.1.0-preview.1401": {
+      "sha512": "H98OIF32vnhJA1hwhyFNWkDaFj27COPUcZZLrShUKuWOcYjW3l0JJhhDUiJzQ9eIUXdNDz42dNu1eXaO9JDjaA==",
+      "type": "package",
+      "path": "broiler.javascript.compiler/0.1.0-preview.1401",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.javascript.compiler.0.1.0-preview.1401.nupkg.sha512",
+        "broiler.javascript.compiler.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JavaScript.Compiler.dll",
+        "lib/net10.0/Broiler.JavaScript.Compiler.xml"
+      ]
+    },
+    "Broiler.JavaScript.Engine/0.1.0-preview.1401": {
+      "sha512": "pFRFBapueXUqWu+L+xkKKtEgk7ka7lYw3OrEInI0kH9ehSYiWyG9wuFccjRvvTBq9wNqQ86+h2EERxhCw3gnTQ==",
+      "type": "package",
+      "path": "broiler.javascript.engine/0.1.0-preview.1401",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.javascript.engine.0.1.0-preview.1401.nupkg.sha512",
+        "broiler.javascript.engine.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JavaScript.Engine.dll",
+        "lib/net10.0/Broiler.JavaScript.Engine.xml"
+      ]
+    },
+    "Broiler.JavaScript.ExpressionCompiler/0.1.0-preview.1401": {
+      "sha512": "BoAQ0EaWVOT/SvENLasu8tUx0N9J6uMUpAEmHm588MCVqW8rHPGlsup8OYVmkpj3qnzvY2ILlykt0Z9EPiBO9A==",
+      "type": "package",
+      "path": "broiler.javascript.expressioncompiler/0.1.0-preview.1401",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.javascript.expressioncompiler.0.1.0-preview.1401.nupkg.sha512",
+        "broiler.javascript.expressioncompiler.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JavaScript.ExpressionCompiler.dll",
+        "lib/net10.0/Broiler.JavaScript.ExpressionCompiler.xml"
+      ]
+    },
+    "Broiler.JavaScript.Expressions/0.1.0-preview.1401": {
+      "sha512": "7NfEVysxC84jPZCJsncWhP2L3FEO2EIv4IPU80oGAWTLbD4GEP/hZy/pLCzS8oPT2S6xVhPXbksuP30u2Gxcww==",
+      "type": "package",
+      "path": "broiler.javascript.expressions/0.1.0-preview.1401",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.javascript.expressions.0.1.0-preview.1401.nupkg.sha512",
+        "broiler.javascript.expressions.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JavaScript.Expressions.dll",
+        "lib/net10.0/Broiler.JavaScript.Expressions.xml"
+      ]
+    },
+    "Broiler.JavaScript.Extensions/0.1.0-preview.1401": {
+      "sha512": "HJIAB06pfj3FDSItKUir3RXMHYwaDp/svRqeso2iAos+G/v1TE3zYoUNB0eiQa0Ki67klBNpHvTQQJ0IPc8XWw==",
+      "type": "package",
+      "path": "broiler.javascript.extensions/0.1.0-preview.1401",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.javascript.extensions.0.1.0-preview.1401.nupkg.sha512",
+        "broiler.javascript.extensions.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JavaScript.Extensions.dll",
+        "lib/net10.0/Broiler.JavaScript.Extensions.xml"
+      ]
+    },
+    "Broiler.JavaScript.Globals/0.1.0-preview.1401": {
+      "sha512": "tmlJ5ozpzDj48xXI9ajfNEMN0WTV3eVoOzstz5FokFpm09iKqPd7uIstTfTV7Lj+0H94Er/eAe7M0SqSTS8SRA==",
+      "type": "package",
+      "path": "broiler.javascript.globals/0.1.0-preview.1401",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.javascript.globals.0.1.0-preview.1401.nupkg.sha512",
+        "broiler.javascript.globals.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JavaScript.Globals.dll",
+        "lib/net10.0/Broiler.JavaScript.Globals.xml"
+      ]
+    },
+    "Broiler.JavaScript.LinqExpressions/0.1.0-preview.1401": {
+      "sha512": "x77nxscoWWbpyR+KmGRGIJc8QiHiPYw0VDGIbh5iGjDnIOPfix1nQK0jbHi1dSD10JztBWzzvW6Lt8JRzCtEUg==",
+      "type": "package",
+      "path": "broiler.javascript.linqexpressions/0.1.0-preview.1401",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.javascript.linqexpressions.0.1.0-preview.1401.nupkg.sha512",
+        "broiler.javascript.linqexpressions.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JavaScript.LinqExpressions.dll",
+        "lib/net10.0/Broiler.JavaScript.LinqExpressions.xml"
+      ]
+    },
+    "Broiler.JavaScript.Modules/0.1.0-preview.1401": {
+      "sha512": "OMyXiQEWWNK36EwPJZ67rwEOQqbYrhzoDnH04DBNK/Hq2JrkbNHmIc6Um3nXqXJ/lugz4xiZPoBqVi67FT5lHw==",
+      "type": "package",
+      "path": "broiler.javascript.modules/0.1.0-preview.1401",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.javascript.modules.0.1.0-preview.1401.nupkg.sha512",
+        "broiler.javascript.modules.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JavaScript.Modules.dll",
+        "lib/net10.0/Broiler.JavaScript.Modules.xml"
+      ]
+    },
+    "Broiler.JavaScript.Parser/0.1.0-preview.1401": {
+      "sha512": "+5PR3wckIl7iKfJoNDwIgSdciFIUzWGF8tMm939iVlkY9UheShh0hF4YUp7qN/6Ha1oTsu+s1CruTOJRYGRphQ==",
+      "type": "package",
+      "path": "broiler.javascript.parser/0.1.0-preview.1401",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.javascript.parser.0.1.0-preview.1401.nupkg.sha512",
+        "broiler.javascript.parser.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JavaScript.Parser.dll",
+        "lib/net10.0/Broiler.JavaScript.Parser.xml"
+      ]
+    },
+    "Broiler.JavaScript.Runtime/0.1.0-preview.1401": {
+      "sha512": "9anmHwXNhcMaU33QXUAkhz4uQxhmSFsKwt4ophMk01Dfo2ICPmDuxjFFzfXDdhKaFUM73KXLYXgsmbtWVH0Vuw==",
+      "type": "package",
+      "path": "broiler.javascript.runtime/0.1.0-preview.1401",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.javascript.runtime.0.1.0-preview.1401.nupkg.sha512",
+        "broiler.javascript.runtime.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JavaScript.Runtime.dll",
+        "lib/net10.0/Broiler.JavaScript.Runtime.xml"
+      ]
+    },
+    "Broiler.JavaScript.Storage/0.1.0-preview.1401": {
+      "sha512": "ioOH+z67WMnLpX45PCbm9Nk+OYbj07W4AEiTN39pRJ9fw2v4chPbPipQB9CDcbcZjm1MehpkprjGpuKg4pjVXA==",
+      "type": "package",
+      "path": "broiler.javascript.storage/0.1.0-preview.1401",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.javascript.storage.0.1.0-preview.1401.nupkg.sha512",
+        "broiler.javascript.storage.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JavaScript.Storage.dll",
+        "lib/net10.0/Broiler.JavaScript.Storage.xml"
+      ]
+    },
+    "Broiler.JSeal/0.1.0-preview.1": {
+      "sha512": "SsIBS9NDwefJe8+BytiuJPRi6MmqiBSxQ08JijFZqc/QMFxa3WSyQ4Ahl0mMB1+GqrAA6bYilHUmWKQK76WayA==",
+      "type": "package",
+      "path": "broiler.jseal/0.1.0-preview.1",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "broiler.jseal.0.1.0-preview.1.nupkg.sha512",
+        "broiler.jseal.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JSeal.dll",
+        "lib/net10.0/Broiler.JSeal.xml"
+      ]
+    },
+    "Broiler.JSeal.BroilerJs/0.1.0-preview.1": {
+      "sha512": "0WXex8TdAyoQ+bcwSQ0DkMG5KXEcHESq4YDvhqgA0omvV3Wnpah9LlQ8qitzRYIGmaZJes2MDVEvyHR7HgUrSA==",
+      "type": "package",
+      "path": "broiler.jseal.broilerjs/0.1.0-preview.1",
+      "files": [
+        ".nupkg.metadata",
+        "README.md",
+        "broiler.jseal.broilerjs.0.1.0-preview.1.nupkg.sha512",
+        "broiler.jseal.broilerjs.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.JSeal.BroilerJs.dll",
+        "lib/net10.0/Broiler.JSeal.BroilerJs.xml"
+      ]
+    },
+    "Broiler.Regex/0.1.0-preview.6": {
+      "sha512": "yifGq4CtrwWwMcT1ALnJwb1MKINRMsxnDuOY9Kog4lCuGpM1JyP+4POvDl0M9wI9YJcXGcWvlsy7hgq6zQeBIg==",
+      "type": "package",
+      "path": "broiler.regex/0.1.0-preview.6",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.regex.0.1.0-preview.6.nupkg.sha512",
+        "broiler.regex.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.Regex.dll",
+        "lib/net10.0/Broiler.Regex.xml"
+      ]
+    },
+    "Broiler.Unicode.Algorithms/0.1.0-preview.6": {
+      "sha512": "ix5d1rK49zNV7mWQLg780RV8VrTaAuGaerMbTwsR4g0Zgm8cOKCesB+MLQIfHojEMBpP8dAzOqn0PBnre1fmAQ==",
+      "type": "package",
+      "path": "broiler.unicode.algorithms/0.1.0-preview.6",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.unicode.algorithms.0.1.0-preview.6.nupkg.sha512",
+        "broiler.unicode.algorithms.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.Unicode.Algorithms.dll",
+        "lib/net10.0/Broiler.Unicode.Algorithms.xml"
+      ]
+    },
+    "Broiler.Unicode.Segmentation/0.1.0-preview.6": {
+      "sha512": "II/4yvIeEjbMitmYV6HCv9iTKJEqGVQHutiHptOlowkm4JLFXR09JTP/TK3i86YRMDmQiX63L08NRKNEbngtOg==",
+      "type": "package",
+      "path": "broiler.unicode.segmentation/0.1.0-preview.6",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "THIRD_PARTY_NOTICES.md",
+        "broiler.unicode.segmentation.0.1.0-preview.6.nupkg.sha512",
+        "broiler.unicode.segmentation.nuspec",
+        "icon.png",
+        "lib/net10.0/Broiler.Unicode.Segmentation.dll",
+        "lib/net10.0/Broiler.Unicode.Segmentation.xml"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net10.0": [
+      "Broiler.JSeal.BroilerJs >= 0.1.0-preview.1 <= 0.1.0-preview.1"
+    ]
+  },
+  "packageFolders": {
+    "/tmp/jseal-package-consumer-f86f0900970c47a7809dd66d165e50b5/BroilerJs/packages": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "/tmp/jseal-package-consumer-f86f0900970c47a7809dd66d165e50b5/BroilerJs/Consumer.csproj",
+      "projectName": "Consumer",
+      "projectPath": "/tmp/jseal-package-consumer-f86f0900970c47a7809dd66d165e50b5/BroilerJs/Consumer.csproj",
+      "packagesPath": "/tmp/jseal-package-consumer-f86f0900970c47a7809dd66d165e50b5/BroilerJs/packages",
+      "outputPath": "/tmp/jseal-package-consumer-f86f0900970c47a7809dd66d165e50b5/BroilerJs/obj/",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "/tmp/jseal-package-consumer-f86f0900970c47a7809dd66d165e50b5/BroilerJs/NuGet.config"
+      ],
+      "originalTargetFrameworks": [
+        "net10.0"
+      ],
+      "sources": {
+        "/tmp/jseal-package-consumer-f86f0900970c47a7809dd66d165e50b5/feed": {}
+      },
+      "frameworks": {
+        "net10.0": {
+          "framework": "net10.0",
+          "targetAlias": "net10.0",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "allWarningsAsErrors": true,
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "false",
+        "auditLevel": "low",
+        "auditMode": "all"
+      },
+      "SdkAnalysisLevel": "10.0.400"
+    },
+    "frameworks": {
+      "net10.0": {
+        "framework": "net10.0",
+        "targetAlias": "net10.0",
+        "dependencies": {
+          "Broiler.JSeal.BroilerJs": {
+            "target": "Package",
+            "version": "[0.1.0-preview.1, 0.1.0-preview.1]"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "/root/.dotnet/sdk/10.0.404/PortableRuntimeIdentifierGraph.json",
+        "packagesToPrune": {
+          "Microsoft.CSharp": "(,4.7.32767]",
+          "Microsoft.VisualBasic": "(,10.4.32767]",
+          "Microsoft.Win32.Primitives": "(,4.3.32767]",
+          "Microsoft.Win32.Registry": "(,5.0.32767]",
+          "runtime.any.System.Collections": "(,4.3.32767]",
+          "runtime.any.System.Diagnostics.Tools": "(,4.3.32767]",
+          "runtime.any.System.Diagnostics.Tracing": "(,4.3.32767]",
+          "runtime.any.System.Globalization": "(,4.3.32767]",
+          "runtime.any.System.Globalization.Calendars": "(,4.3.32767]",
+          "runtime.any.System.IO": "(,4.3.32767]",
+          "runtime.any.System.Reflection": "(,4.3.32767]",
+          "runtime.any.System.Reflection.Extensions": "(,4.3.32767]",
+          "runtime.any.System.Reflection.Primitives": "(,4.3.32767]",
+          "runtime.any.System.Resources.ResourceManager": "(,4.3.32767]",
+          "runtime.any.System.Runtime": "(,4.3.32767]",
+          "runtime.any.System.Runtime.Handles": "(,4.3.32767]",
+          "runtime.any.System.Runtime.InteropServices": "(,4.3.32767]",
+          "runtime.any.System.Text.Encoding": "(,4.3.32767]",
+          "runtime.any.System.Text.Encoding.Extensions": "(,4.3.32767]",
+          "runtime.any.System.Threading.Tasks": "(,4.3.32767]",
+          "runtime.any.System.Threading.Timer": "(,4.3.32767]",
+          "runtime.aot.System.Collections": "(,4.3.32767]",
+          "runtime.aot.System.Diagnostics.Tools": "(,4.3.32767]",
+          "runtime.aot.System.Diagnostics.Tracing": "(,4.3.32767]",
+          "runtime.aot.System.Globalization": "(,4.3.32767]",
+          "runtime.aot.System.Globalization.Calendars": "(,4.3.32767]",
+          "runtime.aot.System.IO": "(,4.3.32767]",
+          "runtime.aot.System.Reflection": "(,4.3.32767]",
+          "runtime.aot.System.Reflection.Extensions": "(,4.3.32767]",
+          "runtime.aot.System.Reflection.Primitives": "(,4.3.32767]",
+          "runtime.aot.System.Resources.ResourceManager": "(,4.3.32767]",
+          "runtime.aot.System.Runtime": "(,4.3.32767]",
+          "runtime.aot.System.Runtime.Handles": "(,4.3.32767]",
+          "runtime.aot.System.Runtime.InteropServices": "(,4.3.32767]",
+          "runtime.aot.System.Text.Encoding": "(,4.3.32767]",
+          "runtime.aot.System.Text.Encoding.Extensions": "(,4.3.32767]",
+          "runtime.aot.System.Threading.Tasks": "(,4.3.32767]",
+          "runtime.aot.System.Threading.Timer": "(,4.3.32767]",
+          "runtime.debian.8-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.debian.8-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.debian.8-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.debian.8-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.debian.8-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.debian.9-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.debian.9-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.debian.9-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.debian.9-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.fedora.23-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.fedora.23-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.fedora.23-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.fedora.23-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.fedora.23-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.fedora.23-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.fedora.24-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.fedora.24-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.fedora.24-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.fedora.24-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.fedora.24-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.fedora.24-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.fedora.27-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.fedora.27-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.fedora.27-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.fedora.27-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.fedora.28-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.fedora.28-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.fedora.28-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.fedora.28-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.opensuse.13.2-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.opensuse.13.2-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.opensuse.13.2-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.opensuse.13.2-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.opensuse.13.2-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.opensuse.13.2-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.opensuse.42.1-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.opensuse.42.1-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.opensuse.42.1-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.opensuse.42.1-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.opensuse.42.1-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.opensuse.42.1-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.opensuse.42.3-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.opensuse.42.3-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.opensuse.42.3-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.opensuse.42.3-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.osx.10.10-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.osx.10.10-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.osx.10.10-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.osx.10.10-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.osx.10.10-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.osx.10.10-x64.runtime.native.System.Security.Cryptography.Apple": "(,4.3.32767]",
+          "runtime.osx.10.10-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.rhel.7-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.rhel.7-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.rhel.7-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.rhel.7-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.rhel.7-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.rhel.7-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.ubuntu.14.04-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.ubuntu.14.04-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.ubuntu.14.04-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.ubuntu.14.04-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.ubuntu.14.04-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.ubuntu.14.04-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.ubuntu.16.04-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.ubuntu.16.04-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.ubuntu.16.04-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.ubuntu.16.04-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.ubuntu.16.04-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.ubuntu.16.04-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.ubuntu.16.10-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.ubuntu.16.10-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.ubuntu.16.10-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.ubuntu.16.10-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.ubuntu.16.10-x64.runtime.native.System.Security.Cryptography": "(,4.3.32767]",
+          "runtime.ubuntu.16.10-x64.runtime.native.System.Security.Cryptography.OpenSsl": "(,4.3.32767]",
+          "runtime.ubuntu.18.04-x64.runtime.native.System": "(,4.3.32767]",
+          "runtime.ubuntu.18.04-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.ubuntu.18.04-x64.runtime.native.System.Net.Http": "(,4.3.32767]",
+          "runtime.ubuntu.18.04-x64.runtime.native.System.Net.Security": "(,4.3.32767]",
+          "runtime.unix.Microsoft.Win32.Primitives": "(,4.3.32767]",
+          "runtime.unix.System.Console": "(,4.3.32767]",
+          "runtime.unix.System.Diagnostics.Debug": "(,4.3.32767]",
+          "runtime.unix.System.IO.FileSystem": "(,4.3.32767]",
+          "runtime.unix.System.Net.Primitives": "(,4.3.32767]",
+          "runtime.unix.System.Net.Sockets": "(,4.3.32767]",
+          "runtime.unix.System.Private.Uri": "(,4.3.32767]",
+          "runtime.unix.System.Runtime.Extensions": "(,4.3.32767]",
+          "runtime.win.Microsoft.Win32.Primitives": "(,4.3.32767]",
+          "runtime.win.System.Console": "(,4.3.32767]",
+          "runtime.win.System.Diagnostics.Debug": "(,4.3.32767]",
+          "runtime.win.System.IO.FileSystem": "(,4.3.32767]",
+          "runtime.win.System.Net.Primitives": "(,4.3.32767]",
+          "runtime.win.System.Net.Sockets": "(,4.3.32767]",
+          "runtime.win.System.Runtime.Extensions": "(,4.3.32767]",
+          "runtime.win10-arm-aot.runtime.native.System.IO.Compression": "(,4.0.32767]",
+          "runtime.win10-arm64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.win10-x64-aot.runtime.native.System.IO.Compression": "(,4.0.32767]",
+          "runtime.win10-x86-aot.runtime.native.System.IO.Compression": "(,4.0.32767]",
+          "runtime.win7-x64.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.win7-x86.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "runtime.win7.System.Private.Uri": "(,4.3.32767]",
+          "runtime.win8-arm.runtime.native.System.IO.Compression": "(,4.3.32767]",
+          "System.AppContext": "(,4.3.32767]",
+          "System.Buffers": "(,5.0.32767]",
+          "System.Collections": "(,4.3.32767]",
+          "System.Collections.Concurrent": "(,4.3.32767]",
+          "System.Collections.Immutable": "(,10.0.32767]",
+          "System.Collections.NonGeneric": "(,4.3.32767]",
+          "System.Collections.Specialized": "(,4.3.32767]",
+          "System.ComponentModel": "(,4.3.32767]",
+          "System.ComponentModel.Annotations": "(,4.3.32767]",
+          "System.ComponentModel.EventBasedAsync": "(,4.3.32767]",
+          "System.ComponentModel.Primitives": "(,4.3.32767]",
+          "System.ComponentModel.TypeConverter": "(,4.3.32767]",
+          "System.Console": "(,4.3.32767]",
+          "System.Data.Common": "(,4.3.32767]",
+          "System.Data.DataSetExtensions": "(,4.4.32767]",
+          "System.Diagnostics.Contracts": "(,4.3.32767]",
+          "System.Diagnostics.Debug": "(,4.3.32767]",
+          "System.Diagnostics.DiagnosticSource": "(,10.0.32767]",
+          "System.Diagnostics.FileVersionInfo": "(,4.3.32767]",
+          "System.Diagnostics.Process": "(,4.3.32767]",
+          "System.Diagnostics.StackTrace": "(,4.3.32767]",
+          "System.Diagnostics.TextWriterTraceListener": "(,4.3.32767]",
+          "System.Diagnostics.Tools": "(,4.3.32767]",
+          "System.Diagnostics.TraceSource": "(,4.3.32767]",
+          "System.Diagnostics.Tracing": "(,4.3.32767]",
+          "System.Drawing.Primitives": "(,4.3.32767]",
+          "System.Dynamic.Runtime": "(,4.3.32767]",
+          "System.Formats.Asn1": "(,10.0.32767]",
+          "System.Formats.Tar": "(,10.0.32767]",
+          "System.Globalization": "(,4.3.32767]",
+          "System.Globalization.Calendars": "(,4.3.32767]",
+          "System.Globalization.Extensions": "(,4.3.32767]",
+          "System.IO": "(,4.3.32767]",
+          "System.IO.Compression": "(,4.3.32767]",
+          "System.IO.Compression.ZipFile": "(,4.3.32767]",
+          "System.IO.FileSystem": "(,4.3.32767]",
+          "System.IO.FileSystem.AccessControl": "(,4.4.32767]",
+          "System.IO.FileSystem.DriveInfo": "(,4.3.32767]",
+          "System.IO.FileSystem.Primitives": "(,4.3.32767]",
+          "System.IO.FileSystem.Watcher": "(,4.3.32767]",
+          "System.IO.IsolatedStorage": "(,4.3.32767]",
+          "System.IO.MemoryMappedFiles": "(,4.3.32767]",
+          "System.IO.Pipelines": "(,10.0.32767]",
+          "System.IO.Pipes": "(,4.3.32767]",
+          "System.IO.Pipes.AccessControl": "(,5.0.32767]",
+          "System.IO.UnmanagedMemoryStream": "(,4.3.32767]",
+          "System.Linq": "(,4.3.32767]",
+          "System.Linq.AsyncEnumerable": "(,10.0.32767]",
+          "System.Linq.Expressions": "(,4.3.32767]",
+          "System.Linq.Parallel": "(,4.3.32767]",
+          "System.Linq.Queryable": "(,4.3.32767]",
+          "System.Memory": "(,5.0.32767]",
+          "System.Net.Http": "(,4.3.32767]",
+          "System.Net.Http.Json": "(,10.0.32767]",
+          "System.Net.NameResolution": "(,4.3.32767]",
+          "System.Net.NetworkInformation": "(,4.3.32767]",
+          "System.Net.Ping": "(,4.3.32767]",
+          "System.Net.Primitives": "(,4.3.32767]",
+          "System.Net.Requests": "(,4.3.32767]",
+          "System.Net.Security": "(,4.3.32767]",
+          "System.Net.ServerSentEvents": "(,10.0.32767]",
+          "System.Net.Sockets": "(,4.3.32767]",
+          "System.Net.WebHeaderCollection": "(,4.3.32767]",
+          "System.Net.WebSockets": "(,4.3.32767]",
+          "System.Net.WebSockets.Client": "(,4.3.32767]",
+          "System.Numerics.Vectors": "(,5.0.32767]",
+          "System.ObjectModel": "(,4.3.32767]",
+          "System.Private.DataContractSerialization": "(,4.3.32767]",
+          "System.Private.Uri": "(,4.3.32767]",
+          "System.Reflection": "(,4.3.32767]",
+          "System.Reflection.DispatchProxy": "(,6.0.32767]",
+          "System.Reflection.Emit": "(,4.7.32767]",
+          "System.Reflection.Emit.ILGeneration": "(,4.7.32767]",
+          "System.Reflection.Emit.Lightweight": "(,4.7.32767]",
+          "System.Reflection.Extensions": "(,4.3.32767]",
+          "System.Reflection.Metadata": "(,10.0.32767]",
+          "System.Reflection.Primitives": "(,4.3.32767]",
+          "System.Reflection.TypeExtensions": "(,4.3.32767]",
+          "System.Resources.Reader": "(,4.3.32767]",
+          "System.Resources.ResourceManager": "(,4.3.32767]",
+          "System.Resources.Writer": "(,4.3.32767]",
+          "System.Runtime": "(,4.3.32767]",
+          "System.Runtime.CompilerServices.Unsafe": "(,7.0.32767]",
+          "System.Runtime.CompilerServices.VisualC": "(,4.3.32767]",
+          "System.Runtime.Extensions": "(,4.3.32767]",
+          "System.Runtime.Handles": "(,4.3.32767]",
+          "System.Runtime.InteropServices": "(,4.3.32767]",
+          "System.Runtime.InteropServices.RuntimeInformation": "(,4.3.32767]",
+          "System.Runtime.Loader": "(,4.3.32767]",
+          "System.Runtime.Numerics": "(,4.3.32767]",
+          "System.Runtime.Serialization.Formatters": "(,4.3.32767]",
+          "System.Runtime.Serialization.Json": "(,4.3.32767]",
+          "System.Runtime.Serialization.Primitives": "(,4.3.32767]",
+          "System.Runtime.Serialization.Xml": "(,4.3.32767]",
+          "System.Security.AccessControl": "(,6.0.32767]",
+          "System.Security.Claims": "(,4.3.32767]",
+          "System.Security.Cryptography.Algorithms": "(,4.3.32767]",
+          "System.Security.Cryptography.Cng": "(,5.0.32767]",
+          "System.Security.Cryptography.Csp": "(,4.3.32767]",
+          "System.Security.Cryptography.Encoding": "(,4.3.32767]",
+          "System.Security.Cryptography.OpenSsl": "(,5.0.32767]",
+          "System.Security.Cryptography.Primitives": "(,4.3.32767]",
+          "System.Security.Cryptography.X509Certificates": "(,4.3.32767]",
+          "System.Security.Principal": "(,4.3.32767]",
+          "System.Security.Principal.Windows": "(,5.0.32767]",
+          "System.Security.SecureString": "(,4.3.32767]",
+          "System.Text.Encoding": "(,4.3.32767]",
+          "System.Text.Encoding.CodePages": "(,10.0.32767]",
+          "System.Text.Encoding.Extensions": "(,4.3.32767]",
+          "System.Text.Encodings.Web": "(,10.0.32767]",
+          "System.Text.Json": "(,10.0.32767]",
+          "System.Text.RegularExpressions": "(,4.3.32767]",
+          "System.Threading": "(,4.3.32767]",
+          "System.Threading.AccessControl": "(,10.0.32767]",
+          "System.Threading.Channels": "(,10.0.32767]",
+          "System.Threading.Overlapped": "(,4.3.32767]",
+          "System.Threading.Tasks": "(,4.3.32767]",
+          "System.Threading.Tasks.Dataflow": "(,10.0.32767]",
+          "System.Threading.Tasks.Extensions": "(,5.0.32767]",
+          "System.Threading.Tasks.Parallel": "(,4.3.32767]",
+          "System.Threading.Thread": "(,4.3.32767]",
+          "System.Threading.ThreadPool": "(,4.3.32767]",
+          "System.Threading.Timer": "(,4.3.32767]",
+          "System.ValueTuple": "(,4.5.32767]",
+          "System.Xml.ReaderWriter": "(,4.3.32767]",
+          "System.Xml.XDocument": "(,4.3.32767]",
+          "System.Xml.XmlDocument": "(,4.3.32767]",
+          "System.Xml.XmlSerializer": "(,4.3.32767]",
+          "System.Xml.XPath": "(,4.3.32767]",
+          "System.Xml.XPath.XDocument": "(,5.0.32767]"
+        }
+      }
+    }
+  }
+}

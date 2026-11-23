@@ -1,0 +1,146 @@
+2026-11-19T17:51:58Z lock w2b-w1-archive WAIT
+2026-11-19T17:51:58Z lock w2b-w1-archive HELD
+2026-11-19T17:51:58Z gate w2b-w1-archive PASS load1=0.27 procs=none checks=0
+2026-11-19T17:52:02Z stop-servers: done, remaining:
+2026-11-19T17:52:03Z lock w2b-w1-build-off WAIT
+2026-11-19T17:52:03Z lock w2b-w1-build-off HELD
+2026-11-19T17:52:03Z gate w2b-w1-build-off PASS load1=0.33 procs=none checks=0
+2026-11-19T17:54:19Z stop-servers: done, remaining:
+2026-11-19T17:54:20Z lock w2b-w1-terser WAIT
+2026-11-19T17:54:20Z lock w2b-w1-terser HELD
+2026-11-19T17:54:20Z gate w2b-w1-terser WAIT load1=4.25 procs=none
+2026-11-19T17:55:21Z gate w2b-w1-terser WAIT load1=2.58 procs=none
+2026-11-19T17:56:21Z gate w2b-w1-terser WAIT load1=1.54 procs=none
+2026-11-19T17:56:52Z gate w2b-w1-terser PASS load1=0.93 procs=none checks=15
+2026-11-19T17:56:53Z stop-servers: done, remaining:
+2026-11-19T17:56:54Z lock w2b-w1-tests-off WAIT
+2026-11-19T17:56:54Z lock w2b-w1-tests-off HELD
+2026-11-19T17:56:54Z gate w2b-w1-tests-off PASS load1=0.86 procs=none checks=0
+2026-11-19T18:31:19Z stop-servers: done, remaining:
+2026-11-19T18:31:20Z lock w2b-w1-t262-off-0 WAIT
+2026-11-19T18:31:20Z lock w2b-w1-t262-off-0 HELD
+2026-11-19T18:31:20Z gate w2b-w1-t262-off-0 PASS load1=1.00 procs=none checks=0
+2026-11-19T19:00:41Z stop-servers: done, remaining:
+2026-11-19T19:00:42Z lock w2b-w1-t262-off-1 WAIT
+2026-11-19T19:00:42Z lock w2b-w1-t262-off-1 HELD
+2026-11-19T19:00:42Z gate w2b-w1-t262-off-1 WAIT load1=4.40 procs=none
+2026-11-19T19:01:43Z gate w2b-w1-t262-off-1 WAIT load1=1.61 procs=none
+2026-11-19T19:02:13Z gate w2b-w1-t262-off-1 PASS load1=0.98 procs=none checks=9
+2026-11-19T19:30:58Z stop-servers: done, remaining:
+2026-11-19T19:30:58Z lock w2b-w1-t262-off-2 WAIT
+2026-11-19T19:30:58Z lock w2b-w1-t262-off-2 HELD
+2026-11-19T19:30:58Z gate w2b-w1-t262-off-2 WAIT load1=4.33 procs=none
+2026-11-19T19:31:59Z gate w2b-w1-t262-off-2 WAIT load1=1.59 procs=none
+2026-11-19T19:32:30Z gate w2b-w1-t262-off-2 PASS load1=0.96 procs=none checks=9
+2026-11-19T20:02:26Z stop-servers: done, remaining:
+2026-11-19T20:02:27Z lock w2b-w1-t262-off-3 WAIT
+2026-11-19T20:02:27Z lock w2b-w1-t262-off-3 HELD
+2026-11-19T20:02:27Z gate w2b-w1-t262-off-3 WAIT load1=2.80 procs=none
+2026-11-19T20:03:28Z gate w2b-w1-t262-off-3 WAIT load1=1.03 procs=none
+2026-11-19T20:03:38Z gate w2b-w1-t262-off-3 PASS load1=0.87 procs=none checks=7
+2026-11-19T20:32:50Z stop-servers: done, remaining:
+2026-11-19T20:32:51Z lock w2b-w1-t262-off-4 WAIT
+2026-11-19T20:32:51Z lock w2b-w1-t262-off-4 HELD
+2026-11-19T20:32:51Z gate w2b-w1-t262-off-4 WAIT load1=3.80 procs=none
+2026-11-19T20:33:52Z gate w2b-w1-t262-off-4 WAIT load1=1.31 procs=none
+2026-11-19T20:34:12Z gate w2b-w1-t262-off-4 PASS load1=0.94 procs=none checks=8
+2026-11-19T21:03:48Z stop-servers: done, remaining:
+2026-11-19T21:03:49Z lock w2b-w1-t262-off-5 WAIT
+2026-11-19T21:03:49Z lock w2b-w1-t262-off-5 HELD
+2026-11-19T21:03:49Z gate w2b-w1-t262-off-5 WAIT load1=4.61 procs=none
+2026-11-19T21:04:50Z gate w2b-w1-t262-off-5 WAIT load1=1.69 procs=none
+2026-11-19T21:05:31Z gate w2b-w1-t262-off-5 PASS load1=0.86 procs=none checks=10
+2026-11-19T21:34:08Z stop-servers: done, remaining:
+2026-11-19T21:34:09Z lock w2b-w1-t262-off-6 WAIT
+2026-11-19T21:34:09Z lock w2b-w1-t262-off-6 HELD
+2026-11-19T21:34:09Z gate w2b-w1-t262-off-6 WAIT load1=5.07 procs=none
+2026-11-19T21:35:10Z gate w2b-w1-t262-off-6 WAIT load1=1.86 procs=none
+2026-11-19T21:35:51Z gate w2b-w1-t262-off-6 PASS load1=0.95 procs=none checks=10
+2026-11-19T22:04:36Z stop-servers: done, remaining:
+2026-11-19T22:04:37Z lock w2b-w1-t262-off-7 WAIT
+2026-11-19T22:04:37Z lock w2b-w1-t262-off-7 HELD
+2026-11-19T22:04:37Z gate w2b-w1-t262-off-7 WAIT load1=4.50 procs=none
+2026-11-19T22:05:38Z gate w2b-w1-t262-off-7 WAIT load1=1.65 procs=none
+2026-11-19T22:06:08Z gate w2b-w1-t262-off-7 PASS load1=1.00 procs=none checks=9
+2026-11-19T22:34:47Z stop-servers: done, remaining:
+2026-11-19T22:34:48Z lock w2b-w1-t262merge-off WAIT
+2026-11-19T22:34:48Z lock w2b-w1-t262merge-off HELD
+2026-11-19T22:34:48Z gate w2b-w1-t262merge-off WAIT load1=4.41 procs=none
+2026-11-19T22:35:49Z gate w2b-w1-t262merge-off WAIT load1=1.62 procs=none
+2026-11-19T22:36:19Z gate w2b-w1-t262merge-off PASS load1=0.98 procs=none checks=9
+2026-11-19T22:36:23Z stop-servers: done, remaining:
+2026-11-19T22:36:24Z lock w2b-w1-t262rerun-off WAIT
+2026-11-19T22:36:24Z lock w2b-w1-t262rerun-off HELD
+2026-11-19T22:36:24Z gate w2b-w1-t262rerun-off PASS load1=0.98 procs=none checks=0
+2026-11-19T22:37:26Z stop-servers: done, remaining:
+2026-11-19T22:37:26Z lock w2b-w1-t262-on-0 WAIT
+2026-11-19T22:37:26Z lock w2b-w1-t262-on-0 HELD
+2026-11-19T22:37:26Z gate w2b-w1-t262-on-0 PASS load1=1.00 procs=none checks=0
+2026-11-19T23:08:38Z stop-servers: done, remaining:
+2026-11-19T23:08:39Z lock w2b-w1-t262-on-1 WAIT
+2026-11-19T23:08:39Z lock w2b-w1-t262-on-1 HELD
+2026-11-19T23:08:39Z gate w2b-w1-t262-on-1 WAIT load1=4.93 procs=none
+2026-11-19T23:09:40Z gate w2b-w1-t262-on-1 WAIT load1=1.81 procs=none
+2026-11-19T23:10:21Z gate w2b-w1-t262-on-1 PASS load1=0.93 procs=none checks=10
+2026-11-19T23:36:25Z lock w2b-w1-t262-on-1 WAIT
+2026-11-19T23:36:25Z lock w2b-w1-t262-on-1 HELD
+2026-11-19T23:36:25Z gate w2b-w1-t262-on-1 PASS load1=0.51 procs=none checks=0
+2026-11-20T00:12:07Z stop-servers: done, remaining:
+2026-11-20T00:12:08Z lock w2b-w1-t262-on-2 WAIT
+2026-11-20T00:12:08Z lock w2b-w1-t262-on-2 HELD
+2026-11-20T00:12:09Z gate w2b-w1-t262-on-2 WAIT load1=4.39 procs=none
+2026-11-20T00:13:10Z gate w2b-w1-t262-on-2 WAIT load1=1.61 procs=none
+2026-11-20T00:13:40Z gate w2b-w1-t262-on-2 PASS load1=0.97 procs=none checks=9
+2026-11-20T00:50:18Z stop-servers: done, remaining:
+2026-11-20T00:50:19Z lock w2b-w1-t262-on-3 WAIT
+2026-11-20T00:50:19Z lock w2b-w1-t262-on-3 HELD
+2026-11-20T00:50:19Z gate w2b-w1-t262-on-3 WAIT load1=2.87 procs=none
+2026-11-20T00:51:20Z gate w2b-w1-t262-on-3 WAIT load1=1.03 procs=none
+2026-11-20T00:51:30Z gate w2b-w1-t262-on-3 PASS load1=0.87 procs=none checks=7
+2026-11-20T01:28:00Z stop-servers: done, remaining:
+2026-11-20T01:28:01Z lock w2b-w1-t262-on-4 WAIT
+2026-11-20T01:28:01Z lock w2b-w1-t262-on-4 HELD
+2026-11-20T01:28:01Z gate w2b-w1-t262-on-4 WAIT load1=2.58 procs=none
+2026-11-20T01:29:02Z gate w2b-w1-t262-on-4 PASS load1=0.93 procs=none checks=6
+2026-11-20T02:04:41Z stop-servers: done, remaining:
+2026-11-20T02:04:42Z lock w2b-w1-t262-on-5 WAIT
+2026-11-20T02:04:42Z lock w2b-w1-t262-on-5 HELD
+2026-11-20T02:04:42Z gate w2b-w1-t262-on-5 WAIT load1=5.54 procs=none
+2026-11-20T02:05:43Z gate w2b-w1-t262-on-5 WAIT load1=2.03 procs=none
+2026-11-20T02:06:34Z gate w2b-w1-t262-on-5 PASS load1=0.91 procs=none checks=11
+2026-11-20T02:41:36Z stop-servers: done, remaining:
+2026-11-20T02:41:36Z lock w2b-w1-t262-on-6 WAIT
+2026-11-20T02:41:36Z lock w2b-w1-t262-on-6 HELD
+2026-11-20T02:41:36Z gate w2b-w1-t262-on-6 WAIT load1=4.49 procs=none
+2026-11-20T02:42:38Z gate w2b-w1-t262-on-6 WAIT load1=1.65 procs=none
+2026-11-20T02:43:08Z gate w2b-w1-t262-on-6 PASS load1=1.00 procs=none checks=9
+2026-11-20T03:18:27Z stop-servers: done, remaining:
+2026-11-20T03:18:28Z lock w2b-w1-t262-on-7 WAIT
+2026-11-20T03:18:28Z lock w2b-w1-t262-on-7 HELD
+2026-11-20T03:18:28Z gate w2b-w1-t262-on-7 WAIT load1=4.93 procs=none
+2026-11-20T03:19:29Z gate w2b-w1-t262-on-7 WAIT load1=1.81 procs=none
+2026-11-20T03:20:10Z gate w2b-w1-t262-on-7 PASS load1=0.93 procs=none checks=10
+2026-11-20T03:55:49Z stop-servers: done, remaining:
+2026-11-20T03:55:49Z lock w2b-w1-t262merge-on WAIT
+2026-11-20T03:55:49Z lock w2b-w1-t262merge-on HELD
+2026-11-20T03:55:49Z gate w2b-w1-t262merge-on WAIT load1=4.52 procs=none
+2026-11-20T03:56:50Z gate w2b-w1-t262merge-on WAIT load1=1.66 procs=none
+2026-11-20T03:57:21Z gate w2b-w1-t262merge-on PASS load1=1.00 procs=none checks=9
+2026-11-20T03:57:26Z stop-servers: done, remaining:
+2026-11-20T03:57:27Z lock w2b-w1-t262rerun-on WAIT
+2026-11-20T03:57:27Z lock w2b-w1-t262rerun-on HELD
+2026-11-20T03:57:27Z gate w2b-w1-t262rerun-on PASS load1=1.00 procs=none checks=0
+2026-11-20T03:58:28Z stop-servers: done, remaining:
+2026-11-20T03:58:29Z lock w2b-w1-build-on WAIT
+2026-11-20T03:58:29Z lock w2b-w1-build-on HELD
+2026-11-20T03:58:29Z gate w2b-w1-build-on PASS load1=1.00 procs=none checks=0
+2026-11-20T04:01:02Z stop-servers: done, remaining:
+2026-11-20T04:01:03Z lock w2b-w1-tests-on WAIT
+2026-11-20T04:01:03Z lock w2b-w1-tests-on HELD
+2026-11-20T04:01:03Z gate w2b-w1-tests-on WAIT load1=3.09 procs=none
+2026-11-20T04:02:04Z gate w2b-w1-tests-on WAIT load1=1.22 procs=none
+2026-11-20T04:02:24Z gate w2b-w1-tests-on PASS load1=0.87 procs=none checks=8
+2026-11-22T14:00:09Z lock w2b-w1-tests-on WAIT
+2026-11-22T14:00:09Z lock w2b-w1-tests-on HELD
+2026-11-22T14:00:09Z gate w2b-w1-tests-on PASS load1=0.71 procs=none checks=0
+2026-11-22T14:51:14Z stop-servers: done, remaining:

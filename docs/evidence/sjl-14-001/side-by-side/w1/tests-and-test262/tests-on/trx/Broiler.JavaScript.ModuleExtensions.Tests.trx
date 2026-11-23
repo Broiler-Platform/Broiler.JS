@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="41222a5f-aa7a-49b7-8079-d2dbafe66431" name="@vm 2026-11-22 14:05:17" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-22T14:05:17.6410475+00:00" queuing="2026-11-22T14:05:17.6410476+00:00" start="2026-11-22T14:05:10.7867571+00:00" finish="2026-11-22T14:05:17.7616335+00:00" />
+  <TestSettings name="default" id="64d738a0-fba2-46bd-aad1-aff81420f361">
+    <Deployment runDeploymentRoot="_vm_2026-11-22_14_05_17" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="df16304e-15ab-4c8e-90ed-b0c3170c127a" testId="6b2e6d67-afc4-a636-ffdb-7747d2fac87e" testName="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests.ModuleBuilder_ExportValue_ReturnsSelf" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:05:17.6084450+00:00" endTime="2026-11-22T14:05:17.6087457+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="df16304e-15ab-4c8e-90ed-b0c3170c127a" />
+    <UnitTestResult executionId="c234b4ae-4808-4adf-8b38-2ecb7291d580" testId="e8810978-e0ff-037a-7c3e-7de304d776e0" testName="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests.ModuleBuilder_Create_Succeeds" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:05:17.6053863+00:00" endTime="2026-11-22T14:05:17.6058794+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c234b4ae-4808-4adf-8b38-2ecb7291d580" />
+    <UnitTestResult executionId="9310b99e-c5f6-4294-b07e-1b8fb572b807" testId="5c9aca7a-e76d-c597-c2f1-0c74756f2c6e" testName="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests.ModuleBuilder_ExportFunction_ReturnsSelf" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:05:17.6071103+00:00" endTime="2026-11-22T14:05:17.6075661+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9310b99e-c5f6-4294-b07e-1b8fb572b807" />
+    <UnitTestResult executionId="45a4b964-3791-4294-8861-be913f214d35" testId="6951d863-8bd8-3bf7-9ea3-c9dc9f99eddc" testName="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests.ModuleBuilder_ExportedValues_AreVisibleToImportingScript" computerName="vm" duration="00:00:02.1070000" startTime="2026-11-22T14:05:15.4553119+00:00" endTime="2026-11-22T14:05:17.5844870+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="45a4b964-3791-4294-8861-be913f214d35" />
+    <UnitTestResult executionId="8e8c7579-31ea-4860-99ab-a1b4e95e9b9f" testId="67a5fab6-7e08-9ecf-f149-2f828e063dba" testName="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests.ModuleBuilder_ExportValue_AcceptsPrimitivesBeforeEngineInitialization" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:05:17.6024894+00:00" endTime="2026-11-22T14:05:17.6036785+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8e8c7579-31ea-4860-99ab-a1b4e95e9b9f" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests.ModuleBuilder_ExportValue_ReturnsSelf" storage="/home/user/js-w2base-build/8e5519d8/tree/broiler.js/broiler.javascript.moduleextensions.tests/bin/release/net10.0/broiler.javascript.moduleextensions.tests.dll" id="6b2e6d67-afc4-a636-ffdb-7747d2fac87e">
+      <Execution id="df16304e-15ab-4c8e-90ed-b0c3170c127a" />
+      <TestMethod codeBase="/home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.ModuleExtensions.Tests/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests" name="ModuleBuilder_ExportValue_ReturnsSelf" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests.ModuleBuilder_ExportValue_AcceptsPrimitivesBeforeEngineInitialization" storage="/home/user/js-w2base-build/8e5519d8/tree/broiler.js/broiler.javascript.moduleextensions.tests/bin/release/net10.0/broiler.javascript.moduleextensions.tests.dll" id="67a5fab6-7e08-9ecf-f149-2f828e063dba">
+      <Execution id="8e8c7579-31ea-4860-99ab-a1b4e95e9b9f" />
+      <TestMethod codeBase="/home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.ModuleExtensions.Tests/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests" name="ModuleBuilder_ExportValue_AcceptsPrimitivesBeforeEngineInitialization" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests.ModuleBuilder_ExportFunction_ReturnsSelf" storage="/home/user/js-w2base-build/8e5519d8/tree/broiler.js/broiler.javascript.moduleextensions.tests/bin/release/net10.0/broiler.javascript.moduleextensions.tests.dll" id="5c9aca7a-e76d-c597-c2f1-0c74756f2c6e">
+      <Execution id="9310b99e-c5f6-4294-b07e-1b8fb572b807" />
+      <TestMethod codeBase="/home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.ModuleExtensions.Tests/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests" name="ModuleBuilder_ExportFunction_ReturnsSelf" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests.ModuleBuilder_ExportedValues_AreVisibleToImportingScript" storage="/home/user/js-w2base-build/8e5519d8/tree/broiler.js/broiler.javascript.moduleextensions.tests/bin/release/net10.0/broiler.javascript.moduleextensions.tests.dll" id="6951d863-8bd8-3bf7-9ea3-c9dc9f99eddc">
+      <Execution id="45a4b964-3791-4294-8861-be913f214d35" />
+      <TestMethod codeBase="/home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.ModuleExtensions.Tests/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests" name="ModuleBuilder_ExportedValues_AreVisibleToImportingScript" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests.ModuleBuilder_Create_Succeeds" storage="/home/user/js-w2base-build/8e5519d8/tree/broiler.js/broiler.javascript.moduleextensions.tests/bin/release/net10.0/broiler.javascript.moduleextensions.tests.dll" id="e8810978-e0ff-037a-7c3e-7de304d776e0">
+      <Execution id="c234b4ae-4808-4adf-8b38-2ecb7291d580" />
+      <TestMethod codeBase="/home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.ModuleExtensions.Tests/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.ModuleExtensions.Tests.ModuleExtensionsTests" name="ModuleBuilder_Create_Succeeds" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="6b2e6d67-afc4-a636-ffdb-7747d2fac87e" executionId="df16304e-15ab-4c8e-90ed-b0c3170c127a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e8810978-e0ff-037a-7c3e-7de304d776e0" executionId="c234b4ae-4808-4adf-8b38-2ecb7291d580" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5c9aca7a-e76d-c597-c2f1-0c74756f2c6e" executionId="9310b99e-c5f6-4294-b07e-1b8fb572b807" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6951d863-8bd8-3bf7-9ea3-c9dc9f99eddc" executionId="45a4b964-3791-4294-8861-be913f214d35" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="67a5fab6-7e08-9ecf-f149-2f828e063dba" executionId="8e8c7579-31ea-4860-99ab-a1b4e95e9b9f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="5" executed="5" passed="5" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.89]   Discovering: Broiler.JavaScript.ModuleExtensions.Tests
+[xUnit.net 00:00:01.16]   Discovered:  Broiler.JavaScript.ModuleExtensions.Tests
+[xUnit.net 00:00:01.46]   Starting:    Broiler.JavaScript.ModuleExtensions.Tests
+[xUnit.net 00:00:03.82]   Finished:    Broiler.JavaScript.ModuleExtensions.Tests (ID = 'fbaf93b6c8aaba4f90256773ecd0d4dd9c171e91e26044199685320fe7202973')
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="vm" outcome="Warning" timestamp="2026-11-22T14:05:17.6875418+00:00">
+        <Text>Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

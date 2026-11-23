@@ -131,17 +131,7 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     public JSCompilationOptions CompilationOptions => new(
         Options.ScriptHostMode,
         (int)ExperimentalFeatures,
-        Options.CompilationBackend)
-    {
-        ParseThroughBridge = ParseThroughBridge,
-    };
-
-    /// <summary>
-    /// The test-only switch of milestone SJL-14.2 (decision D43) for every compile this context makes: the compiler
-    /// parses through the bridge to the shared syntax library. Off by default; the shell's hidden
-    /// <c>--parse-through-bridge</c> flag sets it. Window W2 removes it.
-    /// </summary>
-    internal bool ParseThroughBridge { get; set; }
+        Options.CompilationBackend);
 
     SAUint32Map<JSVariable> globalVars = new();
     private int directEvalDepth;
@@ -645,6 +635,10 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
 
     private readonly List<JSValue> directEvalSuperConstructorValues = [];
     private readonly List<JSVariable> directEvalThisBindingValues = [];
+    // Beside each shared binding, whether the constructor that shares it is a derived class's (window W2 of milestone
+    // SJL-14, row R24): a base class's constructor shares its own, initialised `this` too, so that its eval code reads that
+    // binding and not an enclosing derived constructor's, and records that no super() is available there.
+    private readonly List<bool> directEvalSuperCallInDerivedConstructorValues = [];
 
     private sealed class DirectEvalSuperCallScope(JSContext context) : IDisposable
     {
@@ -652,6 +646,7 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         {
             context.directEvalSuperConstructorValues.RemoveAt(context.directEvalSuperConstructorValues.Count - 1);
             context.directEvalThisBindingValues.RemoveAt(context.directEvalThisBindingValues.Count - 1);
+            context.directEvalSuperCallInDerivedConstructorValues.RemoveAt(context.directEvalSuperCallInDerivedConstructorValues.Count - 1);
         }
     }
 
@@ -665,12 +660,23 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     /// the <c>super()</c> call rather than reading <c>this</c>.
     /// </summary>
     public IDisposable PushDirectEvalSuperCall(JSValue superConstructor, JSVariable thisBinding)
+        => PushDirectEvalSuperCall(superConstructor, thisBinding, inDerivedConstructor: true);
+
+    /// <summary>
+    /// Shares a class constructor's <c>this</c> binding with a direct eval body, as the overload without
+    /// <paramref name="inDerivedConstructor"/> does, and records whether that constructor is a derived class's (window W2
+    /// of milestone SJL-14, row R24). A base class's constructor shares its binding so that the innermost shared binding is
+    /// always the running constructor's: its eval code, and a nested eval in it, read its own <c>this</c>, not that of a
+    /// derived constructor whose eval reached it through <c>super()</c>, and inherit no super-call grant.
+    /// </summary>
+    internal IDisposable PushDirectEvalSuperCall(JSValue superConstructor, JSVariable thisBinding, bool inDerivedConstructor)
     {
         if (thisBinding == null)
             return null;
 
         directEvalSuperConstructorValues.Add(superConstructor ?? JSUndefined.Value);
         directEvalThisBindingValues.Add(thisBinding);
+        directEvalSuperCallInDerivedConstructorValues.Add(inDerivedConstructor);
         return new DirectEvalSuperCallScope(this);
     }
 
@@ -682,6 +688,13 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
 
     /// <summary>Whether a <c>super(...)</c> call is available to the direct eval currently being compiled.</summary>
     public bool HasDirectEvalSuperCall => directEvalThisBindingValues.Count > 0;
+
+    /// <summary>
+    /// Whether the innermost shared <c>this</c> binding is a derived class constructor's, so that a <c>super(...)</c> in
+    /// the direct eval being compiled is allowed (window W2 of milestone SJL-14, row R24); false when none is shared.
+    /// </summary>
+    internal bool DirectEvalSuperCallInDerivedConstructor
+        => directEvalSuperCallInDerivedConstructorValues.Count > 0 && directEvalSuperCallInDerivedConstructorValues[^1];
 
     internal bool TryResolveDirectEvalBinding(in KeyString name, out JSVariable variable, bool includeUninitializedShadows = false)
     {
@@ -953,26 +966,46 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     /// </summary>
     internal int DirectEvalCodeDepth => directEvalCodeDepth;
 
+    // Whether the eval code DirectEvalSupport.Execute is compiling now inherits its caller's strictness; false at any other time.
+    private bool directEvalCodeIsStrict;
+
     /// <summary>
-    /// Sets <see cref="DirectEvalCodeDepth"/> to <paramref name="depth"/> until the returned scope is
-    /// disposed. <c>DirectEvalSupport.Execute</c> holds it around the compile of the eval code alone, not
-    /// around its evaluation, so a compilation that code starts as it runs reads 0.
+    /// Whether the direct eval code being compiled now is strict from its start because its caller is strict: the
+    /// compiler passes it to the bridge as the library's forced strictness and compiles the code as strict code
+    /// (window W2 of milestone SJL-14; decision D44, as Broiler.VM's JSD-0083 revised it). False for every other
+    /// compilation. Until W2, <c>DirectEvalSupport.Execute</c> put a <c>"use strict";</c> directive before the code
+    /// instead.
     /// </summary>
-    internal IDisposable CompileDirectEvalCodeAt(int depth) => new DirectEvalCodeDepthScope(this, depth);
+    internal bool DirectEvalCodeIsStrict => directEvalCodeIsStrict;
+
+    /// <summary>
+    /// Sets <see cref="DirectEvalCodeDepth"/> to <paramref name="depth"/> and <see cref="DirectEvalCodeIsStrict"/> to
+    /// <paramref name="strict"/> until the returned scope is disposed. <c>DirectEvalSupport.Execute</c> holds it around
+    /// the compile of the eval code alone, not around its evaluation, so a compilation that code starts as it runs reads
+    /// 0 and false.
+    /// </summary>
+    internal IDisposable CompileDirectEvalCodeAt(int depth, bool strict = false) => new DirectEvalCodeDepthScope(this, depth, strict);
 
     private sealed class DirectEvalCodeDepthScope : IDisposable
     {
         private readonly JSContext context;
         private readonly int previous;
+        private readonly bool previousStrict;
 
-        public DirectEvalCodeDepthScope(JSContext context, int depth)
+        public DirectEvalCodeDepthScope(JSContext context, int depth, bool strict)
         {
             this.context = context;
             previous = context.directEvalCodeDepth;
+            previousStrict = context.directEvalCodeIsStrict;
             context.directEvalCodeDepth = depth;
+            context.directEvalCodeIsStrict = strict;
         }
 
-        public void Dispose() => context.directEvalCodeDepth = previous;
+        public void Dispose()
+        {
+            context.directEvalCodeDepth = previous;
+            context.directEvalCodeIsStrict = previousStrict;
+        }
     }
 
     public bool UsesDirectEvalLocalVarEnvironment => directEvalLocalVarEnvironmentDepth > 0;

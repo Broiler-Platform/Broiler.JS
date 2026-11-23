@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="8092f270-e237-4e2b-beb0-04078340c3f9" name="@vm 2026-11-22 14:57:52" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-22T14:57:52.8079736+00:00" queuing="2026-11-22T14:57:52.8079737+00:00" start="2026-11-22T14:57:51.0579226+00:00" finish="2026-11-22T14:57:52.8163418+00:00" />
+  <TestSettings name="default" id="e35d5aca-6050-4628-bdb1-e9a02a684934">
+    <Deployment runDeploymentRoot="_vm_2026-11-22_14_57_52" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="22501094-3a5c-4ad4-8cad-e7c09e1ca5b4" testId="5c92323a-661c-fc77-c6a5-eca2f8a15c21" testName="Broiler.JavaScript.Clr.Tests.ClrTests.ClrProxy_From_WrapsObject" computerName="vm" duration="00:00:00.0140000" startTime="2026-11-22T14:57:52.6171751+00:00" endTime="2026-11-22T14:57:52.6314541+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="22501094-3a5c-4ad4-8cad-e7c09e1ca5b4" />
+    <UnitTestResult executionId="6c86edcf-d9ce-424d-af6b-3845328cb42d" testId="9c3603eb-8654-b046-bf7b-50d702bea16d" testName="Broiler.JavaScript.Clr.Tests.ClrTests.ClrType_From_WrapsType" computerName="vm" duration="00:00:00.1930000" startTime="2026-11-22T14:57:52.4024722+00:00" endTime="2026-11-22T14:57:52.6091303+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6c86edcf-d9ce-424d-af6b-3845328cb42d" />
+    <UnitTestResult executionId="3efbda54-fff7-4d63-8b90-a0198b2238c5" testId="8f4acd34-9b82-a9b5-71b1-03fbe4937256" testName="Broiler.JavaScript.Clr.Tests.ClrTests.ClrProxy_Marshal_Int_ReturnsJSNumber" computerName="vm" duration="00:00:00.0060000" startTime="2026-11-22T14:57:52.6320665+00:00" endTime="2026-11-22T14:57:52.6389156+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3efbda54-fff7-4d63-8b90-a0198b2238c5" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Broiler.JavaScript.Clr.Tests.ClrTests.ClrProxy_From_WrapsObject" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.clr.tests/bin/release/net10.0/broiler.javascript.clr.tests.dll" id="5c92323a-661c-fc77-c6a5-eca2f8a15c21">
+      <Execution id="22501094-3a5c-4ad4-8cad-e7c09e1ca5b4" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Clr.Tests/bin/Release/net10.0/Broiler.JavaScript.Clr.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Clr.Tests.ClrTests" name="ClrProxy_From_WrapsObject" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Clr.Tests.ClrTests.ClrProxy_Marshal_Int_ReturnsJSNumber" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.clr.tests/bin/release/net10.0/broiler.javascript.clr.tests.dll" id="8f4acd34-9b82-a9b5-71b1-03fbe4937256">
+      <Execution id="3efbda54-fff7-4d63-8b90-a0198b2238c5" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Clr.Tests/bin/Release/net10.0/Broiler.JavaScript.Clr.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Clr.Tests.ClrTests" name="ClrProxy_Marshal_Int_ReturnsJSNumber" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Clr.Tests.ClrTests.ClrType_From_WrapsType" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.clr.tests/bin/release/net10.0/broiler.javascript.clr.tests.dll" id="9c3603eb-8654-b046-bf7b-50d702bea16d">
+      <Execution id="6c86edcf-d9ce-424d-af6b-3845328cb42d" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Clr.Tests/bin/Release/net10.0/Broiler.JavaScript.Clr.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Clr.Tests.ClrTests" name="ClrType_From_WrapsType" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="5c92323a-661c-fc77-c6a5-eca2f8a15c21" executionId="22501094-3a5c-4ad4-8cad-e7c09e1ca5b4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9c3603eb-8654-b046-bf7b-50d702bea16d" executionId="6c86edcf-d9ce-424d-af6b-3845328cb42d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8f4acd34-9b82-a9b5-71b1-03fbe4937256" executionId="3efbda54-fff7-4d63-8b90-a0198b2238c5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="3" executed="3" passed="3" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.21]   Discovering: Broiler.JavaScript.Clr.Tests
+[xUnit.net 00:00:00.42]   Discovered:  Broiler.JavaScript.Clr.Tests
+[xUnit.net 00:00:00.62]   Starting:    Broiler.JavaScript.Clr.Tests
+[xUnit.net 00:00:01.00]   Finished:    Broiler.JavaScript.Clr.Tests (ID = '07f5faadec6962fc50f6025a16532719c494f42e346e2471a0322a6662baf167')
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="vm" outcome="Warning" timestamp="2026-11-22T14:57:52.7322627+00:00">
+        <Text>Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

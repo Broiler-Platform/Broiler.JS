@@ -1,0 +1,307 @@
+  Determining projects to restore...
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj (in 2.06 sec).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj (in 2.06 sec).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj (in 2.06 sec).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj (in 2.06 sec).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj (in 9 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Extensions/Broiler.JavaScript.Extensions.csproj (in 7 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Globals/Broiler.JavaScript.Globals.csproj (in 10 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj (in 8 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj (in 5 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj (in 9 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Debugger/Broiler.JavaScript.Debugger.csproj (in 11 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Clr/Broiler.JavaScript.Clr.csproj (in 6 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj (in 2 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj (in 4 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 2 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj (in 4 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj (in 12 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.LinqExpressions/Broiler.JavaScript.LinqExpressions.csproj (in 5 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Modules/Broiler.JavaScript.Modules.csproj (in 11 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ModuleExtensions/Broiler.JavaScript.ModuleExtensions.csproj (in 18 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.JSClassGenerator/Broiler.JavaScript.JSClassGenerator.csproj (in 115 ms).
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.Compiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Compiler/bin/Release/net10.0/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.BuiltIns -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Globals -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Globals/bin/Release/net10.0/Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.Clr -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Clr/bin/Release/net10.0/Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.Modules -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Modules/bin/Release/net10.0/Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Debugger -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Debugger/bin/Release/net10.0/Broiler.JavaScript.Debugger.dll
+  Broiler.JavaScript.ModuleExtensions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ModuleExtensions/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.dll
+  Broiler.JavaScript.All -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.All/bin/Release/net10.0/Broiler.JavaScript.All.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.All.0.1.0-preview.1401.nupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Ast.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Ast.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.BuiltIns -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.BuiltIns.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.BuiltIns.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.BuiltIns -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Clr -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Clr/bin/Release/net10.0/Broiler.JavaScript.Clr.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Clr.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Clr.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Compiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Compiler/bin/Release/net10.0/Broiler.JavaScript.Compiler.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Compiler.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Compiler.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.BuiltIns -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Debugger -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Debugger/bin/Release/net10.0/Broiler.JavaScript.Debugger.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Debugger.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Debugger.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Engine.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Engine.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.ExpressionCompiler.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.ExpressionCompiler.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Expressions.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Expressions.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Extensions.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Extensions.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.Compiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Compiler/bin/Release/net10.0/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.BuiltIns -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Globals -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Globals/bin/Release/net10.0/Broiler.JavaScript.Globals.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Globals.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Globals.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.LinqExpressions.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.LinqExpressions.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Minimal/Broiler.JavaScript.Minimal.csproj (in 252 ms).
+  16 of 17 projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.Compiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Compiler/bin/Release/net10.0/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.BuiltIns -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Globals -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Globals/bin/Release/net10.0/Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.Minimal -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Minimal/bin/Release/net10.0/Broiler.JavaScript.Minimal.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Minimal.0.1.0-preview.1401.nupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.BuiltIns -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Clr -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Clr/bin/Release/net10.0/Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.Modules -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Modules/bin/Release/net10.0/Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.ModuleExtensions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ModuleExtensions/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.ModuleExtensions.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.ModuleExtensions.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.BuiltIns -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Modules -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Modules/bin/Release/net10.0/Broiler.JavaScript.Modules.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Modules.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Modules.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Parser.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Parser.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Portable/Broiler.JavaScript.Portable.csproj (in 382 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Portable.Compiler/Broiler.JavaScript.Portable.Compiler.csproj (in 382 ms).
+  5 of 7 projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Portable -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Portable/bin/Release/net10.0/Broiler.JavaScript.Portable.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Portable.Compiler -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Portable.Compiler/bin/Release/net10.0/Broiler.JavaScript.Portable.Compiler.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Portable.Compiler.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Portable.Compiler.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.JavaScript.Portable -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Portable/bin/Release/net10.0/Broiler.JavaScript.Portable.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Portable.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Portable.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Runtime.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Runtime.0.1.0-preview.1401.snupkg'.
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/pack/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Storage.0.1.0-preview.1401.nupkg'.
+  Successfully created package '/home/user/js-w2base-build/69a8a13b/feed/engine/Broiler.JavaScript.Storage.0.1.0-preview.1401.snupkg'.
+Verified 20 Engine packages at 0.1.0-preview.1401.

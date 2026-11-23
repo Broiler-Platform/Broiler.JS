@@ -1,0 +1,9 @@
+namespace Broiler.JavaScript.Portable
+{
+    public sealed class PortableCompiler
+    {
+        public PortableCompiler() { }
+        public Broiler.JavaScript.Portable.PortableProgram Compile(string source) { }
+        public static string EmitCSharp(Broiler.JavaScript.Portable.PortableProgram program, string namespaceName, string typeName) { }
+    }
+}

@@ -1,0 +1,229 @@
+2026-11-22T14:51:15Z lock w2b-base-archive WAIT
+2026-11-22T14:51:15Z lock w2b-base-archive HELD
+2026-11-22T14:51:15Z gate w2b-base-archive WAIT load1=1.01 procs=none
+2026-11-22T14:51:25Z gate w2b-base-archive PASS load1=0.86 procs=none checks=1
+2026-11-22T14:51:32Z stop-servers: done, remaining:
+2026-11-22T14:51:32Z lock w2b-base-build-off WAIT
+2026-11-22T14:51:32Z lock w2b-base-build-off HELD
+2026-11-22T14:51:33Z gate w2b-base-build-off PASS load1=0.88 procs=none checks=0
+2026-11-22T14:54:47Z stop-servers: done, remaining:
+2026-11-22T14:54:48Z lock w2b-base-terser WAIT
+2026-11-22T14:54:48Z lock w2b-base-terser HELD
+2026-11-22T14:54:48Z gate w2b-base-terser WAIT load1=4.95 procs=none
+2026-11-22T14:55:49Z gate w2b-base-terser WAIT load1=1.81 procs=none
+2026-11-22T14:56:30Z gate w2b-base-terser PASS load1=0.93 procs=none checks=10
+2026-11-22T14:56:32Z stop-servers: done, remaining:
+2026-11-22T14:56:33Z lock w2b-base-tests-off WAIT
+2026-11-22T14:56:33Z lock w2b-base-tests-off HELD
+2026-11-22T14:56:33Z gate w2b-base-tests-off PASS load1=0.93 procs=none checks=0
+2026-11-22T15:43:38Z stop-servers: done, remaining:
+2026-11-22T15:43:39Z lock w2b-base-t262-off-0 WAIT
+2026-11-22T15:43:39Z lock w2b-base-t262-off-0 HELD
+2026-11-22T15:43:39Z gate w2b-base-t262-off-0 PASS load1=0.97 procs=none checks=0
+2026-11-22T16:25:12Z stop-servers: done, remaining:
+2026-11-22T16:25:12Z lock w2b-base-t262-off-1 WAIT
+2026-11-22T16:25:12Z lock w2b-base-t262-off-1 HELD
+2026-11-22T16:25:13Z gate w2b-base-t262-off-1 WAIT load1=4.84 procs=none
+2026-11-22T16:26:14Z gate w2b-base-t262-off-1 WAIT load1=1.78 procs=none
+2026-11-22T16:26:54Z gate w2b-base-t262-off-1 PASS load1=0.91 procs=none checks=10
+2026-11-22T17:03:32Z stop-servers: done, remaining:
+2026-11-22T17:03:33Z lock w2b-base-t262-off-2 WAIT
+2026-11-22T17:03:33Z lock w2b-base-t262-off-2 HELD
+2026-11-22T17:03:33Z gate w2b-base-t262-off-2 WAIT load1=4.24 procs=none
+2026-11-22T17:04:34Z gate w2b-base-t262-off-2 WAIT load1=1.56 procs=none
+2026-11-22T17:05:05Z gate w2b-base-t262-off-2 PASS load1=0.94 procs=none checks=9
+2026-11-22T17:45:06Z stop-servers: done, remaining:
+2026-11-22T17:45:06Z lock w2b-base-t262-off-3 WAIT
+2026-11-22T17:45:06Z lock w2b-base-t262-off-3 HELD
+2026-11-22T17:45:06Z gate w2b-base-t262-off-3 WAIT load1=2.78 procs=none
+2026-11-22T17:46:08Z gate w2b-base-t262-off-3 WAIT load1=1.02 procs=none
+2026-11-22T17:46:18Z gate w2b-base-t262-off-3 PASS load1=0.86 procs=none checks=7
+2026-11-22T18:24:56Z stop-servers: done, remaining:
+2026-11-22T18:24:56Z lock w2b-base-t262-off-4 WAIT
+2026-11-22T18:24:56Z lock w2b-base-t262-off-4 HELD
+2026-11-22T18:24:57Z gate w2b-base-t262-off-4 WAIT load1=3.67 procs=none
+2026-11-22T18:25:58Z gate w2b-base-t262-off-4 WAIT load1=1.34 procs=none
+2026-11-22T18:26:18Z gate w2b-base-t262-off-4 PASS load1=0.96 procs=none checks=8
+2026-11-22T19:03:18Z stop-servers: done, remaining:
+2026-11-22T19:03:18Z lock w2b-base-t262-off-5 WAIT
+2026-11-22T19:03:18Z lock w2b-base-t262-off-5 HELD
+2026-11-22T19:03:19Z gate w2b-base-t262-off-5 WAIT load1=4.42 procs=none
+2026-11-22T19:04:20Z gate w2b-base-t262-off-5 WAIT load1=1.62 procs=none
+2026-11-22T19:04:50Z gate w2b-base-t262-off-5 PASS load1=0.98 procs=none checks=9
+2026-11-22T19:40:36Z stop-servers: done, remaining:
+2026-11-22T19:40:37Z lock w2b-base-t262-off-6 WAIT
+2026-11-22T19:40:37Z lock w2b-base-t262-off-6 HELD
+2026-11-22T19:40:37Z gate w2b-base-t262-off-6 WAIT load1=4.76 procs=none
+2026-11-22T19:41:38Z gate w2b-base-t262-off-6 WAIT load1=1.75 procs=none
+2026-11-22T19:42:19Z gate w2b-base-t262-off-6 PASS load1=0.89 procs=none checks=10
+2026-11-22T21:21:42Z lock w2b-base-t262-off-6 WAIT
+2026-11-22T21:21:42Z lock w2b-base-t262-off-6 HELD
+2026-11-22T21:21:42Z gate w2b-base-t262-off-6 PASS load1=0.62 procs=none checks=0
+2026-11-22T21:52:32Z lock w2b-base-t262-off-6 WAIT
+2026-11-22T21:52:32Z lock w2b-base-t262-off-6 HELD
+2026-11-22T21:52:32Z gate w2b-base-t262-off-6 PASS load1=0.00 procs=none checks=0
+2026-11-22T22:32:20Z stop-servers: done, remaining:
+2026-11-22T22:33:21Z lock w2b-base-t262-off-7 WAIT
+2026-11-22T22:35:54Z lock w2b-base-t262-off-7 HELD
+2026-11-22T22:35:54Z gate w2b-base-t262-off-7 PASS load1=0.98 procs=none checks=0
+2026-11-22T23:11:45Z stop-servers: done, remaining:
+2026-11-22T23:11:47Z lock w2b-base-t262merge-off WAIT
+2026-11-22T23:14:16Z lock w2b-base-t262merge-off HELD
+2026-11-22T23:14:16Z gate w2b-base-t262merge-off PASS load1=1.00 procs=none checks=0
+2026-11-22T23:14:22Z stop-servers: done, remaining:
+2026-11-22T23:14:23Z lock w2b-base-t262rerun-off WAIT
+2026-11-22T23:14:23Z lock w2b-base-t262rerun-off HELD
+2026-11-22T23:14:23Z gate w2b-base-t262rerun-off PASS load1=1.00 procs=none checks=0
+2026-11-22T23:15:25Z stop-servers: done, remaining:
+2026-11-22T23:15:26Z lock w2b-base-t262-on-0 WAIT
+2026-11-22T23:16:33Z lock w2b-base-t262-on-0 HELD
+2026-11-22T23:16:33Z gate w2b-base-t262-on-0 PASS load1=1.00 procs=none checks=0
+2026-11-22T23:54:36Z stop-servers: done, remaining:
+2026-11-22T23:54:37Z lock w2b-base-t262-on-1 WAIT
+2026-11-22T23:57:17Z lock w2b-base-t262-on-1 HELD
+2026-11-22T23:57:18Z gate w2b-base-t262-on-1 WAIT load1=1.01 procs=none
+2026-11-22T23:57:28Z gate w2b-base-t262-on-1 PASS load1=0.86 procs=none checks=1
+2026-11-23T00:36:28Z stop-servers: done, remaining:
+2026-11-23T00:36:29Z lock w2b-base-t262-on-2 WAIT
+2026-11-23T00:39:09Z lock w2b-base-t262-on-2 HELD
+2026-11-23T00:39:09Z gate w2b-base-t262-on-2 PASS load1=0.95 procs=none checks=0
+2026-11-23T01:18:55Z stop-servers: done, remaining:
+2026-11-23T01:18:56Z lock w2b-base-t262-on-3 WAIT
+2026-11-23T01:20:14Z lock w2b-base-t262-on-3 HELD
+2026-11-23T01:20:14Z gate w2b-base-t262-on-3 PASS load1=0.95 procs=none checks=0
+2026-11-23T01:59:39Z stop-servers: done, remaining:
+2026-11-23T01:59:40Z lock w2b-base-t262-on-4 WAIT
+2026-11-23T02:00:47Z lock w2b-base-t262-on-4 HELD
+2026-11-23T02:00:47Z gate w2b-base-t262-on-4 PASS load1=0.95 procs=none checks=0
+2026-11-23T02:39:51Z stop-servers: done, remaining:
+2026-11-23T02:39:52Z lock w2b-base-t262-on-5 WAIT
+2026-11-23T02:44:21Z lock w2b-base-t262-on-5 HELD
+2026-11-23T02:44:21Z gate w2b-base-t262-on-5 WAIT load1=1.10 procs=none
+2026-11-23T02:44:31Z gate w2b-base-t262-on-5 PASS load1=0.93 procs=none checks=1
+2026-11-23T05:06:51Z lock w2b-base-t262-on-5 WAIT
+2026-11-23T05:06:51Z lock w2b-base-t262-on-5 HELD
+2026-11-23T05:06:51Z gate w2b-base-t262-on-5 PASS load1=1.00 procs=none checks=0
+2026-11-23T06:30:46Z lock w2b-base-t262-on-5 WAIT
+2026-11-23T06:30:46Z lock w2b-base-t262-on-5 HELD
+2026-11-23T06:30:46Z gate w2b-base-t262-on-5 PASS load1=0.12 procs=none checks=0
+2026-11-23T07:07:47Z lock w2b-base-t262-on-5 WAIT
+2026-11-23T07:07:47Z lock w2b-base-t262-on-5 HELD
+2026-11-23T07:07:47Z gate w2b-base-t262-on-5 PASS load1=0.04 procs=none checks=0
+2026-11-23T07:50:19Z stop-servers: done, remaining:
+2026-11-23T07:50:19Z lock w2b-base-t262-on-6 WAIT
+2026-11-23T07:50:19Z lock w2b-base-t262-on-6 HELD
+2026-11-23T07:50:20Z gate w2b-base-t262-on-6 WAIT load1=4.73 procs=none
+2026-11-23T07:51:21Z gate w2b-base-t262-on-6 WAIT load1=1.64 procs=none
+2026-11-23T07:51:52Z gate w2b-base-t262-on-6 PASS load1=0.99 procs=none checks=9
+2026-11-23T08:36:09Z stop-servers: done, remaining:
+2026-11-23T08:36:10Z lock w2b-base-t262-on-7 WAIT
+2026-11-23T08:36:10Z lock w2b-base-t262-on-7 HELD
+2026-11-23T08:36:10Z gate w2b-base-t262-on-7 WAIT load1=5.56 procs=none
+2026-11-23T08:37:12Z gate w2b-base-t262-on-7 WAIT load1=2.04 procs=none
+2026-11-23T08:38:03Z gate w2b-base-t262-on-7 PASS load1=0.86 procs=none checks=11
+2026-11-23T09:22:29Z stop-servers: done, remaining:
+2026-11-23T09:22:30Z lock w2b-base-t262merge-on WAIT
+2026-11-23T09:22:30Z lock w2b-base-t262merge-on HELD
+2026-11-23T09:22:30Z gate w2b-base-t262merge-on WAIT load1=4.56 procs=none
+2026-11-23T09:23:31Z gate w2b-base-t262merge-on WAIT load1=1.67 procs=none
+2026-11-23T09:24:12Z gate w2b-base-t262merge-on PASS load1=0.86 procs=none checks=10
+2026-11-23T09:24:19Z stop-servers: done, remaining:
+2026-11-23T09:24:20Z lock w2b-base-t262rerun-on WAIT
+2026-11-23T09:24:20Z lock w2b-base-t262rerun-on HELD
+2026-11-23T09:24:20Z gate w2b-base-t262rerun-on PASS load1=0.80 procs=none checks=0
+2026-11-23T09:25:22Z stop-servers: done, remaining:
+2026-11-23T09:25:23Z lock w2b-base-build-on WAIT
+2026-11-23T09:25:23Z lock w2b-base-build-on HELD
+2026-11-23T09:25:23Z gate w2b-base-build-on PASS load1=0.97 procs=none checks=0
+2026-11-23T09:28:12Z stop-servers: done, remaining:
+2026-11-23T09:28:13Z lock w2b-base-tests-on WAIT
+2026-11-23T09:28:13Z lock w2b-base-tests-on HELD
+2026-11-23T09:28:13Z gate w2b-base-tests-on WAIT load1=3.25 procs=none
+2026-11-23T09:29:14Z gate w2b-base-tests-on WAIT load1=1.19 procs=none
+2026-11-23T09:29:35Z gate w2b-base-tests-on PASS load1=0.85 procs=none checks=8
+2026-11-23T10:22:16Z stop-servers: done, remaining:
+2026-11-23T10:22:16Z lock w2b-base-b-tools WAIT
+2026-11-23T10:22:16Z lock w2b-base-b-tools HELD
+2026-11-23T10:22:17Z gate w2b-base-b-tools PASS load1=0.84 procs=none checks=0
+2026-11-23T10:39:19Z stop-servers: done, remaining:
+2026-11-23T10:39:20Z lock w2b-base-b-phase5 WAIT
+2026-11-23T10:39:20Z lock w2b-base-b-phase5 HELD
+2026-11-23T10:39:20Z gate w2b-base-b-phase5 WAIT load1=1.20 procs=none
+2026-11-23T10:39:40Z gate w2b-base-b-phase5 PASS load1=0.86 procs=none checks=2
+2026-11-23T10:40:32Z stop-servers: NOT this run's, left alone pid=5018 args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]
+2026-11-23T10:40:32Z stop-servers: NOT this run's, left alone pid=5019 args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]
+2026-11-23T10:40:32Z stop-servers: NOT this run's, left alone pid=5049 args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]
+2026-11-23T10:40:32Z stop-servers: NOT this run's, left alone pid=5103 args=[/root/.dotnet/dotnet exec /root/.nuget/packages/microsoft.net.compilers.toolset/5.12.0/tasks/netcore/bincore/VBCSCompiler.dll -pipename:b10WEBrykN9hN42xPDFLiE6GMBghZSfDbPd6zisQJDI ]
+2026-11-23T10:40:32Z stop-servers: NOT this run's, left alone pid=5114 args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ]
+2026-11-23T10:40:32Z stop-servers: done, remaining: pid=5018 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5019 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5049 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5103 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet exec /root/.nuget/packages/microsoft.net.compilers.toolset/5.12.0/tasks/netcore/bincore/VBCSCompiler.dll -pipename:b10WEBrykN9hN42xPDFLiE6G]; pid=5114 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T10:41:45Z lock w2b-base-b-pack WAIT
+2026-11-23T10:41:45Z lock w2b-base-b-pack HELD
+2026-11-23T10:41:45Z gate w2b-base-b-pack WAIT load1=1.16 procs= pid=5018 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5019 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5049 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5103 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet exec /root/.nuget/packages/microsoft.net.compilers.toolset/5.12.0/tasks/netcore/bincore/VBCSCompiler.dll -pipename:b10WEBrykN9hN42xPDFLiE6G]; pid=5114 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T10:42:47Z gate w2b-base-b-pack WAIT load1=0.43 procs= pid=5018 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5019 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5049 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5103 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet exec /root/.nuget/packages/microsoft.net.compilers.toolset/5.12.0/tasks/netcore/bincore/VBCSCompiler.dll -pipename:b10WEBrykN9hN42xPDFLiE6G]; pid=5114 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T10:43:48Z gate w2b-base-b-pack WAIT load1=0.15 procs= pid=5018 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5019 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5049 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5103 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet exec /root/.nuget/packages/microsoft.net.compilers.toolset/5.12.0/tasks/netcore/bincore/VBCSCompiler.dll -pipename:b10WEBrykN9hN42xPDFLiE6G]; pid=5114 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T10:44:49Z gate w2b-base-b-pack WAIT load1=0.09 procs= pid=5018 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5019 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5049 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5103 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet exec /root/.nuget/packages/microsoft.net.compilers.toolset/5.12.0/tasks/netcore/bincore/VBCSCompiler.dll -pipename:b10WEBrykN9hN42xPDFLiE6G]; pid=5114 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T10:45:50Z gate w2b-base-b-pack WAIT load1=0.03 procs= pid=5018 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5019 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5049 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=5103 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet exec /root/.nuget/packages/microsoft.net.compilers.toolset/5.12.0/tasks/netcore/bincore/VBCSCompiler.dll -pipename:b10WEBrykN9hN42xPDFLiE6G]; pid=5114 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:11:20Z lock w2b-base-b-pack WAIT
+2026-11-23T11:11:20Z lock w2b-base-b-pack HELD
+2026-11-23T11:11:20Z gate w2b-base-b-pack PASS load1=0.05 procs=none checks=0
+2026-11-23T11:15:24Z stop-servers: done, remaining:
+2026-11-23T11:15:24Z lock w2b-base-b-api WAIT
+2026-11-23T11:15:24Z lock w2b-base-b-api HELD
+2026-11-23T11:15:25Z gate w2b-base-b-api WAIT load1=3.71 procs=none
+2026-11-23T11:16:26Z gate w2b-base-b-api WAIT load1=1.39 procs=none
+2026-11-23T11:16:46Z gate w2b-base-b-api PASS load1=1.00 procs=none checks=8
+2026-11-23T11:18:47Z stop-servers: done, remaining:
+2026-11-23T11:18:48Z lock w2b-base-b-jseal WAIT
+2026-11-23T11:18:48Z lock w2b-base-b-jseal HELD
+2026-11-23T11:18:48Z gate w2b-base-b-jseal WAIT load1=5.35 procs=none
+2026-11-23T11:19:49Z gate w2b-base-b-jseal WAIT load1=2.00 procs=none
+2026-11-23T11:20:40Z gate w2b-base-b-jseal PASS load1=0.97 procs=none checks=11
+2026-11-23T11:20:45Z stop-servers: done, remaining:
+2026-11-23T11:21:44Z lock w2b-base-b-jseal WAIT
+2026-11-23T11:21:44Z lock w2b-base-b-jseal HELD
+2026-11-23T11:21:44Z gate w2b-base-b-jseal PASS load1=0.42 procs=none checks=0
+2026-11-23T11:22:01Z stop-servers: NOT this run's, left alone pid=13244 args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]
+2026-11-23T11:22:01Z stop-servers: NOT this run's, left alone pid=13245 args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]
+2026-11-23T11:22:01Z stop-servers: NOT this run's, left alone pid=13246 args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]
+2026-11-23T11:22:01Z stop-servers: NOT this run's, left alone pid=13477 args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ]
+2026-11-23T11:22:01Z stop-servers: done, remaining: pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13477 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:23:07Z lock w2b-base-b-jseal WAIT
+2026-11-23T11:23:07Z lock w2b-base-b-jseal HELD
+2026-11-23T11:23:07Z gate w2b-base-b-jseal WAIT load1=0.25 procs= pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13477 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:24:08Z gate w2b-base-b-jseal WAIT load1=0.09 procs= pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13477 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:25:10Z gate w2b-base-b-jseal WAIT load1=0.10 procs= pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13477 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:26:11Z gate w2b-base-b-jseal WAIT load1=0.06 procs= pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13477 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:27:12Z gate w2b-base-b-jseal WAIT load1=0.02 procs= pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13477 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:28:14Z gate w2b-base-b-jseal WAIT load1=0.01 procs= pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13477 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:29:15Z gate w2b-base-b-jseal WAIT load1=0.07 procs= pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13477 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:30:16Z gate w2b-base-b-jseal WAIT load1=0.02 procs= pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13477 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:31:18Z gate w2b-base-b-jseal WAIT load1=0.01 procs= pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13477 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:32:19Z gate w2b-base-b-jseal WAIT load1=0.00 procs= pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ];
+2026-11-23T11:33:20Z gate w2b-base-b-jseal WAIT load1=0.00 procs= pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ];
+2026-11-23T11:34:22Z gate w2b-base-b-jseal WAIT load1=0.05 procs= pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ];
+2026-11-23T11:35:23Z gate w2b-base-b-jseal WAIT load1=0.02 procs= pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ];
+2026-11-23T11:36:24Z gate w2b-base-b-jseal WAIT load1=0.07 procs= pid=13244 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13245 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=13246 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ];
+2026-11-23T11:36:55Z gate w2b-base-b-jseal PASS load1=0.04 procs=none checks=81
+2026-11-23T11:38:10Z stop-servers: NOT this run's, left alone pid=31747 args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]
+2026-11-23T11:38:10Z stop-servers: NOT this run's, left alone pid=31748 args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]
+2026-11-23T11:38:10Z stop-servers: NOT this run's, left alone pid=31749 args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]
+2026-11-23T11:38:10Z stop-servers: NOT this run's, left alone pid=32002 args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ]
+2026-11-23T11:38:10Z stop-servers: done, remaining: pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=32002 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:38:11Z lock w2b-base-b-html WAIT
+2026-11-23T11:38:11Z lock w2b-base-b-html HELD
+2026-11-23T11:38:11Z gate w2b-base-b-html WAIT load1=1.97 procs= pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=32002 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:39:12Z gate w2b-base-b-html WAIT load1=0.72 procs= pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=32002 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:40:14Z gate w2b-base-b-html WAIT load1=0.26 procs= pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=32002 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:41:15Z gate w2b-base-b-html WAIT load1=0.10 procs= pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=32002 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:42:16Z gate w2b-base-b-html WAIT load1=0.06 procs= pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=32002 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:43:18Z gate w2b-base-b-html WAIT load1=0.10 procs= pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=32002 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:44:19Z gate w2b-base-b-html WAIT load1=0.03 procs= pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=32002 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:45:21Z gate w2b-base-b-html WAIT load1=0.01 procs= pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=32002 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:46:22Z gate w2b-base-b-html WAIT load1=0.03 procs= pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=32002 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:47:23Z gate w2b-base-b-html WAIT load1=0.01 procs= pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=32002 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];
+2026-11-23T11:48:25Z gate w2b-base-b-html WAIT load1=0.00 procs= pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ];
+2026-11-23T11:49:26Z gate w2b-base-b-html WAIT load1=0.00 procs= pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ];
+2026-11-23T11:50:27Z gate w2b-base-b-html WAIT load1=0.00 procs= pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ];
+2026-11-23T11:51:28Z gate w2b-base-b-html WAIT load1=0.00 procs= pid=31747 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31748 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=31749 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ];
+2026-11-23T11:51:59Z gate w2b-base-b-html PASS load1=0.00 procs=none checks=81
+2026-11-23T11:54:38Z stop-servers: done, remaining:

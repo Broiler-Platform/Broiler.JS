@@ -1,0 +1,4 @@
+  Determining projects to restore...
+/tmp/broiler-feed-check-3492228a-37c0-46ee-8b35-c457dc4d1437/Consumer.csproj : warning NU1603: Broiler.JavaScript.BuiltIns 0.1.0-preview.1401 depends on Broiler.ECMAScript.Intl (>= 0.1.0-preview.8) but Broiler.ECMAScript.Intl 0.1.0-preview.8 was not found. Broiler.ECMAScript.Intl 0.1.0-preview.9 was resolved instead.
+  Restored /tmp/broiler-feed-check-3492228a-37c0-46ee-8b35-c457dc4d1437/Consumer.csproj (in 1.58 sec).
+Consumer restore verified 20 packages against nuget.org.

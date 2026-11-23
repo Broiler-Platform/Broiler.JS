@@ -1,0 +1,16 @@
+d-base-archive	rc=0	wall=5.5s maxrss=600MB	started=2026-11-23T14:00:19Z	ended=2026-11-23T14:00:25Z
+d-base-build	rc=0	wall=178.8s maxrss=384MB	started=2026-11-23T14:00:27Z	ended=2026-11-23T14:03:26Z
+d-base-terser	rc=0	wall=1.0s maxrss=90MB	started=2026-11-23T14:04:39Z	ended=2026-11-23T14:04:40Z
+d-base-codes	rc=0	wall=33.7s maxrss=316MB	started=2026-11-23T14:04:42Z	ended=2026-11-23T14:05:16Z
+d-base-ptime	rc=0	wall=109.1s maxrss=3958MB	started=2026-11-23T14:05:58Z	ended=2026-11-23T14:07:48Z
+d-base-case-off	rc=0	wall=31.8s maxrss=1358MB	started=2026-11-23T14:08:10Z	ended=2026-11-23T14:08:42Z
+d-base-case-on	rc=0	wall=59.2s maxrss=5027MB	started=2026-11-23T14:08:44Z	ended=2026-11-23T14:09:43Z
+d-w2-archive	rc=0	wall=5.2s maxrss=600MB	started=2026-11-23T14:10:05Z	ended=2026-11-23T14:10:11Z
+d-w2-build	rc=0	wall=167.6s maxrss=369MB	started=2026-11-23T14:10:13Z	ended=2026-11-23T14:13:01Z
+d-w2-terser	rc=0	wall=0.6s maxrss=90MB	started=2026-11-23T14:14:45Z	ended=2026-11-23T14:14:46Z
+d-w2-case-w2	rc=0	wall=60.1s maxrss=4344MB	started=2026-11-23T14:14:48Z	ended=2026-11-23T14:15:48Z
+d-read-nocodes	rc=0	wall=34.0s maxrss=950MB	started=2026-11-23T14:16:35Z	ended=2026-11-23T14:17:10Z
+d-read-codes-1	rc=0	wall=33.6s maxrss=995MB	started=2026-11-23T14:17:11Z	ended=2026-11-23T14:17:45Z
+d-read-codes-2	rc=0	wall=32.2s maxrss=995MB	started=2026-11-23T14:17:46Z	ended=2026-11-23T14:18:19Z
+d-read-codes-3	rc=0	wall=33.1s maxrss=995MB	started=2026-11-23T14:20:19Z	ended=2026-11-23T14:20:52Z
+d-read-codes-4	rc=0	wall=32.6s maxrss=995MB	started=2026-11-23T14:20:53Z	ended=2026-11-23T14:21:26Z

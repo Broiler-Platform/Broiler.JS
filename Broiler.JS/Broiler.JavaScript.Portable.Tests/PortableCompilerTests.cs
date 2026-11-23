@@ -95,4 +95,36 @@ public sealed class PortableCompilerTests
 
         Assert.Contains("var numeric", error.Message);
     }
+
+    // Window W2 of milestone SJL-14 (Broiler.VM's milestone file, SJL-14.3: "It gains the early errors it skips
+    // today"): the compiler parses with the shared syntax library, which checks the early errors at the parse, so a
+    // source the engine refuses is refused here too, as a FormatException naming the library's diagnostic; before W2
+    // these reached the subset checks, or compiled.
+    [Theory]
+    [InlineData("function f(a, a) { \"use strict\"; return a; }")]
+    [InlineData("function f() { let x = 1; let x = 2; return 0; }")]
+    [InlineData("function f() { return /(/; }")]
+    [InlineData("function f() { \"use strict\"; return 010; }")]
+    public void EarlyErrorsAreReportedAtTheParse(string source)
+    {
+        var error = Assert.Throws<FormatException>(() => new PortableCompiler().Compile(source));
+
+        Assert.StartsWith("SyntaxError at ", error.Message);
+    }
+
+    [Fact]
+    public void AValidRegularExpressionLiteralIsUnsupportedNotAnEarlyError()
+    {
+        var error = Assert.Throws<NotSupportedException>(() => new PortableCompiler().Compile("function f() { return /a/; }"));
+
+        Assert.Contains("does not support", error.Message);
+    }
+
+    // Found in review of window W2: the compiler's request reads the engine's proposals and its decimal suffix, so a
+    // source the engine parses is refused as unsupported, not as a SyntaxError.
+    [Theory]
+    [InlineData("function f() { return 1m; }")]
+    [InlineData("function f() { return class { @d m() {} }; }")]
+    public void ASourceTheEngineParsesIsUnsupportedNotASyntaxError(string source)
+        => Assert.Throws<NotSupportedException>(() => new PortableCompiler().Compile(source));
 }

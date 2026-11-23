@@ -8,6 +8,7 @@ namespace Broiler.JavaScript.Ast;
 // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=5; Fingerprint=TBF
 // Broiler-Falsified-If: a block built by the public constructor reports a Type other than FastNodeType.Block, so VisitCore dispatches it to a visitor other than VisitBlock
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public class AstBlock : AstStatement
 {
     public IFastEnumerable<StringSpan>? HoistingScope;

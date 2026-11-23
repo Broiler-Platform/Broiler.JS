@@ -6,10 +6,16 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <!-- Window W2 of milestone SJL-14 (decisions D41 and D53): the compiler parses with the shared syntax library and reads
+       its tree, so it references the library and Portable, and Expressions for the one non-tree part that moved there,
+       this engine's Unicode tables, with CompilationStack, whose stack the parse runs on (decision D47 (a)); and
+       Broiler.Regex, whose validate entry checks a regular-expression literal as the engine's parse does. It no longer
+       references Ast or Parser. -->
   <ItemGroup>
-    <ProjectReference Include="..\Broiler.JavaScript.Ast\Broiler.JavaScript.Ast.csproj" />
-    <ProjectReference Include="..\Broiler.JavaScript.Parser\Broiler.JavaScript.Parser.csproj" />
+    <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Frontend\Broiler.ECMAScript.Frontend.csproj" />
+    <ProjectReference Include="..\Broiler.JavaScript.Expressions\Broiler.JavaScript.Expressions.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Portable\Broiler.JavaScript.Portable.csproj" />
+    <PackageReference Include="Broiler.Regex" PrivateAssets="compile" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="Microsoft.CodeAnalysis.BannedApiAnalyzers">

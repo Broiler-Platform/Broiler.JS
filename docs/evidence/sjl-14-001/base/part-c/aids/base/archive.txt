@@ -1,0 +1,9 @@
+commit: 69a8a13bc446a1714d3c8be9be3cfd742aebee6e
+tree: 9b658164b3b687b671e381d5bc8c67c508e8ff38
+first-parent: fefb4f9c9331b7d16349ed2a1721285f2fb69fef
+files: 10370
+archived: 2026-11-23T14:00:25Z by git -C /home/user/js-w2base archive --format=tar 69a8a13bc446a1714d3c8be9be3cfd742aebee6e | tar -x -C <tree>, on disk
+sdk: 10.0.404
+node: v22.23.4
+python: Python 3.13.18
+machine: Linux 6.18.44-fc-v726 x86_64, 4 processors, Ubuntu 24.04.5 LTS

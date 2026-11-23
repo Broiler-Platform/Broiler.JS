@@ -7,6 +7,7 @@ using System;
 namespace Broiler.JavaScript.Ast;
 
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public static class ExpressionPatternExtensions
 {
     public static AstExpression ToPattern(this AstExpression exp)
@@ -115,6 +116,7 @@ public static class ExpressionPatternExtensions
     }
 }
 
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public readonly struct VariableDeclarator
 {
     public readonly AstExpression Identifier;

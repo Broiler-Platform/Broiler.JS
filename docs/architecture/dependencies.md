@@ -113,7 +113,14 @@ publish-and-run gate decide whether the hypotheses become the target.
   arrive through `Broiler.Regex`'s package dependencies until milestone SJL-11 moves Broiler.Regex onto the
   owner's code packages, and no code of this engine calls them; `UnicodeDependencyTests` holds that by the
   assemblies' references. They are implementation dependencies of feature code and must not leak into
-  lower-layer public contracts unnecessarily. No project references `Broiler.DateTime`. *(Corrected
+  lower-layer public contracts unnecessarily. No project references `Broiler.DateTime`. *(Noted 2026-11-19, at window W2 of milestone SJL-14 (decision D50): the tables, with
+  `Broiler.Unicode.Algorithms`, moved from `Ast` to `Expressions` (`Expressions/Unicode/JSUnicodeTableData.g.cs`, regenerated
+  by `Ast.Tests` as before), with the non-tree types `StringSpan`, `TokenTypes`, `RegExpUnicodeValidator` and the others
+  `Ast` now forwards, and `Expressions` references `Broiler.Regex` for the validator; `Ast` references neither package.
+  The parser and the portable compiler parse with `Broiler.ECMAScript.Frontend`, and the portable compiler references
+  `Expressions` for the tables, not `Ast` or `Parser` (decision D53), and `Broiler.Regex` (privately) for the
+  regular-expression check with its flags, which `Expressions` does not expose: a departure from D53's list the bundle
+  README records.)* *(Corrected
   2026-10-12: this bullet read "Nested DateTime, Regex, and Unicode components are implementation
   dependencies of feature code; they must not leak into lower-layer public contracts unnecessarily.")*
   *(Revised 2026-10-16, at milestone SJL-7.5, when the Unicode area moved to Broiler.Unicode's code

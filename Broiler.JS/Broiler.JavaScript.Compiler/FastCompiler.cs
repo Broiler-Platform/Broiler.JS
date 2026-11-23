@@ -119,9 +119,9 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
     /// The bridge's request for a compilation (milestone SJL-14.2, decision D44): the goal and the permission to
     /// await at the top level the parser's options carry, and, for direct eval code, the context it inherits from
     /// its caller as the running direct eval pushed it: the function, method and derived-constructor flags and the
-    /// visible private names. The caller's strictness reaches the code as the "use strict" directive
-    /// <see cref="DirectEvalSupport"/> puts before it, as it does for the parser; the field-initialiser flag is
-    /// DirectEvalSupport's to check before this compile, as it is today.
+    /// visible private names, and the caller's strictness as the library's forced strictness (window W2, decision D44;
+    /// until W2 it reached the code as the "use strict" directive <see cref="DirectEvalSupport"/> put before it). The
+    /// field-initialiser flag is DirectEvalSupport's to check before this compile, as it is today.
     /// </summary>
     private static Broiler.JavaScript.Parser.Bridge.BridgeRequest BridgeRequestFor(in JSCompilationOptions options, JSContext context, bool isDirectEval, string[] privateNames)
     {
@@ -130,9 +130,10 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
             return new Broiler.JavaScript.Parser.Bridge.BridgeRequest
             {
                 Goal = Broiler.JavaScript.Parser.Bridge.BridgeGoal.Eval,
+                ForcedStrict = context.DirectEvalCodeIsStrict,
                 InFunction = !context.DirectEvalRejectsNewTarget,
                 InMethod = context.HasDirectEvalSuper,
-                InDerivedConstructor = context.HasDirectEvalSuperCall,
+                InDerivedConstructor = context.DirectEvalSuperCallInDerivedConstructor,
                 VisiblePrivateNames = privateNames,
             };
         }
@@ -191,29 +192,21 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
 
         // add top level...
 
-        AstProgram jScript;
-        if (options.ParsesThroughBridge)
-        {
-            // The test-only switch of milestone SJL-14.2 (decision D43): the bridge parses with the shared syntax
-            // library and builds the tree the parser below builds. Off by default.
-            jScript = Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge.Parse(code, BridgeRequestFor(options, context, isDirectEvalCompilation, directEvalPrivateNames));
-        }
-        else
-        {
-            var parserPool = new FastPool();
-            var parser = new FastParser(new FastTokenStream(parserPool, code, null, parserOptions), parserOptions);
-            jScript = parser.ParseProgram();
-            parserPool.Dispose();
-        }
+        // The bridge parses with the shared syntax library and builds the tree this compiler reads (milestone
+        // SJL-14.3, window W2; Broiler.VM's JSD-0083, decision D41). Until W2 it did so only behind the test-only switch
+        // of SJL-14.2 (decision D43), which W2 removes; the old parser no longer parses any compile.
+        var jScript = Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge.Parse(code, BridgeRequestFor(options, context, isDirectEvalCompilation, directEvalPrivateNames));
         // The parser builds every loop as written; the for-loop pass rewrites the let/const/using
         // heads into the shapes the rest of the compiler lowers, before validation reads the tree. Its
         // temporaries are named by the direct-eval depth this compilation is at (decision D22).
         jScript = ForLoopPreparation.Prepare(jScript, directEvalDepth);
-        // Module code is strict from its first token, directive or not (ES2024 11.2.2).
-        SyntaxValidation.ValidateProgram(jScript, code.Value, parserOptions, inheritStrictMode: isModuleCompilation,
+        // Module code is strict from its first token, directive or not (ES2024 11.2.2), and so is direct eval code whose
+        // caller is strict (PerformEval's strictCaller), which the request carried as forced strictness (window W2).
+        var forcedStrict = isDirectEvalCompilation && (context?.DirectEvalCodeIsStrict ?? false);
+        SyntaxValidation.ValidateProgram(jScript, parserOptions, inheritStrictMode: isModuleCompilation || forcedStrict,
             directEvalPrivateNames: directEvalPrivateNames);
-        // Module code is always strict code (ES2024 11.2.2), with or without a directive.
-        var isStrictProgram = isModuleCompilation || HasUseStrictDirective(jScript);
+        // Module code is always strict code (ES2024 11.2.2), with or without a directive; so is a strict caller's eval code.
+        var isStrictProgram = isModuleCompilation || forcedStrict || HasUseStrictDirective(jScript);
 
         // A module body is compiled as a resumable body (see the end of this constructor), so it
         // is suspendable exactly like a top-level-await program even when it has no `await`.
@@ -238,6 +231,8 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         // constructor sees afterwards. #evalThis holds the shared JSVariable directly
         // (CreateVariable assigns the JSVariable rather than wrapping a value), so `this`
         // reads resolve through it and the eval's super() binds it via its target.
+        // A base class's constructor shares its own, initialised binding the same way, with no super-call grant
+        // (window W2 of milestone SJL-14, row R24), so the innermost shared binding is the running constructor's.
         if (isDirectEvalCompilation && context?.HasDirectEvalSuperCall == true)
         {
             var evalSuperConstructor = fx.CreateVariable("#evalSuperConstructor", JSContextBuilder.DirectEvalSuperConstructor);

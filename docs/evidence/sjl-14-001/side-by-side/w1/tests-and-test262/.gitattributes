@@ -1,0 +1,4 @@
+# Bundle sjl-14-001's side-by-side/w1/tests-and-test262/: W1's part C runs of the test projects and of test262, switch off
+# and on, retained as written (logs, reports, machine records) and each named by its SHA-256 in hashes.txt, so they are
+# checked out exactly as committed (no end-of-line conversion), and git's whitespace checks skip them. Added 2026-11-22.
+* -text -whitespace

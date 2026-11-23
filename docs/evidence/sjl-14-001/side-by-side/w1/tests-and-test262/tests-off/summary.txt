@@ -1,0 +1,1 @@
+any project failed: 1 (each project's exit in exits.tsv; a test failure is a result, not a step failure)

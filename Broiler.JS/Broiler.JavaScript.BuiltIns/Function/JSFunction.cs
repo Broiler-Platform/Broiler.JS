@@ -1355,30 +1355,23 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         // never awaits at its own top level, even when the code that called the constructor may.
         var loc = location ?? "internal";
         var compilationOptions = (JSEngine.Current as JSContext)?.CompilationOptions ?? default;
-        if (compilationOptions.ParsesThroughBridge)
+        // The shared syntax library parses the parameters and the body each alone, under the FormalParameters and
+        // FunctionBody goals with the function's kind (decision D44), as CreateDynamicFunction's steps 18 to 20 do; a
+        // refusal is a SyntaxError. Until window W2 this was so only behind SJL-14.2's test-only switch (decision D43),
+        // and each part was otherwise compiled alone in the assembled shape.
+        try
         {
-            // The test-only switch of milestone SJL-14.2 (decision D43): the shared syntax library parses the
-            // parameters and the body each alone, under the FormalParameters and FunctionBody goals with the
-            // function's kind (decision D44), as CreateDynamicFunction's steps 18 to 20 do; a refusal is a SyntaxError.
-            try
+            Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge.CheckDynamicFunction(parameterText, bodyText, functionKind switch
             {
-                Broiler.JavaScript.Parser.Bridge.SharedSyntaxBridge.CheckDynamicFunction(parameterText, bodyText, functionKind switch
-                {
-                    "function*" => Broiler.JavaScript.Parser.Bridge.BridgeFunctionKind.Generator,
-                    "async function" => Broiler.JavaScript.Parser.Bridge.BridgeFunctionKind.Async,
-                    "async function*" => Broiler.JavaScript.Parser.Bridge.BridgeFunctionKind.AsyncGenerator,
-                    _ => Broiler.JavaScript.Parser.Bridge.BridgeFunctionKind.Normal,
-                });
-            }
-            catch (FastParseException ex)
-            {
-                throw JSEngine.NewSyntaxError(ex.Message);
-            }
+                "function*" => Broiler.JavaScript.Parser.Bridge.BridgeFunctionKind.Generator,
+                "async function" => Broiler.JavaScript.Parser.Bridge.BridgeFunctionKind.Async,
+                "async function*" => Broiler.JavaScript.Parser.Bridge.BridgeFunctionKind.AsyncGenerator,
+                _ => Broiler.JavaScript.Parser.Bridge.BridgeFunctionKind.Normal,
+            });
         }
-        else
+        catch (FastParseException ex)
         {
-            _ = CoreScript.Compile($"({functionKind} ({parameterText}\n) {{\n\n}})", loc, codeCache: null, compilationOptions: compilationOptions);
-            _ = CoreScript.Compile($"({functionKind} (\n) {{\n{bodyText}\n}})", loc, codeCache: null, compilationOptions: compilationOptions);
+            throw JSEngine.NewSyntaxError(ex.Message);
         }
 
         _ = CoreScript.Compile(source, loc, codeCache: null, compilationOptions: compilationOptions);

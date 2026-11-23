@@ -11,6 +11,7 @@ namespace Broiler.JavaScript.Ast;
 // Broiler-AI:           Origin=Ported; IP=Medium; Security=Critical; Resources=6; Fingerprint=TBF
 // Broiler-Falsified-If: a script nested deeply enough to exhaust the compiling thread's stack aborts the process during a lowering or syntax-validation walk instead of segmenting onto a fresh stack
 // Broiler-Human:        PENDING
+[System.Obsolete(ObsoleteMarks.Ast, DiagnosticId = ObsoleteMarks.DiagnosticId)]
 public abstract class AstMapVisitor<T>
 {
     public bool IsStrictMode { get; set; } = false;

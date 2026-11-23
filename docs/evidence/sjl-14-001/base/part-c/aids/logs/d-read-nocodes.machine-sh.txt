@@ -1,0 +1,15 @@
+time: 2026-11-23T14:16:35Z
+loadavg: 0.58 2.08 1.72 1/115 21140
+nproc: 4
+dotnet --info, .NET SDK:
+  .NET SDK:
+   Version:           10.0.404
+   Commit:            2ab2854867
+   Workload version:  10.0.400-manifests.ad9f6d83
+   MSBuild version:   18.9.15+2ab285486
+  
+  .NET SDKs installed:
+    10.0.404 [/root/.dotnet/sdk]
+  
+processes (dotnet, VBCSCompiler, MSBuild, testhost):
+  none
