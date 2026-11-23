@@ -52,7 +52,10 @@ internal sealed class BridgeScopes
     // declares none as for a node with no scope, and a source of millions of empty blocks otherwise indexed a scope for
     // each. A node's first scope still wins: the table lists its scopes in the source order of their nodes' starts, so
     // the scopes of one node stand together among those that start where it does, and a later one of a node already
-    // seen there is passed over. Where the table is found out of that order, every scope is indexed as before.
+    // seen there is passed over. Where the table is found out of that order, every scope is indexed as before. Neither
+    // guard is reached by the library's table as it is built today: it is sorted, and it gives each node one scope (an
+    // if-clause function's block scope and its function scope belong to two nodes that start at one offset, its
+    // FunctionDeclaration and its FunctionNode).
     private void IndexScopes(IReadOnlyList<Scope> table)
     {
         var at = -1;
@@ -81,6 +84,9 @@ internal sealed class BridgeScopes
                 scopes.Add(scope.Node, scope);
         }
     }
+
+    /// <summary>How many scopes the index holds (the regression test of decision B8 reads it).</summary>
+    internal int IndexedScopeCount => scopes.Count;
 
     private static bool ContainsNode(List<SyntaxNode> nodes, SyntaxNode node)
     {

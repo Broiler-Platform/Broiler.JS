@@ -50,6 +50,7 @@ public class SharedSyntaxBridgeTests
     [InlineData("(a) => { var a; var b; }")]
     [InlineData("({ m(p) { var p, q; } })")]
     [InlineData("function f() { { let x; function y() {} } switch (0) { case 0: let s; } }")]
+    [InlineData("function f(g, h) { if (x) function g() {} if (x) function h() { var v; } if (x) function k() { let w; } }")]
     public void A_functions_and_its_blocks_hoisting_scopes_are_the_old_parsers(string source)
     {
         var old = Old(source);
@@ -598,6 +599,18 @@ public class SharedSyntaxBridgeTests
         var source = new StringBuilder("x;").Insert(2, "{}", 10_000).Append("{ let y; }").ToString();
         var block = Assert.IsType<AstBlock>(Bridged(source).Statements[1]);
         Assert.Equal("y,", Names(block.HoistingScope));
+    }
+
+    [Fact]
+    public void The_scope_index_holds_only_the_scopes_that_declare_a_name()
+    {
+        // The side table has a scope for the program and one for each block; only the block that declares y is indexed,
+        // where the index held every scope, one per empty block, before decision B8.
+        var span = new StringSpan(new StringBuilder("x;").Insert(2, "{}", 10_000).Append("{ let y; }").ToString());
+        var result = Broiler.ECMAScript.Syntax.SyntaxParser.Parse(SharedSyntaxBridge.Request(span, BridgeRequest.Script));
+        Assert.NotNull(result.Declarations);
+        Assert.Equal(10_002, result.Declarations.Scopes.Count);
+        Assert.Equal(1, new BridgeScopes(result.Declarations, new BridgeTokens(span)).IndexedScopeCount);
     }
 
     private static List<FastToken> Chain(AstProgram program)
