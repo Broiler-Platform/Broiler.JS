@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Part C's classes over the side-by-side tool's run at the base commit (bundle sjl-14-001, decision rule part C).
 
-    classify_c.py <repo root> <report.tsv.gz> <spans.tsv> <dumps-p-b.txt.gz> <readings.tsv> <out dir>
+    classify_c.py <repo root> <report.tsv.gz> <spans.tsv> <dumps-p-b.txt.gz> <readings.tsv> <out dir> [<bridge-codes.tsv>]
 
 <repo root> is a checkout whose records are the base commit's: corrections/ (K1 to K10, classes E and T, partly.tsv,
 test262-paths.tsv, k-paths.tsv, k-rows.tsv), Broiler.ECMAScript/docs/frontend/stages.tsv and early-errors.tsv, bundle
@@ -63,6 +63,13 @@ base commit holds them (no row is added here):
       ("P's end is its child's wrong end"); checked against the text, P's span agrees in both, so neither is S by the
       rule's words.) spancheck.py's own S lines are taken as it reads them: for an edge the AST type fixes, it admits
       a B text that leaves a bracket open or unopened, so B's text in such a line may not be the node's balanced text
+  By code (added 2026-11-23, records part 4): given <bridge-codes.tsv>, the corrected reading aid's output (each input
+  variant P or B refused, with the library's diagnostics in its order, code:messageId, the first of which is the one the
+  bridge refuses with), class E is read by the library's code and not from B's text: the row is the stage table's row
+  whose shared_code is the first diagnostic's code, and the move is E when that row qualifies as above, else
+  unclassified; <readings.tsv> is not read for it, and no E is provisional. A variant B refused that the aid finds the
+  library accepting, or with no diagnostic, is unclassified (the refusal is the bridge's own). Without the file, class E
+  is read from B's text as above.
 Anything else is unclassified, with the reason. Writes differences.tsv.gz, span-readings.tsv.gz (every both-agree
 line with its reading), unclassified.tsv (every unclassified difference, with both sides) and classes.txt. The gzip
 files are written with no name and mtime 0, so the same inputs give the same bytes. Run with python3 -I.
@@ -70,6 +77,7 @@ files are written with no name and mtime 0, so the same inputs give the same byt
 import collections, gzip, json, os, re, sys
 
 root, report, spans_path, dumps_path, readings_path, out = sys.argv[1:7]
+codes_path = sys.argv[7] if len(sys.argv) > 7 else None
 B = os.path.join(root, "docs", "evidence", "sjl-14-001", "corrections") + "/"
 op = lambda p: gzip.open(p, "rt", encoding="utf-8", newline="\n") if p.endswith(".gz") else open(p, encoding="utf-8", newline="\n")
 
@@ -132,6 +140,15 @@ REGEXP_ROWS = {"EE0186", "EE0187", "EE0188", "EE0189", "EE0190", "EE0208"}
 readings = {}
 for r in table(readings_path):
     readings[(r["id"], r["variant"])] = r
+row_of_code = {r["shared_code"]: r["id"] for r in stages.values()}
+codes = None
+if codes_path:
+    codes = {}
+    with op(codes_path) as h:
+        for line in h:
+            f = line.rstrip("\n").split("\t")
+            diags = [d.split(":", 1) for d in f[3].split(";")] if len(f) > 3 and f[3] else []
+            codes[(f[0], f[1])] = (f[2], diags)
 
 # The bridge's texts: message identifier -> template, from its message table.
 src = open(os.path.join(root, "Broiler.JS", "Broiler.JavaScript.Parser", "Bridge", "BridgeMessages.cs"), encoding="utf-8").read()
@@ -237,6 +254,20 @@ def move(pair, key, x, y, e):
         if pair == "P/B" and eb in ("E", "T", "E-if-coded", "E-partly", "row:D31") and frm == "accepted":
             if not k_both_refused:
                 return "unclassified", "%s's %s, but K does not refuse on both sides" % (src_, eb)
+            if codes is not None:
+                lib, diags = codes.get(key, ("absent", []))
+                if not diags:
+                    return "unclassified", "the reading aid finds the library %s with no diagnostic: the refusal is the bridge's own (%s's %s)" % (lib, src_, eb)
+                code, mid = diags[0]
+                row = row_of_code.get(code)
+                if row is None:
+                    return "unclassified", "the library's code %s (%s) is no row of the stage table (%s's %s)" % (code, mid, src_, eb)
+                s_ = stages[row]
+                if qualifies(row, first):
+                    why = "class-e.tsv" if row in class_e else "js_compiler_only %s, among the classification's first rows" % s_["js_compiler_only"]
+                    return "E", "row %s by the library's code %s (%s; %s), K refusing on both sides (%s's %s)" % (row, code, mid, why, src_, eb)
+                return "unclassified", "row %s by the library's code %s (%s) does not qualify as class E: stage %s, js_compiler_only %s, %s the classification's first rows %s (%s's %s)" % (
+                    row, code, mid, s_.get("stage"), s_.get("js_compiler_only"), "among" if row in first else "not among", ";".join(first) or "-", src_, eb)
             rendered = rows_of_text(y[5])
             cand = (rendered & set(first)) or rendered
             how = "B's text and the classification's first rows" if rendered & set(first) else "B's text"
@@ -394,8 +425,16 @@ with open(os.path.join(out, "unclassified.tsv"), "w", encoding="utf-8", newline=
 lines = ["# classify_c.py's counts: differences by entry pair, kind and class; both-agree span lines by kind and reading"]
 lines += ["%d\t%s\t%s\t%s" % (v, *k) for k, v in sorted(counts.items())]
 lines += ["%d\tspan\t%s\t%s" % (v, *k) for k, v in sorted(span_counts.items())]
-lines.append("%d\tE moves set aside B's text's rows that would not qualify, by reading the library's code as one of the classification's first rows" % sum(
-    1 for l in diff_lines[1:] if l.split("\t")[10] == "E" and "which would not qualify" in l))
+if codes is None:
+    lines.append("%d\tE moves set aside B's text's rows that would not qualify, by reading the library's code as one of the classification's first rows" % sum(
+        1 for l in diff_lines[1:] if l.split("\t")[10] == "E" and "which would not qualify" in l))
+else:
+    pb = [l.split("\t") for l in diff_lines[1:] if l.startswith("P/B\t")]
+    lines.append("%d\tP/B variants B refused whose library code the reading aid gives (bridge-codes.tsv)" % sum(
+        1 for f in pb if f[5] == "refused" and codes.get((f[1], f[2]), ("", []))[1]))
+    lines.append("%d\tP/B outcome moves to refused where the message identifier of the library's first code is not one B's text renders" % sum(
+        1 for f in pb if f[3] == "outcome" and f[5] == "refused" and codes.get((f[1], f[2]), ("", []))[1]
+        and codes[(f[1], f[2])][1][0][1] not in msgids(f[9])))
 lines.append("%d\tunclassified differences (unclassified.tsv)" % (len(uncl) - 1))
 lines.append("%d\tinput variants with an unclassified difference" % len({(l.split("\t")[1], l.split("\t")[2]) for l in uncl[1:]}))
 with open(os.path.join(out, "classes.txt"), "w", encoding="utf-8", newline="\n") as w:

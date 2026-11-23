@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Bundle sjl-14-001, part C at the base commit, a reading aid: the shared library's diagnostic code and message id
+       for each input variant the bridge refuses, through the bridge's own request (SharedSyntaxBridge.Request, by
+       reflection) and the library's SyntaxParser.Parse. Built from a clean tree given as -p:Tree=<tree>. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>bridge-codes</AssemblyName>
+    <RootNamespace>ParseCorpus</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(Tree)/docs/evidence/sjl-12-001/tools/parse-corpus/Manifest.cs" Link="sjl-12-001/Manifest.cs" />
+    <ProjectReference Include="$(Tree)/Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj" />
+    <ProjectReference Include="$(Tree)/Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj" />
+    <ProjectReference Include="$(Tree)/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj" />
+  </ItemGroup>
+</Project>

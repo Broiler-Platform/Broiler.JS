@@ -82,7 +82,11 @@ are not (below) and did not mark class E provisional; that commit holds their ou
   on a build of the base commit taken behind the gate when the orchestrator decides; E is then read by code, each move
   with its single row. A build is needed, as the base build's `bin` and `obj` trees are deleted
   ([`../local/retained.txt`](../local/retained.txt)). *(Changed the same day, after review, before this record merged: the bullet ended at "weaker than the code would
-  be."; the sentences after it are added.)*
+  be."; the sentences after it are added.)* *(Noted 2026-11-23, records part 4: that run is taken, with the aid
+  corrected ([`scripts/bridge-codes/`](scripts/bridge-codes/Program.cs)), and the tables are written again with class E
+  read by the library's code: every move read E above holds by its code, and no E is provisional now. "Every E is
+  therefore provisional" and "the unclassified list below is a lower bound" read the tables before it; see "Records
+  part 4" below.)*
 - **Message differences** of a refusal with the same type are M, each in the generated tables. No exception type
   differs at either pair; the switch-on compile's crashes that the switch-off compile shares have the same type and
   message. The rule applies the canonical dump to P's and B's trees only, and no K or K-on row carries a dump, so K-off
@@ -131,7 +135,9 @@ are not (below) and did not mark class E provisional; that commit holds their ou
 ## Unclassified
 
 Every one is in [`unclassified.tsv`](unclassified.tsv) or [`tests-and-test262/local-differences.tsv`](tests-and-test262/local-differences.tsv)
-with both sides. With each, the reading of its cause, which is a reading and not a finding:
+with both sides. With each, the reading of its cause, which is a reading and not a finding: *(Noted 2026-11-23,
+records part 4: items 1 to 3 are read by the library's code, item 6 by the one case run again, and items 5, 8 and 9 at
+their sites, in "Records part 4" below; the items here are left as written.)*
 1. **A getter with a parameter**, P accepting, B refusing with "Expected )", K refusing on both sides (with the switch
    off, "Getter must not have any formal parameters"): `T035220` (`test/language/expressions/class/getter-param-dflt.js`),
    `T039055` (`test/language/expressions/object/getter-param-dflt.js`), `T047023`
@@ -199,10 +205,164 @@ with both sides. With each, the reading of its cause, which is a reading and not
 ## Part C's reading
 
 **Read NOT MET on the retained runs**, for the unclassified differences listed above. Not judged beyond that (EX-30).
-The list is a lower bound, as class E is read from B's text and is provisional until it is read by the library's code
+*(Noted 2026-11-23, records part 4: class E is now read by the library's code, and the unclassified list is the same
+set; the next sentence read the tables before it.)* The list is a lower bound, as class E is read from B's text and is provisional until it is read by the library's code
 (above). *(Changed the same day, after review, before this record merged: after "for the unclassified differences above." the paragraph read "Every run at the base commit is
 complete (the tool's report holds every input, variant and entry; both test runs ran every test project; both test262
 runs hold every shard, merged, with the re-run), and every other difference is in C1, C3, E, M or S and is listed.",
 which went beyond the reading the brief asks, and which items 8 and 9 and class E's reading contradict.)* Part C's "How it is read" reads "An unclassified difference is a bridge or library defect, fixed as
 a dark merge and run again before W2 merges"; what follows from each item above is the orchestrator's and the owner's
 to decide, not this record's.
+
+## Records part 4: the reading aids and single-case re-runs of 2026-11-23
+
+**Written:** 2026-11-23, on branch `sjl-14-w2-base`, with the default branch's head read as
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` by `git ls-remote` before each step and before the commit. **What these
+are:** reading aids and single-case re-runs, not runs of the rule. None replaces a retained run, and each is recorded
+as a reading aid, as W1's records name theirs. Nothing here is a verdict: part C's reading above stands as taken,
+"read NOT MET on the retained runs". [`../../decision-rule.md`](../../decision-rule.md) is not edited, and no row is
+added to [`../../corrections.md`](../../corrections.md) or its tables.
+
+**How they were taken.** Every step by [`aids/scripts/stepD.sh`](aids/scripts/stepD.sh), driven by
+[`aids/scripts/driveD.sh`](aids/scripts/driveD.sh) ([`aids/driveD.log`](aids/driveD.log)), each through the machine-wide
+lock and idle gate (`run.sh`, as [`../local/scripts/run.sh`](../local/scripts/run.sh)), with the default branch's head
+read and the free disk checked before it; each step's command line, exit and machine records are in
+[`aids/logs/`](aids/logs/runs.tsv). The base commit's tree is a clean `git archive` of
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` on disk outside every working tree
+([`aids/base/archive.txt`](aids/base/archive.txt)), built as [`../local/scripts/step.sh`](../local/scripts/step.sh)'s
+`build-off` builds it, `dotnet build Broiler.JS.slnx -c Release --disable-build-servers`, the switch at its default,
+exit 0 with no warning ([`aids/base/build.log`](aids/base/build.log); the shell's binaries' digests in
+[`aids/base/shell-binaries.sha256`](aids/base/shell-binaries.sha256)); Terser as `step.sh`'s `terser` step. Every
+engine run is under `env -i` with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*` variable. The build trees, with their
+`bin` and `obj` folders and the aids' build outputs, were removed when the runs ended.
+
+### Class E by the library's code
+
+- **The aid, corrected.** [`scripts/bridge-codes/`](scripts/bridge-codes/Program.cs) is the `tools` step's reading aid
+  ([`../local/scripts/bridge-codes/`](../local/scripts/bridge-codes/Program.cs), retained as it ran) with one change:
+  it finds `SharedSyntaxBridge` and `BridgeRequest` in `FastParser`'s assembly, `Broiler.JavaScript.Parser`, where the
+  side-by-side tool finds them, not in `FastParseException`'s, `Broiler.JavaScript.Ast`. It builds the bridge's own
+  request for each input variant and gives the library's diagnostics in order; the bridge refuses with the first. Run
+  over every input variant P or B refused in the base commit's retained side-by-side report
+  ([`aids/base/codes-ids.tsv`](aids/base/codes-ids.tsv); the report's SHA-256 in
+  [`aids/base/codes-input.sha256`](aids/base/codes-input.sha256),
+  `443fbdbf08d0e4f778b91a174f0b8ba1c384fd3df0bf046a02364aabc2808e72`, as retained), step `d-base-codes`, exit 0, every
+  listed variant answered ([`aids/base/codes-run.stderr.txt`](aids/base/codes-run.stderr.txt)):
+  [`aids/base/bridge-codes.tsv`](aids/base/bridge-codes.tsv),
+  `48c299af425bda5a104f74ab84ef1940778afe0a2425b5b7a07a16b2a15c3f43`. The variants of that list the library accepts
+  are refusals of the bridge's own (an import attribute key, which P refuses with the same text) and module inputs P
+  refuses and B accepts; none is a move to a refusal at B.
+- **The tables, written again.** [`scripts/classify_c.py`](scripts/classify_c.py) reads class E by the code when the
+  aid's output is given (its docstring, "By code"): the row is the stage table's row whose `shared_code` is the first
+  diagnostic's code, and the move is E when that row qualifies by the rule's header as the docstring reads it, else
+  unclassified; [`scripts/readings.tsv`](scripts/readings.tsv) is then not read. [`scripts/read_base.sh`](scripts/read_base.sh)
+  passes the file as its fifth argument. Without it the scripts write every earlier table byte for byte (run
+  `d-read-nocodes`); with it, runs `d-read-codes-1` to `d-read-codes-4` (the last two with the file at its path here)
+  wrote the same bytes each time, and those are the tables in this folder now. Only three changed:
+  [`differences.tsv.gz`](differences.tsv.gz) (`e918f46254ae5de50a2705927864cd8af311e8c026b5ae30dc23ecb20cfbee0e`; it
+  was `b6fcb0389ec57f68987bd97d3895cd846575d2d281b8631ba908e5c5791f6c7d`), [`classes.txt`](classes.txt)
+  (`2bb2c4659bf01cbaa383f92f12dfc596540f30b6ec2a6e0d97717ebcffccda76`; it was
+  `caa7dee42609fe9c44116b57b4393da16325d0213a4b24ba0b1d0fbed3a1786f`) and [`unclassified.tsv`](unclassified.tsv)
+  (`1622df7102aa57fa94730542b05df91843f5c2f8099feeefc8dc26166820194f`; it was
+  `afce208f34568ed0d6db4af0667646bb4ccab07a14eb18c7721fddd39d93dc4b`); the earlier bytes are at commit
+  `d8760ee7` of this branch. This folder's `hashes.txt` read
+  `b9a8fd92c477cb64d7ee91695ba7dc7700b336501bd6acb07cec989dc4660c47` before.
+- **What it shows**, read and not judged: every outcome move read E from B's text holds by the library's code,
+  including those read E only by narrowing to the classification's first rows; none becomes unclassified, no E is
+  provisional, and the unclassified differences are the same set as before (only their bases name the code). Items 1
+  to 3 read by code: the getter with a parameter, row EX0009 (code `JSE9109`, `syntax.token.missing`), where the
+  classification lists EX0008 first; the arrow function as a class heritage, row EX0008 (`JSE9108`,
+  `syntax.token.unexpected`), where it lists EE0087, EE0155 and EX0009; the parenthesized literal as an assignment
+  target, row EE0033 (`JSE1329`, `assignment.target.invalid`), `partly`, where it lists the cover-grammar rows. Each
+  is the row B's text gave, none is among the rows the classification lists first, and each stays unclassified.
+  `classes.txt` also counts the moves whose first code's message identifier is not one B's text renders: each is a
+  module input refused for a lexical redeclaration, which the bridge's message table renders in a module as "has
+  already been declared" (`BridgeMessages.cs`'s summary); the code is the one the row names.
+
+### `regress-610026.js`, one case
+
+- **The re-run.** `scripts/compliance/run_test262.py` restricted to `test/staging/sm/regress/regress-610026.js` by
+  `--path-file`, with the options the shards used otherwise (`--test-timeout-seconds 30 --minifier terser
+  --minifier-timeout-seconds 30 --memory-limit-mb 0 --max-workers 4 --include-negative`, both variants), through the
+  base build's shell with the hidden switch off (step `d-base-case-off`) and on, `--shell-arg=--parse-through-bridge`
+  (step `d-base-case-on`), each exit 0; then once at W2's head `029bab4c4f2457fed1896ab6c4d224350d809b40` (branch
+  `sjl-14-w2`, read-only from its worktree), a clean `git archive` built the same way, with no switch argument, as W2
+  removes the switch (step `d-w2-case-w2`; [`aids/w2/`](aids/w2/archive.txt)). The runner's own records:
+  [`aids/base/case-off/result.json`](aids/base/case-off/result.json)
+  (`63b7724fb6d0ad791a5240dc108cfe33c19133f3ff42414debd0ad7a884e068f`),
+  [`aids/base/case-on/result.json`](aids/base/case-on/result.json)
+  (`7d01f624cd9c3b1bdb4c31ceb223822ca09a8f041db4bc79b01b5794a6afb0d1`) and
+  [`aids/w2/case-w2/result.json`](aids/w2/case-w2/result.json)
+  (`409f96180839aabb702f8233a5b94167e3143282fe8f967220e999ac73f6638f`). A recording shim found first on `PATH`
+  ([`aids/scripts/shim/dotnet`](aids/scripts/shim/dotnet)) ran the real `dotnet` for each test process with the same
+  arguments, descriptors and inherited limits, and wrote how it ended, its processor time, its peak resident set, its
+  wall time and the CPU limit it ran under ([`aids/base/case-off/shim.log`](aids/base/case-off/shim.log),
+  `064591ad9b1b0220361d9b25f5542cfc4c0b7c9eb2b9956a339e5e5d3dabae79`;
+  [`aids/base/case-on/shim.log`](aids/base/case-on/shim.log),
+  `88b753a29f0af65ea57c77e6522c225606307498384d54d01cd25e831b8ef4b8`;
+  [`aids/w2/case-w2/shim.log`](aids/w2/case-w2/shim.log),
+  `18f0bd9d16caebd3bf2378532d85a1a662d1ecba78b11299d16908b1a3b75ceb`); `timedv.py` timed the runner
+  (`runner.time.txt` beside each).
+- **A parse-time aid.** [`scripts/parse-time/`](scripts/parse-time/Program.cs) parses the test's three eval sources,
+  built as the test builds them, at the old parser (P), the library alone (L, `SyntaxParser.Parse` of the bridge's own
+  request) and the bridge (B, the library's parse and the tree's construction), each entry and source in its own
+  process, under the script goal (step `d-base-ptime`, exit 0): [`aids/base/ptime.tsv`](aids/base/ptime.tsv),
+  `054bec53d5bd1cb7a79d08463c79a235d9d72504176cfea271d3734813ca4ff3`, and each process's own record in
+  [`aids/base/ptime.time.txt`](aids/base/ptime.time.txt).
+- **What it shows**, read and not judged: with the switch off both variants pass alone, as in the retained runs. With
+  it on, each variant's shell process ends on `SIGXCPU`, the signal of the CPU-time limit (`RLIMIT_CPU`) the runner
+  sets to the test's timeout, with no output on either stream, so the runner records a plain failure with no reason,
+  as the retained runs record it; its peak resident set is far above the switch-off run's (the figures are in the files). At W2's head the same
+  holds: W2 does not change it. The parse-time aid shows where the processor time goes: the library's parse alone
+  takes about what the old parser takes, and the bridge's parse, which adds the tree's construction from the library's
+  tree, takes markedly more time and memory (the figures are in the files). So the records show **the runner's limit**
+  stopping the case, reached because of **the bridge's** cost on these sources (its tree construction, not the
+  library's parse); not the library. This is a reading of single-case re-runs on an idle machine, not of the shards'
+  runs, which ran beside other cases.
+
+### Items 9 and 5, read at their sites
+
+- **`B-short-bracket`** (item 9): six variants, three inputs. The nodes are an `AstMemberExpression` whose property is
+  a comma expression (`a()[0, 1]` inside `import(...)` in `T036087`; `arr?.[0, 1]`, `arr?.[1, 0]` and
+  `arr?.[{}, NaN, undefined, 2, 0, 10 / 10]` under an `AstOptionalChain` in `T039546`; `of [0, 1, 2]` as a `for`-`of`
+  head's target in `T051374`), and the `AstOptionalChain` and `AstImportCall` that take their end from it; both spans
+  and texts are in [`span-readings.tsv.gz`](span-readings.tsv.gz) (P's ends after the `]`, B's before it). B's end is
+  set by the AST type, at the base commit `Broiler.JS/Broiler.JavaScript.Ast/Expressions/AstMemberExpression.cs:9`
+  (`AstExpression(target.End, FastNodeType.MemberExpression, node.End)`: a member ends where its property ends), built
+  by the bridge at `Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:331` from the
+  property the bridge builds, whose end token is the library's span end (`BridgeTreeBuilder.cs:88`); the optional chain
+  takes the member's end (`AstOptionalChain.cs:14`, built at `BridgeTreeBuilder.Expressions.cs:49`) and the import call
+  its argument's (`BridgeTreeBuilder.Expressions.cs:76`, as the old parser's `FastParser.SingleMemberExpression.cs:301`
+  builds it). The same derivation ends every computed member before its `]` in both trees (`arr?.[0]` in `T039546`
+  has the same span at P and B, without the bracket); P's span takes the `]` only here, because P's comma expression
+  takes it (that line is S, `S-punct`). The reading: **a span the bridge's tree carries by the AST type's derivation**,
+  in `Broiler.JS/`, not the library's (`Broiler.ECMAScript/`), so a change inside W2 by B8 could address it; it is the
+  same rule P follows for every other computed member.
+- **`for-of/head-await-using-bound-names-in-stmt.js`** (item 5, `T049530`, a module test). The early error is EE0056
+  (`ForInOfStatement`: "any element of the BoundNames of ForDeclaration also occurs in the VarDeclaredNames of
+  Statement"); the library's code is `JSE1417`, EE0056's ([`aids/base/bridge-codes.tsv`](aids/base/bridge-codes.tsv)).
+  With the switch off the shell's module host compiles the module with top-level await permitted, the old parser and
+  compiler do not check that rule, and the body runs to `$DONOTEVALUATE()` ("This statement should not be evaluated");
+  with it on the library refuses the parse with EE0056, as the test expects. In the side-by-side report, K at the base
+  refuses this input with "Unexpected await" (`SyntaxValidation.cs:32`, the check of a program that awaits at its top
+  level without the permission, which the K entry does not give), so
+  [`../../corrections/test262-paths.tsv`](../../corrections/test262-paths.tsv) reads the move as the stage kind and
+  explains it by the correspondence's D31 bucket ("Broiler.JS refusing only in its compiler"), and
+  [`../../corrections/k-paths.tsv`](../../corrections/k-paths.tsv), written from those tables, lists no K row for it.
+  As written, no K row lists it: K7's D35 ("Lexical redeclarations Broiler.JS misses", which the stage table names for
+  EE0051 and EE0056) describes what the shell shows, but the tables explain the path by D31, and a K10 row can no
+  longer be added before the first part C base run. Part A's C1 line, "a C1 row that none explains is recorded as a
+  finding against the correspondence", is the record it fits.
+
+### Item 8, the canonical dump
+
+Bundle `sjl-12-001`'s canonical dump ([`../../../sjl-12-001/tools/parse-corpus/CanonicalDump.cs`](../../../sjl-12-001/tools/parse-corpus/CanonicalDump.cs),
+unchanged) writes every node's span in one place, `Span(FastToken? start, FastToken? end)` (lines 283 to 292 at the base
+commit): an end token of type `TokenTypes.EOF` is written `eof`, any other end token as its offset plus its length.
+P's tree ends the nodes of item 8 at the old parser's end-of-file token, so P's dump writes `eof`; the bridge ends them
+at the token that ends the node's last character (`BridgeTreeBuilder.cs:88`, `tokens.EndingAt`), so B's dump writes the
+offset. The tool's comment at lines 294 and 295 says why the end-of-file token is written by name ("at the corpus commit
+it is one object shared by every parse (FastScanner.EOF), and nothing of it is read"), and its README's "The canonical
+dump" says `<end>` is "the last token's offset plus its length ... or `eof` for the end-of-file token". Neither the
+tool's README nor bundle `sjl-12-001`'s rule says how a dump that writes `eof` is read against one that writes the same
+offset as a number: the tool compares dumps by hash, and the two hashes differ. That tool is not changed.

@@ -40,6 +40,7 @@
 4	span	WhileStatement	P-eof-same-text
 2	span	WithStatement	P-eof-same-text
 13	span	YieldExpression	S-punct
-806	E moves set aside B's text's rows that would not qualify, by reading the library's code as one of the classification's first rows
+8646	P/B variants B refused whose library code the reading aid gives (bridge-codes.tsv)
+10	P/B outcome moves to refused where the message identifier of the library's first code is not one B's text renders
 3653	unclassified differences (unclassified.tsv)
 3653	input variants with an unclassified difference
