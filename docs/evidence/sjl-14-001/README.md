@@ -934,6 +934,102 @@ Each compares the base with the after commit, and the after commit does not exis
 A's in [`base/part-a/`](base/part-a/imported.txt), the others in [`base/local/`](base/local/README.md)) and read, not
 judged.
 
+## W2's base, records part 4, recorded on 2026-11-23
+
+**Written:** 2026-11-23, during W2's hold, on branch `sjl-14-w2-base`, with the default branch's head read as
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` by `git ls-remote` before every step and before this record was committed.
+**What it records:** reading aids and single-case re-runs that settle part C's open readings at the base, **not new
+runs of the rule**: none replaces a retained run, each is recorded as a reading aid, as W1's records name theirs, and
+nothing here is a verdict. Part C's reading stands as taken: read NOT MET on the retained runs.
+[`decision-rule.md`](decision-rule.md) is not edited, nothing here revises a line of it, and no row is added to
+[`corrections.md`](corrections.md) or its tables. Every file is in [`base/part-c/aids/`](base/part-c/aids/logs/runs.tsv)
+and [`base/part-c/scripts/`](base/part-c/scripts/read_base.sh), described in [`base/part-c/README.md`](base/part-c/README.md)'s
+"Records part 4"; that folder's [`hashes.txt`](base/part-c/hashes.txt) now reads SHA-256
+`491803453c610a1401f9e1ddd03176f056bcd692b2bd3f9bbe4cc67af815cce6`, and [`base/local/`](base/local/README.md)'s
+[`hashes.txt`](base/local/hashes.txt) `8952bf24ab404e788d6975cb19261166125eef0795ffcb528092e6730048145e`. *(The two
+digests the section "W2's base, recorded on 2026-11-23" names for those files,
+`f9819e16d86651ed3dead2c3ca1f9b829a8f523161b2554a243eac7f8d634628` and
+`b9a8fd92c477cb64d7ee91695ba7dc7700b336501bd6acb07cec989dc4660c47`, are of the folders before this record; they are
+left as written there.)*
+
+**Each aid and re-run**, every step by `stepD.sh` through the machine-wide lock and idle gate, its command line, exit
+and machine records in [`base/part-c/aids/logs/`](base/part-c/aids/logs/commands.log), every engine run under `env -i`
+with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*` variable:
+- **A build of the base commit** `69a8a13bc446a1714d3c8be9be3cfd742aebee6e` (steps `d-base-archive`, `d-base-build`,
+  `d-base-terser`, 2026-11-23): a clean `git archive` on disk outside every working tree, `dotnet build Broiler.JS.slnx
+  -c Release --disable-build-servers` as the base runs' `build-off` took it, exit 0 with no warning
+  ([`build.log`](base/part-c/aids/base/build.log), [`archive.txt`](base/part-c/aids/base/archive.txt), the shell's
+  binaries' digests in [`shell-binaries.sha256`](base/part-c/aids/base/shell-binaries.sha256)); its trees were removed
+  when the runs ended.
+- **The bridge-codes reading aid, corrected** (step `d-base-codes`): the `tools` step's aid with the bridge's types
+  looked up in `Broiler.JavaScript.Parser`, where they are ([`base/part-c/scripts/bridge-codes/`](base/part-c/scripts/bridge-codes/Program.cs);
+  the aid as it ran at the base step is kept in [`base/local/scripts/bridge-codes/`](base/local/scripts/bridge-codes/Program.cs)),
+  over every input variant P or B refused in the base commit's side-by-side report, exit 0, every variant answered:
+  [`bridge-codes.tsv`](base/part-c/aids/base/bridge-codes.tsv),
+  `48c299af425bda5a104f74ab84ef1940778afe0a2425b5b7a07a16b2a15c3f43`.
+- **Part C's tables, written again** with class E read by that code (runs `d-read-nocodes` and `d-read-codes-1` to
+  `d-read-codes-4` of [`base/part-c/scripts/read_base.sh`](base/part-c/scripts/read_base.sh), exit 0 each): without
+  the code the scripts write every earlier table byte for byte; with it, the same bytes in each run. Three tables
+  changed, each digest before and after in that folder's README: `differences.tsv.gz` (it was
+  `b6fcb0389ec57f68987bd97d3895cd846575d2d281b8631ba908e5c5791f6c7d`, now
+  `e918f46254ae5de50a2705927864cd8af311e8c026b5ae30dc23ecb20cfbee0e`), `classes.txt` (it was
+  `caa7dee42609fe9c44116b57b4393da16325d0213a4b24ba0b1d0fbed3a1786f`, now
+  `2bb2c4659bf01cbaa383f92f12dfc596540f30b6ec2a6e0d97717ebcffccda76`) and `unclassified.tsv` (it was
+  `afce208f34568ed0d6db4af0667646bb4ccab07a14eb18c7721fddd39d93dc4b`, now
+  `1622df7102aa57fa94730542b05df91843f5c2f8099feeefc8dc26166820194f`).
+- **A parse-time reading aid** (step `d-base-ptime`, exit 0): `regress-610026.js`'s eval sources parsed at the old
+  parser, the library alone and the bridge, each in its own process
+  ([`ptime.tsv`](base/part-c/aids/base/ptime.tsv), `054bec53d5bd1cb7a79d08463c79a235d9d72504176cfea271d3734813ca4ff3`).
+- **`test/staging/sm/regress/regress-610026.js`, one case, both variants** (steps `d-base-case-off` and
+  `d-base-case-on`, exit 0 each): `scripts/compliance/run_test262.py` restricted to that path, with the shards' options
+  otherwise, through the base build's shell with the hidden switch off and on, a recording shim giving each shell
+  process's end, processor time and peak memory: the runner's records
+  [`case-off/result.json`](base/part-c/aids/base/case-off/result.json),
+  `63b7724fb6d0ad791a5240dc108cfe33c19133f3ff42414debd0ad7a884e068f`, and
+  [`case-on/result.json`](base/part-c/aids/base/case-on/result.json),
+  `7d01f624cd9c3b1bdb4c31ceb223822ca09a8f041db4bc79b01b5794a6afb0d1`, and the shim's
+  [`case-off/shim.log`](base/part-c/aids/base/case-off/shim.log) and [`case-on/shim.log`](base/part-c/aids/base/case-on/shim.log).
+- **The same case at W2's head** `029bab4c4f2457fed1896ab6c4d224350d809b40` (branch `sjl-14-w2`, read-only; steps
+  `d-w2-archive`, `d-w2-build`, `d-w2-terser`, `d-w2-case-w2`, exit 0 each), built the same way, run with no switch
+  argument as W2 has no switch: [`case-w2/result.json`](base/part-c/aids/w2/case-w2/result.json),
+  `409f96180839aabb702f8233a5b94167e3143282fe8f967220e999ac73f6638f`, and its
+  [`shim.log`](base/part-c/aids/w2/case-w2/shim.log).
+- **Readings at their sites**, from the base commit's sources and the retained dumps, with nothing run: the
+  `B-short-bracket` spans, the `for`-`of` case, and bundle `sjl-12-001`'s canonical dump for `P-eof-same-text`.
+- **Three files kept whole**: part C's side-by-side report, part D's dump report and Broiler.HtmlBridge's TRX, the
+  files the after comparisons read that were kept by digest only, are now in [`base/local/`](base/local/README.md) at
+  their paths, unchanged, each matching its recorded digest; `not-retained.sha256.txt`, `hashes.txt`,
+  `retained.txt` and `.gitattributes` there say so by dated notes. A decision taken under the owner's direction; the
+  alternative not taken was to keep them only in the run folder, which the session's container does not keep.
+
+**What each shows**, in words (the figures are in the files), read and not judged:
+- **Class E by code.** Every outcome move read E from the bridge's text holds by the library's code, those read so only
+  by narrowing to the classification's first rows included; none becomes unclassified, no E is provisional, and the
+  unclassified differences are the same set. The three groups of items 1 to 3 read by code as the rows B's text gave:
+  EX0009 for the getter with a parameter, EX0008 for the arrow function as a class heritage, EE0033 for the
+  parenthesized literal as an assignment target; none is among the rows the classification lists first, and each stays
+  unclassified.
+- **`regress-610026.js`.** With the switch off both variants pass alone. With it on, and at W2's head, each variant's
+  shell process ends on `SIGXCPU`, the signal of the CPU-time limit the runner sets to the test's timeout, with no
+  output, which the runner records as a plain failure with no reason. The parse-time aid shows the library's parse
+  alone close to the old parser's, and the bridge's, which adds the tree's construction, far above both: the runner's
+  limit stops the case, reached by the bridge's cost on these sources, not the library's. W2 does not change it.
+- **`B-short-bracket`.** B's span is the AST type's derivation, a member ending where its property ends
+  (`AstMemberExpression.cs:9` at the base commit, built by the bridge at `BridgeTreeBuilder.Expressions.cs:331`), the
+  same derivation by which both trees end every other computed member before its `]`; P takes the bracket only through
+  its comma expression's span. A span the bridge's tree carries, in `Broiler.JS/`, not the library's.
+- **`for`-`of`, `head-await-using-bound-names-in-stmt.js`.** The early error is EE0056, the library's code its own; with
+  the switch off the module host runs the body, as the old parser and compiler do not check it, and the corpus's K
+  refuses the input only for awaiting at the top level without the permission, so the corrections' tables explain it
+  by the correspondence's D31 bucket and list no K row for it; as written, none does.
+- **`P-eof-same-text`.** The canonical dump writes an end token of the end-of-file type as `eof` and any other as an
+  offset, in one function; P's tree ends those nodes at the end-of-file token and B's at the node's last token. The
+  tool's README and its rule describe the form, and say nothing of how `eof` is read against the same offset written
+  as a number.
+
+What follows from each remaining unclassified item, under part C's "How it is read" and readings B8 and B9, is the
+owner's to decide; nothing here decides it.
+
 ## What it does not claim
 
 - **No figure.** No count, timing, ratio or score is written in this README; the bundle's runs hold their own. No
