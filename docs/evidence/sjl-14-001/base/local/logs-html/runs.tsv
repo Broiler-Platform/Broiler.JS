@@ -1,0 +1,3 @@
+html-restore	rc=0	wall=4.5s maxrss=238MB	started=2026-11-23T11:52:01Z	ended=2026-11-23T11:52:05Z
+html-build	rc=0	wall=27.6s maxrss=195MB	started=2026-11-23T11:52:05Z	ended=2026-11-23T11:52:33Z
+html-test	rc=0	wall=123.6s maxrss=2347MB	started=2026-11-23T11:52:33Z	ended=2026-11-23T11:54:37Z

@@ -1,0 +1,4 @@
+2026-11-23T11:11:28Z pack-engine: /home/user/js-w2base-build/tools/pwsh/pwsh -NoProfile -File eng/pack.ps1 -Configuration Release -ProjectSet Engine -Version 0.1.0-preview.1401 -Output /home/user/js-w2base-build/69a8a13b/feed/engine
+2026-11-23T11:14:53Z pack-shared: /home/user/js-w2base-build/tools/pwsh/pwsh -NoProfile -File eng/pack.ps1 -Configuration Release -ProjectSet Shared -Output /home/user/js-w2base-build/69a8a13b/feed/shared
+2026-11-23T11:15:14Z verify-feed-engine: /home/user/js-w2base-build/tools/pwsh/pwsh -NoProfile -File eng/verify-feed.ps1 /home/user/js-w2base-build/69a8a13b/feed/engine
+2026-11-23T11:15:17Z verify-feed-shared: /home/user/js-w2base-build/tools/pwsh/pwsh -NoProfile -File eng/verify-feed.ps1 /home/user/js-w2base-build/69a8a13b/feed/shared

@@ -1,0 +1,8 @@
+J02: revision
+J02: working-tree
+J02: sdk
+J02: node
+J02: candidate-source-files
+J02: candidate-pins
+J02: pack
+J02 report: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2base/base/part-g/jseal

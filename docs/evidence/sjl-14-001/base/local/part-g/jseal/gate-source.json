@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "expected": {
+    "Broiler.JavaScript": "0.1.0-preview.1401",
+    "Broiler.VM": "0.1.0-preview.6"
+  },
+  "candidates": {
+    "Broiler.JavaScript": "0.1.0-preview.1401"
+  },
+  "graphs": {
+    "source-BroilerJs": {
+      "kind": "source",
+      "packages": [
+        "Broiler.ECMAScript.Algorithms/0.1.0-preview.8",
+        "Broiler.ECMAScript.Intl/0.1.0-preview.8",
+        "Broiler.JavaScript.Ast/0.1.0-preview.1401",
+        "Broiler.JavaScript.BuiltIns/0.1.0-preview.1401",
+        "Broiler.JavaScript.Compiler/0.1.0-preview.1401",
+        "Broiler.JavaScript.Engine/0.1.0-preview.1401",
+        "Broiler.JavaScript.ExpressionCompiler/0.1.0-preview.1401",
+        "Broiler.JavaScript.Expressions/0.1.0-preview.1401",
+        "Broiler.JavaScript.Extensions/0.1.0-preview.1401",
+        "Broiler.JavaScript.Globals/0.1.0-preview.1401",
+        "Broiler.JavaScript.LinqExpressions/0.1.0-preview.1401",
+        "Broiler.JavaScript.Modules/0.1.0-preview.1401",
+        "Broiler.JavaScript.Parser/0.1.0-preview.1401",
+        "Broiler.JavaScript.Runtime/0.1.0-preview.1401",
+        "Broiler.JavaScript.Storage/0.1.0-preview.1401",
+        "Broiler.Regex/0.1.0-preview.6",
+        "Broiler.Unicode.Algorithms/0.1.0-preview.6",
+        "Broiler.Unicode.Segmentation/0.1.0-preview.6"
+      ],
+      "projects": [
+        "Broiler.JSeal/0.1.0-preview.1"
+      ],
+      "families": {
+        "Broiler.JavaScript": "0.1.0-preview.1401"
+      }
+    },
+    "source-Vm": {
+      "kind": "source",
+      "packages": [
+        "Broiler.VM.Abstractions/0.1.0-preview.6",
+        "Broiler.VM.Binary/0.1.0-preview.6",
+        "Broiler.VM.Profile.JavaScript/0.1.0-preview.6",
+        "Broiler.VM.Profile.JavaScript.Compiler/0.1.0-preview.6",
+        "Broiler.VM.Profile.JavaScript.Format/0.1.0-preview.6",
+        "Broiler.VM.Runtime/0.1.0-preview.6"
+      ],
+      "projects": [
+        "Broiler.JSeal/0.1.0-preview.1"
+      ],
+      "families": {
+        "Broiler.VM": "0.1.0-preview.6"
+      }
+    }
+  },
+  "feed": [
+    "Broiler.ECMAScript.Algorithms/0.1.0-preview.8",
+    "Broiler.ECMAScript.Intl/0.1.0-preview.8",
+    "Broiler.JSeal/0.1.0-preview.1",
+    "Broiler.JSeal.BroilerJs/0.1.0-preview.1",
+    "Broiler.JSeal.Vm/0.1.0-preview.1",
+    "Broiler.JavaScript.Ast/0.1.0-preview.1401",
+    "Broiler.JavaScript.BuiltIns/0.1.0-preview.1401",
+    "Broiler.JavaScript.Compiler/0.1.0-preview.1401",
+    "Broiler.JavaScript.Engine/0.1.0-preview.1401",
+    "Broiler.JavaScript.ExpressionCompiler/0.1.0-preview.1401",
+    "Broiler.JavaScript.Expressions/0.1.0-preview.1401",
+    "Broiler.JavaScript.Extensions/0.1.0-preview.1401",
+    "Broiler.JavaScript.Globals/0.1.0-preview.1401",
+    "Broiler.JavaScript.LinqExpressions/0.1.0-preview.1401",
+    "Broiler.JavaScript.Modules/0.1.0-preview.1401",
+    "Broiler.JavaScript.Parser/0.1.0-preview.1401",
+    "Broiler.JavaScript.Runtime/0.1.0-preview.1401",
+    "Broiler.JavaScript.Storage/0.1.0-preview.1401",
+    "Broiler.Regex/0.1.0-preview.6",
+    "Broiler.Unicode.Algorithms/0.1.0-preview.6",
+    "Broiler.Unicode.Segmentation/0.1.0-preview.6",
+    "Broiler.VM.Abstractions/0.1.0-preview.6",
+    "Broiler.VM.Binary/0.1.0-preview.6",
+    "Broiler.VM.Profile.JavaScript/0.1.0-preview.6",
+    "Broiler.VM.Profile.JavaScript.Compiler/0.1.0-preview.6",
+    "Broiler.VM.Profile.JavaScript.Format/0.1.0-preview.6",
+    "Broiler.VM.Runtime/0.1.0-preview.6"
+  ],
+  "errors": []
+}

@@ -1,0 +1,14 @@
+2026-11-19T23:36:24Z chain started (pid follows)
+212
+2026-11-22T14:00:07Z chain restarted after the container restart of about 2026-11-20T04:01Z (tests-on was running; it is taken again from its start)
+224
+2026-11-22T21:21:40Z chain restarted after a container restart between 2026-11-22T20:09Z and 21:21Z (t262-off shard 6 was running; it is taken again from its start)
+2026-11-22T21:52:31Z chain restarted after a container restart between 2026-11-22T21:21Z and 21:52Z (t262-off shard 6 was running; it is taken again from its start)
+2026-11-23T05:06:49Z chain restarted after a container restart between 2026-11-23T02:49Z and 05:06Z (t262-on shard 5 was running; it is taken again from its start)
+2026-11-23T06:30:45Z chain restarted after a container restart between 2026-11-23T05:12Z and 06:30Z (t262-on shard 5 was running; it is taken again from its start)
+2026-11-23T07:07:46Z chain restarted after a container restart between 2026-11-23T06:35Z and 07:04Z (t262-on shard 5 was running; it is taken again from its start); scripts/memwatch.sh started beside it to log memory
+2026-11-23T10:41:45Z chain.sh stopped at bstep phase5 (rc=1, 10:40:32Z): collect_phase5.py reports "offline compiler output differs from the checked-in program" at the base commit; the base's part E record is kept as taken (part E is judged at the after commit only); scripts/chain2.sh takes the remaining steps pack, api, jseal, html
+2026-11-23T11:11:19Z chain2 restarted after a container restart between 2026-11-23T10:46Z and 11:10Z (bstep pack was running; it is taken again from its start); memwatch.log reads about 15 GB available to its last line at 10:46:31Z, so the restart was not memory exhaustion
+2026-11-23T11:21:43Z chain2.sh stopped at bstep jseal (rc=1, 11:20:46Z): eng/test-package-consumer.ps1 threw "Restore Broiler.JSeal before a candidate run."; a harness omission (Broiler.JSeal's eng/package-consumer/README.md requires the shipping projects restored in Release-VM first). The attempt is kept as base/part-g/jseal-attempt-1 and base/logs-jseal-attempt-1; bstep.sh's jseal step now restores first (its earlier text kept as scripts/bstep.sh.before-jseal-restore); scripts/chain3.sh takes jseal and html
+2026-11-23T11:23:06Z chain3.sh stopped at bstep jseal (rc=1, 11:22:02Z): the consumer's pack restore failed NU1102 "Unable to find package Broiler.Regex with version (>= 0.1.0-preview.6)" (Broiler.JSeal's README: the candidate directory must contain every package the candidate introduces). Attempt kept as base/part-g/jseal-attempt-2 and base/logs-jseal-attempt-2; bstep.sh's jseal step now passes a candidate directory of the feed's packs plus Broiler.Regex, Broiler.Unicode.Algorithms and Broiler.Unicode.Segmentation 0.1.0-preview.6 from the NuGet cache, SHA-512 checked (earlier text kept as scripts/bstep.sh.before-jseal-candidate-dir); chain3.sh started again for jseal and html
+2026-11-23T11:54:38Z chain done

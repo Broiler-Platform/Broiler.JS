@@ -1,0 +1,51 @@
+namespace Broiler.JavaScript.Globals
+{
+    [Broiler.JavaScript.ExpressionCompiler.JSFunctionGenerator("Globals", "KeyStrings", Globals=true)]
+    public class JSGlobalStatic
+    {
+        [Broiler.JavaScript.Runtime.JSExport("Infinity")]
+        public static readonly Broiler.JavaScript.Runtime.JSValue Infinity;
+        [Broiler.JavaScript.Runtime.JSExport("NaN")]
+        public static readonly Broiler.JavaScript.Runtime.JSValue NaN;
+        [Broiler.JavaScript.Runtime.JSExport("undefined")]
+        public static readonly Broiler.JavaScript.Runtime.JSValue Undefined;
+        public JSGlobalStatic() { }
+        [Broiler.JavaScript.Runtime.JSExport("Intl")]
+        public static Broiler.JavaScript.Runtime.JSValue Intl { get; }
+        [Broiler.JavaScript.Runtime.JSExport("clearInterval", Length=1)]
+        public static Broiler.JavaScript.Runtime.JSValue ClearInterval(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("clearTimeout", Length=1)]
+        public static Broiler.JavaScript.Runtime.JSValue ClearTimeout(in Broiler.JavaScript.Runtime.Arguments a) { }
+        public static Broiler.JavaScript.Runtime.JSObject CreateClass(Broiler.JavaScript.Runtime.JSObject context, bool register = true) { }
+        [Broiler.JavaScript.Runtime.JSExport("decodeURI", Length=1)]
+        public static Broiler.JavaScript.Runtime.JSValue DecodeURI(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("decodeURIComponent", Length=1)]
+        public static Broiler.JavaScript.Runtime.JSValue DecodeURIComponent(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("encodeURI", Length=1)]
+        public static Broiler.JavaScript.Runtime.JSValue EncodeURI(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("encodeURIComponent", Length=1)]
+        public static Broiler.JavaScript.Runtime.JSValue EncodeURIComponent(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("escape", Length=1)]
+        public static Broiler.JavaScript.Runtime.JSValue Escape(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("eval", Length=1)]
+        public static Broiler.JavaScript.Runtime.JSValue Eval(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("isFinite", Length=1)]
+        public static Broiler.JavaScript.Runtime.JSValue IsFinite(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("isNaN", Length=1)]
+        public static Broiler.JavaScript.Runtime.JSValue IsNaN(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("parseFloat", Length=1)]
+        public static Broiler.JavaScript.Runtime.JSValue ParseFloat(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("parseInt", Length=2)]
+        public static Broiler.JavaScript.Runtime.JSValue ParseInt(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("setImmediate", Length=1)]
+        public static Broiler.JavaScript.Runtime.JSValue SetImmediate(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("setInterval", Length=2)]
+        public static Broiler.JavaScript.Runtime.JSValue SetInterval(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("setTimeout", Length=2)]
+        public static Broiler.JavaScript.Runtime.JSValue SetTimeout(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("structuredClone", Feature=16, Length=1)]
+        public static Broiler.JavaScript.Runtime.JSValue StructuredClone(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("unescape", Length=1)]
+        public static Broiler.JavaScript.Runtime.JSValue Unescape(in Broiler.JavaScript.Runtime.Arguments a) { }
+    }
+}

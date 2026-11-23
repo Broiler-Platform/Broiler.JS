@@ -1,0 +1,942 @@
+namespace Broiler.ECMAScript.Intl
+{
+    public enum CollationCaseFirst
+    {
+        Off = 0,
+        Upper = 1,
+        Lower = 2,
+    }
+    public enum CollationStrength
+    {
+        Primary = 1,
+        Secondary = 2,
+        Tertiary = 3,
+    }
+    public enum CompactDisplay
+    {
+        Short = 0,
+        Long = 1,
+    }
+    public sealed class CompositeLocaleData : Broiler.ECMAScript.Intl.ILocaleData
+    {
+        public CompositeLocaleData(Broiler.ECMAScript.Intl.ILocaleData shared, Broiler.ECMAScript.Intl.ILocaleData? secondary = null) { }
+        public System.Collections.Generic.IReadOnlyList<string> CurrencyCodes { get; }
+        public System.Collections.Generic.IReadOnlyList<string> Locales { get; }
+        public System.Collections.Generic.IReadOnlyList<string> NumberingSystems { get; }
+        public string? Alias(Broiler.ECMAScript.Intl.LocaleAliasKind kind, string from) { }
+        public System.Collections.Generic.IReadOnlyList<string>? CalendarPreferences(string region) { }
+        public Broiler.ECMAScript.Intl.CurrencyNames? Currency(string locale, string code) { }
+        public int? CurrencyDigits(string code) { }
+        public string? DateValue(string locale, string calendar, string key) { }
+        public System.Collections.Generic.IReadOnlyDictionary<string, string>? DateValues(string locale, string calendar) { }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.DayPeriodRule>? DayPeriods(string language) { }
+        public string? DisplayName(string locale, string kind, string code) { }
+        public string? GoldenZone(string metazone, string region) { }
+        public bool HoldsLocale(Broiler.ECMAScript.Intl.IntlTable table, string locale) { }
+        public Broiler.ECMAScript.Intl.RegionHourCycles? HourCycles(string region) { }
+        public bool IsExtensionKey(char singleton, string key) { }
+        public bool? IsRightToLeft(string script) { }
+        public string? LikelySubtags(string source) { }
+        public Broiler.ECMAScript.Intl.ListPatterns? ListPattern(string locale, string type) { }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.MetazonePeriod>? MetazonePeriods(string zone) { }
+        public string? NumberValue(string locale, string key) { }
+        public System.Collections.Generic.IReadOnlyList<string>? NumberingSystemDigits(string system) { }
+        public string? PluralRange(string language, string start, string end) { }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.PluralRuleText>? PluralRules(string language, Broiler.ECMAScript.Intl.PluralRuleType type) { }
+        public string? PrimaryZone(string region) { }
+        public string? RelativeTime(string locale, string field, string key) { }
+        public bool TryExtensionType(char singleton, string key, string type, out string preferred) { }
+        public string? UnitPattern(string locale, string width, string unit, string field) { }
+        public Broiler.ECMAScript.Intl.RegionWeek? Week(string region) { }
+        public static System.Collections.Generic.IReadOnlyList<string> Chain(string locale) { }
+    }
+    public enum CurrencyDisplay
+    {
+        Symbol = 0,
+        NarrowSymbol = 1,
+        Code = 2,
+        Name = 3,
+    }
+    public readonly struct CurrencyNames : System.IEquatable<Broiler.ECMAScript.Intl.CurrencyNames>
+    {
+        public CurrencyNames(string Symbol, string Narrow, string One, string Other, string Name, string SymbolEnds, string NarrowEnds) { }
+        public string Few { get; init; }
+        public string Many { get; init; }
+        public string Name { get; init; }
+        public string Narrow { get; init; }
+        public string NarrowEnds { get; init; }
+        public string One { get; init; }
+        public string Other { get; init; }
+        public string Symbol { get; init; }
+        public string SymbolEnds { get; init; }
+        public string Two { get; init; }
+        public string Zero { get; init; }
+        public string DisplayName(string pluralCategory) { }
+    }
+    public enum CurrencySign
+    {
+        Standard = 0,
+        Accounting = 1,
+    }
+    public sealed class DateTimeComponents : System.IEquatable<Broiler.ECMAScript.Intl.DateTimeComponents>
+    {
+        public DateTimeComponents() { }
+        public string? Day { get; init; }
+        public string? DayPeriod { get; init; }
+        public string? Era { get; init; }
+        public int? FractionalSecondDigits { get; init; }
+        public string? Hour { get; init; }
+        public string? Minute { get; init; }
+        public string? Month { get; init; }
+        public string? Second { get; init; }
+        public string? TimeZoneName { get; init; }
+        public string? Weekday { get; init; }
+        public string? Year { get; init; }
+        public static System.Collections.Generic.IReadOnlyList<string> Names { get; }
+        public static Broiler.ECMAScript.Intl.DateTimeComponents None { get; }
+    }
+    public sealed class DateTimeData
+    {
+        public DateTimeData(Broiler.ECMAScript.Intl.ILocaleData data, Broiler.ECMAScript.Time.ITimeZoneDatabase timeZones, Broiler.ECMAScript.Temporal.TemporalCalendars calendars) { }
+        public Broiler.ECMAScript.Temporal.TemporalCalendars Calendars { get; }
+        public Broiler.ECMAScript.Intl.ILocaleData Data { get; }
+        public Broiler.ECMAScript.Time.ITimeZoneDatabase TimeZones { get; }
+    }
+    public enum DateTimeDefaults
+    {
+        Date = 0,
+        Time = 1,
+        All = 2,
+    }
+    public sealed class DateTimeFormat
+    {
+        public string Calendar { get; }
+        public string? DateStyle { get; }
+        public bool ForZonedDateTime { get; }
+        public Broiler.ECMAScript.Intl.DateTimeFormatter Formatter { get; }
+        public bool? Hour12 { get; }
+        public string? HourCycle { get; }
+        public string Locale { get; }
+        public string NumberingSystem { get; }
+        public System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, string>> ResolvedComponents { get; }
+        public string? TimeStyle { get; }
+        public string TimeZone { get; }
+        public static System.Collections.Generic.IReadOnlyList<string?> CalendarKeyValues { get; }
+        public static System.Collections.Generic.IReadOnlyList<string?> HourCycleKeyValues { get; }
+        public Broiler.ECMAScript.Intl.IntlStatus HandleDateTimeRange(Broiler.ECMAScript.Intl.DateTimeValue x, Broiler.ECMAScript.Intl.DateTimeValue y, out Broiler.ECMAScript.Intl.DateTimeFormatter? formatter, out double xTime, out double yTime) { }
+        public Broiler.ECMAScript.Intl.IntlStatus HandleDateTimeValue(Broiler.ECMAScript.Intl.DateTimeValue value, out Broiler.ECMAScript.Intl.DateTimeFormatter? formatter, out double time) { }
+        public static System.Collections.Generic.IReadOnlyList<string?> CalendarKeyValuesOf(Broiler.ECMAScript.Intl.ILocaleData data, string locale) { }
+        public static Broiler.ECMAScript.Intl.IntlStatus Create(Broiler.ECMAScript.Intl.DateTimeData data, Broiler.ECMAScript.Intl.ResolvedLocale resolved, Broiler.ECMAScript.Intl.DateTimeFormatOptions options, out Broiler.ECMAScript.Intl.DateTimeFormat? format) { }
+        public static System.Collections.Generic.IReadOnlyList<string?> NumberingSystemKeyValues(Broiler.ECMAScript.Intl.ILocaleData data, string locale) { }
+    }
+    public sealed class DateTimeFormatOptions : System.IEquatable<Broiler.ECMAScript.Intl.DateTimeFormatOptions>
+    {
+        public DateTimeFormatOptions() { }
+        public Broiler.ECMAScript.Intl.DateTimeComponents Components { get; init; }
+        public string? DateStyle { get; init; }
+        public Broiler.ECMAScript.Intl.DateTimeDefaults Defaults { get; init; }
+        public bool ForZonedDateTime { get; init; }
+        public bool? Hour12 { get; init; }
+        public Broiler.ECMAScript.Intl.DateTimeRequired Required { get; init; }
+        public string? TimeStyle { get; init; }
+        public Broiler.ECMAScript.Intl.ResolvedTimeZone TimeZone { get; init; }
+    }
+    public sealed class DateTimeFormatter
+    {
+        public const double MaxTime = 8640001555199999D;
+        public const double MinTime = -8640001641600000D;
+        public string Pattern { get; }
+        public Broiler.ECMAScript.Intl.ResolvedTimeZone ResolvedTimeZone { get; }
+        public string TimeZone { get; }
+        public string Format(double time, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public string FormatRange(double x, double y, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.DateTimePart> FormatRangeToParts(double x, double y, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.DateTimePart> FormatToParts(double time, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public sealed class DateTimePart : System.IEquatable<Broiler.ECMAScript.Intl.DateTimePart>
+    {
+        public DateTimePart(string Type, string Value, string? Source) { }
+        public string? Source { get; init; }
+        public string Type { get; init; }
+        public string Value { get; init; }
+    }
+    public enum DateTimeRequired
+    {
+        Any = 0,
+        Date = 1,
+        Time = 2,
+    }
+    public readonly struct DateTimeValue : System.IEquatable<Broiler.ECMAScript.Intl.DateTimeValue>
+    {
+        public string Calendar { get; }
+        public Broiler.ECMAScript.Time.IsoDate Date { get; }
+        public System.Numerics.BigInteger EpochNanoseconds { get; }
+        public bool IsTemporal { get; }
+        public Broiler.ECMAScript.Intl.DateTimeValueKind Kind { get; }
+        public double Time { get; }
+        public Broiler.ECMAScript.Time.IsoTime TimeOfDay { get; }
+        public static Broiler.ECMAScript.Intl.DateTimeValue Instant(System.Numerics.BigInteger epochNanoseconds) { }
+        public static Broiler.ECMAScript.Intl.DateTimeValue Number(double time) { }
+        public static Broiler.ECMAScript.Intl.DateTimeValue PlainDate(Broiler.ECMAScript.Time.IsoDate date, string calendar) { }
+        public static Broiler.ECMAScript.Intl.DateTimeValue PlainDateTime(Broiler.ECMAScript.Time.IsoDateTime dateTime, string calendar) { }
+        public static Broiler.ECMAScript.Intl.DateTimeValue PlainMonthDay(Broiler.ECMAScript.Time.IsoDate date, string calendar) { }
+        public static Broiler.ECMAScript.Intl.DateTimeValue PlainTime(Broiler.ECMAScript.Time.IsoTime time) { }
+        public static Broiler.ECMAScript.Intl.DateTimeValue PlainYearMonth(Broiler.ECMAScript.Time.IsoDate date, string calendar) { }
+        public static Broiler.ECMAScript.Intl.DateTimeValue ZonedDateTime(System.Numerics.BigInteger epochNanoseconds, string calendar) { }
+    }
+    public enum DateTimeValueKind
+    {
+        Time = 0,
+        PlainDate = 1,
+        PlainYearMonth = 2,
+        PlainMonthDay = 3,
+        PlainTime = 4,
+        PlainDateTime = 5,
+        Instant = 6,
+        ZonedDateTime = 7,
+    }
+    public readonly struct DayPeriodRule : System.IEquatable<Broiler.ECMAScript.Intl.DayPeriodRule>
+    {
+        public DayPeriodRule(string Period, int From, int Before, bool At) { }
+        public bool At { get; init; }
+        public int Before { get; init; }
+        public int From { get; init; }
+        public string Period { get; init; }
+    }
+    public static class DigitOptionRules
+    {
+        public static Broiler.ECMAScript.Intl.IntlStatus DefaultNumberOption(double value, int minimum, int maximum, out int result) { }
+        public static bool IsAdmittedRoundingIncrement(int increment) { }
+        public static Broiler.ECMAScript.Intl.FractionDigitDefaults NumberFormatDefaults(Broiler.ECMAScript.Intl.NumberStyle style, string? currency, Broiler.ECMAScript.Intl.NumberNotation notation, Broiler.ECMAScript.Intl.ILocaleData data) { }
+        public static Broiler.ECMAScript.Intl.DigitOptionsPlan Plan(bool hasSignificantDigits, bool hasFractionDigits, Broiler.ECMAScript.Intl.RoundingPriority roundingPriority, Broiler.ECMAScript.Intl.NumberNotation notation) { }
+        public static Broiler.ECMAScript.Intl.IntlStatus SetNumberFormatDigitOptions(Broiler.ECMAScript.Intl.DigitOptionValues values, Broiler.ECMAScript.Intl.FractionDigitDefaults defaults, Broiler.ECMAScript.Intl.NumberNotation notation, out Broiler.ECMAScript.Intl.DigitOptions? options) { }
+    }
+    public sealed class DigitOptionValues : System.IEquatable<Broiler.ECMAScript.Intl.DigitOptionValues>
+    {
+        public DigitOptionValues(int MinimumIntegerDigits, bool HasSignificantDigits, int? MinimumSignificantDigits, int? MaximumSignificantDigits, bool HasFractionDigits, int? MinimumFractionDigits, int? MaximumFractionDigits, int RoundingIncrement, Broiler.ECMAScript.Numbers.RoundingMode RoundingMode, Broiler.ECMAScript.Intl.RoundingPriority RoundingPriority, Broiler.ECMAScript.Intl.TrailingZeroDisplay TrailingZeroDisplay) { }
+        public bool HasFractionDigits { get; init; }
+        public bool HasSignificantDigits { get; init; }
+        public int? MaximumFractionDigits { get; init; }
+        public int? MaximumSignificantDigits { get; init; }
+        public int? MinimumFractionDigits { get; init; }
+        public int MinimumIntegerDigits { get; init; }
+        public int? MinimumSignificantDigits { get; init; }
+        public int RoundingIncrement { get; init; }
+        public Broiler.ECMAScript.Numbers.RoundingMode RoundingMode { get; init; }
+        public Broiler.ECMAScript.Intl.RoundingPriority RoundingPriority { get; init; }
+        public Broiler.ECMAScript.Intl.TrailingZeroDisplay TrailingZeroDisplay { get; init; }
+    }
+    public sealed class DigitOptions : System.IEquatable<Broiler.ECMAScript.Intl.DigitOptions>
+    {
+        public DigitOptions(int MinimumIntegerDigits, int? MinimumFractionDigits, int? MaximumFractionDigits, int? MinimumSignificantDigits, int? MaximumSignificantDigits, Broiler.ECMAScript.Intl.NumberRoundingType RoundingType, Broiler.ECMAScript.Intl.RoundingPriority ComputedRoundingPriority, int RoundingIncrement, Broiler.ECMAScript.Numbers.RoundingMode RoundingMode, Broiler.ECMAScript.Intl.TrailingZeroDisplay TrailingZeroDisplay) { }
+        public Broiler.ECMAScript.Intl.RoundingPriority ComputedRoundingPriority { get; init; }
+        public int? MaximumFractionDigits { get; init; }
+        public int? MaximumSignificantDigits { get; init; }
+        public int? MinimumFractionDigits { get; init; }
+        public int MinimumIntegerDigits { get; init; }
+        public int? MinimumSignificantDigits { get; init; }
+        public int RoundingIncrement { get; init; }
+        public Broiler.ECMAScript.Numbers.RoundingMode RoundingMode { get; init; }
+        public Broiler.ECMAScript.Intl.NumberRoundingType RoundingType { get; init; }
+        public Broiler.ECMAScript.Intl.TrailingZeroDisplay TrailingZeroDisplay { get; init; }
+    }
+    public readonly struct DigitOptionsPlan : System.IEquatable<Broiler.ECMAScript.Intl.DigitOptionsPlan>
+    {
+        public DigitOptionsPlan(bool NeedSignificantDigits, bool NeedFractionDigits) { }
+        public bool NeedFractionDigits { get; init; }
+        public bool NeedSignificantDigits { get; init; }
+    }
+    public sealed class DisplayNamesCore
+    {
+        public Broiler.ECMAScript.Intl.DisplayNamesFallback Fallback { get; }
+        public Broiler.ECMAScript.Intl.LanguageDisplay? LanguageDisplay { get; }
+        public string Locale { get; }
+        public Broiler.ECMAScript.Intl.FormatStyle Style { get; }
+        public Broiler.ECMAScript.Intl.DisplayNamesType Type { get; }
+        public Broiler.ECMAScript.Intl.IntlStatus CanonicalCode(string code, out string canonical, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public string? DisplayName(string canonicalCode) { }
+        public Broiler.ECMAScript.Intl.IntlStatus Of(string code, out string? name, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.DisplayNamesCore Create(Broiler.ECMAScript.Intl.ILocaleData data, string locale, string dataLocale, Broiler.ECMAScript.Intl.FormatStyle style, Broiler.ECMAScript.Intl.DisplayNamesType type, Broiler.ECMAScript.Intl.DisplayNamesFallback fallback, Broiler.ECMAScript.Intl.LanguageDisplay languageDisplay) { }
+    }
+    public enum DisplayNamesFallback
+    {
+        Code = 0,
+        None = 1,
+    }
+    public enum DisplayNamesType
+    {
+        Language = 0,
+        Region = 1,
+        Script = 2,
+        Currency = 3,
+        Calendar = 4,
+        DateTimeField = 5,
+    }
+    public readonly struct DurationDigitalFormat : System.IEquatable<Broiler.ECMAScript.Intl.DurationDigitalFormat>
+    {
+        public DurationDigitalFormat(string HourMinuteSeparator, string MinuteSecondSeparator, bool TwoDigitHours) { }
+        public string HourMinuteSeparator { get; init; }
+        public string MinuteSecondSeparator { get; init; }
+        public bool TwoDigitHours { get; init; }
+    }
+    public sealed class DurationFormatCore
+    {
+        public int? FractionalDigits { get; }
+        public string HourMinuteSeparator { get; }
+        public string Locale { get; }
+        public string MinuteSecondSeparator { get; }
+        public string NumberingSystem { get; }
+        public Broiler.ECMAScript.Intl.DurationFormatStyle Style { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.DurationUnitOptions> Units { get; }
+        public string Format(Broiler.ECMAScript.Temporal.DurationFields duration, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.DurationPart> FormatToParts(Broiler.ECMAScript.Temporal.DurationFields duration, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.DurationFormatCore Create(Broiler.ECMAScript.Intl.ILocaleData data, string locale, string dataLocale, string numberingSystem, Broiler.ECMAScript.Intl.DurationFormatStyle style, System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.DurationUnitOptions> units, int? fractionalDigits) { }
+        public static Broiler.ECMAScript.Intl.DurationDigitalFormat DigitalFormat(Broiler.ECMAScript.Intl.ILocaleData data, string dataLocale) { }
+        public static Broiler.ECMAScript.Intl.IntlStatus GetDurationUnitOptions(Broiler.ECMAScript.Intl.DurationUnit unit, Broiler.ECMAScript.Intl.DurationUnitStyle? style, Broiler.ECMAScript.Intl.DurationUnitDisplay? display, Broiler.ECMAScript.Intl.DurationFormatStyle baseStyle, Broiler.ECMAScript.Intl.DurationUnitStyle? previous, bool twoDigitHours, out Broiler.ECMAScript.Intl.DurationUnitOptions options) { }
+        public static string UnitName(Broiler.ECMAScript.Intl.DurationUnit unit) { }
+        public static string UnitSingular(Broiler.ECMAScript.Intl.DurationUnit unit) { }
+        public static System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.DurationUnitStyle> UnitStyles(Broiler.ECMAScript.Intl.DurationUnit unit) { }
+    }
+    public enum DurationFormatStyle
+    {
+        Long = 0,
+        Short = 1,
+        Narrow = 2,
+        Digital = 3,
+    }
+    public readonly struct DurationPart : System.IEquatable<Broiler.ECMAScript.Intl.DurationPart>
+    {
+        public DurationPart(string Type, string Value, string? Unit) { }
+        public string Type { get; init; }
+        public string? Unit { get; init; }
+        public string Value { get; init; }
+    }
+    public enum DurationUnit
+    {
+        Years = 0,
+        Months = 1,
+        Weeks = 2,
+        Days = 3,
+        Hours = 4,
+        Minutes = 5,
+        Seconds = 6,
+        Milliseconds = 7,
+        Microseconds = 8,
+        Nanoseconds = 9,
+    }
+    public enum DurationUnitDisplay
+    {
+        Auto = 0,
+        Always = 1,
+    }
+    public readonly struct DurationUnitOptions : System.IEquatable<Broiler.ECMAScript.Intl.DurationUnitOptions>
+    {
+        public DurationUnitOptions(Broiler.ECMAScript.Intl.DurationUnitStyle Style, Broiler.ECMAScript.Intl.DurationUnitDisplay Display) { }
+        public Broiler.ECMAScript.Intl.DurationUnitDisplay Display { get; init; }
+        public Broiler.ECMAScript.Intl.DurationUnitStyle Style { get; init; }
+    }
+    public enum DurationUnitStyle
+    {
+        Long = 0,
+        Short = 1,
+        Narrow = 2,
+        Numeric = 3,
+        TwoDigit = 4,
+        Fractional = 5,
+    }
+    public enum FormatStyle
+    {
+        Long = 0,
+        Short = 1,
+        Narrow = 2,
+    }
+    public readonly struct FormattedNumeric : System.IEquatable<Broiler.ECMAScript.Intl.FormattedNumeric>
+    {
+        public FormattedNumeric(Broiler.ECMAScript.Intl.IntlDecimal RoundedNumber, string FormattedString) { }
+        public string FormattedString { get; init; }
+        public Broiler.ECMAScript.Intl.IntlDecimal RoundedNumber { get; init; }
+    }
+    public readonly struct FractionDigitDefaults : System.IEquatable<Broiler.ECMAScript.Intl.FractionDigitDefaults>
+    {
+        public FractionDigitDefaults(int Minimum, int Maximum) { }
+        public int Maximum { get; init; }
+        public int Minimum { get; init; }
+    }
+    public interface ICollatorLocaleData
+    {
+        System.Collections.Generic.IReadOnlyList<string> AvailableLocales { get; }
+        System.Collections.Generic.IReadOnlyList<string> Collations { get; }
+        System.Collections.Generic.IReadOnlyList<string?> SortLocaleData(string locale);
+    }
+    public interface IIntlDataSet
+    {
+        string CldrVersion { get; }
+        System.ReadOnlySpan<byte> Table(Broiler.ECMAScript.Intl.IntlTable table);
+    }
+    public interface ILocaleData
+    {
+        System.Collections.Generic.IReadOnlyList<string> CurrencyCodes { get; }
+        System.Collections.Generic.IReadOnlyList<string> Locales { get; }
+        System.Collections.Generic.IReadOnlyList<string> NumberingSystems { get; }
+        string? Alias(Broiler.ECMAScript.Intl.LocaleAliasKind kind, string from);
+        System.Collections.Generic.IReadOnlyList<string>? CalendarPreferences(string region);
+        Broiler.ECMAScript.Intl.CurrencyNames? Currency(string locale, string code);
+        int? CurrencyDigits(string code);
+        string? DateValue(string locale, string calendar, string key);
+        System.Collections.Generic.IReadOnlyDictionary<string, string>? DateValues(string locale, string calendar);
+        System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.DayPeriodRule>? DayPeriods(string language);
+        string? DisplayName(string locale, string kind, string code);
+        string? GoldenZone(string metazone, string region);
+        bool HoldsLocale(Broiler.ECMAScript.Intl.IntlTable table, string locale);
+        Broiler.ECMAScript.Intl.RegionHourCycles? HourCycles(string region);
+        bool IsExtensionKey(char singleton, string key);
+        bool? IsRightToLeft(string script);
+        string? LikelySubtags(string source);
+        Broiler.ECMAScript.Intl.ListPatterns? ListPattern(string locale, string type);
+        System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.MetazonePeriod>? MetazonePeriods(string zone);
+        string? NumberValue(string locale, string key);
+        System.Collections.Generic.IReadOnlyList<string>? NumberingSystemDigits(string system);
+        string? PluralRange(string language, string start, string end);
+        System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.PluralRuleText>? PluralRules(string language, Broiler.ECMAScript.Intl.PluralRuleType type);
+        string? PrimaryZone(string region);
+        string? RelativeTime(string locale, string field, string key);
+        bool TryExtensionType(char singleton, string key, string type, out string preferred);
+        string? UnitPattern(string locale, string width, string unit, string field);
+        Broiler.ECMAScript.Intl.RegionWeek? Week(string region);
+    }
+    public readonly struct IntlDecimal : System.IEquatable<Broiler.ECMAScript.Intl.IntlDecimal>
+    {
+        public string Digits { get; }
+        public bool IsFinite { get; }
+        public bool IsNegative { get; }
+        public bool IsZero { get; }
+        public Broiler.ECMAScript.Intl.IntlDecimalKind Kind { get; }
+        public int Magnitude { get; }
+        public int Point { get; }
+        public static Broiler.ECMAScript.Intl.IntlDecimal NaN { get; }
+        public static Broiler.ECMAScript.Intl.IntlDecimal NegativeInfinity { get; }
+        public static Broiler.ECMAScript.Intl.IntlDecimal NegativeZero { get; }
+        public static Broiler.ECMAScript.Intl.IntlDecimal PositiveInfinity { get; }
+        public static Broiler.ECMAScript.Intl.IntlDecimal Zero { get; }
+        public Broiler.ECMAScript.Intl.IntlDecimal Abs() { }
+        public bool Equals(Broiler.ECMAScript.Intl.IntlDecimal other) { }
+        public override int GetHashCode() { }
+        public override string ToString() { }
+        public Broiler.ECMAScript.Intl.IntlDecimal WithSign(bool isNegative) { }
+        public static Broiler.ECMAScript.Intl.IntlDecimal FromBigInt(System.Numerics.BigInteger value, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.IntlDecimal FromNumber(double value) { }
+        public static Broiler.ECMAScript.Intl.IntlDecimal FromString(string text, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public enum IntlDecimalKind
+    {
+        Finite = 0,
+        NaN = 1,
+        PositiveInfinity = 2,
+        NegativeInfinity = 3,
+    }
+    public enum IntlStatus
+    {
+        Completed = 0,
+        InvalidLanguageTag = 1,
+        InvalidLanguageSubtag = 2,
+        InvalidScriptSubtag = 3,
+        InvalidRegionSubtag = 4,
+        InvalidVariants = 5,
+        InvalidType = 6,
+        InvalidKey = 7,
+        NumberOptionOutOfRange = 8,
+        RoundingIncrementNotAdmitted = 9,
+        FractionDigitsOutOfOrder = 10,
+        RoundingIncrementNeedsFractionDigits = 11,
+        RoundingIncrementNeedsEqualFractionDigits = 12,
+        RangeIsNotANumber = 13,
+        RelativeTimeValueNotFinite = 14,
+        InvalidRelativeTimeUnit = 15,
+        InvalidDisplayNamesCode = 16,
+        TimeZoneOffsetHasSeconds = 17,
+        InvalidTimeZone = 18,
+        StyleWithComponents = 19,
+        DateFormatWithTimeStyle = 20,
+        TimeFormatWithDateStyle = 21,
+        TimeValueOutOfRange = 22,
+        TemporalTypeNotFormatted = 23,
+        TemporalCalendarMismatch = 24,
+        ZonedDateTimeNotFormatted = 25,
+        RangeOfDifferentTypes = 26,
+        FractionalDurationUnitAlwaysDisplayed = 27,
+        DurationUnitAfterFractional = 28,
+        DurationUnitAfterNumeric = 29,
+        NormalizedStringTooLong = 30,
+    }
+    public enum IntlTable
+    {
+        None = 0,
+        LikelySubtags = 1,
+        Aliases = 2,
+        Extensions = 3,
+        Locales = 4,
+        CollationRoot = 5,
+        CollationTailorings = 6,
+        NumberLocales = 8,
+        Currencies = 9,
+        CurrencyDigits = 10,
+        NumberingSystems = 11,
+        Plurals = 12,
+        PluralRanges = 13,
+        Units = 14,
+        DateLocales = 15,
+        TimeData = 16,
+        DayPeriods = 17,
+        WeekData = 18,
+        Scripts = 19,
+        Ordinals = 20,
+        ListPatterns = 21,
+        RelativeTimes = 22,
+        DisplayNames = 25,
+        TimeZones = 26,
+        TimeZoneIds = 27,
+        TimeZoneRegions = 28,
+        Calendars = 29,
+        MetaZones = 30,
+        TimeZoneRelease = 31,
+        CollationSettings = 32,
+        CalendarPreferences = 33,
+    }
+    public enum LanguageDisplay
+    {
+        Dialect = 0,
+        Standard = 1,
+    }
+    public enum ListFormatType
+    {
+        Conjunction = 0,
+        Disjunction = 1,
+        Unit = 2,
+    }
+    public sealed class ListFormatter
+    {
+        public string Locale { get; }
+        public Broiler.ECMAScript.Intl.FormatStyle Style { get; }
+        public Broiler.ECMAScript.Intl.ListPatterns Templates { get; }
+        public Broiler.ECMAScript.Intl.ListFormatType Type { get; }
+        public string Format(System.Collections.Generic.IReadOnlyList<string> list, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.ListPart> FormatToParts(System.Collections.Generic.IReadOnlyList<string> list, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.ListFormatter Create(Broiler.ECMAScript.Intl.ILocaleData data, string locale, string dataLocale, Broiler.ECMAScript.Intl.ListFormatType type, Broiler.ECMAScript.Intl.FormatStyle style) { }
+    }
+    public readonly struct ListPart : System.IEquatable<Broiler.ECMAScript.Intl.ListPart>
+    {
+        public ListPart(string Type, string Value) { }
+        public string Type { get; init; }
+        public string Value { get; init; }
+    }
+    public readonly struct ListPatterns : System.IEquatable<Broiler.ECMAScript.Intl.ListPatterns>
+    {
+        public ListPatterns(string Start, string Middle, string End, string Pair) { }
+        public string End { get; init; }
+        public string Middle { get; init; }
+        public string Pair { get; init; }
+        public string Start { get; init; }
+    }
+    public enum LocaleAliasKind
+    {
+        Language = 0,
+        Script = 1,
+        Region = 2,
+        Variant = 3,
+        Subdivision = 4,
+    }
+    public sealed class LocaleId
+    {
+        public string BaseName { get; }
+        public bool HasUnicodeExtension { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.LocaleKeyword> Keywords { get; }
+        public string Language { get; }
+        public string? Region { get; }
+        public string? Script { get; }
+        public System.Collections.Generic.IReadOnlyList<string> Variants { get; }
+        public Broiler.ECMAScript.Intl.LocaleId Canonicalize(Broiler.ECMAScript.Intl.ILocaleData data, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public Broiler.ECMAScript.Intl.LocaleId Maximize(Broiler.ECMAScript.Intl.ILocaleData data, out bool found, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public Broiler.ECMAScript.Intl.LocaleId Minimize(Broiler.ECMAScript.Intl.ILocaleData data, out bool found, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public override string ToString() { }
+        public string? UnicodeExtensionValue(string key) { }
+        public Broiler.ECMAScript.Intl.LocaleId WithoutUnicodeExtension(Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static string AsciiLowercase(string value, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static bool IsUnicodeLanguageSubtag(string value) { }
+        public static bool IsUnicodeRegionSubtag(string value) { }
+        public static bool IsUnicodeScriptSubtag(string value) { }
+        public static bool IsUnicodeType(string value, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static bool IsUnicodeVariantSubtag(string value) { }
+        public static Broiler.ECMAScript.Intl.IntlStatus TryCanonicalize(string text, Broiler.ECMAScript.Intl.ILocaleData data, out string canonical, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.IntlStatus TryParse(string text, out Broiler.ECMAScript.Intl.LocaleId? locale, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public static class LocaleInfo
+    {
+        public static System.Collections.Generic.IReadOnlyList<string> Calendars(Broiler.ECMAScript.Intl.LocaleRecord locale) { }
+        public static System.Collections.Generic.IReadOnlyList<string> Collations(Broiler.ECMAScript.Intl.LocaleRecord locale, Broiler.ECMAScript.Intl.ICollatorLocaleData collator, string defaultLocale, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static System.Collections.Generic.IReadOnlyList<string> HourCycles(Broiler.ECMAScript.Intl.LocaleRecord locale, Broiler.ECMAScript.Intl.ILocaleData data, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static System.Collections.Generic.IReadOnlyList<string> NumberingSystems(Broiler.ECMAScript.Intl.LocaleRecord locale, System.Collections.Generic.IReadOnlyList<string> numberFormatLocales, Broiler.ECMAScript.Intl.ILocaleData data, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.LocaleRegionPreference RegionPreference(string locale, Broiler.ECMAScript.Intl.ILocaleData data, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static string? TextDirection(Broiler.ECMAScript.Intl.LocaleRecord locale, Broiler.ECMAScript.Intl.ILocaleData data, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static System.Collections.Generic.IReadOnlyList<string>? TimeZones(Broiler.ECMAScript.Intl.LocaleRecord locale, Broiler.ECMAScript.Time.ITimeZoneDatabase timeZones, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.LocaleWeekInfo WeekInfo(Broiler.ECMAScript.Intl.LocaleRecord locale, Broiler.ECMAScript.Intl.ILocaleData data, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public readonly struct LocaleKeyword : System.IEquatable<Broiler.ECMAScript.Intl.LocaleKeyword>
+    {
+        public LocaleKeyword(string Key, string Value) { }
+        public string Key { get; init; }
+        public string Value { get; init; }
+    }
+    public sealed class LocaleMatch : System.IEquatable<Broiler.ECMAScript.Intl.LocaleMatch>
+    {
+        public LocaleMatch(string Locale, System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.LocaleKeyword> ExtensionKeywords) { }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.LocaleKeyword> ExtensionKeywords { get; init; }
+        public string Locale { get; init; }
+    }
+    public static class LocaleNegotiation
+    {
+        public static Broiler.ECMAScript.Intl.IntlStatus CanonicalizeLocaleList(System.Collections.Generic.IReadOnlyList<string> tags, Broiler.ECMAScript.Intl.ILocaleData data, out System.Collections.Generic.IReadOnlyList<string> locales, out int failedAt, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static System.Collections.Generic.IReadOnlyList<string> FilterLocales(System.Collections.Generic.IReadOnlyList<string> availableLocales, System.Collections.Generic.IReadOnlyList<string> requestedLocales, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.LocaleMatch? LookupMatchingLocaleByBestFit(System.Collections.Generic.IReadOnlyList<string> availableLocales, System.Collections.Generic.IReadOnlyList<string> requestedLocales, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.LocaleMatch? LookupMatchingLocaleByPrefix(System.Collections.Generic.IReadOnlyList<string> availableLocales, System.Collections.Generic.IReadOnlyList<string> requestedLocales, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.LocaleMatch MatchLocale(System.Collections.Generic.IReadOnlyList<string> availableLocales, System.Collections.Generic.IReadOnlyList<string> requestedLocales, string defaultLocale, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.ResolvedLocale ResolveLocale(Broiler.ECMAScript.Intl.LocaleMatch match, System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.RelevantKey> relevantKeys, Broiler.ECMAScript.Intl.ILocaleData data) { }
+        public static Broiler.ECMAScript.Intl.ResolvedLocale ResolveLocale(System.Collections.Generic.IReadOnlyList<string> availableLocales, System.Collections.Generic.IReadOnlyList<string> requestedLocales, string defaultLocale, System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.RelevantKey> relevantKeys, Broiler.ECMAScript.Intl.ILocaleData data, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public sealed class LocaleOptions : System.IEquatable<Broiler.ECMAScript.Intl.LocaleOptions>
+    {
+        public LocaleOptions() { }
+        public string? Calendar { get; init; }
+        public string? CaseFirst { get; init; }
+        public string? Collation { get; init; }
+        public string? FirstDayOfWeek { get; init; }
+        public string? HourCycle { get; init; }
+        public string? Language { get; init; }
+        public string? NumberingSystem { get; init; }
+        public bool? Numeric { get; init; }
+        public string? Region { get; init; }
+        public string? Script { get; init; }
+        public string? Variants { get; init; }
+        public static Broiler.ECMAScript.Intl.LocaleOptions None { get; }
+    }
+    public sealed class LocaleRecord : System.IEquatable<Broiler.ECMAScript.Intl.LocaleRecord>
+    {
+        public LocaleRecord(string Locale, string? Calendar, string? Collation, string? FirstDayOfWeek, string? HourCycle, string? CaseFirst, bool Numeric, string? NumberingSystem) { }
+        public string? Calendar { get; init; }
+        public string? CaseFirst { get; init; }
+        public string? Collation { get; init; }
+        public string? FirstDayOfWeek { get; init; }
+        public string? HourCycle { get; init; }
+        public string Locale { get; init; }
+        public string? NumberingSystem { get; init; }
+        public bool Numeric { get; init; }
+        public static string CanonicalizeUValue(Broiler.ECMAScript.Intl.ILocaleData data, string key, string value, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.IntlStatus CheckFirstDayOfWeek(string value, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.IntlStatus CheckLanguage(string value) { }
+        public static Broiler.ECMAScript.Intl.IntlStatus CheckRegion(string value) { }
+        public static Broiler.ECMAScript.Intl.IntlStatus CheckScript(string value) { }
+        public static Broiler.ECMAScript.Intl.IntlStatus CheckType(string value, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.IntlStatus CheckVariants(string value, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.IntlStatus TryCreate(string tag, Broiler.ECMAScript.Intl.LocaleOptions options, Broiler.ECMAScript.Intl.ILocaleData data, out Broiler.ECMAScript.Intl.LocaleRecord? record, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.IntlStatus UpdateLanguageId(string tag, string? language, string? script, string? region, string? variants, out string updated, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static string WeekdayToUValue(string value) { }
+    }
+    public sealed class LocaleRegionPreference : System.IEquatable<Broiler.ECMAScript.Intl.LocaleRegionPreference>
+    {
+        public LocaleRegionPreference(string Region, string? RegionOverride) { }
+        public string Region { get; init; }
+        public string? RegionOverride { get; init; }
+    }
+    public sealed class LocaleWeekInfo : System.IEquatable<Broiler.ECMAScript.Intl.LocaleWeekInfo>
+    {
+        public LocaleWeekInfo(int FirstDay, System.Collections.Generic.IReadOnlyList<int> Weekend) { }
+        public int FirstDay { get; init; }
+        public System.Collections.Generic.IReadOnlyList<int> Weekend { get; init; }
+    }
+    public readonly struct MetazonePeriod : System.IEquatable<Broiler.ECMAScript.Intl.MetazonePeriod>
+    {
+        public MetazonePeriod(long From, long To, string Metazone) { }
+        public long From { get; init; }
+        public string Metazone { get; init; }
+        public long To { get; init; }
+    }
+    public sealed class NumberFormatOptions : System.IEquatable<Broiler.ECMAScript.Intl.NumberFormatOptions>
+    {
+        public NumberFormatOptions() { }
+        public Broiler.ECMAScript.Intl.CompactDisplay CompactDisplay { get; init; }
+        public string? Currency { get; init; }
+        public Broiler.ECMAScript.Intl.CurrencyDisplay CurrencyDisplay { get; init; }
+        public Broiler.ECMAScript.Intl.CurrencySign CurrencySign { get; init; }
+        public required Broiler.ECMAScript.Intl.DigitOptions DigitOptions { get; init; }
+        public Broiler.ECMAScript.Intl.NumberNotation Notation { get; init; }
+        public Broiler.ECMAScript.Intl.SignDisplay SignDisplay { get; init; }
+        public Broiler.ECMAScript.Intl.NumberStyle Style { get; init; }
+        public string? Unit { get; init; }
+        public Broiler.ECMAScript.Intl.UnitDisplay UnitDisplay { get; init; }
+        public Broiler.ECMAScript.Intl.NumberGrouping UseGrouping { get; init; }
+    }
+    public sealed class NumberFormatter
+    {
+        public Broiler.ECMAScript.Intl.CompactDisplay? CompactDisplay { get; }
+        public string? Currency { get; }
+        public Broiler.ECMAScript.Intl.CurrencyDisplay? CurrencyDisplay { get; }
+        public Broiler.ECMAScript.Intl.CurrencySign? CurrencySign { get; }
+        public string DataLocale { get; }
+        public Broiler.ECMAScript.Intl.DigitOptions DigitOptions { get; }
+        public string Locale { get; }
+        public Broiler.ECMAScript.Intl.NumberNotation Notation { get; }
+        public string NumberingSystem { get; }
+        public Broiler.ECMAScript.Intl.SignDisplay SignDisplay { get; }
+        public Broiler.ECMAScript.Intl.NumberStyle Style { get; }
+        public string? Unit { get; }
+        public Broiler.ECMAScript.Intl.UnitDisplay? UnitDisplay { get; }
+        public Broiler.ECMAScript.Intl.NumberGrouping UseGrouping { get; }
+        public string Format(Broiler.ECMAScript.Intl.IntlDecimal x, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public Broiler.ECMAScript.Intl.IntlStatus FormatRange(Broiler.ECMAScript.Intl.IntlDecimal x, Broiler.ECMAScript.Intl.IntlDecimal y, out string formatted, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public Broiler.ECMAScript.Intl.IntlStatus FormatRangeToParts(Broiler.ECMAScript.Intl.IntlDecimal x, Broiler.ECMAScript.Intl.IntlDecimal y, out System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.NumberPart> parts, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.NumberPart> FormatToParts(Broiler.ECMAScript.Intl.IntlDecimal x, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.NumberFormatter Create(Broiler.ECMAScript.Intl.ILocaleData data, string locale, string dataLocale, string numberingSystem, Broiler.ECMAScript.Intl.NumberFormatOptions options) { }
+        public static bool IsWellFormedCurrencyCode(string currency) { }
+        public static bool IsWellFormedUnitIdentifier(string unit) { }
+        public static System.Collections.Generic.IReadOnlyList<string?> NumberingSystemKeyValues(Broiler.ECMAScript.Intl.ILocaleData data, string locale) { }
+    }
+    public enum NumberGrouping
+    {
+        Auto = 0,
+        Always = 1,
+        Min2 = 2,
+        Off = 3,
+    }
+    public enum NumberNotation
+    {
+        Standard = 0,
+        Scientific = 1,
+        Engineering = 2,
+        Compact = 3,
+    }
+    public readonly struct NumberPart : System.IEquatable<Broiler.ECMAScript.Intl.NumberPart>
+    {
+        public NumberPart(string Type, string Value, string? Source) { }
+        public string? Source { get; init; }
+        public string Type { get; init; }
+        public string Value { get; init; }
+    }
+    public enum NumberRoundingType
+    {
+        FractionDigits = 0,
+        SignificantDigits = 1,
+        MorePrecision = 2,
+        LessPrecision = 3,
+    }
+    public enum NumberStyle
+    {
+        Decimal = 0,
+        Percent = 1,
+        Currency = 2,
+        Unit = 3,
+    }
+    public static class NumericFormat
+    {
+        public static Broiler.ECMAScript.Intl.FormattedNumeric FormatNumericToString(Broiler.ECMAScript.Intl.DigitOptions options, Broiler.ECMAScript.Intl.IntlDecimal x, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public sealed class PluralEngine
+    {
+        public System.Collections.Generic.IReadOnlyList<string> Categories { get; }
+        public string Language { get; }
+        public Broiler.ECMAScript.Intl.PluralRuleType Type { get; }
+        public string Select(string formatted, int compactExponent = 0, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public string SelectRange(string start, string end) { }
+        public static Broiler.ECMAScript.Intl.PluralEngine Create(Broiler.ECMAScript.Intl.ILocaleData data, string language, Broiler.ECMAScript.Intl.PluralRuleType type) { }
+    }
+    public readonly struct PluralRuleText : System.IEquatable<Broiler.ECMAScript.Intl.PluralRuleText>
+    {
+        public PluralRuleText(string Category, string Rule) { }
+        public string Category { get; init; }
+        public string Rule { get; init; }
+    }
+    public enum PluralRuleType
+    {
+        Cardinal = 0,
+        Ordinal = 1,
+    }
+    public sealed class PluralRulesRecord
+    {
+        public Broiler.ECMAScript.Intl.CompactDisplay CompactDisplay { get; }
+        public Broiler.ECMAScript.Intl.DigitOptions DigitOptions { get; }
+        public Broiler.ECMAScript.Intl.PluralEngine Engine { get; }
+        public string Locale { get; }
+        public Broiler.ECMAScript.Intl.NumberNotation Notation { get; }
+        public System.Collections.Generic.IReadOnlyList<string> PluralCategories { get; }
+        public Broiler.ECMAScript.Intl.PluralRuleType Type { get; }
+        public Broiler.ECMAScript.Intl.ResolvedPlural ResolvePlural(Broiler.ECMAScript.Intl.IntlDecimal n, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public Broiler.ECMAScript.Intl.IntlStatus ResolvePluralRange(Broiler.ECMAScript.Intl.IntlDecimal x, Broiler.ECMAScript.Intl.IntlDecimal y, out string category, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.PluralRulesRecord Create(Broiler.ECMAScript.Intl.ILocaleData data, string locale, string dataLocale, Broiler.ECMAScript.Intl.PluralRuleType type, Broiler.ECMAScript.Intl.NumberNotation notation, Broiler.ECMAScript.Intl.CompactDisplay compactDisplay, Broiler.ECMAScript.Intl.DigitOptions digitOptions) { }
+    }
+    public readonly struct RegionHourCycles : System.IEquatable<Broiler.ECMAScript.Intl.RegionHourCycles>
+    {
+        public RegionHourCycles(string Allowed, string Preferred) { }
+        public string Allowed { get; init; }
+        public string Preferred { get; init; }
+    }
+    public readonly struct RegionWeek : System.IEquatable<Broiler.ECMAScript.Intl.RegionWeek>
+    {
+        public RegionWeek(string FirstDay, string WeekendStart, string WeekendEnd, string MinDays) { }
+        public string FirstDay { get; init; }
+        public string MinDays { get; init; }
+        public string WeekendEnd { get; init; }
+        public string WeekendStart { get; init; }
+    }
+    public sealed class RelativeTimeFormatter
+    {
+        public string Locale { get; }
+        public Broiler.ECMAScript.Intl.NumberFormatter NumberFormat { get; }
+        public string NumberingSystem { get; }
+        public Broiler.ECMAScript.Intl.RelativeTimeNumeric Numeric { get; }
+        public Broiler.ECMAScript.Intl.PluralRulesRecord PluralRules { get; }
+        public Broiler.ECMAScript.Intl.FormatStyle Style { get; }
+        public Broiler.ECMAScript.Intl.IntlStatus Format(double value, string unit, out string formatted, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public Broiler.ECMAScript.Intl.IntlStatus FormatToParts(double value, string unit, out System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.RelativeTimePart> parts, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.Intl.RelativeTimeFormatter Create(Broiler.ECMAScript.Intl.ILocaleData data, string locale, string dataLocale, Broiler.ECMAScript.Intl.FormatStyle style, Broiler.ECMAScript.Intl.RelativeTimeNumeric numeric, string numberingSystem) { }
+        public static Broiler.ECMAScript.Intl.IntlStatus SingularRelativeTimeUnit(string unit, out string singular) { }
+    }
+    public enum RelativeTimeNumeric
+    {
+        Always = 0,
+        Auto = 1,
+    }
+    public readonly struct RelativeTimePart : System.IEquatable<Broiler.ECMAScript.Intl.RelativeTimePart>
+    {
+        public RelativeTimePart(string Type, string Value, string? Unit) { }
+        public string Type { get; init; }
+        public string? Unit { get; init; }
+        public string Value { get; init; }
+    }
+    public sealed class RelevantKey : System.IEquatable<Broiler.ECMAScript.Intl.RelevantKey>
+    {
+        public RelevantKey(string Key, System.Collections.Generic.IReadOnlyList<string?> Values) { }
+        public string Key { get; init; }
+        public string? Option { get; init; }
+        public bool OptionIsNull { get; init; }
+        public System.Collections.Generic.IReadOnlyList<string?> Values { get; init; }
+    }
+    public sealed class ResolvedLocale : System.IEquatable<Broiler.ECMAScript.Intl.ResolvedLocale>
+    {
+        public ResolvedLocale(string Locale, string DataLocale, System.Collections.Generic.IReadOnlyDictionary<string, string?> KeyValues) { }
+        public string DataLocale { get; init; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, string?> KeyValues { get; init; }
+        public string Locale { get; init; }
+    }
+    public readonly struct ResolvedPlural : System.IEquatable<Broiler.ECMAScript.Intl.ResolvedPlural>
+    {
+        public ResolvedPlural(string PluralCategory, string FormattedString) { }
+        public string FormattedString { get; init; }
+        public string PluralCategory { get; init; }
+    }
+    public sealed class ResolvedTimeZone
+    {
+        public string Identifier { get; }
+        public Broiler.ECMAScript.Intl.TimeZoneKind Kind { get; }
+        public int OffsetMinutes { get; }
+        public string PrimaryIdentifier { get; }
+        public Broiler.ECMAScript.Time.ITimeZoneRules? Rules { get; }
+        public static Broiler.ECMAScript.Intl.ResolvedTimeZone Utc { get; }
+        public static Broiler.ECMAScript.Intl.IntlStatus Resolve(string timeZone, Broiler.ECMAScript.Time.ITimeZoneDatabase timeZones, out Broiler.ECMAScript.Intl.ResolvedTimeZone? resolved, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public enum RoundingPriority
+    {
+        Auto = 0,
+        MorePrecision = 1,
+        LessPrecision = 2,
+    }
+    public enum SignDisplay
+    {
+        Auto = 0,
+        Never = 1,
+        Always = 2,
+        ExceptZero = 3,
+        Negative = 4,
+    }
+    public static class SupportedValues
+    {
+        public static System.Collections.Generic.IReadOnlyList<string> AvailableCalendars { get; }
+        public static System.Collections.Generic.IReadOnlyList<string> SanctionedUnits { get; }
+        public static Broiler.ECMAScript.Intl.IntlStatus Of(string key, Broiler.ECMAScript.Intl.ILocaleData data, Broiler.ECMAScript.Time.ITimeZoneDatabase timeZones, Broiler.ECMAScript.Intl.ICollatorLocaleData collator, out System.Collections.Generic.IReadOnlyList<string> values) { }
+    }
+    public sealed class TableLocaleData : Broiler.ECMAScript.Intl.ILocaleData
+    {
+        public TableLocaleData(Broiler.ECMAScript.Intl.IIntlDataSet data) { }
+        public string CldrVersion { get; }
+        public System.Collections.Generic.IReadOnlyList<string> CurrencyCodes { get; }
+        public System.Collections.Generic.IReadOnlyList<string> Locales { get; }
+        public System.Collections.Generic.IReadOnlyList<string> NumberingSystems { get; }
+        public string? Alias(Broiler.ECMAScript.Intl.LocaleAliasKind kind, string from) { }
+        public System.Collections.Generic.IReadOnlyList<string>? CalendarPreferences(string region) { }
+        public Broiler.ECMAScript.Intl.CurrencyNames? Currency(string locale, string code) { }
+        public int? CurrencyDigits(string code) { }
+        public string? DateValue(string locale, string calendar, string key) { }
+        public System.Collections.Generic.IReadOnlyDictionary<string, string>? DateValues(string locale, string calendar) { }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.DayPeriodRule>? DayPeriods(string language) { }
+        public string? DisplayName(string locale, string kind, string code) { }
+        public string? GoldenZone(string metazone, string region) { }
+        public bool HoldsLocale(Broiler.ECMAScript.Intl.IntlTable table, string locale) { }
+        public Broiler.ECMAScript.Intl.RegionHourCycles? HourCycles(string region) { }
+        public bool IsExtensionKey(char singleton, string key) { }
+        public bool? IsRightToLeft(string script) { }
+        public string? LikelySubtags(string source) { }
+        public Broiler.ECMAScript.Intl.ListPatterns? ListPattern(string locale, string type) { }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.MetazonePeriod>? MetazonePeriods(string zone) { }
+        public string? NumberValue(string locale, string key) { }
+        public System.Collections.Generic.IReadOnlyList<string>? NumberingSystemDigits(string system) { }
+        public string? PluralRange(string language, string start, string end) { }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Intl.PluralRuleText>? PluralRules(string language, Broiler.ECMAScript.Intl.PluralRuleType type) { }
+        public string? PrimaryZone(string region) { }
+        public string? RelativeTime(string locale, string field, string key) { }
+        public bool TryExtensionType(char singleton, string key, string type, out string preferred) { }
+        public string? UnitPattern(string locale, string width, string unit, string field) { }
+        public Broiler.ECMAScript.Intl.RegionWeek? Week(string region) { }
+    }
+    public enum TimeZoneKind
+    {
+        Utc = 0,
+        Gmt = 1,
+        Offset = 2,
+        Named = 3,
+    }
+    public enum TrailingZeroDisplay
+    {
+        Auto = 0,
+        StripIfInteger = 1,
+    }
+    public sealed class UcaCollationData
+    {
+        public UcaCollationData(Broiler.ECMAScript.Intl.IIntlDataSet data) { }
+        public bool HasRoot { get; }
+        public System.Collections.Generic.IReadOnlyList<string> TailoringNames { get; }
+        public bool HasTailoring(string name) { }
+        public System.Collections.Generic.IReadOnlyList<string?> KeyValues(string language, string key, string usage) { }
+        public bool ShiftedByDefault(string? tailoring) { }
+        public string? TailoringFor(string language, string usage, string? collation) { }
+    }
+    public sealed class UcaCollator
+    {
+        public UcaCollator(Broiler.ECMAScript.Intl.UcaCollationData data, Broiler.ECMAScript.Intl.UcaCollatorOptions options, Broiler.Unicode.Algorithms.UnicodeNormalization normalization) { }
+        public Broiler.ECMAScript.Intl.UcaCollatorOptions Options { get; }
+        public Broiler.ECMAScript.Intl.IntlStatus Compare(string x, string y, int maxLength, Broiler.ECMAScript.WorkCharge? charge, out int order) { }
+    }
+    public sealed class UcaCollatorOptions : System.IEquatable<Broiler.ECMAScript.Intl.UcaCollatorOptions>
+    {
+        public UcaCollatorOptions(Broiler.ECMAScript.Intl.CollationStrength Strength, bool CaseLevel, Broiler.ECMAScript.Intl.CollationCaseFirst CaseFirst, bool Shifted, bool Numeric, string? Tailoring) { }
+        public Broiler.ECMAScript.Intl.CollationCaseFirst CaseFirst { get; init; }
+        public bool CaseLevel { get; init; }
+        public bool Numeric { get; init; }
+        public bool Shifted { get; init; }
+        public Broiler.ECMAScript.Intl.CollationStrength Strength { get; init; }
+        public string? Tailoring { get; init; }
+        public static Broiler.ECMAScript.Intl.UcaCollatorOptions FromResolved(string sensitivity, bool ignorePunctuation, string caseFirst, bool numeric, string? tailoring) { }
+    }
+    public enum UnitDisplay
+    {
+        Short = 0,
+        Narrow = 1,
+        Long = 2,
+    }
+}

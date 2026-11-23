@@ -1,0 +1,38 @@
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+index 1d8ca9c..974982a 100644
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -17,8 +17,8 @@
+     <!-- Broiler component packages -->
+     <PackageVersion Include="Broiler.CSS.Dom" Version="0.1.0-preview.18" />
+     <PackageVersion Include="Broiler.Dom.Html" Version="$(BroilerDomHtmlVersion)" />
+-    <PackageVersion Include="Broiler.JavaScript.Engine" Version="0.1.0-preview.10" />
+-    <PackageVersion Include="Broiler.JavaScript.Modules" Version="0.1.0-preview.10" />
++    <PackageVersion Include="Broiler.JavaScript.Engine" Version="0.1.0-preview.1401" />
++    <PackageVersion Include="Broiler.JavaScript.Modules" Version="0.1.0-preview.1401" />
+     <PackageVersion Include="Broiler.JSeal" Version="0.1.0-preview.8" />
+     <PackageVersion Include="Broiler.JSeal.BroilerJs" Version="0.1.0-preview.8" />
+     <PackageVersion Include="Broiler.JSeal.Vm" Version="0.1.0-preview.8" />
+diff --git a/NuGet.config b/NuGet.config
+index dba156c..6d2f565 100644
+--- a/NuGet.config
++++ b/NuGet.config
+@@ -2,6 +2,7 @@
+ <configuration>
+   <packageSources>
+     <clear />
++    <add key="candidate" value="/home/user/js-w2base-build/69a8a13b/feed/all" />
+     <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
+   </packageSources>
+   <disabledPackageSources>
+@@ -9,6 +10,10 @@
+   </disabledPackageSources>
+   <packageSourceMapping>
+     <clear />
++    <packageSource key="candidate">
++      <package pattern="Broiler.JavaScript.*" />
++      <package pattern="Broiler.ECMAScript.*" />
++    </packageSource>
+     <packageSource key="nuget.org">
+       <package pattern="*" />
+     </packageSource>

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0.0",
+  "timestampUtc": "2026-11-23T10:40:30.001642+00:00",
+  "rid": "linux-x64",
+  "configuration": "Release",
+  "offlineCompiler": {
+    "exitCode": 0,
+    "matchesCheckedInProgram": false,
+    "output": "/home/user/js-w2base-build/69a8a13b/phase5/generated/FibonacciProgram.g.cs",
+    "tail": ""
+  },
+  "nativeAot": {
+    "publishExitCode": 0,
+    "files": {
+      "fileCount": 5,
+      "totalBytes": 3724475
+    },
+    "hostExitCode": 0,
+    "measurement": {
+      "program": "fibonacci",
+      "result": 9227465,
+      "dynamicCodeSupported": false,
+      "dynamicCodeCompiled": false
+    },
+    "publishTail": "  Determining projects to restore...\n  Restored /home/user/js-w2base-build/69a8a13b/phase5/Broiler.JS/samples/Broiler.JavaScript.NativeAotSample/Broiler.JavaScript.NativeAotSample.csproj (in 348 ms).\n  Restored /home/user/js-w2base-build/69a8a13b/phase5/Broiler.JS/Broiler.JavaScript.Portable/Broiler.JavaScript.Portable.csproj (in 347 ms).\n  Broiler.JavaScript.Portable -> /home/user/js-w2base-build/69a8a13b/phase5/Broiler.JS/Broiler.JavaScript.Portable/bin/Release/net10.0/Broiler.JavaScript.Portable.dll\n  Broiler.JavaScript.NativeAotSample -> /home/user/js-w2base-build/69a8a13b/phase5/Broiler.JS/samples/Broiler.JavaScript.NativeAotSample/bin/Release/net10.0/linux-x64/Broiler.JavaScript.NativeAotSample.dll\n  Generating native code\n  Broiler.JavaScript.NativeAotSample -> /home/user/js-w2base-build/69a8a13b/phase5/native-aot/\n",
+    "hostStderr": ""
+  },
+  "validationErrors": [
+    "offline compiler output differs from the checked-in program"
+  ]
+}
