@@ -1,0 +1,52 @@
+Test run for /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Compiler.Tests/bin/Release/net10.0/Broiler.JavaScript.Compiler.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:03.81]     Broiler.JavaScript.Compiler.Tests.DeeplyNestedSourceTests.DeepBinaryExpressionChain_Compiles [FAIL]
+[xUnit.net 00:00:03.95]     Broiler.JavaScript.Compiler.Tests.DeeplyNestedSourceTests.DeepConditionalExpressionNesting_PastTheCompilationStack_Compiles [FAIL]
+  Failed Broiler.JavaScript.Compiler.Tests.DeeplyNestedSourceTests.DeepBinaryExpressionChain_Compiles [69 ms]
+  Error Message:
+   Broiler.JavaScript.Runtime.JSException : The source's syntax tree is too deep to parse (maximum depth 10000)
+  Stack Trace:
+  at Compile in Unknown:line 1
+
+    at Compile:Unknown:1,1
+
+
+  Failed Broiler.JavaScript.Compiler.Tests.DeeplyNestedSourceTests.DeepConditionalExpressionNesting_PastTheCompilationStack_Compiles [20 ms]
+  Error Message:
+   Broiler.JavaScript.Runtime.JSException : The source is nested too deeply to parse (maximum depth 512)
+  Stack Trace:
+  at Compile in Unknown:line 1
+
+    at Compile:Unknown:1,1
+
+
+[xUnit.net 00:00:04.00]     Broiler.JavaScript.Compiler.Tests.DeeplyNestedSourceTests.DeepBinaryExpressionChain_OnAOneMebibyteThread_Compiles [FAIL]
+  Failed Broiler.JavaScript.Compiler.Tests.DeeplyNestedSourceTests.DeepBinaryExpressionChain_OnAOneMebibyteThread_Compiles [37 ms]
+  Error Message:
+   Assert.Null() Failure: Value is not null
+Expected: null
+Actual:   Broiler.JavaScript.Runtime.JSException: The source's syntax tree is too deep to parse (maximum depth 10000)
+at Compile in Unknown:line 1
+
+    at Compile:Unknown:1,1
+
+
+  Stack Trace:
+     at Broiler.JavaScript.Compiler.Tests.DeeplyNestedSourceTests.DeepBinaryExpressionChain_OnAOneMebibyteThread_Compiles() in /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Compiler.Tests/DeeplyNestedSourceTests.cs:line 167
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.42]     Broiler.JavaScript.Compiler.Tests.DeeplyNestedSourceTests.DeepConditionalExpressionNesting_Compiles [FAIL]
+  Failed Broiler.JavaScript.Compiler.Tests.DeeplyNestedSourceTests.DeepConditionalExpressionNesting_Compiles [45 ms]
+  Error Message:
+   Broiler.JavaScript.Runtime.JSException : The source is nested too deeply to parse (maximum depth 512)
+  Stack Trace:
+  at Compile in Unknown:line 1
+
+    at Compile:Unknown:1,1
+
+
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+Results File: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2base/base/tests-on/trx/Broiler.JavaScript.Compiler.Tests.trx
+
+Failed!  - Failed:     4, Passed:  1553, Skipped:     0, Total:  1557, Duration: 51 s - Broiler.JavaScript.Compiler.Tests.dll (net10.0)
+VSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.

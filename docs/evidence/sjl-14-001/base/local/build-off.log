@@ -1,0 +1,113 @@
+  Determining projects to restore...
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/samples/Broiler.JavaScript.NativeAotSample/Broiler.JavaScript.NativeAotSample.csproj (in 3.46 sec).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Parser.Tests/Broiler.JavaScript.Parser.Tests.csproj (in 3.47 sec).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj (in 3.46 sec).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Broiler.JavaScript.Engine.Benchmarks.csproj (in 3.47 sec).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj (in 5 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj (in 6 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Portable/Broiler.JavaScript.Portable.csproj (in 2 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Storage.Tests/Broiler.JavaScript.Storage.Tests.csproj (in 12 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Runtime.Tests/Broiler.JavaScript.Runtime.Tests.csproj (in 13 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Portable.Compiler/Broiler.JavaScript.Portable.Compiler.csproj (in 7 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Portable.Tests/Broiler.JavaScript.Portable.Tests.csproj (in 8 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj (in 6 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Vectors.Tests/Broiler.JavaScript.Vectors.Tests.csproj (in 26 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj (in 3 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Probe/Broiler.ECMAScript.Probe.csproj (in 12 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Generation/Broiler.ECMAScript.Generation.csproj (in 2 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Broiler.ECMAScript.Intl.Tests.csproj (in 7 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj (in 3 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/Broiler.ECMAScript.Conformance.csproj (in 2 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/Broiler.ECMAScript.Generation.Tests.csproj (in 5 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj (in 17 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/Broiler.ECMAScript.Frontend.Tests.csproj (in 4 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 2 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/Broiler.ECMAScript.Conformance.Tests.csproj (in 6 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Broiler.ECMAScript.Algorithms.Tests.csproj (in 4 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/Broiler.ECMAScript.Architecture.Tests.csproj (in 8 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj (in 8 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Debugger/Broiler.JavaScript.Debugger.csproj (in 12 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/samples/Broiler.JavaScript.StartupHost/Broiler.JavaScript.StartupHost.csproj (in 18 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Debugger.Tests/Broiler.JavaScript.Debugger.Tests.csproj (in 18 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj (in 8 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Clr/Broiler.JavaScript.Clr.csproj (in 11 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Core.Tests/Broiler.JavaScript.Core.Tests.csproj (in 17 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Compiler.Tests/Broiler.JavaScript.Compiler.Tests.csproj (in 21 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Clr.Tests/Broiler.JavaScript.Clr.Tests.csproj (in 11 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj (in 3 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Ast.Tests/Broiler.JavaScript.Ast.Tests.csproj (in 5 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj (in 12 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/Broiler.JavaScript.Architecture.Tests.csproj (in 9 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Broiler.JavaScript.BuiltIns.Tests.csproj (in 18 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Modules/Broiler.JavaScript.Modules.csproj (in 11 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Modules.Tests/Broiler.JavaScript.Modules.Tests.csproj (in 15 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.ModuleExtensions/Broiler.JavaScript.ModuleExtensions.csproj (in 14 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Minimal/Broiler.JavaScript.Minimal.csproj (in 15 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.ModuleExtensions.Tests/Broiler.JavaScript.ModuleExtensions.Tests.csproj (in 17 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.LinqExpressions/Broiler.JavaScript.LinqExpressions.csproj (in 9 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Feature.Sample/Broiler.JavaScript.Feature.Sample.csproj (in 7 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Globals/Broiler.JavaScript.Globals.csproj (in 12 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Extensions/Broiler.JavaScript.Extensions.csproj (in 9 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj (in 18 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj (in 3 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj (in 5 ms).
+  Restored /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.JSClassGenerator/Broiler.JavaScript.JSClassGenerator.csproj (in 270 ms).
+  Broiler.ECMAScript.Conformance -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/bin/Release/net10.0/Broiler.ECMAScript.Conformance.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Portable -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Portable/bin/Release/net10.0/Broiler.JavaScript.Portable.dll
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Generation -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Generation/bin/Release/net10.0/Broiler.ECMAScript.Generation.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.NativeAotSample -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/samples/Broiler.JavaScript.NativeAotSample/bin/Release/net10.0/Broiler.JavaScript.NativeAotSample.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.ECMAScript.Algorithms.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.Tests.dll
+  Broiler.ECMAScript.Generation.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/bin/Release/net10.0/Broiler.ECMAScript.Generation.Tests.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.ECMAScript.Frontend.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/bin/Release/net10.0/Broiler.ECMAScript.Frontend.Tests.dll
+  Broiler.ECMAScript.Intl.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/bin/Release/net10.0/Broiler.ECMAScript.Intl.Tests.dll
+  Broiler.ECMAScript.Probe -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll
+  Broiler.ECMAScript.Architecture.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll
+  Broiler.ECMAScript.Conformance.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/bin/Release/net10.0/Broiler.ECMAScript.Conformance.Tests.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.Portable.Compiler -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Portable.Compiler/bin/Release/net10.0/Broiler.JavaScript.Portable.Compiler.dll
+  Broiler.JavaScript.Ast.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Ast.Tests/bin/Release/net10.0/Broiler.JavaScript.Ast.Tests.dll
+  Broiler.JavaScript.Parser.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Parser.Tests/bin/Release/net10.0/Broiler.JavaScript.Parser.Tests.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Storage.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Storage.Tests/bin/Release/net10.0/Broiler.JavaScript.Storage.Tests.dll
+  Broiler.JavaScript.Portable.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Portable.Tests/bin/Release/net10.0/Broiler.JavaScript.Portable.Tests.dll
+  Broiler.JavaScript.Feature.Sample -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Feature.Sample/bin/Release/net10.0/Broiler.JavaScript.Feature.Sample.dll
+  Broiler.JavaScript.Engine -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.Compiler -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Compiler/bin/Release/net10.0/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.BuiltIns -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Clr -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Clr/bin/Release/net10.0/Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.Modules -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Modules/bin/Release/net10.0/Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Runtime.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Runtime.Tests/bin/Release/net10.0/Broiler.JavaScript.Runtime.Tests.dll
+  Broiler.JavaScript.Debugger -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Debugger/bin/Release/net10.0/Broiler.JavaScript.Debugger.dll
+  Broiler.JavaScript.Globals -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Globals/bin/Release/net10.0/Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.StartupHost -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/samples/Broiler.JavaScript.StartupHost/bin/Release/net10.0/Broiler.JavaScript.StartupHost.dll
+  Broiler.JavaScript -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+  Broiler.JavaScript.Core.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Core.Tests/bin/Release/net10.0/Broiler.JavaScript.Core.Tests.dll
+  Broiler.JavaScript.Minimal -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Minimal/bin/Release/net10.0/Broiler.JavaScript.Minimal.dll
+  Broiler.JavaScript.Debugger.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Debugger.Tests/bin/Release/net10.0/Broiler.JavaScript.Debugger.Tests.dll
+  Broiler.JavaScript.ModuleExtensions -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.ModuleExtensions/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.dll
+  Broiler.JavaScript.Clr.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Clr.Tests/bin/Release/net10.0/Broiler.JavaScript.Clr.Tests.dll
+  Broiler.JavaScript.ModuleExtensions.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.ModuleExtensions.Tests/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.Tests.dll
+  Broiler.JavaScript.BuiltIns.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.Tests.dll
+  Broiler.JavaScript.Integration.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Integration.Tests/bin/Release/net10.0/Broiler.JavaScript.Integration.Tests.dll
+  Broiler.JavaScript.All -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.All/bin/Release/net10.0/Broiler.JavaScript.All.dll
+  Broiler.JavaScript.Modules.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Modules.Tests/bin/Release/net10.0/Broiler.JavaScript.Modules.Tests.dll
+  Broiler.JavaScript.Compiler.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Compiler.Tests/bin/Release/net10.0/Broiler.JavaScript.Compiler.Tests.dll
+  Broiler.JavaScript.Vectors.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll
+  Broiler.JavaScript.Engine.Benchmarks -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/bin/Release/net10.0/Broiler.JavaScript.Engine.Benchmarks.dll
+  Broiler.JavaScript.Architecture.Tests -> /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:03:12.92

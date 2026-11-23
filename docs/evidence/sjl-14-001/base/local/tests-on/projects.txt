@@ -1,0 +1,15 @@
+Broiler.JS/Broiler.JavaScript.Architecture.Tests/Broiler.JavaScript.Architecture.Tests.csproj
+Broiler.JS/Broiler.JavaScript.Ast.Tests/Broiler.JavaScript.Ast.Tests.csproj
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Broiler.JavaScript.BuiltIns.Tests.csproj
+Broiler.JS/Broiler.JavaScript.Clr.Tests/Broiler.JavaScript.Clr.Tests.csproj
+Broiler.JS/Broiler.JavaScript.Compiler.Tests/Broiler.JavaScript.Compiler.Tests.csproj
+Broiler.JS/Broiler.JavaScript.Core.Tests/Broiler.JavaScript.Core.Tests.csproj
+Broiler.JS/Broiler.JavaScript.Debugger.Tests/Broiler.JavaScript.Debugger.Tests.csproj
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj
+Broiler.JS/Broiler.JavaScript.ModuleExtensions.Tests/Broiler.JavaScript.ModuleExtensions.Tests.csproj
+Broiler.JS/Broiler.JavaScript.Modules.Tests/Broiler.JavaScript.Modules.Tests.csproj
+Broiler.JS/Broiler.JavaScript.Parser.Tests/Broiler.JavaScript.Parser.Tests.csproj
+Broiler.JS/Broiler.JavaScript.Portable.Tests/Broiler.JavaScript.Portable.Tests.csproj
+Broiler.JS/Broiler.JavaScript.Runtime.Tests/Broiler.JavaScript.Runtime.Tests.csproj
+Broiler.JS/Broiler.JavaScript.Storage.Tests/Broiler.JavaScript.Storage.Tests.csproj
+Broiler.JS/Broiler.JavaScript.Vectors.Tests/Broiler.JavaScript.Vectors.Tests.csproj

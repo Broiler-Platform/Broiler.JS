@@ -1,0 +1,1101 @@
+{
+  "packagesPropsPath": "/tmp/jseal-package-consumer-f86f0900970c47a7809dd66d165e50b5/source/Directory.Packages.props",
+  "candidates": {
+    "Broiler.JavaScript": "0.1.0-preview.1401"
+  },
+  "candidateFeed": [
+    {
+      "id": "Broiler.ECMAScript.Algorithms",
+      "version": "0.1.0-preview.8",
+      "sha512": "PdVUgci8R2znPPzOrC77pdn6GuOJuVW4Dq+oBcf1mO/fnarC9vhpUgSlPa1BWyQnhugnYSlY1Db/jKeDlULrOw==",
+      "dependencies": [],
+      "archive": "Broiler.ECMAScript.Algorithms.0.1.0-preview.8.nupkg"
+    },
+    {
+      "id": "Broiler.ECMAScript.Frontend",
+      "version": "0.1.0-preview.8",
+      "sha512": "8sBJVpWF7Md1Mk/BVw2HE3R2NWDhdLHMhN9Lv8AVrdCuZludsTF6nGI6ap0wi7QxqMh3S1pplGVZp9IX+i+isA==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.Unicode.Algorithms",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "archive": "Broiler.ECMAScript.Frontend.0.1.0-preview.8.nupkg"
+    },
+    {
+      "id": "Broiler.ECMAScript.Generation",
+      "version": "0.1.0-preview.8",
+      "sha512": "yuk3+4DXSqm542sQU3a5qPPSz72/G0LYP75TESYoMtboBWcsEOa34h5FF8VUztmLJCAbv9eempmB/4jHug8xSw==",
+      "dependencies": [],
+      "archive": "Broiler.ECMAScript.Generation.0.1.0-preview.8.nupkg"
+    },
+    {
+      "id": "Broiler.ECMAScript.Intl",
+      "version": "0.1.0-preview.8",
+      "sha512": "KIccIvqErbqjKuFkqcDWErqIQ5KhdhX0OzQxEi107z80zhGy4JXu9OZv4wgHmUJCfPmzZ0lQWo6KhAm7zkehVA==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.Unicode.Algorithms",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "archive": "Broiler.ECMAScript.Intl.0.1.0-preview.8.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.All",
+      "version": "0.1.0-preview.1401",
+      "sha512": "aNQRFEjL5Ntph1Earw4V1/9re4MRaf76S+PNVGI4OA+Gk/HA4MirwId/w18rJzOPAe1tdZdqRun4ZbLBsebwJQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.BuiltIns",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Clr",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Compiler",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Debugger",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Extensions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Globals",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.LinqExpressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.ModuleExtensions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Modules",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.All.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Ast",
+      "version": "0.1.0-preview.1401",
+      "sha512": "OeJsOBV6IQ6XxIMwAy6qFiybxdCO+jt8upx+6zqFoDUv6Gxb2wuQNTsH6j+sHuTiwmVwmBxj/5VI2f6gK4vDXA==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.Regex",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.Unicode.Algorithms",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "archive": "Broiler.JavaScript.Ast.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.BuiltIns",
+      "version": "0.1.0-preview.1401",
+      "sha512": "E9vfHKyHkUIctRM1Ir3wIVIu7KUJPQl77PtWBSFNqK2x3r0GZ0xc/8727cqO+dBhhYQkXkLTPJVhnA2iWWcXiQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.ECMAScript.Intl",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Extensions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.LinqExpressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.Regex",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.Unicode.Segmentation",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "archive": "Broiler.JavaScript.BuiltIns.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Clr",
+      "version": "0.1.0-preview.1401",
+      "sha512": "RhZm+XFDqcKv8DqWcL6kvmsaInAQTtGVhRu68VnMsPxp+8zR1u/8gIv336Uo+MsW2tmRadPwYXEOj0mycvO+6Q==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.BuiltIns",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Extensions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.LinqExpressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.Clr.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Compiler",
+      "version": "0.1.0-preview.1401",
+      "sha512": "H98OIF32vnhJA1hwhyFNWkDaFj27COPUcZZLrShUKuWOcYjW3l0JJhhDUiJzQ9eIUXdNDz42dNu1eXaO9JDjaA==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.LinqExpressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.Compiler.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Debugger",
+      "version": "0.1.0-preview.1401",
+      "sha512": "ISCiI3Ik2k3bPVhqrCAXRXiOIuEJPAKrBIphJaSZPfVk/p3/32cD9AGbV79NDlLc7jzS3GfEcD4Wau2J3yYdqQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.BuiltIns",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.Debugger.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Engine",
+      "version": "0.1.0-preview.1401",
+      "sha512": "pFRFBapueXUqWu+L+xkKKtEgk7ka7lYw3OrEInI0kH9ehSYiWyG9wuFccjRvvTBq9wNqQ86+h2EERxhCw3gnTQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Parser",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Runtime",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Storage",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.Engine.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.ExpressionCompiler",
+      "version": "0.1.0-preview.1401",
+      "sha512": "BoAQ0EaWVOT/SvENLasu8tUx0N9J6uMUpAEmHm588MCVqW8rHPGlsup8OYVmkpj3qnzvY2ILlykt0Z9EPiBO9A==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.ExpressionCompiler.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Expressions",
+      "version": "0.1.0-preview.1401",
+      "sha512": "7NfEVysxC84jPZCJsncWhP2L3FEO2EIv4IPU80oGAWTLbD4GEP/hZy/pLCzS8oPT2S6xVhPXbksuP30u2Gxcww==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        }
+      ],
+      "archive": "Broiler.JavaScript.Expressions.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Extensions",
+      "version": "0.1.0-preview.1401",
+      "sha512": "HJIAB06pfj3FDSItKUir3RXMHYwaDp/svRqeso2iAos+G/v1TE3zYoUNB0eiQa0Ki67klBNpHvTQQJ0IPc8XWw==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.LinqExpressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.Extensions.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Globals",
+      "version": "0.1.0-preview.1401",
+      "sha512": "tmlJ5ozpzDj48xXI9ajfNEMN0WTV3eVoOzstz5FokFpm09iKqPd7uIstTfTV7Lj+0H94Er/eAe7M0SqSTS8SRA==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.BuiltIns",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Compiler",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Extensions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.Globals.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.LinqExpressions",
+      "version": "0.1.0-preview.1401",
+      "sha512": "x77nxscoWWbpyR+KmGRGIJc8QiHiPYw0VDGIbh5iGjDnIOPfix1nQK0jbHi1dSD10JztBWzzvW6Lt8JRzCtEUg==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.ExpressionCompiler",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Runtime",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Storage",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.LinqExpressions.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Minimal",
+      "version": "0.1.0-preview.1401",
+      "sha512": "dKVV4PbGfOmaCs/uLNtuvYU8vVvgDY4V4bo8Rl2Ra1JckxPxeLKgLSJz9ewCuYlG3/zSvCGLBH3y+lCp2w/Rpw==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.BuiltIns",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Compiler",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Extensions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Globals",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.Minimal.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.ModuleExtensions",
+      "version": "0.1.0-preview.1401",
+      "sha512": "CHKnaeiCvooJ1qYrFRgyGQIY0nwoimV1kKO3GxPFDj7UoSJqljM0DLPE0+UJDge904Ybn6AkYudjzi4YvwL85g==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Clr",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.ExpressionCompiler",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Extensions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Modules",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.ModuleExtensions.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Modules",
+      "version": "0.1.0-preview.1401",
+      "sha512": "OMyXiQEWWNK36EwPJZ67rwEOQqbYrhzoDnH04DBNK/Hq2JrkbNHmIc6Um3nXqXJ/lugz4xiZPoBqVi67FT5lHw==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.BuiltIns",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.LinqExpressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.Modules.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Parser",
+      "version": "0.1.0-preview.1401",
+      "sha512": "+5PR3wckIl7iKfJoNDwIgSdciFIUzWGF8tMm939iVlkY9UheShh0hF4YUp7qN/6Ha1oTsu+s1CruTOJRYGRphQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.Regex",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "archive": "Broiler.JavaScript.Parser.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Portable",
+      "version": "0.1.0-preview.1401",
+      "sha512": "urXriRGkvFZe5rltwE4jm1dXvLW1DpNWxg/q9jFPP1aDxcgZkqSL3OEgx3NVrmoUXcP+gZ6DRCVFZhCLvZPKBw==",
+      "dependencies": [],
+      "archive": "Broiler.JavaScript.Portable.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Portable.Compiler",
+      "version": "0.1.0-preview.1401",
+      "sha512": "s3GbeSnF0ao5UjyhCj6WXwD5Zc4Gala5S54gNoBfK71N3QmRn6XZV3xsGL22DBBlRWXCnsX9wpjYhpTKRsACdw==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Parser",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Portable",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.Portable.Compiler.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Runtime",
+      "version": "0.1.0-preview.1401",
+      "sha512": "9anmHwXNhcMaU33QXUAkhz4uQxhmSFsKwt4ophMk01Dfo2ICPmDuxjFFzfXDdhKaFUM73KXLYXgsmbtWVH0Vuw==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Storage",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.Runtime.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.JavaScript.Storage",
+      "version": "0.1.0-preview.1401",
+      "sha512": "ioOH+z67WMnLpX45PCbm9Nk+OYbj07W4AEiTN39pRJ9fw2v4chPbPipQB9CDcbcZjm1MehpkprjGpuKg4pjVXA==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "archive": "Broiler.JavaScript.Storage.0.1.0-preview.1401.nupkg"
+    },
+    {
+      "id": "Broiler.Regex",
+      "version": "0.1.0-preview.6",
+      "sha512": "L305/2UnpKJ2Z5etheRYfKhQ33bA9ZfXSVhOuIbbfGF9WcoFPgF9pWiUJu9Qj+7/yjofcPjz+RwykU8mgsbn1A==",
+      "dependencies": [
+        {
+          "id": "Broiler.Unicode.Algorithms",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "archive": "broiler.regex.0.1.0-preview.6.nupkg"
+    },
+    {
+      "id": "Broiler.Unicode.Algorithms",
+      "version": "0.1.0-preview.6",
+      "sha512": "uSv5c1Rd8z2WLI0VlkBe3JcwrRBMu2fQCKXsPh+NMGlv+zGa98xUk/ZXaG9WRMZ0L+kdEXcn2mlaOGix/iEkNg==",
+      "dependencies": [],
+      "archive": "broiler.unicode.algorithms.0.1.0-preview.6.nupkg"
+    },
+    {
+      "id": "Broiler.Unicode.Segmentation",
+      "version": "0.1.0-preview.6",
+      "sha512": "/jF/PZuCxj2RANnCWEazB+nmfnRDChoQonbhJmnC6v5/TKXXoolnqaAmVfuLsOGPG6nmpw9kZR4rXX6hBmQkvg==",
+      "dependencies": [
+        {
+          "id": "Broiler.Unicode.Algorithms",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "archive": "broiler.unicode.segmentation.0.1.0-preview.6.nupkg"
+    }
+  ],
+  "feed": [
+    {
+      "identity": "Broiler.ECMAScript.Algorithms/0.1.0-preview.8",
+      "id": "Broiler.ECMAScript.Algorithms",
+      "version": "0.1.0-preview.8",
+      "archive": "broiler.ecmascript.algorithms.0.1.0-preview.8.nupkg",
+      "sha512": "PdVUgci8R2znPPzOrC77pdn6GuOJuVW4Dq+oBcf1mO/fnarC9vhpUgSlPa1BWyQnhugnYSlY1Db/jKeDlULrOw==",
+      "dependencies": [],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.ECMAScript.Intl/0.1.0-preview.8",
+      "id": "Broiler.ECMAScript.Intl",
+      "version": "0.1.0-preview.8",
+      "archive": "broiler.ecmascript.intl.0.1.0-preview.8.nupkg",
+      "sha512": "KIccIvqErbqjKuFkqcDWErqIQ5KhdhX0OzQxEi107z80zhGy4JXu9OZv4wgHmUJCfPmzZ0lQWo6KhAm7zkehVA==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.Unicode.Algorithms",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Ast/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Ast",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.ast.0.1.0-preview.1401.nupkg",
+      "sha512": "OeJsOBV6IQ6XxIMwAy6qFiybxdCO+jt8upx+6zqFoDUv6Gxb2wuQNTsH6j+sHuTiwmVwmBxj/5VI2f6gK4vDXA==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.Regex",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.Unicode.Algorithms",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.BuiltIns/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.BuiltIns",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.builtins.0.1.0-preview.1401.nupkg",
+      "sha512": "E9vfHKyHkUIctRM1Ir3wIVIu7KUJPQl77PtWBSFNqK2x3r0GZ0xc/8727cqO+dBhhYQkXkLTPJVhnA2iWWcXiQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.ECMAScript.Intl",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Extensions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.LinqExpressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.Regex",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.Unicode.Segmentation",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Compiler/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Compiler",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.compiler.0.1.0-preview.1401.nupkg",
+      "sha512": "H98OIF32vnhJA1hwhyFNWkDaFj27COPUcZZLrShUKuWOcYjW3l0JJhhDUiJzQ9eIUXdNDz42dNu1eXaO9JDjaA==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.LinqExpressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Engine/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Engine",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.engine.0.1.0-preview.1401.nupkg",
+      "sha512": "pFRFBapueXUqWu+L+xkKKtEgk7ka7lYw3OrEInI0kH9ehSYiWyG9wuFccjRvvTBq9wNqQ86+h2EERxhCw3gnTQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Parser",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Runtime",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Storage",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.ExpressionCompiler/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.ExpressionCompiler",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.expressioncompiler.0.1.0-preview.1401.nupkg",
+      "sha512": "BoAQ0EaWVOT/SvENLasu8tUx0N9J6uMUpAEmHm588MCVqW8rHPGlsup8OYVmkpj3qnzvY2ILlykt0Z9EPiBO9A==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Expressions/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Expressions",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.expressions.0.1.0-preview.1401.nupkg",
+      "sha512": "7NfEVysxC84jPZCJsncWhP2L3FEO2EIv4IPU80oGAWTLbD4GEP/hZy/pLCzS8oPT2S6xVhPXbksuP30u2Gxcww==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Extensions/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Extensions",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.extensions.0.1.0-preview.1401.nupkg",
+      "sha512": "HJIAB06pfj3FDSItKUir3RXMHYwaDp/svRqeso2iAos+G/v1TE3zYoUNB0eiQa0Ki67klBNpHvTQQJ0IPc8XWw==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.LinqExpressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Globals/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Globals",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.globals.0.1.0-preview.1401.nupkg",
+      "sha512": "tmlJ5ozpzDj48xXI9ajfNEMN0WTV3eVoOzstz5FokFpm09iKqPd7uIstTfTV7Lj+0H94Er/eAe7M0SqSTS8SRA==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.BuiltIns",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Compiler",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Extensions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.LinqExpressions/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.LinqExpressions",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.linqexpressions.0.1.0-preview.1401.nupkg",
+      "sha512": "x77nxscoWWbpyR+KmGRGIJc8QiHiPYw0VDGIbh5iGjDnIOPfix1nQK0jbHi1dSD10JztBWzzvW6Lt8JRzCtEUg==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.ExpressionCompiler",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Runtime",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Storage",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Modules/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Modules",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.modules.0.1.0-preview.1401.nupkg",
+      "sha512": "OMyXiQEWWNK36EwPJZ67rwEOQqbYrhzoDnH04DBNK/Hq2JrkbNHmIc6Um3nXqXJ/lugz4xiZPoBqVi67FT5lHw==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.BuiltIns",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.LinqExpressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Parser/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Parser",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.parser.0.1.0-preview.1401.nupkg",
+      "sha512": "+5PR3wckIl7iKfJoNDwIgSdciFIUzWGF8tMm939iVlkY9UheShh0hF4YUp7qN/6Ha1oTsu+s1CruTOJRYGRphQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.Regex",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Runtime/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Runtime",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.runtime.0.1.0-preview.1401.nupkg",
+      "sha512": "9anmHwXNhcMaU33QXUAkhz4uQxhmSFsKwt4ophMk01Dfo2ICPmDuxjFFzfXDdhKaFUM73KXLYXgsmbtWVH0Vuw==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Storage",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Storage/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Storage",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.storage.0.1.0-preview.1401.nupkg",
+      "sha512": "ioOH+z67WMnLpX45PCbm9Nk+OYbj07W4AEiTN39pRJ9fw2v4chPbPipQB9CDcbcZjm1MehpkprjGpuKg4pjVXA==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JSeal/0.1.0-preview.1",
+      "id": "Broiler.JSeal",
+      "version": "0.1.0-preview.1",
+      "archive": "Broiler.JSeal.0.1.0-preview.1.nupkg",
+      "sha512": "SsIBS9NDwefJe8+BytiuJPRi6MmqiBSxQ08JijFZqc/QMFxa3WSyQ4Ahl0mMB1+GqrAA6bYilHUmWKQK76WayA==",
+      "dependencies": [],
+      "origin": "local pack"
+    },
+    {
+      "identity": "Broiler.JSeal.BroilerJs/0.1.0-preview.1",
+      "id": "Broiler.JSeal.BroilerJs",
+      "version": "0.1.0-preview.1",
+      "archive": "Broiler.JSeal.BroilerJs.0.1.0-preview.1.nupkg",
+      "sha512": "0WXex8TdAyoQ+bcwSQ0DkMG5KXEcHESq4YDvhqgA0omvV3Wnpah9LlQ8qitzRYIGmaZJes2MDVEvyHR7HgUrSA==",
+      "dependencies": [
+        {
+          "id": "Broiler.JSeal",
+          "range": "0.1.0-preview.1"
+        },
+        {
+          "id": "Broiler.JavaScript.BuiltIns",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Globals",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Modules",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Storage",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "local pack"
+    },
+    {
+      "identity": "Broiler.JSeal.Vm/0.1.0-preview.1",
+      "id": "Broiler.JSeal.Vm",
+      "version": "0.1.0-preview.1",
+      "archive": "Broiler.JSeal.Vm.0.1.0-preview.1.nupkg",
+      "sha512": "QUJ4yy99OMuKTriyK5iUWPgF/vpFDT0AkohGNlsLLeIe8Nu5qujadLZs0nUdXwiAs3c3xomsWj5i0+IqNnzx2g==",
+      "dependencies": [
+        {
+          "id": "Broiler.JSeal",
+          "range": "0.1.0-preview.1"
+        },
+        {
+          "id": "Broiler.VM.Profile.JavaScript",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.VM.Profile.JavaScript.Compiler",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.VM.Runtime",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "local pack"
+    },
+    {
+      "identity": "Broiler.Regex/0.1.0-preview.6",
+      "id": "Broiler.Regex",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.regex.0.1.0-preview.6.nupkg",
+      "sha512": "L305/2UnpKJ2Z5etheRYfKhQ33bA9ZfXSVhOuIbbfGF9WcoFPgF9pWiUJu9Qj+7/yjofcPjz+RwykU8mgsbn1A==",
+      "dependencies": [
+        {
+          "id": "Broiler.Unicode.Algorithms",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.Unicode.Algorithms/0.1.0-preview.6",
+      "id": "Broiler.Unicode.Algorithms",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.unicode.algorithms.0.1.0-preview.6.nupkg",
+      "sha512": "uSv5c1Rd8z2WLI0VlkBe3JcwrRBMu2fQCKXsPh+NMGlv+zGa98xUk/ZXaG9WRMZ0L+kdEXcn2mlaOGix/iEkNg==",
+      "dependencies": [],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.Unicode.Segmentation/0.1.0-preview.6",
+      "id": "Broiler.Unicode.Segmentation",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.unicode.segmentation.0.1.0-preview.6.nupkg",
+      "sha512": "/jF/PZuCxj2RANnCWEazB+nmfnRDChoQonbhJmnC6v5/TKXXoolnqaAmVfuLsOGPG6nmpw9kZR4rXX6hBmQkvg==",
+      "dependencies": [
+        {
+          "id": "Broiler.Unicode.Algorithms",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.VM.Abstractions/0.1.0-preview.6",
+      "id": "Broiler.VM.Abstractions",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.vm.abstractions.0.1.0-preview.6.nupkg",
+      "sha512": "Y1grKpny85T/3XMQwtWVZc6P+oRYF9olel4XQvIdfK5rNDJj0A8x8u5yTbu8qpCNq4yKok5Q1GUNOhM9YZyvNg==",
+      "dependencies": [],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.VM.Binary/0.1.0-preview.6",
+      "id": "Broiler.VM.Binary",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.vm.binary.0.1.0-preview.6.nupkg",
+      "sha512": "d57bLagffYLbakKgMnoksN3sYr9kG8pSV3OnkXEVOobpX8rhjNa12H8a3JVMwghOLiS2lAiXFk/9ZnpSRHxNtg==",
+      "dependencies": [],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.VM.Profile.JavaScript/0.1.0-preview.6",
+      "id": "Broiler.VM.Profile.JavaScript",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.vm.profile.javascript.0.1.0-preview.6.nupkg",
+      "sha512": "5MTa6HhP/0uNVOrTuDHnSkdQoQni9nfa29TIM0fUeevg8XOrOpjtGzhc2BaA9ru4t4V4t/OCLdnV8X7Q+u3Agw==",
+      "dependencies": [
+        {
+          "id": "Broiler.VM.Abstractions",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.VM.Binary",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.VM.Profile.JavaScript.Format",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.VM.Profile.JavaScript.Compiler/0.1.0-preview.6",
+      "id": "Broiler.VM.Profile.JavaScript.Compiler",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.vm.profile.javascript.compiler.0.1.0-preview.6.nupkg",
+      "sha512": "yCE4rXTVL+XEQkC6y/gXFqXkD0EOgDnbNpYvogMHug1cQzY+inplbLh9sSHfvhXaMps8O3qiCwioshyL1CitDA==",
+      "dependencies": [
+        {
+          "id": "Broiler.VM.Abstractions",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.VM.Profile.JavaScript.Format",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.VM.Profile.JavaScript.Format/0.1.0-preview.6",
+      "id": "Broiler.VM.Profile.JavaScript.Format",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.vm.profile.javascript.format.0.1.0-preview.6.nupkg",
+      "sha512": "m24atuVxcJ9SgYIM6buxahJJax5SaKHd/iYO+dBtj20XeYinDnRJqUSpD1M5zA6+srw//+eBhhRMIWnttUngXQ==",
+      "dependencies": [],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.VM.Runtime/0.1.0-preview.6",
+      "id": "Broiler.VM.Runtime",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.vm.runtime.0.1.0-preview.6.nupkg",
+      "sha512": "PeWE8BWTxBds5mSsNVIhezdSSpdYzdiolFu7HSlNgn+uO8jWs6tdSs48KoiILFEI60WGtZTpEIi7nDx95IGSWQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.VM.Abstractions",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.VM.Binary",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    }
+  ],
+  "graphs": [
+    {
+      "name": "source-BroilerJs",
+      "kind": "source",
+      "assetsPath": "/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2base/base/part-g/jseal/source-BroilerJs.assets.json"
+    },
+    {
+      "name": "source-Vm",
+      "kind": "source",
+      "assetsPath": "/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2base/base/part-g/jseal/source-Vm.assets.json"
+    },
+    {
+      "name": "consumer-BroilerJs",
+      "kind": "consumer",
+      "assetsPath": "/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2base/base/part-g/jseal/BroilerJs.assets.json"
+    },
+    {
+      "name": "consumer-Vm",
+      "kind": "consumer",
+      "assetsPath": "/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2base/base/part-g/jseal/Vm.assets.json"
+    },
+    {
+      "name": "consumer-Both",
+      "kind": "consumer",
+      "assetsPath": "/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2base/base/part-g/jseal/Both.assets.json"
+    }
+  ]
+}

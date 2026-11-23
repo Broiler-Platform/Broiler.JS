@@ -1,0 +1,5 @@
+[31;1mException: [0m/home/user/js-w2base-build/69a8a13b/jseal/eng/test-package-consumer.ps1:94[0m
+[31;1m[0m[36;1mLine |[0m
+[31;1m[0m[36;1m[36;1m  94 | [0m             [36;1mthrow "$Name failed (exit $($record.exitCode), timedOut=$[0m …[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mpack failed (exit 1, timedOut=False); see report.json.[0m

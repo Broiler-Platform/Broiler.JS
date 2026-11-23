@@ -1,0 +1,19 @@
+/home/user/js-w2base-build/69a8a13b/html/src/Broiler.HtmlBridge.Scripting.Vm/Broiler.HtmlBridge.Scripting.Vm.csproj : warning NU1603: Broiler.JSeal.BroilerJs 0.1.0-preview.8 depends on Broiler.JavaScript.Globals (>= 0.1.0-preview.10) but Broiler.JavaScript.Globals 0.1.0-preview.10 was not found. Broiler.JavaScript.Globals 0.1.0-preview.1401 was resolved instead.
+/home/user/js-w2base-build/69a8a13b/html/src/Broiler.HtmlBridge.Scripting/Broiler.HtmlBridge.Scripting.csproj : warning NU1603: Broiler.JSeal.BroilerJs 0.1.0-preview.8 depends on Broiler.JavaScript.Globals (>= 0.1.0-preview.10) but Broiler.JavaScript.Globals 0.1.0-preview.10 was not found. Broiler.JavaScript.Globals 0.1.0-preview.1401 was resolved instead.
+/home/user/js-w2base-build/69a8a13b/html/tests/Broiler.HtmlBridge.Tests/Broiler.HtmlBridge.Tests.csproj : warning NU1603: Broiler.JSeal.BroilerJs 0.1.0-preview.8 depends on Broiler.JavaScript.Globals (>= 0.1.0-preview.10) but Broiler.JavaScript.Globals 0.1.0-preview.10 was not found. Broiler.JavaScript.Globals 0.1.0-preview.1401 was resolved instead.
+  Broiler.HtmlBridge.Core -> /home/user/js-w2base-build/69a8a13b/html/src/Broiler.HtmlBridge.Core/bin/Release/net10.0/Broiler.HtmlBridge.Core.dll
+  Broiler.HtmlBridge.DomBridgeUtils -> /home/user/js-w2base-build/69a8a13b/html/src/Broiler.HtmlBridge.DomBridgeUtils/bin/Release/net10.0/Broiler.HtmlBridge.DomBridgeUtils.dll
+  Broiler.HtmlBridge.Dom -> /home/user/js-w2base-build/69a8a13b/html/src/Broiler.HtmlBridge.Dom/bin/Release/net10.0/Broiler.HtmlBridge.Dom.dll
+  Broiler.HtmlBridge.Scripting -> /home/user/js-w2base-build/69a8a13b/html/src/Broiler.HtmlBridge.Scripting/bin/Release/net10.0/Broiler.HtmlBridge.Scripting.dll
+  Broiler.HtmlBridge.Scripting.Vm -> /home/user/js-w2base-build/69a8a13b/html/src/Broiler.HtmlBridge.Scripting.Vm/bin/Release/net10.0/Broiler.HtmlBridge.Scripting.Vm.dll
+  Broiler.HtmlBridge.Tests -> /home/user/js-w2base-build/69a8a13b/html/tests/Broiler.HtmlBridge.Tests/bin/Release/net10.0/Broiler.HtmlBridge.Tests.dll
+
+Build succeeded.
+
+/home/user/js-w2base-build/69a8a13b/html/src/Broiler.HtmlBridge.Scripting.Vm/Broiler.HtmlBridge.Scripting.Vm.csproj : warning NU1603: Broiler.JSeal.BroilerJs 0.1.0-preview.8 depends on Broiler.JavaScript.Globals (>= 0.1.0-preview.10) but Broiler.JavaScript.Globals 0.1.0-preview.10 was not found. Broiler.JavaScript.Globals 0.1.0-preview.1401 was resolved instead.
+/home/user/js-w2base-build/69a8a13b/html/src/Broiler.HtmlBridge.Scripting/Broiler.HtmlBridge.Scripting.csproj : warning NU1603: Broiler.JSeal.BroilerJs 0.1.0-preview.8 depends on Broiler.JavaScript.Globals (>= 0.1.0-preview.10) but Broiler.JavaScript.Globals 0.1.0-preview.10 was not found. Broiler.JavaScript.Globals 0.1.0-preview.1401 was resolved instead.
+/home/user/js-w2base-build/69a8a13b/html/tests/Broiler.HtmlBridge.Tests/Broiler.HtmlBridge.Tests.csproj : warning NU1603: Broiler.JSeal.BroilerJs 0.1.0-preview.8 depends on Broiler.JavaScript.Globals (>= 0.1.0-preview.10) but Broiler.JavaScript.Globals 0.1.0-preview.10 was not found. Broiler.JavaScript.Globals 0.1.0-preview.1401 was resolved instead.
+    3 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:27.38

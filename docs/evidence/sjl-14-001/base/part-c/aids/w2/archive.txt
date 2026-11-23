@@ -1,0 +1,9 @@
+commit: 029bab4c4f2457fed1896ab6c4d224350d809b40
+tree: 3a5433955f2ae542dd3828b7325faa139619fd57
+first-parent: 8133ea0cff543c1383da74c02f0fa0db0c4e233e
+files: 10354
+archived: 2026-11-23T14:10:10Z by git -C /home/user/js-w2code archive --format=tar 029bab4c4f2457fed1896ab6c4d224350d809b40 | tar -x -C <tree>, on disk
+sdk: 10.0.404
+node: v22.23.4
+python: Python 3.13.18
+machine: Linux 6.18.44-fc-v726 x86_64, 4 processors, Ubuntu 24.04.5 LTS

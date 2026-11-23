@@ -1,0 +1,19 @@
+  Determining projects to restore...
+  Restored /home/user/js-w2baseD-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 357 ms).
+  Restored /home/user/js-w2baseD-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj (in 357 ms).
+  Restored /home/user/js-w2baseD-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj (in 357 ms).
+  Restored /home/user/js-w2baseD-build/69a8a13b/tree/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj (in 357 ms).
+  Restored /home/user/js-w2baseD-build/69a8a13b/parse-time/parse-time.csproj (in 9 ms).
+  Restored /home/user/js-w2baseD-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj (in 8 ms).
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2baseD-build/69a8a13b/art-ptime/bin/Broiler.ECMAScript.Algorithms/release/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2baseD-build/69a8a13b/art-ptime/bin/Broiler.ECMAScript.Frontend/release/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2baseD-build/69a8a13b/art-ptime/bin/Broiler.JavaScript.Expressions/release/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2baseD-build/69a8a13b/art-ptime/bin/Broiler.JavaScript.Ast/release/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2baseD-build/69a8a13b/art-ptime/bin/Broiler.JavaScript.Parser/release/Broiler.JavaScript.Parser.dll
+  parse-time -> /home/user/js-w2baseD-build/69a8a13b/art-ptime/bin/parse-time/release/parse-time.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:33.45

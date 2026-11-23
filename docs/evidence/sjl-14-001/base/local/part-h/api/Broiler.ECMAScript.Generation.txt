@@ -1,0 +1,307 @@
+namespace Broiler.ECMAScript.Generation.Intl
+{
+    public static class CldrTableGenerator
+    {
+        public const string BroilerVmExemptReason = "CLDR 48.2.0 table data written by CldrTableGenerator from the files cldr.pin name" +
+            "s, compared byte for byte by rule N28";
+        public static Broiler.ECMAScript.Generation.Intl.IntlTables Generate(Broiler.ECMAScript.Generation.Intl.IntlCldrPin pin, System.Collections.Generic.IReadOnlyDictionary<string, byte[]> cldr, Broiler.ECMAScript.Generation.Intl.CldrUcd ucd, Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions options) { }
+    }
+    public sealed class CldrUcd
+    {
+        public const string PropListFile = "ucd-17.0.0/PropList.txt";
+        public const string UnicodeDataFile = "ucd-17.0.0/UnicodeData.txt";
+        public static string Version { get; }
+        public static Broiler.ECMAScript.Generation.Intl.CldrUcd Read(System.Collections.Generic.IReadOnlyDictionary<string, byte[]> files) { }
+    }
+    public enum IntlCalendarPreferences
+    {
+        None = 0,
+        Regions = 1,
+    }
+    public sealed class IntlCldrPin
+    {
+        public const string PinnedMajor = "48";
+        public const string PinnedUcaVersion = "17.0.0";
+        public const string PinnedVersion = "48.2.0";
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Intl.IntlPinEntry> Entries { get; }
+        public System.Collections.Generic.IReadOnlyList<string> Integrities { get; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, string> Values { get; }
+        public string Version { get; }
+        public Broiler.ECMAScript.Generation.Intl.IntlPinEntry Entry(string name) { }
+        public System.Collections.Generic.IReadOnlyDictionary<string, byte[]> Verified(System.Collections.Generic.IReadOnlyDictionary<string, byte[]> archive) { }
+        public System.Collections.Generic.IEnumerable<string> Violations(System.Collections.Generic.IReadOnlyDictionary<string, byte[]> archive) { }
+        public static Broiler.ECMAScript.Generation.Intl.IntlCldrPin Parse(string text) { }
+        public static string? VersionViolation(string name, byte[] bytes) { }
+    }
+    public enum IntlCurrencyNamePlurals
+    {
+        OneAndOther = 0,
+        Every = 1,
+    }
+    public static class IntlDataVersions
+    {
+        public const string CldrMajor = "48";
+        public const string CldrVersion = "48.2.0";
+        public const string UcaVersion = "17.0.0";
+        public const string UnicodeVersion = "17.0.0";
+    }
+    public sealed class IntlGeneratedTable : System.IEquatable<Broiler.ECMAScript.Generation.Intl.IntlGeneratedTable>
+    {
+        public IntlGeneratedTable(string Name, string Summary, bool IsText, System.ReadOnlyMemory<byte> Data) { }
+        public System.ReadOnlyMemory<byte> Data { get; init; }
+        public bool IsText { get; init; }
+        public string Name { get; init; }
+        public string Summary { get; init; }
+    }
+    public sealed class IntlGeneratorOptions : System.IEquatable<Broiler.ECMAScript.Generation.Intl.IntlGeneratorOptions>
+    {
+        public IntlGeneratorOptions(Broiler.ECMAScript.Generation.Intl.IntlLocaleList locales) { }
+        public Broiler.ECMAScript.Generation.Intl.IntlCalendarPreferences CalendarPreferences { get; init; }
+        public System.Collections.Immutable.ImmutableArray<string> Calendars { get; init; }
+        public Broiler.ECMAScript.Generation.Intl.IntlCurrencyNamePlurals CurrencyNamePlurals { get; init; }
+        public Broiler.ECMAScript.Generation.Intl.IntlLocaleList Locales { get; }
+        public Broiler.ECMAScript.Generation.Intl.IntlNumberingSymbols NumberingSymbols { get; init; }
+        public System.Collections.Immutable.ImmutableArray<string> Tailorings { get; init; }
+        public static System.Collections.Immutable.ImmutableArray<string> BroilerJsTailorings { get; }
+        public static System.Collections.Immutable.ImmutableArray<string> BroilerVmCalendars { get; }
+        public static System.Collections.Immutable.ImmutableArray<string> BroilerVmTailorings { get; }
+    }
+    public sealed class IntlLocaleList
+    {
+        public bool EverySupplementalLanguage { get; }
+        public System.Collections.Immutable.ImmutableArray<string> Locales { get; }
+        public System.Collections.Immutable.ImmutableArray<string> MainDataLocales { get; }
+        public System.Collections.Immutable.ImmutableArray<string> SupplementalLanguages { get; }
+        public static Broiler.ECMAScript.Generation.Intl.IntlLocaleList Parse(string text) { }
+    }
+    public enum IntlNumberingSymbols
+    {
+        Latin = 0,
+        EveryNumberingSystem = 1,
+    }
+    public sealed class IntlPinEntry : System.IEquatable<Broiler.ECMAScript.Generation.Intl.IntlPinEntry>
+    {
+        public IntlPinEntry(string Name, long Bytes, string Sha256) { }
+        public long Bytes { get; init; }
+        public string Name { get; init; }
+        public string Sha256 { get; init; }
+    }
+    public static class IntlTableFiles
+    {
+        public const string ManifestFile = "tables.manifest";
+        public static string FileName(Broiler.ECMAScript.Generation.Intl.IntlGeneratedTable table) { }
+        public static System.Collections.Generic.IReadOnlyDictionary<string, byte[]> Write(Broiler.ECMAScript.Generation.Intl.IntlTables tables, System.Collections.Generic.IReadOnlyList<string> header) { }
+    }
+    public static class IntlTableSource
+    {
+        public static string Write(Broiler.ECMAScript.Generation.Intl.IntlTables tables, Broiler.ECMAScript.Generation.Time.TableSourceOptions options) { }
+    }
+    public sealed class IntlTables
+    {
+        public System.Collections.Generic.IReadOnlyList<string> AbsentFiles { get; }
+        public string CldrVersion { get; }
+        public Broiler.ECMAScript.Generation.Intl.IntlGeneratedTable this[string name] { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Intl.IntlGeneratedTable> Tables { get; }
+        public string UcaVersion { get; }
+        public static string UnicodeVersion { get; }
+    }
+    public sealed class IntlUcdPin
+    {
+        public const string PinnedVersion = "17.0.0";
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Intl.IntlPinEntry> Entries { get; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, string> Values { get; }
+        public string Version { get; }
+        public Broiler.ECMAScript.Generation.Intl.IntlPinEntry Entry(string name) { }
+        public System.Collections.Generic.IReadOnlyDictionary<string, byte[]> Verified(System.Collections.Generic.IReadOnlyDictionary<string, byte[]> archive) { }
+        public System.Collections.Generic.IEnumerable<string> Violations(System.Collections.Generic.IReadOnlyDictionary<string, byte[]> archive) { }
+        public static Broiler.ECMAScript.Generation.Intl.IntlUcdPin Parse(string text) { }
+    }
+}
+namespace Broiler.ECMAScript.Generation.Time
+{
+    public sealed class CalendarPin
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.CalendarPinArchive> Archives { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.CalendarPinMember> Members { get; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, string> Values { get; }
+        public static System.Collections.Generic.IReadOnlyDictionary<string, string> PinnedVersions { get; }
+        public System.Collections.Generic.IEnumerable<string> ArchiveViolations(System.Collections.Generic.IReadOnlyDictionary<string, byte[]> crates) { }
+        public System.Collections.Generic.IReadOnlyDictionary<string, byte[]> Extract(System.Collections.Generic.IReadOnlyDictionary<string, byte[]> crates) { }
+        public System.Collections.Generic.IReadOnlyDictionary<string, byte[]> Verified(System.Collections.Generic.IReadOnlyDictionary<string, byte[]> members) { }
+        public System.Collections.Generic.IEnumerable<string> Violations(System.Collections.Generic.IReadOnlyDictionary<string, byte[]> members) { }
+        public static string Decode(byte[] bytes) { }
+        [return: System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "Name",
+                "Version"})]
+        public static System.ValueTuple<string, string> PackageOf(string manifest) { }
+        public static Broiler.ECMAScript.Generation.Time.CalendarPin Parse(string text) { }
+    }
+    public sealed class CalendarPinArchive : System.IEquatable<Broiler.ECMAScript.Generation.Time.CalendarPinArchive>
+    {
+        public CalendarPinArchive(string Name, long Bytes, string Sha256, string Sha512) { }
+        public long Bytes { get; init; }
+        public string Name { get; init; }
+        public string Sha256 { get; init; }
+        public string Sha512 { get; init; }
+    }
+    public sealed class CalendarPinMember : System.IEquatable<Broiler.ECMAScript.Generation.Time.CalendarPinMember>
+    {
+        public CalendarPinMember(string Archive, string Name, long Bytes, string Sha256) { }
+        public string Archive { get; init; }
+        public long Bytes { get; init; }
+        public string Name { get; init; }
+        public string Sha256 { get; init; }
+    }
+    public static class CalendarTableGenerator
+    {
+        public const string China = "icu_calendar-2.3.0/src/cal/east_asian_traditional/china_data.rs";
+        public const string Korea = "icu_calendar-2.3.0/src/cal/east_asian_traditional/korea_data.rs";
+        public const string Persian = "calendrical_calculations-0.2.4/src/persian.rs";
+        public const string Qing = "icu_calendar-2.3.0/src/cal/east_asian_traditional/qing_data.rs";
+        public const string UmmAlQura = "icu_calendar-2.3.0/src/cal/hijri/ummalqura_data.rs";
+        public static Broiler.ECMAScript.Generation.Time.CalendarTables Generate(Broiler.ECMAScript.Generation.Time.CalendarPin pin, System.Collections.Generic.IReadOnlyDictionary<string, byte[]> members) { }
+    }
+    public static class CalendarTableSource
+    {
+        public static string Write(Broiler.ECMAScript.Generation.Time.CalendarTables tables, Broiler.ECMAScript.Generation.Time.TableSourceOptions options) { }
+    }
+    public sealed class CalendarTables
+    {
+        public System.ReadOnlyMemory<byte> Calendars { get; }
+    }
+    public sealed class CldrPin
+    {
+        public const string PinnedVersion = "48.2.0";
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.CldrPinEntry> Entries { get; }
+        public System.Collections.Generic.IReadOnlyList<string> Integrities { get; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, string> Values { get; }
+        public string Version { get; }
+        public Broiler.ECMAScript.Generation.Time.CldrPinEntry Entry(string name) { }
+        public System.Collections.Generic.IReadOnlyDictionary<string, byte[]> Verified(System.Collections.Generic.IReadOnlyDictionary<string, byte[]> archive) { }
+        public System.Collections.Generic.IEnumerable<string> Violations(System.Collections.Generic.IReadOnlyDictionary<string, byte[]> archive) { }
+        public static Broiler.ECMAScript.Generation.Time.CldrPin Parse(string text) { }
+    }
+    public sealed class CldrPinEntry : System.IEquatable<Broiler.ECMAScript.Generation.Time.CldrPinEntry>
+    {
+        public CldrPinEntry(string Name, long Bytes, string Sha256) { }
+        public long Bytes { get; init; }
+        public string Name { get; init; }
+        public string Sha256 { get; init; }
+    }
+    public sealed class TableSourceOptions : System.IEquatable<Broiler.ECMAScript.Generation.Time.TableSourceOptions>
+    {
+        public TableSourceOptions(string namespaceName, string className) { }
+        public System.Collections.Generic.IReadOnlyList<string> ClassAnnotation { get; init; }
+        public string ClassName { get; }
+        public string? ClassSummary { get; init; }
+        public System.Collections.Generic.IReadOnlyList<string> Header { get; init; }
+        public System.Collections.Generic.IReadOnlyList<string> MemberAnnotation { get; init; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, string> MemberSummaries { get; init; }
+        public string NamespaceName { get; }
+    }
+    public static class TimeDataVersions
+    {
+        public const string CalendricalCalculationsVersion = "0.2.4";
+        public const string CldrVersion = "48.2.0";
+        public const string IcuCalendarVersion = "2.3.0";
+        public const string TzdbRelease = "2026e";
+    }
+    public sealed class TzdbCompiledZone : System.IEquatable<Broiler.ECMAScript.Generation.Time.TzdbCompiledZone>
+    {
+        public TzdbCompiledZone(string Name, Broiler.ECMAScript.Generation.Time.TzdbZone Zone) { }
+        public string Name { get; init; }
+        public Broiler.ECMAScript.Generation.Time.TzdbZone Zone { get; init; }
+    }
+    public static class TzdbCompiler
+    {
+        public static System.Collections.Immutable.ImmutableArray<string> SourceFiles { get; }
+        public static Broiler.ECMAScript.Generation.Time.TzdbZone Compile(System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.TzdbZoneLine> lines, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.TzdbRule>> rules) { }
+        public static long DaysFromCivil(long year, int month, int day) { }
+        public static int OffsetAt(Broiler.ECMAScript.Generation.Time.TzdbZone zone, long at) { }
+        public static Broiler.ECMAScript.Generation.Time.TzdbSource Parse(System.Collections.Generic.IReadOnlyDictionary<string, byte[]> archive) { }
+    }
+    public sealed class TzdbFinalRules : System.IEquatable<Broiler.ECMAScript.Generation.Time.TzdbFinalRules>
+    {
+        public TzdbFinalRules(int StandardOffset, int LastListedYear, System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.TzdbRule> Rules) { }
+        public int LastListedYear { get; init; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.TzdbRule> Rules { get; init; }
+        public int StandardOffset { get; init; }
+    }
+    public sealed class TzdbPin
+    {
+        public const string PinnedVersion = "2026e";
+        public string ArchiveName { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.TzdbPinMember> Members { get; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, string> Values { get; }
+        public string Version { get; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, byte[]> Extract(byte[] tarball) { }
+        public System.Collections.Generic.IEnumerable<string> TarballViolations(byte[] tarball) { }
+        public System.Collections.Generic.IReadOnlyDictionary<string, byte[]> Verified(System.Collections.Generic.IReadOnlyDictionary<string, byte[]> archive) { }
+        public System.Collections.Generic.IEnumerable<string> Violations(System.Collections.Generic.IReadOnlyDictionary<string, byte[]> archive) { }
+        public static string Decode(byte[] bytes) { }
+        public static Broiler.ECMAScript.Generation.Time.TzdbPin Parse(string text) { }
+    }
+    public sealed class TzdbPinMember : System.IEquatable<Broiler.ECMAScript.Generation.Time.TzdbPinMember>
+    {
+        public TzdbPinMember(string Name, long Bytes, string Sha256) { }
+        public long Bytes { get; init; }
+        public string Name { get; init; }
+        public string Sha256 { get; init; }
+    }
+    public sealed class TzdbRule : System.IEquatable<Broiler.ECMAScript.Generation.Time.TzdbRule>
+    {
+        public TzdbRule(int From, int? To, int Month, string On, int At, char AtKind, int Save) { }
+        public int At { get; init; }
+        public char AtKind { get; init; }
+        public int From { get; init; }
+        public int Month { get; init; }
+        public string On { get; init; }
+        public int Save { get; init; }
+        public int? To { get; init; }
+    }
+    public sealed class TzdbSource : System.IEquatable<Broiler.ECMAScript.Generation.Time.TzdbSource>
+    {
+        public TzdbSource(System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.TzdbRule>> Rules, System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.TzdbZoneLine>> Zones, System.Collections.Generic.IReadOnlyDictionary<string, string> Links) { }
+        public System.Collections.Generic.IReadOnlyDictionary<string, string> Links { get; init; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.TzdbRule>> Rules { get; init; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.TzdbZoneLine>> Zones { get; init; }
+    }
+    public static class TzdbTableGenerator
+    {
+        public const string TimeZoneKeys = "cldr-48.2.0/json/cldr-bcp47/bcp47/timezone.json";
+        public static Broiler.ECMAScript.Generation.Time.TzdbTables Generate(Broiler.ECMAScript.Generation.Time.TzdbPin pin, System.Collections.Generic.IReadOnlyDictionary<string, byte[]> tzdb, Broiler.ECMAScript.Generation.Time.CldrPin cldrPin, System.Collections.Generic.IReadOnlyDictionary<string, byte[]> cldr) { }
+        public static System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.TzdbCompiledZone> Zones(Broiler.ECMAScript.Generation.Time.TzdbSource source) { }
+    }
+    public static class TzdbTableSource
+    {
+        public static string Write(Broiler.ECMAScript.Generation.Time.TzdbTables tables, Broiler.ECMAScript.Generation.Time.TableSourceOptions options) { }
+    }
+    public sealed class TzdbTables
+    {
+        public string Release { get; }
+        public System.ReadOnlyMemory<byte> TimeZoneIds { get; }
+        public System.ReadOnlyMemory<byte> TimeZoneRegions { get; }
+        public System.ReadOnlyMemory<byte> TimeZones { get; }
+    }
+    public readonly struct TzdbTransition : System.IEquatable<Broiler.ECMAScript.Generation.Time.TzdbTransition>
+    {
+        public TzdbTransition(long At, int Offset, bool Daylight) { }
+        public long At { get; init; }
+        public bool Daylight { get; init; }
+        public int Offset { get; init; }
+    }
+    public sealed class TzdbZone : System.IEquatable<Broiler.ECMAScript.Generation.Time.TzdbZone>
+    {
+        public TzdbZone(int InitialOffset, System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.TzdbTransition> Transitions, Broiler.ECMAScript.Generation.Time.TzdbFinalRules? Final) { }
+        public Broiler.ECMAScript.Generation.Time.TzdbFinalRules? Final { get; init; }
+        public int InitialOffset { get; init; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Generation.Time.TzdbTransition> Transitions { get; init; }
+    }
+    public sealed class TzdbZoneLine : System.IEquatable<Broiler.ECMAScript.Generation.Time.TzdbZoneLine>
+    {
+        public TzdbZoneLine(int StandardOffset, string Rules, System.Collections.Generic.IReadOnlyList<string> Until) { }
+        public string Rules { get; init; }
+        public int StandardOffset { get; init; }
+        public System.Collections.Generic.IReadOnlyList<string> Until { get; init; }
+    }
+}

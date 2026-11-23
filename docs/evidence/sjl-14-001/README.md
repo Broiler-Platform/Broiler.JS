@@ -15,7 +15,8 @@ Broiler.JS `33d3093b` and Broiler.VM `c5bde2b`, each repository's default branch
 | File | What |
 |---|---|
 | [`decision-rule.md`](decision-rule.md) | The rule: eleven predeclared parts, A to K, filed before any change it judges (no bridge, no switch, no adapter package, no deletion); it holds no figure |
-| [`corrections.md`](corrections.md) and [`corrections/`](corrections/k-rows.tsv) | The corrections K1 to K10, each with its rows and test262 paths; the classes E and T with their rows and sites; finding S14-F1; the probes' rows |
+| [`decision-rule-revised-2026-11-23.md`](decision-rule-revised-2026-11-23.md) | The rule's dated revision, filed by the owner's answers 10 and 11 of 2026-11-23 after part C's base runs were seen, and so weaker evidence: part C admits the differences of groups 1 to 5, 7, 8 and 9 those answers name, and part D those of groups 1 to 3, 8 and 9, each class naming its entries, and nothing wider; it quotes the rule whole *(added 2026-11-23, records part 5)* *(Changed the same day, after review, before this record merged: the cell read "parts C and D admit the differences those answers name", wider than the revision, which admits groups 4, 5 and 7 in part C alone.)* |
+| [`corrections.md`](corrections.md) and [`corrections/`](corrections/k-rows.tsv) | The corrections K1 to K10, each with its rows and test262 paths; the classes E and T with their rows and sites; finding S14-F1; the probes' rows *(Noted 2026-11-23, after review: finding S14-F2, against the correspondence, is recorded in "W2's base, records part 5" below, not in `corrections.md`, which the rule's revision of 2026-11-23 leaves unedited.)* |
 | [`dispositions.md`](dispositions.md), [`dispositions.tsv`](dispositions.tsv) and [`api/`](api/) | Every public type and member of `Ast` and `Parser` with its disposition (decision D50), from a PublicApiGenerator listing at `33d3093b`; the non-tree types' new home; SJL-14.5's deletion list member by member |
 | [`inherited-context/`](inherited-context/README.md) | The inherited-context probes of decision D44, run on both engines with every answer recorded |
 | [`inputs/`](inputs/README.md) | Part I's workloads (the real corpora, named by revision and SHA-256) and part J's seeds |
@@ -27,6 +28,10 @@ Broiler.JS `33d3093b` and Broiler.VM `c5bde2b`, each repository's default branch
 | [`tools/obsolete-reader/`](tools/obsolete-reader/README.md) | Part F's metadata reader, drafted before any part F run *(added 2026-11-19, on W2's branch)* |
 | [`tools/fuzz/`](tools/fuzz/README.md) | Part J's seeded mutation session, committed with W2's change *(added 2026-11-19, on W2's branch)* |
 | [`tools/deletion-search/`](tools/deletion-search/README.md) | Part K's deletion search, with its control, committed with W2's change *(added 2026-11-19, on W2's branch)* |
+| [`base/part-a/`](base/part-a/imported.txt) | Part A's base run, `.github/workflows/test262-evidence.yml` run 44639106095 at `69a8a13b`, its artifact's entries imported unchanged (the one over 2 MB by its digest), with its run's artifacts and digests, the jobs' runner images and `hashes.txt`; read, not judged *(added 2026-11-22, during W2's base runs)* |
+| [`side-by-side/w1/tests-and-test262/`](side-by-side/w1/tests-and-test262/README.md) | Part C's other runs at W1, the test projects and test262 with the switch off and on, taken during W2's base phase, with their logs, machine records, scripts and `hashes.txt` (the files over 2 MB by digest), and a reading of them that classifies nothing; read, not judged *(added 2026-11-22, during W2's base runs)* |
+| [`base/local/`](base/local/README.md) | The base commit's local runs at `69a8a13b`: part C's side-by-side tool, test projects and test262 with the switch off and on; part D's tool; part E's collector; part G's base candidate feed with Broiler.JSeal's and Broiler.HtmlBridge's suites against it; part H's API lister; with the chain's logs, machine records, scripts and `hashes.txt` (the files over 2 MB by digest) *(added 2026-11-23, during W2's hold)* *(Noted 2026-11-23, records part 4: the three of those files the after comparisons read, part C's side-by-side report, part D's dump report and Broiler.HtmlBridge's TRX, are now kept whole there; "the files over 2 MB by digest" is left as written)* |
+| [`base/part-c/`](base/part-c/README.md) | Part C at the base commit: every difference of those runs with its class, or unclassified with its reading, the generated message tables of class M, and the scripts that wrote them; part C read NOT MET on the retained runs *(added 2026-11-23, during W2's hold)* *(Noted 2026-11-23, records part 5: the cell before reads "part C read NOT MET on the retained runs"; part C is read again there under the rule's revision of 2026-11-23, read NOT MET on the retained runs for `test/staging/sm/regress/regress-610026.js` alone, which the revision does not admit; "W2's base, records part 5" below)* |
 
 ## W2's code, written on 2026-11-19 (on branch `sjl-14-w2`, not merged)
 
@@ -182,8 +187,20 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
   message table of class M (decision D46), written by the side-by-side tool, `tools/side-by-side/`, which W1 adds;
   *(Noted 2026-11-15: `side-by-side/w1/` is taken, the tool's run, read and not judged, with no difference classified,
   since the rule classifies only at the base commit; `side-by-side/w2-base/` waits for the base commit.)*
+  *(Noted 2026-11-22, during W2's base runs: the note before this one reads "`side-by-side/w1/` is taken, the tool's
+  run". Part C's other runs at W1 are taken too and retained in [`side-by-side/w1/tests-and-test262/`](side-by-side/w1/tests-and-test262/README.md), read and not
+  judged ("W1's owed part C runs, retained" below). `side-by-side/w2-base/` still waits: the base commit's part C runs
+  are being taken and are not finished.)* *(Noted 2026-11-23, during W2's hold: the note before this one reads
+  "`side-by-side/w2-base/` still waits". The base commit's part C runs are taken and retained in
+  [`base/local/`](base/local/README.md), beside the other base runs, and their differences are classified in
+  [`base/part-c/`](base/part-c/README.md), with the generated message tables of class M; the folder this line names
+  `side-by-side/w2-base/` is not made. See "W2's base, recorded on 2026-11-23" below.)*
 - `base/` and `after/` - part A's hosted runs (UTC, negative tests), imported unchanged with their digests, and the
-  comparison; parts D, E, F, G, H and K's local runs;
+  comparison; parts D, E, F, G, H and K's local runs; *(Noted 2026-11-22: part A's base run is taken and retained in
+  `base/part-a/`, "Part A's base run, retained" below; this line's other runs are not yet in `base/`.)* *(Noted
+  2026-11-23: the note before this one reads "this line's other runs are not yet in `base/`". The base runs of parts
+  D, E, G and H are taken and retained in [`base/local/`](base/local/README.md); parts F and K have no base run, as
+  each is taken at the after commit alone. Nothing is in `after/`.)*
 - `measurement/` - part I's runs, void on a lane that is not controlled (decision D48); *(Noted 2026-11-18: this
   line reads "`measurement/` - part I's runs, void on a lane that is not controlled". Part I is to be taken as written
   on the controlled lane [`win-x64-r7-5800x`](../lanes/win-x64-r7-5800x/README.md), by the owner's choice of
@@ -304,7 +321,10 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
     #1105. From the first base run until W2 merges, the default branch is held for W2 by the owner's answer 9 of
     2026-11-19 (the same section); that hold has not started. The rest of this bullet stands.)* *(Changed the same
     day, before this note merged, after review: it read "From the first part C base run until W2 merges", the
-    question's words; the chosen answer reads "The hold then starts at the first base run".)*
+    question's words; the chosen answer reads "The hold then starts at the first base run".)* *(Noted 2026-11-22,
+    during W2's base runs: the note above reads "that hold has not started". It started on 2026-11-19 with the first
+    base run, and the default branch's head has been `69a8a13bc446a1714d3c8be9be3cfd742aebee6e` since; see "The hold's
+    start" in "W2's base, recorded on 2026-11-22" below. W2 does not exist yet.)*
 
 ## Part B, judged on 2026-11-15
 
@@ -396,6 +416,10 @@ are not taken here. The rule asks for them at W1 too, retained and read, not jud
 each run names its tested commit, so they can be taken at W1 at any time. The choice taken, under the owner's direction
 of 2026-10-18, is to leave them to a later stage, before or with part C's runs at the base commit; the alternative not
 taken is to take them in this stage. Part C's verdict reads only the runs at the base commit, so none waits on them.
+*(Noted 2026-11-22, during W2's base runs: the paragraph above reads "they are still to be taken". They were taken at
+W1 from 2026-11-19 to 2026-11-22, before part C's runs at the base commit began, as the choice above has it, and are
+retained in [`side-by-side/w1/tests-and-test262/`](side-by-side/w1/tests-and-test262/README.md); see "W1's owed part C runs, retained" in "W2's base, recorded on
+2026-11-22" below. They are read, not judged.)*
 
 ## Before W2's base, read on 2026-11-19
 
@@ -422,7 +446,9 @@ What it means here:
   of any part, a dispatch of part A's included if one comes first. Nothing merges to the default branch meanwhile,
   records included, so that W2's first parent is the commit the base runs were taken at, as the rule's definition of
   the base commit, W2's first parent, and its void sentence need. Its start and its end are recorded in this bundle
-  when each happens. **It has not started**: this record and the W2 branch come first, with nothing held. *(Changed
+  when each happens. **It has not started**: this record and the W2 branch come first, with nothing held. *(Noted
+  2026-11-22: the sentence before this note reads "It has not started"; the hold started on 2026-11-19, as "The
+  hold's start" in "W2's base, recorded on 2026-11-22" below records.)* *(Changed
   the same day, before this record merged, after review: the bold sentence read "W2's hold begins at the first part C
   base run and ends with W2's merge.", the question's words and not the answer's.)*
 - **Part A's base and after runs are taken by dispatches of `test262-evidence.yml`**, once at the base commit and once
@@ -640,6 +666,667 @@ W2 corrects each by a dated note.
 `0.1.0-preview.12` is published on nuget.org", naming a package id nuget.org does not have, and read "its package's
 repository record"; and the paragraph on `docs/public-api.md` is new, the notes that an earlier commit of this change
 added to that file having been taken out of it.)*
+
+## W2's base, recorded on 2026-11-22
+
+**Written:** 2026-11-22, during W2's base runs, on branch `sjl-14-w2-base`, with the default branch's head at
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` (read by `git ls-remote` at 2026-11-22T14:02:16Z).
+[`decision-rule.md`](decision-rule.md) is not edited, nothing here revises a line of it, and nothing is judged, met or
+accepted here.
+
+### The hold's start
+
+- **The hold of the owner's answer 9 started on 2026-11-19, with the first base run.** Answer 9's chosen answer, in
+  short: "The hold then starts at the first base run, and nothing merges to Broiler.JS main until W2 merges." (whole in
+  "The owner's answer 9 of 2026-11-19: the hold for W2" above). The first run of W2's base phase was W1's part C runs
+  still owed, "the same runs at W1, retained and read, not judged" in part C's configuration, which began at
+  2026-11-19T17:51:58Z. Their driver reads the default branch's head by `git ls-remote` before each step and stops if
+  it is not `69a8a13b`; its log reads `main=69a8a13bc446a1714d3c8be9be3cfd742aebee6e` before every step (the stage's
+  `w1/driver.log`, with `w1/logs/runs.tsv` and `w1/logs/commands.log`, in its run folder outside this repository until
+  those runs are retained). *(Noted 2026-11-22, later: the parenthesis before this note reads "in its run folder outside
+  this repository until those runs are retained". They are retained now, and those logs with them, at the same paths
+  under [`side-by-side/w1/tests-and-test262/`](side-by-side/w1/tests-and-test262/driver.log).)* Part A's base run, the first run at `69a8a13b` itself, was dispatched under the same hold at
+  2026-11-19T23:36:38Z ("Part A's base run, retained" below).
+- **The commit the base runs are taken at** is `69a8a13bc446a1714d3c8be9be3cfd742aebee6e`, the merge of
+  Broiler-Platform/Broiler.JS#1128 (its first parent `fefb4f9c`, the merge of Broiler-Platform/Broiler.JS#1127), the
+  default branch's head when the hold started and through this note. It descends from W1 `8e5519d8` and from the rule
+  commit's merge `d8f14602`. The rule reads: "**The after commit (W2)** is the default-branch merge that lands
+  SJL-14.3 to SJL-14.5, one merge. **The base commit** is its first parent, which descends from W1 and from the rule
+  commit"; part A's configuration reads "the base run at the base commit and the after run at the after commit"; and
+  "A part whose base was taken at any other commit, or whose commits fail those conditions, is void." So `69a8a13b` is
+  the base commit when W2 merges with it as its first parent, and nothing merges to the default branch before W2,
+  records included.
+- **Three container restarts fell within the stage, and two of them interrupted its runs.** The stage's machine
+  snapshots (`w1/logs/*.machine.txt`, each snapshot's time less the age of process 1) give three boots of the machine:
+  2026-11-19T17:40:58Z, 2026-11-19T23:35:11Z and 2026-11-22T13:59:07Z. The interrupted runs were resumed from their
+  per-step markers, the step that was running taken again from its start, with the default branch's head read before
+  every step:
+  - on 2026-11-19, with the boot of 17:40:58Z, after the stage's brief was written (16:41:39Z, by the file's time) and
+    before the stage's worktree was made (17:43:25Z, by its reflog) and its first step began (17:51:58Z). It
+    interrupted no run.
+  - on 2026-11-19, with the boot of 23:35:11Z, during W1's switch-on test262 shard 1 (step `t262-on 1`, begun at
+    23:10:21Z). The stage's agent was lost to it; the runs went on from 23:36:24Z under one resumable chain of the same
+    drivers, which read the head `69a8a13b` and took that shard again from its start at 23:36:37Z.
+    `w1/logs/commands.log` names the step twice, and `w1/logs/runs.tsv` keeps the completed run alone.
+  - during W1's switch-on test-project step (`tests-on`), begun at 2026-11-20T04:02:25Z, at a time the logs do not
+    show. The machine was still up after the step began: its session logs record a shutdown signal at
+    2026-11-20T04:11:20Z, the last time they show before the restart, and its current boot reads
+    2026-11-22T13:59:07Z. The chain was started again at 2026-11-22T14:00:07Z, read the head `69a8a13b` at 14:00:08Z,
+    and took that step again from its start at 14:00:20Z.
+
+  No step ran between an interruption and its resumption.
+
+  *(Noted 2026-11-22, later: the bullet above reads "Three container restarts fell within the stage, and two of them
+  interrupted its runs." More restarts have interrupted the chain since, on 2026-11-22 and during the base commit's
+  switch-off test262 shard 6, after W1's runs had finished; see "The restarts that interrupted the runs" below.
+  The bullet is left as written.)*
+
+### Part A's base run, retained
+
+- **The run.** `.github/workflows/test262-evidence.yml` as the default branch carries it at `69a8a13b`, blob
+  `fc38229782ee1b2e93ecca9e990d182f5e44dbf2`: workflow run
+  [44639106095](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/44639106095) (attempt 1), dispatched on
+  2026-11-19 at 23:36:38Z on `main` with commit `69a8a13bc446a1714d3c8be9be3cfd742aebee6e`, suite_ref
+  `ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e`, max_workers 4, test_timeout_seconds 30, rerun_timeouts true, time_zone
+  empty and include_negative true, the inputs part A's configuration line fixes, and completed on 2026-11-20 at
+  00:40:14Z. Its head commit, its `run.txt`'s dispatched ref and tested commit all read `69a8a13b`, and `run.txt`'s
+  inputs line reads those inputs (time_zone empty is not echoed there). Its conclusion is success, and so is every
+  job's, at `69a8a13b`, in attempt 1: prepare 135965203630, shard (0) 135965325817, shard (1) 135965325784, shard (2)
+  135965325952, shard (3) 135965325759, shard (4) 135965325783, shard (5) 135965325875, shard (6) 135965325908, shard
+  (7) 135965325802 and collect 135993015562, whose step "Require a complete run" is among them (GitHub's record of the
+  run and its jobs, read 2026-11-22).
+- **The artifacts.** Every artifact of the run was downloaded, and each zip's SHA-256 equals the digest GitHub records
+  for it ([`part-a-artifacts.txt`](base/part-a/part-a-artifacts.txt), each with its id and digest). The evidence
+  artifact `test262-evidence`, id 14588573558, is
+  `sha256:12163b9df6e680ddfbd50b3f9356d9bae2f2e2c1cb417ace2045ca7223c647c1`; the zip is named by that digest and not
+  committed.
+- **Retained** in [`base/part-a/`](base/part-a/imported.txt) as bundle `sjl-11-001` retained its base part A: every
+  entry of the evidence artifact unchanged, with [`imported.txt`](base/part-a/imported.txt), `runner-images.txt` (each
+  job's runner image, from its own log), `part-a-artifacts.txt` and [`hashes.txt`](base/part-a/hashes.txt) added, and
+  a `.gitattributes` so the bytes stay as committed. One entry differs from that bundle's way: `test262-results.json.gz`,
+  over 2 MB, is retained by its digest only,
+  `20b632f9ebeb49ff926201ca436a86a3b22747cfd3d5cc69bc332610e99480e1`, as `imported.txt` records; it is the entry of
+  that name in the zip above, read from the zip after the zip's digest is checked. GitHub keeps the run's artifacts
+  until 2027-02-17. `hashes.txt` names every committed file of the folder by its SHA-256 and is
+  `a8ab124c2fa6cfc0f8f63bb6f326f0ecb984e3753aea34d44820e176cce81f24`.
+- **Its own records** show one shell across the shards and the re-run (`shell-hashes.log`), every shard in the zone the
+  merging job expects, `TZ` unset, UTC and tzdata 2026e (`host-zone.log`), and no incomplete shard (`merge.log`). The
+  jobs ran on more than one version of the `ubuntu-24.04` image, as `runner-images.txt` lists; the rule fixes the shell
+  and the zone, which the records show, and not the image version.
+- **Read, not judged.** Part A compares the base run with the after run, and the after commit does not exist.
+
+### W1's owed part C runs, retained
+
+**Written:** 2026-11-22, during W2's base runs, on branch `sjl-14-w2-base`, with the default branch's head at
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` (read by `git ls-remote` before this record was committed). Nothing here is
+judged, met or accepted, and nothing is classified: part C judges only the runs at the base commit.
+
+**Which runs were owed.** Part C's configuration names, at the base commit, the side-by-side tool's run, "every test
+project with the switch on through its internal options member" and "scripts/compliance/run_test262.py locally on the
+programme's machine through the shell built at that commit with its hidden switch off and on, in UTC, with negative
+tests, one worker per core", and then "the same runs at W1, retained and read, not judged"; its comparison reads "per
+test, its result off and on; per test262 path and variant, its verdict off and on". The tool's run at W1 was taken on
+2026-11-15 ([`side-by-side/w1/`](side-by-side/w1/README.md)); "The side-by-side run at W1, read on 2026-11-15" above
+left the others "to a later stage, before or with part C's runs at the base commit". So these runs were owed at W1:
+every test project with the switch on, and test262 with the shell's hidden switch off and on. The test projects were
+also run with the switch off, the other side of the comparison's "per test, its result off and on". Each matches its
+outputs as follows.
+
+**Where, and how.** All at W1, `8e5519d8cf81808856e32f2275fcb4d3b98a73f3`, from a clean `git archive` of it on disk, on
+the programme's machine (Linux; its processors in [`archive.txt`](side-by-side/w1/tests-and-test262/archive.txt)), each
+step by `step.sh <commit> w1 <step>` through the machine-wide lock and idle gate, with the default branch's head read
+before every step, and every test and test262 run under `env -i` with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*`
+variable. Retained in [`side-by-side/w1/tests-and-test262/`](side-by-side/w1/tests-and-test262/README.md), every file of
+the run folder at the same path, but the files over 2 MB, retained by digest only
+([`retained.txt`](side-by-side/w1/tests-and-test262/retained.txt),
+[`not-retained.sha256.txt`](side-by-side/w1/tests-and-test262/not-retained.sha256.txt)), with the drivers and scripts as
+they were on disk (the retained `drive.sh` is the file as it was from 2026-11-19T18:45:47Z, which the chain ran; the
+version the first driver started with at 17:51:58Z is not on disk), a `.gitattributes`, and
+[`hashes.txt`](side-by-side/w1/tests-and-test262/hashes.txt), SHA-256
+`a05692a69063410597387b158bd960685ed879276fe4f7a8f6b3a92bd59a50b5`. The bundle's `manifest.json` (decision D56) is still
+written at the evidence step, so the folder is named by its `hashes.txt`, as part B's and the tool's are; the tool's,
+[`side-by-side/w1/hashes.txt`](side-by-side/w1/hashes.txt), names the tool run's files and not this folder's, and is
+left as written but for its line for that folder's README, which now has dated notes on it. Each step's command line is
+in [`logs/commands.log`](side-by-side/w1/tests-and-test262/logs/commands.log), its exit in `logs/runs.tsv`, and its
+machine records before and after in `logs/<label>.machine.txt` and `logs/<label>.machine-sh.txt`. Every step's exit
+is 0.
+- **Every test project, the switch off** (step `tests-off`, 2026-11-19): `dotnet test <project> -c Release --no-build
+  --logger trx` for each test project of `Broiler.JS.slnx` under `Broiler.JS/`, on the Release build of the solution
+  with the compiler's test-only switch at its default (step `build-off`);
+  [`tests-off/`](side-by-side/w1/tests-and-test262/tests-off/summary.txt), its projects' exits in `exits.tsv`, SHA-256
+  `90f06972957a31343804cd090a47a596d8ed330da739743e5f9af45798b6b49a`.
+- **Every test project, the switch on** (step `tests-on`, begun 2026-11-20 and taken again from its start and completed
+  on 2026-11-22): the same, on the Release build with `-p:BroilerParseThroughBridge=true` (step `build-on`), which
+  defines `BROILER_PARSE_THROUGH_BRIDGE` and so turns the internal `JSCompilationOptions.BridgeByDefault` on for every
+  compile: the switch-on pass over the test projects that decision D43's note in
+  [`docs/roadmap/SharedLibraries.md`](../../roadmap/SharedLibraries.md) records "in addition" to the internal
+  `JSCompilationOptions.ParseThroughBridge`, which tests and the shell's hidden flag set;
+  [`tests-on/`](side-by-side/w1/tests-and-test262/tests-on/summary.txt), `exits.tsv` SHA-256
+  `3dd7731b63c7707f53f86906d13bcfc60792d94c6781593b27b04cb86e31f207`.
+- **test262, the shell's hidden switch off** (steps `t262-off 0` to `7`, `t262merge-off`, `t262rerun-off`, 2026-11-19):
+  `run_test262.py` in shards over the whole selection part A takes, with `--include-negative`, the original and
+  Terser variants and one worker per processor (the shards, the runner's options and its timeout are in
+  [`retained.txt`](side-by-side/w1/tests-and-test262/retained.txt)), through the shell of the switch-off build, each
+  shard after the runner's self-check; merged by `merge_test262_shards.py`; each timed-out path run again alone with one
+  worker. The merged report, `t262-off/test262-results.json`, over 2 MB, is retained by digest,
+  `f698d6d58ff6b8cc4d88a61e7b3c629f0d82cfe537a71d1d720dbbcd6c6e6231`; its re-run,
+  [`rerun-timeouts.json`](side-by-side/w1/tests-and-test262/t262-off/rerun-timeouts.json), is
+  `8f7b57fd31779b123d47f5f1d972da578fbe763b600f8fa2678afdb701af1682`.
+- **test262, the hidden switch on** (steps `t262-on 0` to `7`, `t262merge-on`, `t262rerun-on`, 2026-11-19 and
+  2026-11-20, shard 1 taken again from its start): the same with `--shell-arg=--parse-through-bridge`, through the same
+  shell (each shard's shell binaries are the switch-off build's). Merged report `t262-on/test262-results.json`, by
+  digest, `305ccd70310137342eb2523ed80d26cb573ac63a6b98f917634c838b0dcca3e7`; re-run
+  [`rerun-timeouts.json`](side-by-side/w1/tests-and-test262/t262-on/rerun-timeouts.json),
+  `25669463928d5e11f0413cf4bcdd2839cc5265effda699ea25679ce6cc05cb66`.
+
+**What each shows**, read and not judged, in words (the counts are in the folder's
+[`counts.txt`](side-by-side/w1/tests-and-test262/counts.txt), written with the per-test and per-case tables by
+[`read_local.py`](side-by-side/w1/tests-and-test262/scripts/read_local.py), which classifies nothing):
+- **The test projects, off and on.** The same tests run in both. With the switch off, a timing test of the compiler's,
+  `DeclarationDenseSourceTests.ManyTopLevelDeclarations_CompileInTimeLinearInTheirCount`, fails, and passes with it on.
+  With the switch on, the architecture test that the switch is off in the build,
+  `BridgeSwitchTests.The_compilers_test_only_switch_is_off_in_this_build`, fails, by its own message, and so do the
+  compiler's deep-nesting tests `DeeplyNestedSourceTests.DeepBinaryExpressionChain_Compiles`,
+  `DeepConditionalExpressionNesting_Compiles` and `DeepConditionalExpressionNesting_PastTheCompilationStack_Compiles`,
+  refused with the library's nesting messages, and `DeepBinaryExpressionChain_OnAOneMebibyteThread_Compiles`, failing
+  its assertion ([`tests-differ.tsv`](side-by-side/w1/tests-and-test262/tests-differ.tsv)).
+- **test262, off and on.** The same paths and variants run in both. Most cases whose status moves go from failing off to
+  passing on, and a corrections table names every such path; both variants of `test/staging/sm/regress/regress-610026.js`
+  pass off and fail on, and the Terser variant of
+  `test/language/expressions/dynamic-import/syntax/valid/new-covered-expression-is-valid.js` passes off and is skipped
+  on, and no corrections table names either path
+  ([`t262-differ.tsv.gz`](side-by-side/w1/tests-and-test262/t262-differ.tsv.gz)).
+  `test/staging/sm/regress/regress-1507322-deep-weakmap.js` times out in both, and again in its re-run.
+- Which of these moves part C would admit is read only at the base commit, from its own runs. These runs were read on
+  2026-11-22, after the base commit's part C runs had begun (the base driver's first step, at 2026-11-22T14:51:15Z).
+  Reading B9 above orders that "Any row of K10 they need, found from the retained run at W1, is added to
+  [`corrections.md`](corrections.md) ... before the first part C base run". That order can no longer be kept for these
+  moves: a row of K10 for any of these paths, were one needed, would be filed after the first part C base run, against
+  it. B9 is left as written, for the owner.
+
+### The restarts that interrupted the runs
+
+The runs at W1 began under one driver at 2026-11-19T17:51:58Z; since 2026-11-19T23:36:24Z one resumable chain has run
+W1's steps and then the base commit's. Every interrupted step was taken again from its start, after the default branch's
+head was read as `69a8a13b`, and no step ran between an interruption and its resumption:
+- **During W1's switch-on test262 shard 1**, begun 2026-11-19T23:10:21Z: the restart of 2026-11-19 (above); the chain
+  started at 23:36:24Z and took the shard again from its start at 23:36:37Z (`w1/driver.log`, `w1/logs/commands.log`).
+- **During W1's switch-on test projects**, begun 2026-11-20T04:02:25Z: the chain's log reads "2026-11-22T14:00:07Z chain
+  restarted after the container restart of about 2026-11-20T04:01Z (tests-on was running; it is taken again from its
+  start)"; the step was taken again from its start at 2026-11-22T14:00:20Z and completed. The hold's note above reads
+  the restart's time as one "the logs do not show", as the step began after the time the chain's log gives.
+- **During the base commit's switch-off test262 shard 6**, after W1's runs had finished: the chain's log reads
+  "2026-11-22T21:21:40Z chain restarted after a container restart between 2026-11-22T20:09Z and 21:21Z (t262-off shard 6
+  was running; it is taken again from its start)" and "2026-11-22T21:52:31Z chain restarted after a container restart
+  between 2026-11-22T21:21Z and 21:52Z (t262-off shard 6 was running; it is taken again from its start)". The base
+  driver read the head `69a8a13b` before each start of that shard. Those runs are still being taken and are not read
+  here.
+
+The chain's log as it stood on 2026-11-22T21:59Z is retained as
+[`chain.log`](side-by-side/w1/tests-and-test262/chain.log), and W1's driver log as it stood then as
+[`driver.log`](side-by-side/w1/tests-and-test262/driver.log): the chain runs W1's driver again first at each of its
+starts, so its lines after W1's last step's exit at 2026-11-22T14:51:14Z are that driver's "all given steps done" and
+its skips of W1's finished steps after the restarts, and any later lines are not here.
+
+## W2's base, recorded on 2026-11-23
+
+**Written:** 2026-11-23, during W2's hold, on branch `sjl-14-w2-base`, with the default branch's head at
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` (read by `git ls-remote` before this record was committed).
+[`decision-rule.md`](decision-rule.md) is not edited, nothing here revises a line of it, no row is added to
+[`corrections.md`](corrections.md) or its tables, and nothing is judged, met or accepted here but part C's reading,
+in the rule's words.
+
+### The base commit's local runs, retained
+
+**Where, and how.** All at the base commit `69a8a13bc446a1714d3c8be9be3cfd742aebee6e`, from a clean `git archive` of it
+on disk, on the programme's machine (Linux; its processors in [`archive.txt`](base/local/archive.txt)), from
+2026-11-22T14:51:15Z to 2026-11-23T11:54:38Z, each step by `step.sh <commit> base <step>` or `bstep.sh <commit> base
+<step>` through the machine-wide lock and idle gate, with the default branch's head read as `69a8a13b` before every
+step ([`driver.log`](base/local/driver.log)), every test, test262 and tool run under `env -i` with `TZ=UTC` and no
+`LANG`, `LC_*` or `BROILER_*` variable. Retained in [`base/local/`](base/local/README.md), every file of the run folder
+at the same path, but the files over 2 MB, retained by digest only ([`retained.txt`](base/local/retained.txt),
+[`not-retained.sha256.txt`](base/local/not-retained.sha256.txt)), with the chain's log, the memory log, the drivers and
+scripts as they were on disk, a `.gitattributes`, and [`hashes.txt`](base/local/hashes.txt), SHA-256
+`f9819e16d86651ed3dead2c3ca1f9b829a8f523161b2554a243eac7f8d634628`. *(Changed the same day, after review, before this
+record merged: the digest read `f49f3ac48270313364641378dec6f8ce1f1c2bff852bef41f9b9b01edc34f21c`, before
+`retained.txt` and the folder's README added the records below on Broiler.JSeal's per-test results, the files kept
+by digest only that the after comparisons read, and the build trees.)* *(Noted 2026-11-23, records part 4: the
+sentence above reads "but the files over 2 MB, retained by digest only"; three of them, part C's side-by-side report,
+part D's dump report and Broiler.HtmlBridge's TRX, are now kept whole in `base/local/` at their paths, and the
+folder's `hashes.txt` digest is the one "W2's base, records part 4" below gives. The sentence and the digest above
+are left as written.)* Each step's command line is in
+[`logs/commands.log`](base/local/logs/commands.log) and in its own `logs-<step>/commands.log`, its exit in
+`logs/runs.tsv`, and its machine records before and after in `logs/<label>.machine.txt` and `.machine-sh.txt`.
+- **Part C, the side-by-side tool** (step `tools`, 2026-11-23): the tool built in Release outside the tree and run
+  over every input and variant of `conformance/parse/corpus.manifest` at P, B, K and K-on with `--dump`, exit 0; the
+  report, over 2 MB, by digest, `443fbdbf08d0e4f778b91a174f0b8ba1c384fd3df0bf046a02364aabc2808e72`; then at P and B
+  with `--text`, whose rows are the first run's byte for byte, and `spancheck.py` over the dumps' text, exit 0
+  ([`spancheck-counts.txt`](base/local/part-c-tool/spancheck-counts.txt);
+  [`spans-not-s.tsv.gz`](base/local/part-c-tool/spans-not-s.tsv.gz),
+  `f01006426d3636fad7b8f4a0033381148c2fa8c946b0cb4f8be2d4aaaa91fd0f`; the text and the whole listing by digest in
+  [`part-c-tool/not-retained.sha256.txt`](base/local/part-c-tool/not-retained.sha256.txt)). A reading aid in the same
+  step, meant to give the library's code for each variant B refuses where P accepts, exited 134 on a type it looked up
+  in the wrong assembly and wrote nothing; it is no run the rule names.
+- **Part C, every test project, the switch off and on** (steps `tests-off`, 2026-11-22, and `tests-on`, 2026-11-23):
+  `dotnet test <project> -c Release --no-build --logger trx` for each test project of `Broiler.JS.slnx` under
+  `Broiler.JS/`, on the Release build with the switch at its default (`build-off`) and with
+  `-p:BroilerParseThroughBridge=true` (`build-on`), both builds with no warning; step exits 0;
+  [`tests-off/exits.tsv`](base/local/tests-off/exits.tsv),
+  `d64e064512eaf42531fac669082bbc4653e774fa1e639e552bab0527eb8cec9b`, and
+  [`tests-on/exits.tsv`](base/local/tests-on/exits.tsv),
+  `3dd7731b63c7707f53f86906d13bcfc60792d94c6781593b27b04cb86e31f207`.
+- **Part C, test262, the shell's hidden switch off and on** (steps `t262-off 0` to `7`, `t262merge-off` and
+  `t262rerun-off`, 2026-11-22; `t262-on 0` to `7`, `t262merge-on` and `t262rerun-on`, 2026-11-22 and 2026-11-23):
+  `run_test262.py` in shards over the whole selection part A takes, with `--include-negative`, the original and
+  Terser variants and one worker per processor, through the switch-off build's shell, the second with
+  `--shell-arg=--parse-through-bridge`, each shard after the runner's self-check and with the same shell binaries;
+  merged by `merge_test262_shards.py`; each timed-out path run again alone with one worker; step exits 0. The merged
+  reports, over 2 MB, by digest: `t262-off/test262-results.json`,
+  `93204e75d1973a873dff3bb08b2aa9b8a093094a98c1030f1837c62d8b60c8b4`, and `t262-on/test262-results.json`,
+  `3bc1b4f04600a1f84be60b190279347e7b537432a8e6dbbada2e286bc7ebd3f2`; their re-runs
+  [`t262-off/rerun-timeouts.json`](base/local/t262-off/rerun-timeouts.json),
+  `9fd0a9732f75accb3213e4a5c303119644c6003fa78330d93149b1f13f2a78f8`, and
+  [`t262-on/rerun-timeouts.json`](base/local/t262-on/rerun-timeouts.json),
+  `4c423acdb0fdfbc45d126a3c23137b7f36905ce5fd4b734c30885f320f2683a2`.
+- **Part D** (step `tools`): bundle `sjl-12-001`'s tool, byte-unchanged, built in Release outside the tree and run in
+  its default mode (entries P and K) and with `--dump --order manifest`, exit 0 each:
+  [`part-d/parse-corpus-c.tsv.gz`](base/local/part-d/parse-corpus-c.tsv.gz),
+  `defb09e1824091f81ebbd6142a5ff365792864421bf4ccac954ffc25354ab3cb`, and, over 2 MB, by digest,
+  `part-d/parse-corpus-d1.tsv.gz`, `d0a7be4b79f65cdd70942362dfd9db8cbd153b08062f630b63d4d1c17188a4f4`, as part B's runs
+  were taken.
+- **Part E** (step `phase5`, 2026-11-23): `scripts/performance/collect_phase5.py --configuration Release --rid
+  linux-x64`, exit 1; [`part-e/phase5-report.json`](base/local/part-e/phase5-report.json),
+  `1bbaec44dadcc3befb83499c7ef7a3110622fd7076f74d921249dfb6ca4b745c`; the regenerated program
+  [`part-e/FibonacciProgram.generated.g.cs`](base/local/part-e/FibonacciProgram.generated.g.cs),
+  `1e7e5565f4bbee3624149f6883e3c7ecadb2c52817755cea52b7a8896441e3f0`, beside the checked-in copy's digest
+  ([`checked-in.sha256.txt`](base/local/part-e/checked-in.sha256.txt)); kept as taken and not run again.
+- **Part G, the base candidate** (step `pack`, 2026-11-23): `eng/pack.ps1 -Configuration Release -ProjectSet Engine
+  -Version 0.1.0-preview.1401` and `-ProjectSet Shared` into a local feed, and `eng/verify-feed.ps1` on each, exit 0
+  each; the packages' digests in [`part-g/candidate-feed.sha256.txt`](base/local/part-g/candidate-feed.sha256.txt),
+  `e2dd33e1f2f975d9b560410993ae7ecbdbe2d9b3e494a900d3c30cbe5187d63e`.
+- **Part G, Broiler.JSeal** (step `jseal`, 2026-11-23) at `a1216a80034e185d69d0d76d9ef855105698c00b`, named on
+  2026-11-19: `eng/test-package-consumer.ps1 -CandidateFeed <dir> -CandidateVersion Broiler.JavaScript=0.1.0-preview.1401`,
+  its pins unchanged. Its first attempts exited 1 and are kept ([`part-g/jseal-attempt-1/`](base/local/part-g/jseal-attempt-1/report.json),
+  "Restore Broiler.JSeal before a candidate run."; [`part-g/jseal-attempt-2/`](base/local/part-g/jseal-attempt-2/report.json),
+  NU1102 on Broiler.Regex 0.1.0-preview.6); each stopped on an omission of the session's harness, not of the product:
+  Broiler.JSeal's `eng/package-consumer/README.md` requires the shipping projects restored in Release-VM before a
+  candidate run, and the candidate directory to "contain every package it introduces, at the versions they declare".
+  The attempt taken with both, restored first and with a candidate directory of the feed's packages and the published
+  Broiler.Regex, Broiler.Unicode.Algorithms and Broiler.Unicode.Segmentation 0.1.0-preview.6 archives, each checked
+  against its recorded SHA-512 ([`jseal-candidate-external.txt`](base/local/part-g/jseal-candidate-external.txt)),
+  exited 0: [`part-g/jseal/report.json`](base/local/part-g/jseal/report.json),
+  `24f87e1dbe1527b8271156df5f8938d48734db7556c94dd93f6a0f3bf19d9b6f`. The step script's earlier texts are kept with
+  it ([`scripts/`](base/local/scripts/bstep.sh)).
+- **Part G, Broiler.HtmlBridge** (step `html`, 2026-11-23) at `334974f90c655181bba2ea6587ebb65336154c5a`, named on
+  2026-11-19, in a scratch copy whose package source and Broiler.JavaScript versions are overridden for the candidate
+  ([`scratch-overrides.diff`](base/local/part-g/htmlbridge/scratch-overrides.diff)), never committed: `dotnet
+  restore`, `build` and `test` of its solution, exit 0 each; the TRX, over 2 MB, by digest,
+  `0ffa01cb166919951163075ec18b9c059907bf569c88dba902b89524c504ba31`, and the Broiler.JavaScript packages it resolved
+  ([`resolved-broiler-javascript.txt`](base/local/part-g/htmlbridge/resolved-broiler-javascript.txt)).
+- **Part H** (step `api`, 2026-11-23): the API lister of `docs/evidence/sjl-0-001/api/` over every assembly the packages
+  of `eng/pack.ps1`'s two sets carry, exit 0; one listing per assembly in [`part-h/api/`](base/local/part-h/projects.txt).
+
+**What each shows**, in words (the counts are in the files):
+- **Part E's collector** reports "offline compiler output differs from the checked-in program". The regenerated program
+  differs from the checked-in `FibonacciProgram.g.cs` only in the form of its constants: by the repository's full
+  history, the checked-in copy was last written at `3a8f3022` (`3a8f3022b54c490973ecb134d7fdd4be0fde8cdf`,
+  2026-07-17), before `ef676932` (`ef6769322b2189d413f1c3649df3e7aa6aaffcda`, SJL-3.7, 2026-10-13), since which the portable compiler writes each number constant as `System.BitConverter.UInt64BitsToDouble(0x...UL)`.
+  The sample published with Native AOT and ran, with no dynamic code (the report's `nativeAot` fields). Part E is judged
+  at the after commit only; at the base this is its record. Regenerating the sample is a separate W2 stage's, not this
+  record's. *(Changed the same day, before this record merged: the sentence after the colon read "the checked-in copy
+  was last written at `68f9a87a` (Broiler-Platform/Broiler.JS#1061), before `588ca262` (SJL-12.5), whose emitter writes
+  each constant as `System.BitConverter.UInt64BitsToDouble(0x...UL)`", names read from this machine's shallow clone, at
+  whose graft boundaries both commits stand; the chain's log records the correction at 2026-11-23T12:28:11Z, and
+  `scripts/chain2.sh`, retained as it ran, keeps the earlier names. The part E record itself is unchanged.)* *(Changed
+  again the same day, after review: the forty-digit ids are added beside the eight-digit names, which this machine's
+  shallow clone cannot resolve; GitHub's commit pages give them.)*
+- **Part G**: both suites ran against the base candidate; Broiler.JSeal's consumer completed, and every test of
+  Broiler.HtmlBridge that ran passed. **The after run must use the same harness**: Broiler.JSeal restored in Release-VM
+  first, and a candidate directory holding every package the after commit's packages introduce, at the versions they
+  declare.
+- **Parts D and H**: their reports, which compare only with the after commit's.
+- **Part C**: classified below.
+
+**The restarts.** Container restarts interrupted the chain's base steps; each interrupted step was taken again from its
+start, after the default branch's head was read as `69a8a13b`, and no step ran between an interruption and its
+resumption. As [`chain.log`](base/local/chain.log) states them: during the switch-off test262 shard 6, "a container
+restart between 2026-11-22T20:09Z and 21:21Z" and "between 2026-11-22T21:21Z and 21:52Z" (recorded already in "The
+restarts that interrupted the runs" above); during the switch-on test262 shard 5, "a container restart between
+2026-11-23T02:49Z and 05:06Z", "between 2026-11-23T05:12Z and 06:30Z" and "between 2026-11-23T06:35Z and 07:04Z";
+and during `pack`, "a container restart between 2026-11-23T10:46Z and 11:10Z", whose first start the gate log shows
+waiting at the idle gate on build-server processes left by part E's publish, none of its commands begun. From
+2026-11-23T07:07Z `scripts/memwatch.sh` logged memory beside the chain ([`memwatch.log`](base/local/memwatch.log)), and
+the chain's log reads its lines up to the last one before the restart of about 10:46Z as showing that restart was not
+memory exhaustion; recorded as read, not judged. The chain stopped by design at part E's exit 1;
+`scripts/chain2.sh` took `pack`, `api`, `jseal` and `html`, stopped at `jseal`'s first exit 1, and `scripts/chain3.sh`
+took `jseal` and `html` and wrote "chain done". *(The section "The restarts that interrupted the runs" above reads
+"Those runs are still being taken and are not read here"; they are finished and read here. It is left as written.)*
+
+**What the chain did not take, or did not finish.** Every run the rule asks at the base commit was taken. Part E's
+step has no done marker, as it exited 1 and is kept as taken; the reading aid of the `tools` step wrote no output;
+`FAILED` in the run folder reads `jseal`'s second attempt and was not removed when the third passed. Part D's control,
+"a copy of the base report with one outcome flipped and one message changed, which the comparison must report as two
+differences", belongs to the comparison with the after commit and is not taken. Parts F, I, J and K have no base run:
+each is taken at the after commit (part I on the owner's lane, with the base commit's build as its arm B).
+*(Added the same day, after review, before this record merged:)* Not taken either: every test's result of
+Broiler.JSeal's suites, which part G asks retained and compares per test. The consumer's test commands ran with no test
+logger, so [`report.json`](base/local/part-g/jseal/report.json) keeps each suite's summary and its skipped tests' names,
+not each passed test; whether the base run is taken again with per-test output or read by summary and skipped names is
+the orchestrator's to decide, and either way the after run's harness should keep a TRX for the same suites. Three files
+kept by digest only are read by the after comparisons, and their only copy is in the run folder in the session's
+scratch space, which is not durable: part C's report, part D's dump report and Broiler.HtmlBridge's TRX
+([`retained.txt`](base/local/retained.txt)); the run folder is to be kept until those comparisons are taken, unless the
+orchestrator has them kept whole in the bundle, as `side-by-side/w1/` and `bridge/` kept such files. *(Noted
+2026-11-23, records part 4: the sentence before reads "Three files kept by digest only are read by the after
+comparisons, and their only copy is in the run folder in the session's scratch space, which is not durable" and "the
+run folder is to be kept until those comparisons are taken, unless the orchestrator has them kept whole in the
+bundle". They are now kept whole in [`base/local/`](base/local/README.md) at their paths, unchanged, by a decision
+taken under the owner's direction ("W2's base, records part 4" below), so the run folder no longer holds their only
+copy. The sentence is left as written.)* And, a departure
+from this stage's brief: the `bin` and `obj` trees of the base build and of W1's build, outside the bundle, were deleted
+by this stage after its first commits and before review, where the brief kept that folder read-only until the commit
+was verified. Nothing retained lived there, but the shell binaries' digests can no longer be checked against the
+binaries that ran, and any further run (the reading aid that would give the library's code, a single case) needs a
+build of the base commit behind the gate.
+
+### Part C at the base commit, classified
+
+[`base/part-c/`](base/part-c/README.md) holds every difference of the runs above that part C's comparison names, each
+with its class or found unclassified, the generated message tables of class M, and the scripts that wrote them, run
+twice with the same bytes, from the retained runs alone; [`hashes.txt`](base/part-c/hashes.txt), SHA-256
+`b9a8fd92c477cb64d7ee91695ba7dc7700b336501bd6acb07cec989dc4660c47`. The corrections it reads are K1 to K10 as the base commit holds them,
+unchanged since `232230dc` (`232230dcd2160803a3d97123abfb7e856441b442`, 2026-11-03), before the first part C base step;
+this branch adds no row of K10, as reading B9's "before the first part C base run" has passed. How each class is read
+is in that folder's README; the library's code for a refusal is not in the run, so class E is read from the bridge's
+text, a reader's reading: every E is provisional, listed with the rows B's text gives rather than its one row, and the
+unclassified list is a lower bound until E is read by code. The run that would settle it is the `tools` step's reading
+aid with the bridge's type looked up in `Broiler.JavaScript.Parser`, on a build of the base commit behind the gate,
+when the orchestrator decides. *(Changed the same day, after review, before this record merged: the digest read `ce949d7bafbbe170d60a7ff4ff4d6e23642816927305d42d5c8033f4c3930da1`,
+as `classify_c.py` was run again with two span readings no longer read S and class E marked provisional; the
+paragraph ended at "a reader's reading.", and named `232230dc` by eight digits only. Changed again for the folder
+README's forty-digit id: the digest read `ce3b2ba550b0a4080f567ff75ce753e98f62354ac175badfded20021959bfa29`.)*
+- **W1's open items at the base.** `J000557` is C1 by K8 (the correspondence's P13, which the classification names),
+  and `J001072` and `J001780` by K7 (D37); the outcome moves no corrections table lists are each C1, C3 or E, but for
+  those below (E provisional, above); every `both-agree` span line is read S from its two texts but for two readings,
+  where P's span agrees with the node's text, which are unclassified below; W1's unlisted test262 moves appear at the
+  base as at W1, and are unclassified below. *(Changed the same day, after review, before this record merged: the bullet read "or E, but for those below; every
+  `both-agree` span line is read S from its two texts;".)*
+- **Unclassified**, each with both sides and a reading of its cause in that folder's README:
+  - P accepting, B refusing and K refusing on both sides, where the code B's text gives is not one the classification
+    lists first, so the header's class E does not admit it: a getter with a parameter (`T035220`, `T039055`,
+    `T047023`, `J000058`, `J001174`), an arrow function as a class heritage naming a private name (`T034966`,
+    `T034969`, `T046767`, `T046770`), and a parenthesized literal as an assignment target (`J000040`, `J001147`), each
+    in both variants; read as no bridge defect and not the harness, but the library's code against the
+    classification's expectation, which is the library's or the classification's to answer;
+  - the architecture test `BridgeSwitchTests.The_compilers_test_only_switch_is_off_in_this_build`, failing in the
+    switch-on build by its own design: the harness's;
+  - `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js` (original), failing off and passing on,
+    which no row of K1 to K10 lists: by part A's C1 line, "a C1 row that none explains is recorded as a finding against
+    the correspondence";
+  - `test/staging/sm/regress/regress-610026.js` (both variants), passing off and failing on with no output and no
+    reason, a non-zero exit and not a time-out: read as likely the bridge's or the library's parse of its doubled-block
+    source, slower with the switch on and ending near the runner's bound, perhaps at its CPU-time limit; not shown by
+    the records, and decided by the one case run again with the switch-on shell recording its exit status, CPU time and
+    peak memory; *(changed the same day, after review, before this record merged: after "no output" the item read ":
+    the retained records do not show whether the bridge's or the library's parse of its source, or the runner near its
+    bound, is the cause;")*
+  - `test/language/expressions/dynamic-import/syntax/valid/new-covered-expression-is-valid.js` (Terser), passing off and
+    skipped on, as the runner finds the minified body invalid: the harness's;
+  - every tree difference with a span line where P's span ends at the end-of-input token and B's at the same offset as
+    a number, both giving exactly the node's text: not S, as P's span agrees with the text; read as the old parser's
+    dump writing the end as the token's name, not a bridge or library defect and not the harness;
+  - the member, optional-chain and import-call spans of `T036087`, `T039546` and `T051374` (both variants), where P's
+    span ends after the node's closing bracket and B's leaves it out, as the AST type takes the end from the child:
+    the opposite of S; read as the span B's tree carries for the node, not the library's parse and not the harness.
+    *(The last two items added the same day, after review, before this record merged; they were read S. The item
+    before them ended "the harness's.")*
+- **Part C: read NOT MET on the retained runs**, for the unclassified differences listed above. Not judged beyond that
+  (EX-30). *(Changed the same day, after review, before this record merged: after "above." the bullet read "Every run
+  at the base commit is complete, and every other difference is in C1, C3, E, M or S and is listed.", which went
+  beyond the reading and which the two items above and class E's reading contradict.)* Part C's
+  "How it is read" sends "An unclassified difference" to "a bridge or library defect, fixed as a dark merge and run
+  again before W2 merges"; what follows from each item is not decided here. *(Noted 2026-11-23, records part 5: the
+  bullet reads "Part C: read NOT MET on the retained runs, for the unclassified differences listed above" and "what
+  follows from each item is not decided here". The owner decided by answers 10 and 11 of 2026-11-23: a dated revision
+  of the rule admits every item above but `regress-610026.js`, and part C, read again under it, is read NOT MET on the
+  retained runs for that path alone ("W2's base, records part 5" below). The bullet is left as written.)*
+
+### Parts A, D, E, G and H at the base
+
+Each compares the base with the after commit, and the after commit does not exist: their base runs are retained (part
+A's in [`base/part-a/`](base/part-a/imported.txt), the others in [`base/local/`](base/local/README.md)) and read, not
+judged.
+
+## W2's base, records part 4, recorded on 2026-11-23
+
+**Written:** 2026-11-23, during W2's hold, on branch `sjl-14-w2-base`, with the default branch's head read as
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` by `git ls-remote` before every step and before this record was committed.
+**What it records:** reading aids and single-case re-runs that settle part C's open readings at the base, **not new
+runs of the rule**: none replaces a retained run, each is recorded as a reading aid, as W1's records name theirs, and
+nothing here is a verdict. Part C's reading stands as taken: read NOT MET on the retained runs.
+[`decision-rule.md`](decision-rule.md) is not edited, nothing here revises a line of it, and no row is added to
+[`corrections.md`](corrections.md) or its tables. Every file is in [`base/part-c/aids/`](base/part-c/aids/logs/runs.tsv)
+and [`base/part-c/scripts/`](base/part-c/scripts/read_base.sh), described in [`base/part-c/README.md`](base/part-c/README.md)'s
+"Records part 4"; that folder's [`hashes.txt`](base/part-c/hashes.txt) now reads SHA-256
+`992e87c1e547fe4b97e1e4a1b49cb9baa182296a120c186703ddf7a05c2c806c`, and [`base/local/`](base/local/README.md)'s
+[`hashes.txt`](base/local/hashes.txt) `8952bf24ab404e788d6975cb19261166125eef0795ffcb528092e6730048145e`. *(The two
+digests the section "W2's base, recorded on 2026-11-23" names for those files, base/local's
+`f9819e16d86651ed3dead2c3ca1f9b829a8f523161b2554a243eac7f8d634628` and base/part-c's
+`b9a8fd92c477cb64d7ee91695ba7dc7700b336501bd6acb07cec989dc4660c47`, are of the folders before this record; they are
+left as written there.)* *(Changed the same day, after review, before this record merged: part C's folder's digest
+read `491803453c610a1401f9e1ddd03176f056bcd692b2bd3f9bbe4cc67af815cce6`, before that folder's README took the
+review's corrections; and the parenthesis named the two earlier digests "`f9819e16…` and `b9a8fd92…`" without their
+folders.)*
+
+**Each aid and re-run**, every step by `stepD.sh` through the machine-wide lock and idle gate, its command line, exit
+and machine records in [`base/part-c/aids/logs/`](base/part-c/aids/logs/commands.log), every engine run under `env -i`
+with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*` variable *(changed the same day, after review, before this record
+merged: of these, the table re-runs `d-read-*` were taken by `readD.sh`, not `stepD.sh`, under the same `run.sh`, as
+[`base/part-c/aids/logs/commands.log`](base/part-c/aids/logs/commands.log) shows; the sentence read "every step by
+`stepD.sh`" alone)*:
+- **A build of the base commit** `69a8a13bc446a1714d3c8be9be3cfd742aebee6e` (steps `d-base-archive`, `d-base-build`,
+  `d-base-terser`, 2026-11-23): a clean `git archive` on disk outside every working tree, `dotnet build Broiler.JS.slnx
+  -c Release --disable-build-servers` as the base runs' `build-off` took it, exit 0 with no warning
+  ([`build.log`](base/part-c/aids/base/build.log), [`archive.txt`](base/part-c/aids/base/archive.txt), the shell's
+  binaries' digests in [`shell-binaries.sha256`](base/part-c/aids/base/shell-binaries.sha256)); its trees were removed
+  when the runs ended. *(Added the same day, after review, before this record merged:)* Built the same way, but not
+  the same bytes: every assembly of the rebuilt shell built from the repository's sources differs by digest from those
+  of the shell the retained runs used ([`shell-binaries-off.sha256`](base/local/shell-binaries-off.sha256)); only the
+  package assemblies match. The likely cause, not confirmed, is the build tree's path compiled into them
+  (`/home/user/js-w2baseD-build/69a8a13b/tree` here, `/home/user/js-w2base-build/69a8a13b/tree` for the retained
+  runs). The bridge-codes and parse-time aids ran on their own builds of the library from the same sources
+  ([`codes-binaries.sha256`](base/part-c/aids/base/codes-binaries.sha256),
+  [`ptime-binaries.sha256`](base/part-c/aids/base/ptime-binaries.sha256)), whose library assembly's digests differ
+  again. The re-runs and the aids' outputs are read as from the same commit's sources, not from the same bytes.
+- **The bridge-codes reading aid, corrected** (step `d-base-codes`): the `tools` step's aid with the bridge's types
+  looked up in `Broiler.JavaScript.Parser`, where they are ([`base/part-c/scripts/bridge-codes/`](base/part-c/scripts/bridge-codes/Program.cs);
+  the aid as it ran at the base step is kept in [`base/local/scripts/bridge-codes/`](base/local/scripts/bridge-codes/Program.cs)),
+  over every input variant P or B refused in the base commit's side-by-side report, exit 0, every variant answered:
+  [`bridge-codes.tsv`](base/part-c/aids/base/bridge-codes.tsv),
+  `48c299af425bda5a104f74ab84ef1940778afe0a2425b5b7a07a16b2a15c3f43`.
+- **Part C's tables, written again** with class E read by that code (runs `d-read-nocodes` and `d-read-codes-1` to
+  `d-read-codes-4` of [`base/part-c/scripts/read_base.sh`](base/part-c/scripts/read_base.sh), exit 0 each): without
+  the code the scripts write every earlier table byte for byte; with it, the same bytes in each run (runs
+  `d-read-codes-1` and `-2` read the code file at `base/part-c/aids/bridge-codes/bridge-codes.tsv`, from where it was
+  moved to `base/part-c/aids/base/` before `d-read-codes-3`; its digest there was not recorded, the four runs' outputs
+  are the same bytes, and the file is `48c299af…` above; *added the same day, after review, before this record
+  merged*). Three tables
+  changed, each digest before and after in that folder's README: `differences.tsv.gz` (it was
+  `b6fcb0389ec57f68987bd97d3895cd846575d2d281b8631ba908e5c5791f6c7d`, now
+  `e918f46254ae5de50a2705927864cd8af311e8c026b5ae30dc23ecb20cfbee0e`), `classes.txt` (it was
+  `caa7dee42609fe9c44116b57b4393da16325d0213a4b24ba0b1d0fbed3a1786f`, now
+  `2bb2c4659bf01cbaa383f92f12dfc596540f30b6ec2a6e0d97717ebcffccda76`) and `unclassified.tsv` (it was
+  `afce208f34568ed0d6db4af0667646bb4ccab07a14eb18c7721fddd39d93dc4b`, now
+  `1622df7102aa57fa94730542b05df91843f5c2f8099feeefc8dc26166820194f`).
+- **A parse-time reading aid** (step `d-base-ptime`, exit 0): `regress-610026.js`'s eval sources parsed at the old
+  parser, the library alone and the bridge, each in its own process
+  ([`ptime.tsv`](base/part-c/aids/base/ptime.tsv), `054bec53d5bd1cb7a79d08463c79a235d9d72504176cfea271d3734813ca4ff3`).
+- **`test/staging/sm/regress/regress-610026.js`, one case, both variants** (steps `d-base-case-off` and
+  `d-base-case-on`, exit 0 each): `scripts/compliance/run_test262.py` restricted to that path, with the shards' options
+  otherwise, through the base build's shell with the hidden switch off and on, a recording shim giving each shell
+  process's end, processor time and peak memory: the runner's records
+  [`case-off/result.json`](base/part-c/aids/base/case-off/result.json),
+  `63b7724fb6d0ad791a5240dc108cfe33c19133f3ff42414debd0ad7a884e068f`, and
+  [`case-on/result.json`](base/part-c/aids/base/case-on/result.json),
+  `7d01f624cd9c3b1bdb4c31ceb223822ca09a8f041db4bc79b01b5794a6afb0d1`, and the shim's
+  [`case-off/shim.log`](base/part-c/aids/base/case-off/shim.log) and [`case-on/shim.log`](base/part-c/aids/base/case-on/shim.log).
+- **The same case at W2's head** `029bab4c4f2457fed1896ab6c4d224350d809b40` (branch `sjl-14-w2`, read-only; steps
+  `d-w2-archive`, `d-w2-build`, `d-w2-terser`, `d-w2-case-w2`, exit 0 each), built the same way, run with no switch
+  argument as W2 has no switch: [`case-w2/result.json`](base/part-c/aids/w2/case-w2/result.json),
+  `409f96180839aabb702f8233a5b94167e3143282fe8f967220e999ac73f6638f`, and its
+  [`shim.log`](base/part-c/aids/w2/case-w2/shim.log).
+- **Readings at their sites**, from the base commit's sources and the retained dumps, with nothing run: the
+  `B-short-bracket` spans, the `for`-`of` case, and bundle `sjl-12-001`'s canonical dump for `P-eof-same-text`.
+- **Three files kept whole**: part C's side-by-side report, part D's dump report and Broiler.HtmlBridge's TRX, the
+  files the after comparisons read that were kept by digest only, are now in [`base/local/`](base/local/README.md) at
+  their paths, unchanged, each matching its recorded digest; `not-retained.sha256.txt`, `hashes.txt`,
+  `retained.txt` and `.gitattributes` there say so by dated notes. A decision taken under the owner's direction; the
+  alternative not taken was to keep them only in the run folder, which the session's container does not keep.
+
+**What each shows**, in words (the figures are in the files), read and not judged:
+- **Class E by code.** Every outcome move read E from the bridge's text holds by the library's code, those read so only
+  by narrowing to the classification's first rows included; none becomes unclassified, no E is provisional, and the
+  unclassified differences are the same set. The three groups of items 1 to 3 read by code as the rows B's text gave:
+  EX0009 for the getter with a parameter, EX0008 for the arrow function as a class heritage, EE0033 for the
+  parenthesized literal as an assignment target; none is among the rows the classification lists first, and each stays
+  unclassified.
+- **`regress-610026.js`.** With the switch off both variants pass alone. With it on, and at W2's head, each variant's
+  shell process ends on `SIGXCPU`, the signal of the CPU-time limit the runner sets to the test's timeout, with no
+  output, which the runner records as a plain failure with no reason. The parse-time aid shows the library's parse
+  alone close to the old parser's, and the bridge's, which adds the bridge's work beyond the library's parse (the
+  token chain and the tree's construction, which the aid does not separate), far above both: the runner's
+  limit stops the case, reached by the bridge's cost on these sources, not the library's. W2 does not change it. The
+  aid parses each source under the script goal in a fresh process, not inside the case. *(Changed the same day, after
+  review, before this record merged: "which adds the bridge's work ... does not separate)" read "which adds the tree's
+  construction"; the last sentence is added.)*
+- **`B-short-bracket`.** B's span is the AST type's derivation, a member ending where its property ends
+  (`AstMemberExpression.cs:9` at the base commit, built by the bridge at `BridgeTreeBuilder.Expressions.cs:331`), the
+  same derivation by which both trees end every other computed member before its `]`; P takes the bracket only through
+  its comma expression's span. A span the bridge's tree carries, in `Broiler.JS/`, not the library's.
+- **`for`-`of`, `head-await-using-bound-names-in-stmt.js`.** The early error is EE0056, the library's code its own; with
+  the switch off the module host runs the body, as the old parser, which checks EE0056 by the stage table's row,
+  misses it for this input (an `await using` head), as P's acceptance in the side-by-side report and the retained
+  switch-off test262 record show; and the corpus's K
+  refuses the input only for awaiting at the top level without the permission, so the corrections' tables explain it
+  by the correspondence's D31 bucket and list no K row for it; as written, none does. (The library's row table says in
+  EE0056's notes that the `using` heads, this test by name, "are EP rows"; the code it gives is EE0056's, `JSE1417`.)
+  *(Changed the same day, after review, before this record merged: after "runs the body," the bullet read "as the old
+  parser and compiler do not check it, and the corpus's K"; the parenthesis is added.)*
+- **`P-eof-same-text`.** The canonical dump writes an end token of the end-of-file type as `eof` and any other as an
+  offset, in one function; P's tree ends those nodes at the end-of-file token and B's at the node's last token. The
+  tool's README and its rule describe the form, and say nothing of how `eof` is read against the same offset written
+  as a number. This bundle's own span check, [`spancheck.py`](tools/side-by-side/spancheck.py), reads `eof` as the
+  source's length, which is why these lines come out `both-agree` with identical texts; a reading only. *(Added the
+  same day, after review, before this record merged.)*
+
+What follows from each remaining unclassified item, under part C's "How it is read" and readings B8 and B9, is the
+owner's to decide; nothing here decides it. *(Noted 2026-11-23, records part 5: the owner has decided, by answers 10
+and 11 of 2026-11-23, recorded in "W2's base, records part 5" below; the sentence is left as written.)*
+
+## W2's base, records part 5: the rule's revision of 2026-11-23, recorded on 2026-11-23
+
+**Written:** 2026-11-23, during W2's hold, on branch `sjl-14-w2-base`, with the default branch's head read as
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` by one `git ls-remote` at 2026-11-23T19:19:01Z, before this record's
+three commits of 19:31:47Z to 19:31:48Z; no later read was kept for them. **What it records:** the owner's
+answers 10 and 11 of 2026-11-23, the rule's dated revision they file, and part C read again under it on the same
+retained runs; nothing of the engine was built or run, and nothing was dispatched; only the reading scripts were run.
+*(Changed the same day, after review, before this record merged: the paragraph read "by `git ls-remote` before the
+commit", which no kept read shows for each commit, and "with nothing built, run or dispatched", which the reading runs
+contradict. A read before each review-fix commit gave the same head.)* [`decision-rule.md`](decision-rule.md) is not edited, and no row
+is added to [`corrections.md`](corrections.md) or its tables.
+
+**The owner's answers 10 and 11 of 2026-11-23**, the owner's own and not ones taken under the owner's direction of
+2026-10-18, quoted verbatim:
+- Answer 10. Asked (2026-11-23): "SJL-14 W2: part C reads NOT MET at the base. After investigation (verified), no
+  library defect was found, so no dark merge is needed and the base runs can stand. The remaining unclassified
+  differences: (1-3) 11 inputs where the old parser wrongly accepted and the bridge correctly refuses, but with a
+  different first error row than the classification expects; (4) the switch's own architecture test; (5) a for-of
+  `await using` test that moves fail→pass (an improvement) with no correction row; (7) one Terser-minified variant the
+  runner skips; (8) 3,625 dump lines where P writes the end of input as `eof` and B writes the same offset as a number;
+  (9) 6 computed-member spans the AST type derives the same way in both trees. Groups 1-3, 8 and 9 will also reappear
+  in part D at the after run. Admitting them after the runs were seen needs a dated rule revision, which the precedents
+  (your SJL-11 answers 7 and 8) treat as yours. How should I proceed?" Chosen: "Revise rule (Recommended)" — "I draft
+  one dated revision of sjl-14-001's rule from your answer, admitting groups 1-5, 7, 8 (and 9 if you choose C below)
+  for part C and part D, marked as weaker evidence written after the runs were seen. Part C is then re-read on the same
+  retained runs, nothing re-run, and W2 proceeds to its PR." Not taken: "Merge as NOT MET" — "Change no rule. Record
+  part C as read NOT MET at the base, with the unclassified list, and proceed to W2's PR and merge anyway (nothing is
+  accepted under EX-30). Part D at the after run will then also read these as regressions."; "Hold W2" — "Stop before
+  W2's PR. Leave the hold on Broiler.JS main and the base runs as they are until you review the decision summary
+  yourself."
+- Answer 11. Asked (2026-11-23): "Group 9 (6 variants): the bridge ends a computed member like `a[b, c]` where its
+  property ends, before the `]`, because AstMemberExpression derives its end that way (the old parser included the `]`
+  only by its comma-expression overshoot). Fix it in W2 or admit it?" Chosen: "Admit by revision (Recommended)" —
+  "Include group 9 in the dated revision. W2's trees stay as they are; no other span changes." Not taken: "Fix in W2"
+  — "Change the after tree so a computed member ends at its `]`. More faithful to the source text, but it changes every
+  computed member's span in the after tree (part D would read those as class S). Needs the parse-corpus check and the
+  tests re-run."
+
+The question's groups are part C's unclassified items 1 to 9 ([`base/part-c/README.md`](base/part-c/README.md)), by
+their numbers; group 6 is not in it. The question's count for group 8 is of input variants, one row each of
+`base/part-c/unclassified.tsv`, not of dump lines.
+
+**The revision**, [`decision-rule-revised-2026-11-23.md`](decision-rule-revised-2026-11-23.md), SHA-256
+`1f9c7e539716b9d498c45592ca057ecb65e6543dcd613dfc09d2d4a6ba6b921e`, written after part C's base runs were seen and
+therefore weaker evidence, as the rule's section "Revisions" reads: "A rule revised after any run it judges has been
+seen is a new dated file in this directory. It quotes this one whole and says it was written afterwards, and its
+decision is then weaker evidence." It quotes the rule whole and the lines it changes, and changes only these: part C
+admits six classes, each naming its entries, rev-code (groups 1 to 3: the inputs and the library's codes EX0009,
+EX0008 and EE0033 by name), rev-eof (group 8: `eof` read as the same offset as the source's length, one span, for the
+input variants part C's base reading lists), rev-bracket (group 9: the member, optional-chain and import-call spans of
+`T036087`, `T039546` and `T051374`), rev-switch-test (group 4), rev-for-of (group 5, listed with K7 and D35, with the
+library's row table's note that the `using` heads are EP rows) and rev-minifier (group 7); part C's MET line reads
+with them; part D admits rev-code, rev-eof and rev-bracket, for the same entries, and its MET line and its "How it is
+read" read with them. Listing group 5 with K7 and D35 is the revision's drafting from the decision summary the
+question rested on; answer 10 names no row. **Group 6 is not admitted**: `test/staging/sm/regress/regress-610026.js`
+(both variants) is a bridge defect the bundle's decision B8 (recorded with W2 on branch `sjl-14-w2`: "One part C finds
+unclassified at the base commit is fixed inside W2, on this branch, and part C reads NOT MET for that input unless a
+class admits it.") sends inside W2, which fixes it by `e0b2d17bda6e578c0a8213f5263374f0fdb13ded` and its review fix
+`80b04d26fca6138c4337b000bc621876ec78cd7e`. Part A is not revised.
+
+**Part C, read again** on the same retained runs by [`base/part-c/scripts/read_base.sh`](base/part-c/scripts/read_base.sh)
+with the scripts taught the revision's classes, through the machine-wide lock and idle gate, the same bytes twice;
+without the revision the scripts write the earlier tables byte for byte. Each run, the tables that changed with their
+digests before and after, and the check of the new classes against the earlier `unclassified.tsv`, are in
+[`base/part-c/README.md`](base/part-c/README.md)'s "Records part 5", with the runs' logs in
+[`base/part-c/logs-revised/`](base/part-c/logs-revised/runs.tsv). That folder's [`hashes.txt`](base/part-c/hashes.txt)
+now reads SHA-256 `0e898cfaaae7185b1d8d8c95a88a64b53e5ec755ccf3be0162f01b4b9dec7927`. *(The section "W2's base, records part 4" names that file's digest as
+`992e87c1e547fe4b97e1e4a1b49cb9baa182296a120c186703ddf7a05c2c806c`, of the folder before this record; it is left as
+written there.)*
+- **Part C: read NOT MET on the retained runs**, under the rule's revision of 2026-11-23, for
+  `test/staging/sm/regress/regress-610026.js` (both variants), passing with the switch off and failing with it on,
+  which no class admits. Not judged beyond that (EX-30). The reading of the section "W2's base, recorded on
+  2026-11-23", under the rule as written, stays on record as taken. *(Changed the same day, after review, before this
+  record merged: after "which no class admits" the reading read "; the tables read every other difference in a
+  class.", which went beyond the reading; the counts are the tables'.)*
+- **Finding S14-F2, against the correspondence**, as part A's C1 line asks ("a C1 row that none explains is recorded as
+  a finding against the correspondence and is a regression"):
+  `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js`, original variant, fails with the switch
+  off and passes with it on, and no row of K1 to K10 explains it: the corrections' tables explain the path by the
+  correspondence's D31 bucket alone, while what the shell shows is the early error EE0056 that the old parser misses
+  for an `await using` head, which K7's D35 ("Lexical redeclarations Broiler.JS misses (async functions and generators in blocks, catch and
+  others)"; cut after "misses" before review, as the revision's quote is) describes, and the library's
+  row table calls the `using` heads, this test by name, EP rows. Recorded here, for the correspondence's owner;
+  [`base/part-c/README.md`](base/part-c/README.md)'s "Records part 5" gives the sites. Part A's lines are not
+  revised, so part A's after comparison reads this path as part A's C1 line reads it.
+- **What part D's after reading will admit**, under the revision: part C's C1, C3, E, T, M and S as the rule words them,
+  and rev-code, rev-eof and rev-bracket for the inputs and input variants the revision names, each read at entry point
+  P as the base commit's old parser against the after commit's `FastParser` facade; every other difference is a
+  regression. Groups 4 to 7 are not in part D's population. No part D after run exists.
+
+**After review, 2026-11-23**, before this record merged, with the default branch's head read as
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` by `git ls-remote` before each review-fix commit (each read, with its time,
+is kept in the session's notes). [`base/part-c/scripts/classify_c.py`](base/part-c/scripts/classify_c.py) read
+rev-eof for any input variant whose differing lines were all S or the `eof` reading, without testing that the variant
+is one the revision names by the earlier `unclassified.tsv` (git blob `4cb883804fcea72f29621a05d8476dc0168f5b47`); it
+now reads that blob by its digest and admits by rev-eof only the input variants it lists, so that a part D reader built
+from it admits no other. Read again on the same retained runs through the same lock and gate, the tables are the same
+bytes; [`base/part-c/README.md`](base/part-c/README.md)'s "Records part 5" gives the runs, with their logs in
+[`base/part-c/logs-fix/`](base/part-c/logs-fix/runs.tsv), and how this record reads the revision's quoted reason
+(which in the blob goes on with a count) and its D35 quote (the row's opening words). Finding S14-F2 is recorded in
+this section, not in [`corrections.md`](corrections.md). That folder's [`hashes.txt`](base/part-c/hashes.txt) now
+reads SHA-256 `52b87e74d8fc5d921378fc3833eac6508dfd1eb72f7b9102bf59f0591765964c`; the paragraph "Part C, read again"
+above names its digest of before this change, and is left as written. Part C's reading under the revision is
+unchanged.
 
 ## What it does not claim
 

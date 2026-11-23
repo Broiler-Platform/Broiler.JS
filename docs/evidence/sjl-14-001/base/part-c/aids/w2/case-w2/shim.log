@@ -1,0 +1,2 @@
+2026-11-23T14:14:48Z	end=signal=24(SIGXCPU)	user=24.26s	sys=5.98s	maxrss=4344MB	wall=28.11s	rlimit_cpu=(30, 35)	args=/home/user/js-w2baseD-build/029bab4c/tree/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll --script-host /tmp/broiler-test262/tmpxfztbovv.js
+2026-11-23T14:15:16Z	end=signal=24(SIGXCPU)	user=24.99s	sys=5.26s	maxrss=4190MB	wall=27.89s	rlimit_cpu=(30, 35)	args=/home/user/js-w2baseD-build/029bab4c/tree/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll --script-host /tmp/broiler-test262/tmpkbj9wy7i.js

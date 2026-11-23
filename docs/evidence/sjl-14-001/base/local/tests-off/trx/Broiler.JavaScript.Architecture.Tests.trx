@@ -1,0 +1,402 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="5dc068dd-8607-41ac-8302-6ffba8682d1c" name="@vm 2026-11-22 14:56:37" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-22T14:56:37.1251125+00:00" queuing="2026-11-22T14:56:37.1251125+00:00" start="2026-11-22T14:56:35.0056118+00:00" finish="2026-11-22T14:57:01.6068797+00:00" />
+  <TestSettings name="default" id="dea9c1c2-8d8f-4304-a546-02df851dc026">
+    <Deployment runDeploymentRoot="_vm_2026-11-22_14_56_37" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="dbdb4cf6-a2b0-4c3b-8f2a-b7a076959426" testId="2e1f553c-8b20-c035-a9ac-c029bec6f255" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a use of a desugaring walker&quot;, refusal: &quot;parser_ambient_state names the desugaring walker B&quot;···)" computerName="vm" duration="00:00:00.0050000" startTime="2026-11-22T14:56:38.3908143+00:00" endTime="2026-11-22T14:56:38.3968384+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dbdb4cf6-a2b0-4c3b-8f2a-b7a076959426" />
+    <UnitTestResult executionId="b8e4527d-d8b4-41ef-991f-dbe6151b744a" testId="299c0252-16a7-85b5-0878-8627b379bb91" testName="Broiler.JavaScript.Architecture.Tests.BridgeSwitchTests.The_compilers_test_only_switch_is_off_in_this_build" computerName="vm" duration="00:00:00.0200000" startTime="2026-11-22T14:56:36.5147639+00:00" endTime="2026-11-22T14:56:36.5543003+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b8e4527d-d8b4-41ef-991f-dbe6151b744a" />
+    <UnitTestResult executionId="ac0bdcd8-1516-45f2-8106-411eb13f323a" testId="9c055343-9459-4f16-1dff-4993b1653c1d" testName="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_witness_is_refused_for_each_kind_on_exactly_its_marked_lines(shown: &quot;Parse&quot;)" computerName="vm" duration="00:00:01.3919999" startTime="2026-11-22T14:56:36.7353542+00:00" endTime="2026-11-22T14:56:38.1282911+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ac0bdcd8-1516-45f2-8106-411eb13f323a">
+      <Output>
+        <StdOut>reader: host-culture-readers.cs.witness:21: parse with no format provider: int.TryParse names no format provider: int.TryParse(s, out _)
+reader: host-culture-readers.cs.witness:22: parse with no format provider: double.Parse names no format provider: double.Parse(s, NumberStyles.Float)
+reader: host-culture-readers.cs.witness:23: parse with no format provider: System.DateTime.TryParse names no format provider: DateTime.TryParse(s, out _)
+reader: host-culture-readers.cs.witness:24: parse with no format provider: long.TryParse passes a null format provider: long.TryParse(s, NumberStyles.Integer, null, out _)
+reader: host-culture-readers.cs.witness:25: parse with no format provider: decimal.Parse passes a null format provider: decimal.Parse(s.AsSpan(), NumberStyles.Number, provider: null)
+reader: host-culture-readers.cs.witness:26: parse with no format provider: System.TimeSpan.Parse names no format provider: TimeSpan.Parse(s)
+reader: host-culture-readers.cs.witness:27: parse with no format provider: System.DateTime.ParseExact passes a null format provider: DateTime.ParseExact(s, "yyyy", null)
+reader: host-culture-readers.cs.witness:28: parse with no format provider: int.Parse as a method group names no format provider: _ = s.Split(',').Select(int.Parse);
+reader: host-culture-readers.cs.witness:29: parse with no format provider: double.Parse as a method group names no format provider: Func&lt;string, double&gt; group = double.Parse;
+kept: host-culture-readers.cs.witness:135: parse with no format provider: int.TryParse names no format provider: int.TryParse(text, out _)</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2c71d197-ed48-447c-98ae-4d8597d81814" testId="9517f930-13a2-0742-5ffc-da8c611b3cee" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a static readonly array&quot;, refusal: &quot;Witness.AmbientState.Delimiters is a static array&quot;)" computerName="vm" duration="00:00:01.8010000" startTime="2026-11-22T14:56:36.5742078+00:00" endTime="2026-11-22T14:56:38.3759363+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2c71d197-ed48-447c-98ae-4d8597d81814" />
+    <UnitTestResult executionId="0fe82b1c-dfeb-46f4-a7ea-3c7abfd38003" testId="bb6518e2-d51b-0004-5f92-218a6a0efab1" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_list_of_mutable_types_is_rule_SL2s" computerName="vm" duration="00:00:00.0429999" startTime="2026-11-22T14:56:36.5147212+00:00" endTime="2026-11-22T14:56:36.5709368+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0fe82b1c-dfeb-46f4-a7ea-3c7abfd38003" />
+    <UnitTestResult executionId="bdc2d8f3-3af3-4b49-827f-2fe2d3a93228" testId="1b92f8a9-6c8d-ccd3-c540-472d7c1d6adf" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a mutable static counter&quot;, refusal: &quot;Witness.AmbientState.Parses is a mutable static fi&quot;···)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:56:38.3844014+00:00" endTime="2026-11-22T14:56:38.3845289+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bdc2d8f3-3af3-4b49-827f-2fe2d3a93228" />
+    <UnitTestResult executionId="e0fd4f3d-1d31-40df-90db-ca49bb6c6fde" testId="d47e368b-3af5-fb41-d19a-b0573330527f" testName="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_witness_is_refused_for_each_kind_on_exactly_its_marked_lines(shown: &quot;Format&quot;)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:56:38.1289345+00:00" endTime="2026-11-22T14:56:38.1299998+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e0fd4f3d-1d31-40df-90db-ca49bb6c6fde">
+      <Output>
+        <StdOut>reader: host-culture-readers.cs.witness:53: value made text with no provider: the interpolation hole {i} of type int: $"{i}"
+reader: host-culture-readers.cs.witness:54: value made text with no provider: the interpolation hole {d:F2} of type double: $"{d:F2}"
+reader: host-culture-readers.cs.witness:55: value made text with no provider: the interpolation hole {t} of type System.DateTime: $"{t}"
+reader: host-culture-readers.cs.witness:56: value made text with no provider: the interpolation hole {t:yyyy-MM-dd} of type System.DateTime: $"{t:yyyy-MM-dd}"
+reader: host-culture-readers.cs.witness:57: value made text with no provider: String.Format's argument {0} of type decimal with no provider: string.Format("{0}", m)
+reader: host-culture-readers.cs.witness:58: value made text with no provider: String.Format's argument {0:N0} of type uint with a null provider: string.Format((IFormatProvider?)null, "{0:N0}", 5u)
+reader: host-culture-readers.cs.witness:59: value made text with no provider: the interpolation hole {n} of type long: $"{n}"
+reader: host-culture-readers.cs.witness:60: value made text with no provider: the interpolation hole {span:g} of type System.TimeSpan: $"{span:g}"
+reader: host-culture-readers.cs.witness:61: value made text with no provider: the interpolation hole {d} of type double: $"{d}"
+reader: host-culture-readers.cs.witness:62: value made text with no provider: StringBuilder.AppendFormat's argument {0} of type int with no provider: sb.AppendFormat("{0}", i)
+reader: host-culture-readers.cs.witness:63: value made text with no provider: the interpolation hole {d} of type double: $"{d}"
+reader: host-culture-readers.cs.witness:65: value made text with no provider: the interpolation hole {i} of type int: $"{i}"
+reader: host-culture-readers.cs.witness:66: value made text with no provider: String.Format's argument {0} of type double with no provider: string.Format("{0}{1}{2}{3}", d, d, d, d)
+reader: host-culture-readers.cs.witness:66: value made text with no provider: String.Format's argument {1} of type double with no provider: string.Format("{0}{1}{2}{3}", d, d, d, d)
+reader: host-culture-readers.cs.witness:66: value made text with no provider: String.Format's argument {2} of type double with no provider: string.Format("{0}{1}{2}{3}", d, d, d, d)
+reader: host-culture-readers.cs.witness:66: value made text with no provider: String.Format's argument {3} of type double with no provider: string.Format("{0}{1}{2}{3}", d, d, d, d)
+reader: host-culture-readers.cs.witness:67: value made text with no provider: the interpolation hole {i} of type int: $"{i}"
+reader: host-culture-readers.cs.witness:67: value made text with no provider: the interpolation hole {d} of type double: $"{d}"
+reader: host-culture-readers.cs.witness:68: value made text with no provider: String.Format's argument {0} of type double with no provider: string.Format("{{{0}}}", d)
+reader: host-culture-readers.cs.witness:69: value made text with no provider: the interpolation hole {day} of type System.DateOnly: $"{day}"
+reader: host-culture-readers.cs.witness:73: value made text with no provider: the interpolation hole {value} of type T: $"{value}"
+kept: host-culture-readers.cs.witness:134: value made text with no provider: the interpolation hole {d} of type double: $"{d}"
+reader: host-culture-readers.cs.witness:143: value made text with no provider: the interpolation hole {d} of type double: $"{d}"</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="64ba14cb-44e1-49f1-8462-c32183268c5f" testId="80fc27ec-ff9c-add2-eb88-5e203f2a287b" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a [ThreadStatic] field&quot;, refusal: &quot;Witness.AmbientState.depth is [ThreadStatic]&quot;)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:56:38.3973106+00:00" endTime="2026-11-22T14:56:38.3974159+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="64ba14cb-44e1-49f1-8462-c32183268c5f" />
+    <UnitTestResult executionId="ab35b0ba-d404-4f2b-ad85-cf55110bd096" testId="923b3ed3-d19c-a675-b90a-7bfd1953c118" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;an AsyncLocal&quot;, refusal: &quot;parser_ambient_state names System.Threading.AsyncL&quot;···)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:56:38.3892790+00:00" endTime="2026-11-22T14:56:38.3894456+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ab35b0ba-d404-4f2b-ad85-cf55110bd096" />
+    <UnitTestResult executionId="771e6535-7aab-4ba4-8008-c920b852bcc9" testId="5bb549dd-63e9-2bf8-c2ec-309f852c8717" testName="Broiler.JavaScript.Architecture.Tests.HostCultureTests.No_product_project_reads_the_hosts_culture_where_no_build_rule_sees" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:57:01.4022055+00:00" endTime="2026-11-22T14:57:01.4034818+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="771e6535-7aab-4ba4-8008-c920b852bcc9" />
+    <UnitTestResult executionId="17e745d2-b516-4f90-8d5e-14177b6e4bc5" testId="88ae955e-ec66-d2cc-a97b-7505b5c40870" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a settable static property&quot;, refusal: &quot;Witness.AmbientState.Mode is a settable static pro&quot;···)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:56:38.3831791+00:00" endTime="2026-11-22T14:56:38.3833419+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="17e745d2-b516-4f90-8d5e-14177b6e4bc5" />
+    <UnitTestResult executionId="2616eed7-6461-4e6e-b8ff-afe752c726a8" testId="2c17db75-5bde-d0bb-80b2-6fb9ab8e531b" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a ThreadLocal&quot;, refusal: &quot;parser_ambient_state names System.Threading.Thread&quot;···)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:56:38.3903397+00:00" endTime="2026-11-22T14:56:38.3904224+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2616eed7-6461-4e6e-b8ff-afe752c726a8" />
+    <UnitTestResult executionId="d1e48d53-a459-4261-b2fe-57a6e08bd37a" testId="f41802c4-00a7-69c1-1684-bf35c4c71782" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a use of a desugaring walker&quot;, refusal: &quot;parser_ambient_state names the desugaring walker B&quot;···)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:56:38.3812584+00:00" endTime="2026-11-22T14:56:38.3818923+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d1e48d53-a459-4261-b2fe-57a6e08bd37a" />
+    <UnitTestResult executionId="7d7fd5b3-f75e-46a2-b593-d7bab2d89850" testId="ba29a5ee-e01d-c28a-4968-2bb7efc97a61" testName="Broiler.JavaScript.Architecture.Tests.HostCultureTests.Every_product_project_is_in_the_host_culture_rules_scope_and_no_other_project_is" computerName="vm" duration="00:00:09.2040000" startTime="2026-11-22T14:56:38.1336265+00:00" endTime="2026-11-22T14:56:47.3407950+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7d7fd5b3-f75e-46a2-b593-d7bab2d89850">
+      <Output>
+        <StdOut>Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Broiler.ECMAScript.Algorithms.Tests.csproj: Shared, BroilerHostCultureRules=
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj: Shared, BroilerHostCultureRules=
+Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/Broiler.ECMAScript.Architecture.Tests.csproj: Shared, BroilerHostCultureRules=
+Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/Broiler.ECMAScript.Conformance.Tests.csproj: Shared, BroilerHostCultureRules=
+Broiler.ECMAScript/Broiler.ECMAScript.Conformance/Broiler.ECMAScript.Conformance.csproj: Shared, BroilerHostCultureRules=
+Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/Broiler.ECMAScript.Frontend.Tests.csproj: Shared, BroilerHostCultureRules=
+Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj: Shared, BroilerHostCultureRules=
+Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/Broiler.ECMAScript.Generation.Tests.csproj: Shared, BroilerHostCultureRules=
+Broiler.ECMAScript/Broiler.ECMAScript.Generation/Broiler.ECMAScript.Generation.csproj: Shared, BroilerHostCultureRules=
+Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Broiler.ECMAScript.Intl.Tests.csproj: Shared, BroilerHostCultureRules=
+Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj: Shared, BroilerHostCultureRules=
+Broiler.ECMAScript/Broiler.ECMAScript.Probe/Broiler.ECMAScript.Probe.csproj: Shared, BroilerHostCultureRules=
+Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Architecture.Tests/Broiler.JavaScript.Architecture.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.Ast.Tests/Broiler.JavaScript.Ast.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Broiler.JavaScript.BuiltIns.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Clr.Tests/Broiler.JavaScript.Clr.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.Clr/Broiler.JavaScript.Clr.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Compiler.Tests/Broiler.JavaScript.Compiler.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Core.Tests/Broiler.JavaScript.Core.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.Debugger.Tests/Broiler.JavaScript.Debugger.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.Debugger/Broiler.JavaScript.Debugger.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Extensions/Broiler.JavaScript.Extensions.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Feature.Sample/Broiler.JavaScript.Feature.Sample.csproj: Sample, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.Globals/Broiler.JavaScript.Globals.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.JSClassGenerator/Broiler.JavaScript.JSClassGenerator.csproj: Tool, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.LinqExpressions/Broiler.JavaScript.LinqExpressions.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Minimal/Broiler.JavaScript.Minimal.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.ModuleExtensions.Tests/Broiler.JavaScript.ModuleExtensions.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.ModuleExtensions/Broiler.JavaScript.ModuleExtensions.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Modules.Tests/Broiler.JavaScript.Modules.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.Modules/Broiler.JavaScript.Modules.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Network/Broiler.JavaScript.Network.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.NodePollyfill/Broiler.JavaScript.NodePollyfill.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Parser.Tests/Broiler.JavaScript.Parser.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Portable.Compiler/Broiler.JavaScript.Portable.Compiler.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Portable.Tests/Broiler.JavaScript.Portable.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.Portable/Broiler.JavaScript.Portable.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Runtime.Tests/Broiler.JavaScript.Runtime.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Storage.Tests/Broiler.JavaScript.Storage.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/Broiler.JavaScript.Vectors.Tests/Broiler.JavaScript.Vectors.Tests.csproj: Test, BroilerHostCultureRules=false
+Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj: Product, BroilerHostCultureRules=true
+Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Broiler.JavaScript.Engine.Benchmarks.csproj: Benchmark, BroilerHostCultureRules=false
+Broiler.JS/samples/Broiler.JavaScript.NativeAotSample/Broiler.JavaScript.NativeAotSample.csproj: Sample, BroilerHostCultureRules=false
+Broiler.JS/samples/Broiler.JavaScript.StartupHost/Broiler.JavaScript.StartupHost.csproj: Sample, BroilerHostCultureRules=false</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a744a50b-41f1-4e38-bf38-11b5204bf91c" testId="bf5d2047-54c4-8e47-3ad0-549a08d0c16f" testName="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_scope_refuses_each_departure(shape: &quot;a product project outside Broiler.JS/&quot;, path: &quot;Broiler.Widget/Broiler.Widget.csproj&quot;, rules: &quot;&quot;, isTest: False, refusal: &quot;is a product project and evaluates BroilerHostCult&quot;···)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:57:01.4066705+00:00" endTime="2026-11-22T14:57:01.4068893+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a744a50b-41f1-4e38-bf38-11b5204bf91c" />
+    <UnitTestResult executionId="18af3981-018d-47e7-a683-a97e2a3326de" testId="36f417b3-7f32-c9d2-f650-2f751c224000" testName="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_scope_refuses_each_departure(shape: &quot;a test project the rules hold&quot;, path: &quot;Broiler.JS/Broiler.JavaScript.Widget.Tests/Broiler&quot;···, rules: &quot;true&quot;, isTest: True, refusal: &quot;is a test project and the host-culture rules hold &quot;···)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:57:01.4042183+00:00" endTime="2026-11-22T14:57:01.4052716+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="18af3981-018d-47e7-a683-a97e2a3326de" />
+    <UnitTestResult executionId="2e00081c-d2ae-4d9d-a626-534996aec6c0" testId="3ba5fcec-5bf4-250e-653f-dfe9c680fc20" testName="Broiler.JavaScript.Architecture.Tests.HostCultureTests.Every_RS0030_suppression_in_a_product_project_is_a_kept_path_and_the_reading_finds_them" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:57:01.4080679+00:00" endTime="2026-11-22T14:57:01.4093849+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2e00081c-d2ae-4d9d-a626-534996aec6c0">
+      <Output>
+        <StdOut>kept path: Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDatePrototype.Formatters.cs:170
+kept path: Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCollationProvider.cs:68
+kept path: Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCultureLocaleData.cs:240
+kept path: Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/HostCultureLocaleData.cs:383
+kept path: Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlLocaleProviders.cs:69
+kept path: Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumberPrototype.cs:278
+kept path: Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:254</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="7f09cb22-65f9-42e5-b2a5-87746eb26d99" testId="587b804a-5aca-913c-9086-e9461bce6c76" testName="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_scope_refuses_a_sample_a_product_project_references_and_a_listed_sample_that_does_not_exist" computerName="vm" duration="00:00:00.0140000" startTime="2026-11-22T14:56:36.7183683+00:00" endTime="2026-11-22T14:56:36.7334421+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7f09cb22-65f9-42e5-b2a5-87746eb26d99">
+      <Output>
+        <StdOut>Broiler.JS/samples/Gone/Gone.csproj is listed as a sample and is not a project of Broiler.JS.slnx or below Broiler.JS/
+Broiler.JS/samples/Widget/Widget.csproj is listed as a sample and the product project Broiler.JS/Broiler.JavaScript.Widget/Broiler.JavaScript.Widget.csproj references it</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8e103cf1-e388-44bd-bf6d-3de4a20beba5" testId="8f9f1e4d-5dcd-0bef-323a-f7e7407abec6" testName="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_witness_is_refused_for_each_kind_on_exactly_its_marked_lines(shown: &quot;Regex&quot;)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:56:38.1303613+00:00" endTime="2026-11-22T14:56:38.1310040+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8e103cf1-e388-44bd-bf6d-3de4a20beba5">
+      <Output>
+        <StdOut>reader: host-culture-readers.cs.witness:35: Regex folding case without CultureInvariant: RegexOptions.IgnoreCase without RegexOptions.CultureInvariant: new Regex("a", RegexOptions.IgnoreCase)
+reader: host-culture-readers.cs.witness:36: Regex folding case without CultureInvariant: RegexOptions.IgnoreCase without RegexOptions.CultureInvariant: Regex.IsMatch(s, "a", RegexOptions.IgnoreCase | RegexOptions.Compiled)
+reader: host-culture-readers.cs.witness:37: Regex folding case without CultureInvariant: the pattern turns IgnoreCase on, (?i), without RegexOptions.CultureInvariant: new Regex("(?i)a")
+reader: host-culture-readers.cs.witness:38: Regex folding case without CultureInvariant: the pattern turns IgnoreCase on, (?i), without RegexOptions.CultureInvariant: Regex.Replace(s, "(?i:a)b", "c")
+reader: host-culture-readers.cs.witness:39: Regex folding case without CultureInvariant: options not known when compiled and not combined with RegexOptions.CultureInvariant: new Regex("a", given)
+reader: host-culture-readers.cs.witness:40: Regex folding case without CultureInvariant: RegexOptions.IgnoreCase without RegexOptions.CultureInvariant: new("a", RegexOptions.IgnoreCase)
+reader: host-culture-readers.cs.witness:42: Regex folding case without CultureInvariant: options not known when compiled and not combined with RegexOptions.CultureInvariant: Regex.Matches(s, "a", given)
+reader: host-culture-readers.cs.witness:43: Regex folding case without CultureInvariant: RegexOptions.IgnoreCase without RegexOptions.CultureInvariant: new Regex("a", FoldedOnly)
+reader: host-culture-readers.cs.witness:46: Regex folding case without CultureInvariant: RegexOptions.IgnoreCase without RegexOptions.CultureInvariant: GeneratedRegex("a", RegexOptions.IgnoreCase)</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e36487cf-3de7-43e1-8572-9c7e313a813a" testId="34242374-c3ed-272d-3c1c-e573c0698b19" testName="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_scope_refuses_each_departure(shape: &quot;a product project named like a test&quot;, path: &quot;Broiler.JS/Broiler.JavaScript.Widget.Tests/Broiler&quot;···, rules: &quot;false&quot;, isTest: False, refusal: &quot;is a product project and evaluates BroilerHostCult&quot;···)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:57:01.4056428+00:00" endTime="2026-11-22T14:57:01.4063533+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e36487cf-3de7-43e1-8572-9c7e313a813a" />
+    <UnitTestResult executionId="a1bc7833-067d-4154-ad51-4d7120a13a20" testId="6db42f6a-c056-6908-a6c4-5ef399dcb1e4" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a use of a desugaring walker&quot;, refusal: &quot;parser_ambient_state names the desugaring walker B&quot;···)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:56:38.3825701+00:00" endTime="2026-11-22T14:56:38.3827682+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a1bc7833-067d-4154-ad51-4d7120a13a20" />
+    <UnitTestResult executionId="5d6f820b-82e5-4712-8188-8ecd1f795488" testId="ebe9c16e-b90b-349b-a13d-f4dc31f0dcf7" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a static readonly field of a mutable class&quot;, refusal: &quot;Witness.AmbientState.EndOfInput is a static readon&quot;···)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:56:38.3977814+00:00" endTime="2026-11-22T14:56:38.3979181+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5d6f820b-82e5-4712-8188-8ecd1f795488" />
+    <UnitTestResult executionId="e4f7ace6-829e-4338-96fb-cc56e43f303f" testId="6261bbc9-8c98-c30d-5b6e-a3af4bbf4a5a" testName="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_witness_silencing_RS0030_outside_the_kept_path_form_is_refused_on_exactly_its_marked_lines" computerName="vm" duration="00:00:00.1890000" startTime="2026-11-22T14:56:36.5146947+00:00" endTime="2026-11-22T14:56:36.7171230+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e4f7ace6-829e-4338-96fb-cc56e43f303f">
+      <Output>
+        <StdOut>151: #pragma warning disable names no code, so it disables RS0030 too
+148: [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs")] suppresses RS0030</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="cef8ad50-c475-4029-b359-2e9597f303fe" testId="33ae31d5-9436-a02e-32cc-fcec8ab4c6a6" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_parser_has_no_violations" computerName="vm" duration="00:00:01.8590000" startTime="2026-11-22T14:56:38.5087480+00:00" endTime="2026-11-22T14:56:40.3686554+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cef8ad50-c475-4029-b359-2e9597f303fe">
+      <Output>
+        <StdOut>subject: /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+two parses: 522 dump lines.
+concurrent parses: 80000 parses of `a` on 4 threads; 0 held another parse's token (0 in the tree, 0 as the end of the input's link back).</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b46c8818-dee1-4708-abd2-ac2011abd952" testId="d3dfdc34-b3d5-cebd-340c-687cbfdadd74" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a static readonly field of a mutable collection ty&quot;···, refusal: &quot;Witness.AmbientState.Seen is a static System.Colle&quot;···)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:56:38.3899154+00:00" endTime="2026-11-22T14:56:38.3900188+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b46c8818-dee1-4708-abd2-ac2011abd952" />
+    <UnitTestResult executionId="9427cb14-b543-4c7b-94f3-814eade3161d" testId="86013cd3-054e-031b-2874-de1a493f608b" testName="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_reading_compiles_every_product_project_of_the_solution_without_an_error" computerName="vm" duration="00:00:14.0470000" startTime="2026-11-22T14:56:47.3520594+00:00" endTime="2026-11-22T14:57:01.4001292+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9427cb14-b543-4c7b-94f3-814eade3161d">
+      <Output>
+        <StdOut>Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj: 0 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj: 74 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj: 126 source(s), 62 generated, 0 error(s), 0 reader(s)
+  read in Debug too: Broiler.JS/Broiler.JavaScript.BuiltIns/Null/JSNull.cs
+Broiler.JS/Broiler.JavaScript.Clr/Broiler.JavaScript.Clr.csproj: 14 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj: 70 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.Debugger/Broiler.JavaScript.Debugger.csproj: 28 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj: 27 source(s), 1 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj: 66 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj: 100 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.Extensions/Broiler.JavaScript.Extensions.csproj: 8 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.Globals/Broiler.JavaScript.Globals.csproj: 4 source(s), 2 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.LinqExpressions/Broiler.JavaScript.LinqExpressions.csproj: 49 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.Minimal/Broiler.JavaScript.Minimal.csproj: 0 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.ModuleExtensions/Broiler.JavaScript.ModuleExtensions.csproj: 2 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.Modules/Broiler.JavaScript.Modules.csproj: 10 source(s), 3 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.Network/Broiler.JavaScript.Network.csproj: 11 source(s), 11 generated, 36 error(s), 0 reader(s)
+  outside the solution, as its build: /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Network/AbortController.cs(2,26): error CS0234: The type or namespace name 'Core' does not exist in the namespace 'Broiler.JavaScript' (are you missing an assembly reference?)
+  outside the solution, as its build: /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Network/AbortController.cs(3,26): error CS0234: The type or namespace name 'Core' does not exist in the namespace 'Broiler.JavaScript' (are you missing an assembly reference?)
+  outside the solution, as its build: /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Network/FetchApi.cs(7,26): error CS0234: The type or namespace name 'Core' does not exist in the namespace 'Broiler.JavaScript' (are you missing an assembly reference?)
+  outside the solution, as its build: /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Network/FetchApi.cs(8,26): error CS0234: The type or namespace name 'Core' does not exist in the namespace 'Broiler.JavaScript' (are you missing an assembly reference?)
+  outside the solution, as its build: /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Network/Names.cs(8,26): error CS0234: The type or namespace name 'Core' does not exist in the namespace 'Broiler.JavaScript' (are you missing an assembly reference?)
+Broiler.JS/Broiler.JavaScript.NodePollyfill/Broiler.JavaScript.NodePollyfill.csproj: 1 source(s), 0 generated, 4 error(s), 0 reader(s)
+  outside the solution, as its build: /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.NodePollyfill/EventEmitter.cs(6,26): error CS0234: The type or namespace name 'Core' does not exist in the namespace 'Broiler.JavaScript' (are you missing an assembly reference?)
+  outside the solution, as its build: /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.NodePollyfill/EventEmitter.cs(7,26): error CS0234: The type or namespace name 'Core' does not exist in the namespace 'Broiler.JavaScript' (are you missing an assembly reference?)
+  outside the solution, as its build: /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.NodePollyfill/EventEmitter.cs(9,26): error CS0234: The type or namespace name 'Core' does not exist in the namespace 'Broiler.JavaScript' (are you missing an assembly reference?)
+  outside the solution, as its build: /home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.NodePollyfill/EventEmitter.cs(39,29): error CS0103: The name 'JSEngine' does not exist in the current context
+Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj: 56 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.Portable.Compiler/Broiler.JavaScript.Portable.Compiler.csproj: 2 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.Portable/Broiler.JavaScript.Portable.csproj: 2 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj: 109 source(s), 0 generated, 0 error(s), 0 reader(s)
+  read in Debug too: Broiler.JS/Broiler.JavaScript.Runtime/JSException.cs
+  read in Debug too: Broiler.JS/Broiler.JavaScript.Runtime/JSUndefined.cs
+Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj: 17 source(s), 0 generated, 0 error(s), 0 reader(s)
+Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj: 39 source(s), 0 generated, 0 error(s), 0 reader(s)</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="9c323b49-1ba5-463b-8fc3-1f08fffe2d40" testId="00fd0457-5fff-4575-b707-70839730aa42" testName="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_scope_refuses_each_departure(shape: &quot;a product project the compiler is not given the ru&quot;···, path: &quot;Broiler.JS/Broiler.JavaScript.Widget/Broiler.JavaS&quot;···, rules: &quot;true&quot;, isTest: False, refusal: &quot;the compiler is not given host-culture.globalconfi&quot;···)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:57:01.4071212+00:00" endTime="2026-11-22T14:57:01.4072424+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9c323b49-1ba5-463b-8fc3-1f08fffe2d40" />
+    <UnitTestResult executionId="875a9fce-53e4-47a2-8268-2ac4d00f3025" testId="b818dd1f-5717-523f-d1af-7ec97d9e186d" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_clauses_read_the_parser_and_accept_at_least_one_read_only_static_field" computerName="vm" duration="00:00:00.1080000" startTime="2026-11-22T14:56:38.3987709+00:00" endTime="2026-11-22T14:56:38.5078933+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="875a9fce-53e4-47a2-8268-2ac4d00f3025">
+      <Output>
+        <StdOut>accepted: Broiler.JavaScript.Parser.FastKeywordMap.&lt;Instance&gt;k__BackingField (Broiler.JavaScript.Parser.FastKeywordMap)
+accepted: Broiler.JavaScript.Parser.FastParserOptions.&lt;Script&gt;k__BackingField (Broiler.JavaScript.Parser.FastParserOptions)
+accepted: Broiler.JavaScript.Parser.FastParserOptions.&lt;Module&gt;k__BackingField (Broiler.JavaScript.Parser.FastParserOptions)
+accepted: Broiler.JavaScript.Parser.FastScanner.NoBigIntWidth (Broiler.ECMAScript.LengthLimit)
+accepted: Broiler.JavaScript.Parser.Bridge.BridgeRegularExpressions.&lt;Instance&gt;k__BackingField (Broiler.JavaScript.Parser.Bridge.BridgeRegularExpressions)
+accepted: Broiler.JavaScript.Parser.Bridge.BridgeRequest.&lt;Script&gt;k__BackingField (Broiler.JavaScript.Parser.Bridge.BridgeRequest)
+accepted: Broiler.JavaScript.Parser.Bridge.BridgeRequest.&lt;Module&gt;k__BackingField (Broiler.JavaScript.Parser.Bridge.BridgeRequest)</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="f18195f6-f231-4f91-8ad3-b7f550e2837f" testId="1dc2c01c-92a8-66c6-cbc9-78781be0d558" testName="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a use of a Runtime type&quot;, refusal: &quot;parser_ambient_state references the assembly Broil&quot;···)" computerName="vm" duration="00:00:00.0010000" startTime="2026-11-22T14:56:38.3837674+00:00" endTime="2026-11-22T14:56:38.3838988+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f18195f6-f231-4f91-8ad3-b7f550e2837f" />
+    <UnitTestResult executionId="8ea70288-5252-459b-a9e0-3c0b8a3e74d7" testId="b683a40e-9ec8-e595-90df-abc708cb9912" testName="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_scope_refuses_a_product_project_that_silences_a_host_culture_rule" computerName="vm" duration="00:00:00.0060000" startTime="2026-11-22T14:56:47.3437949+00:00" endTime="2026-11-22T14:56:47.3506032+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8ea70288-5252-459b-a9e0-3c0b8a3e74d7">
+      <Output>
+        <StdOut>Broiler.JS/Broiler.JavaScript.Widget/Broiler.JavaScript.Widget.csproj is a product project and NoWarn names CA1305
+Broiler.JS/Broiler.JavaScript.Widget/Broiler.JavaScript.Widget.csproj is a product project and RunAnalyzersDuringBuild is false
+Broiler.JS/Broiler.JavaScript.Widget/Broiler.JavaScript.Widget.csproj is a product project and ../../../../../tmp/host-culture-silenced-5c02300954914a699f6282f2fa103783.globalconfig:2 sets a severity for RS0030</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_witness_is_refused_for_each_kind_on_exactly_its_marked_lines(shown: &quot;Format&quot;)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="d47e368b-3af5-fb41-d19a-b0573330527f">
+      <Execution id="e0fd4f3d-1d31-40df-90db-ca49bb6c6fde" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.HostCultureTests" name="The_witness_is_refused_for_each_kind_on_exactly_its_marked_lines" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_scope_refuses_a_sample_a_product_project_references_and_a_listed_sample_that_does_not_exist" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="587b804a-5aca-913c-9086-e9461bce6c76">
+      <Execution id="7f09cb22-65f9-42e5-b2a5-87746eb26d99" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.HostCultureTests" name="The_scope_refuses_a_sample_a_product_project_references_and_a_listed_sample_that_does_not_exist" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a use of a desugaring walker&quot;, refusal: &quot;parser_ambient_state names the desugaring walker B&quot;···)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="2e1f553c-8b20-c035-a9ac-c029bec6f255">
+      <Execution id="dbdb4cf6-a2b0-4c3b-8f2a-b7a076959426" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_witness_is_refused_for_each_shape" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_scope_refuses_each_departure(shape: &quot;a product project named like a test&quot;, path: &quot;Broiler.JS/Broiler.JavaScript.Widget.Tests/Broiler&quot;···, rules: &quot;false&quot;, isTest: False, refusal: &quot;is a product project and evaluates BroilerHostCult&quot;···)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="34242374-c3ed-272d-3c1c-e573c0698b19">
+      <Execution id="e36487cf-3de7-43e1-8572-9c7e313a813a" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.HostCultureTests" name="The_scope_refuses_each_departure" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a settable static property&quot;, refusal: &quot;Witness.AmbientState.Mode is a settable static pro&quot;···)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="88ae955e-ec66-d2cc-a97b-7505b5c40870">
+      <Execution id="17e745d2-b516-4f90-8d5e-14177b6e4bc5" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_witness_is_refused_for_each_shape" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a ThreadLocal&quot;, refusal: &quot;parser_ambient_state names System.Threading.Thread&quot;···)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="2c17db75-5bde-d0bb-80b2-6fb9ab8e531b">
+      <Execution id="2616eed7-6461-4e6e-b8ff-afe752c726a8" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_witness_is_refused_for_each_shape" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a use of a desugaring walker&quot;, refusal: &quot;parser_ambient_state names the desugaring walker B&quot;···)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="6db42f6a-c056-6908-a6c4-5ef399dcb1e4">
+      <Execution id="a1bc7833-067d-4154-ad51-4d7120a13a20" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_witness_is_refused_for_each_shape" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_witness_is_refused_for_each_kind_on_exactly_its_marked_lines(shown: &quot;Regex&quot;)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="8f9f1e4d-5dcd-0bef-323a-f7e7407abec6">
+      <Execution id="8e103cf1-e388-44bd-bf6d-3de4a20beba5" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.HostCultureTests" name="The_witness_is_refused_for_each_kind_on_exactly_its_marked_lines" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;an AsyncLocal&quot;, refusal: &quot;parser_ambient_state names System.Threading.AsyncL&quot;···)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="923b3ed3-d19c-a675-b90a-7bfd1953c118">
+      <Execution id="ab35b0ba-d404-4f2b-ad85-cf55110bd096" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_witness_is_refused_for_each_shape" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_scope_refuses_a_product_project_that_silences_a_host_culture_rule" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="b683a40e-9ec8-e595-90df-abc708cb9912">
+      <Execution id="8ea70288-5252-459b-a9e0-3c0b8a3e74d7" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.HostCultureTests" name="The_scope_refuses_a_product_project_that_silences_a_host_culture_rule" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_parser_has_no_violations" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="33ae31d5-9436-a02e-32cc-fcec8ab4c6a6">
+      <Execution id="cef8ad50-c475-4029-b359-2e9597f303fe" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_parser_has_no_violations" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.HostCultureTests.No_product_project_reads_the_hosts_culture_where_no_build_rule_sees" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="5bb549dd-63e9-2bf8-c2ec-309f852c8717">
+      <Execution id="771e6535-7aab-4ba4-8008-c920b852bcc9" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.HostCultureTests" name="No_product_project_reads_the_hosts_culture_where_no_build_rule_sees" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_witness_is_refused_for_each_kind_on_exactly_its_marked_lines(shown: &quot;Parse&quot;)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="9c055343-9459-4f16-1dff-4993b1653c1d">
+      <Execution id="ac0bdcd8-1516-45f2-8106-411eb13f323a" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.HostCultureTests" name="The_witness_is_refused_for_each_kind_on_exactly_its_marked_lines" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a mutable static counter&quot;, refusal: &quot;Witness.AmbientState.Parses is a mutable static fi&quot;···)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="1b92f8a9-6c8d-ccd3-c540-472d7c1d6adf">
+      <Execution id="bdc2d8f3-3af3-4b49-827f-2fe2d3a93228" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_witness_is_refused_for_each_shape" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_scope_refuses_each_departure(shape: &quot;a test project the rules hold&quot;, path: &quot;Broiler.JS/Broiler.JavaScript.Widget.Tests/Broiler&quot;···, rules: &quot;true&quot;, isTest: True, refusal: &quot;is a test project and the host-culture rules hold &quot;···)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="36f417b3-7f32-c9d2-f650-2f751c224000">
+      <Execution id="18af3981-018d-47e7-a683-a97e2a3326de" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.HostCultureTests" name="The_scope_refuses_each_departure" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a use of a desugaring walker&quot;, refusal: &quot;parser_ambient_state names the desugaring walker B&quot;···)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="f41802c4-00a7-69c1-1684-bf35c4c71782">
+      <Execution id="d1e48d53-a459-4261-b2fe-57a6e08bd37a" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_witness_is_refused_for_each_shape" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a static readonly array&quot;, refusal: &quot;Witness.AmbientState.Delimiters is a static array&quot;)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="9517f930-13a2-0742-5ffc-da8c611b3cee">
+      <Execution id="2c71d197-ed48-447c-98ae-4d8597d81814" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_witness_is_refused_for_each_shape" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a static readonly field of a mutable collection ty&quot;···, refusal: &quot;Witness.AmbientState.Seen is a static System.Colle&quot;···)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="d3dfdc34-b3d5-cebd-340c-687cbfdadd74">
+      <Execution id="b46c8818-dee1-4708-abd2-ac2011abd952" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_witness_is_refused_for_each_shape" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_scope_refuses_each_departure(shape: &quot;a product project the compiler is not given the ru&quot;···, path: &quot;Broiler.JS/Broiler.JavaScript.Widget/Broiler.JavaS&quot;···, rules: &quot;true&quot;, isTest: False, refusal: &quot;the compiler is not given host-culture.globalconfi&quot;···)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="00fd0457-5fff-4575-b707-70839730aa42">
+      <Execution id="9c323b49-1ba5-463b-8fc3-1f08fffe2d40" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.HostCultureTests" name="The_scope_refuses_each_departure" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_reading_compiles_every_product_project_of_the_solution_without_an_error" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="86013cd3-054e-031b-2874-de1a493f608b">
+      <Execution id="9427cb14-b543-4c7b-94f3-814eade3161d" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.HostCultureTests" name="The_reading_compiles_every_product_project_of_the_solution_without_an_error" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.HostCultureTests.Every_product_project_is_in_the_host_culture_rules_scope_and_no_other_project_is" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="ba29a5ee-e01d-c28a-4968-2bb7efc97a61">
+      <Execution id="7d7fd5b3-f75e-46a2-b593-d7bab2d89850" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.HostCultureTests" name="Every_product_project_is_in_the_host_culture_rules_scope_and_no_other_project_is" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_clauses_read_the_parser_and_accept_at_least_one_read_only_static_field" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="b818dd1f-5717-523f-d1af-7ec97d9e186d">
+      <Execution id="875a9fce-53e4-47a2-8268-2ac4d00f3025" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_clauses_read_the_parser_and_accept_at_least_one_read_only_static_field" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.BridgeSwitchTests.The_compilers_test_only_switch_is_off_in_this_build" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="299c0252-16a7-85b5-0878-8627b379bb91">
+      <Execution id="b8e4527d-d8b4-41ef-991f-dbe6151b744a" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.BridgeSwitchTests" name="The_compilers_test_only_switch_is_off_in_this_build" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.HostCultureTests.Every_RS0030_suppression_in_a_product_project_is_a_kept_path_and_the_reading_finds_them" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="3ba5fcec-5bf4-250e-653f-dfe9c680fc20">
+      <Execution id="2e00081c-d2ae-4d9d-a626-534996aec6c0" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.HostCultureTests" name="Every_RS0030_suppression_in_a_product_project_is_a_kept_path_and_the_reading_finds_them" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a [ThreadStatic] field&quot;, refusal: &quot;Witness.AmbientState.depth is [ThreadStatic]&quot;)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="80fc27ec-ff9c-add2-eb88-5e203f2a287b">
+      <Execution id="64ba14cb-44e1-49f1-8462-c32183268c5f" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_witness_is_refused_for_each_shape" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a static readonly field of a mutable class&quot;, refusal: &quot;Witness.AmbientState.EndOfInput is a static readon&quot;···)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="ebe9c16e-b90b-349b-a13d-f4dc31f0dcf7">
+      <Execution id="5d6f820b-82e5-4712-8188-8ecd1f795488" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_witness_is_refused_for_each_shape" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_witness_is_refused_for_each_shape(shape: &quot;a use of a Runtime type&quot;, refusal: &quot;parser_ambient_state references the assembly Broil&quot;···)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="1dc2c01c-92a8-66c6-cbc9-78781be0d558">
+      <Execution id="f18195f6-f231-4f91-8ad3-b7f550e2837f" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_witness_is_refused_for_each_shape" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_scope_refuses_each_departure(shape: &quot;a product project outside Broiler.JS/&quot;, path: &quot;Broiler.Widget/Broiler.Widget.csproj&quot;, rules: &quot;&quot;, isTest: False, refusal: &quot;is a product project and evaluates BroilerHostCult&quot;···)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="bf5d2047-54c4-8e47-3ad0-549a08d0c16f">
+      <Execution id="a744a50b-41f1-4e38-bf38-11b5204bf91c" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.HostCultureTests" name="The_scope_refuses_each_departure" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.HostCultureTests.The_witness_silencing_RS0030_outside_the_kept_path_form_is_refused_on_exactly_its_marked_lines" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="6261bbc9-8c98-c30d-5b6e-a3af4bbf4a5a">
+      <Execution id="e4f7ace6-829e-4338-96fb-cc56e43f303f" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.HostCultureTests" name="The_witness_silencing_RS0030_outside_the_kept_path_form_is_refused_on_exactly_its_marked_lines" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests.The_list_of_mutable_types_is_rule_SL2s" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.architecture.tests/bin/release/net10.0/broiler.javascript.architecture.tests.dll" id="bb6518e2-d51b-0004-5f92-218a6a0efab1">
+      <Execution id="0fe82b1c-dfeb-46f4-a7ea-3c7abfd38003" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Architecture.Tests/bin/Release/net10.0/Broiler.JavaScript.Architecture.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Architecture.Tests.ParserArchitectureTests" name="The_list_of_mutable_types_is_rule_SL2s" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="2e1f553c-8b20-c035-a9ac-c029bec6f255" executionId="dbdb4cf6-a2b0-4c3b-8f2a-b7a076959426" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="299c0252-16a7-85b5-0878-8627b379bb91" executionId="b8e4527d-d8b4-41ef-991f-dbe6151b744a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9c055343-9459-4f16-1dff-4993b1653c1d" executionId="ac0bdcd8-1516-45f2-8106-411eb13f323a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9517f930-13a2-0742-5ffc-da8c611b3cee" executionId="2c71d197-ed48-447c-98ae-4d8597d81814" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bb6518e2-d51b-0004-5f92-218a6a0efab1" executionId="0fe82b1c-dfeb-46f4-a7ea-3c7abfd38003" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1b92f8a9-6c8d-ccd3-c540-472d7c1d6adf" executionId="bdc2d8f3-3af3-4b49-827f-2fe2d3a93228" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d47e368b-3af5-fb41-d19a-b0573330527f" executionId="e0fd4f3d-1d31-40df-90db-ca49bb6c6fde" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="80fc27ec-ff9c-add2-eb88-5e203f2a287b" executionId="64ba14cb-44e1-49f1-8462-c32183268c5f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="923b3ed3-d19c-a675-b90a-7bfd1953c118" executionId="ab35b0ba-d404-4f2b-ad85-cf55110bd096" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5bb549dd-63e9-2bf8-c2ec-309f852c8717" executionId="771e6535-7aab-4ba4-8008-c920b852bcc9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="88ae955e-ec66-d2cc-a97b-7505b5c40870" executionId="17e745d2-b516-4f90-8d5e-14177b6e4bc5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2c17db75-5bde-d0bb-80b2-6fb9ab8e531b" executionId="2616eed7-6461-4e6e-b8ff-afe752c726a8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f41802c4-00a7-69c1-1684-bf35c4c71782" executionId="d1e48d53-a459-4261-b2fe-57a6e08bd37a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ba29a5ee-e01d-c28a-4968-2bb7efc97a61" executionId="7d7fd5b3-f75e-46a2-b593-d7bab2d89850" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bf5d2047-54c4-8e47-3ad0-549a08d0c16f" executionId="a744a50b-41f1-4e38-bf38-11b5204bf91c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="36f417b3-7f32-c9d2-f650-2f751c224000" executionId="18af3981-018d-47e7-a683-a97e2a3326de" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3ba5fcec-5bf4-250e-653f-dfe9c680fc20" executionId="2e00081c-d2ae-4d9d-a626-534996aec6c0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="587b804a-5aca-913c-9086-e9461bce6c76" executionId="7f09cb22-65f9-42e5-b2a5-87746eb26d99" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8f9f1e4d-5dcd-0bef-323a-f7e7407abec6" executionId="8e103cf1-e388-44bd-bf6d-3de4a20beba5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="34242374-c3ed-272d-3c1c-e573c0698b19" executionId="e36487cf-3de7-43e1-8572-9c7e313a813a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6db42f6a-c056-6908-a6c4-5ef399dcb1e4" executionId="a1bc7833-067d-4154-ad51-4d7120a13a20" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ebe9c16e-b90b-349b-a13d-f4dc31f0dcf7" executionId="5d6f820b-82e5-4712-8188-8ecd1f795488" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6261bbc9-8c98-c30d-5b6e-a3af4bbf4a5a" executionId="e4f7ace6-829e-4338-96fb-cc56e43f303f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="33ae31d5-9436-a02e-32cc-fcec8ab4c6a6" executionId="cef8ad50-c475-4029-b359-2e9597f303fe" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d3dfdc34-b3d5-cebd-340c-687cbfdadd74" executionId="b46c8818-dee1-4708-abd2-ac2011abd952" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="86013cd3-054e-031b-2874-de1a493f608b" executionId="9427cb14-b543-4c7b-94f3-814eade3161d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="00fd0457-5fff-4575-b707-70839730aa42" executionId="9c323b49-1ba5-463b-8fc3-1f08fffe2d40" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b818dd1f-5717-523f-d1af-7ec97d9e186d" executionId="875a9fce-53e4-47a2-8268-2ac4d00f3025" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1dc2c01c-92a8-66c6-cbc9-78781be0d558" executionId="f18195f6-f231-4f91-8ad3-b7f550e2837f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b683a40e-9ec8-e595-90df-abc708cb9912" executionId="8ea70288-5252-459b-a9e0-3c0b8a3e74d7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="30" executed="30" passed="30" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.21]   Discovering: Broiler.JavaScript.Architecture.Tests
+[xUnit.net 00:00:00.49]   Discovered:  Broiler.JavaScript.Architecture.Tests
+[xUnit.net 00:00:00.73]   Starting:    Broiler.JavaScript.Architecture.Tests
+[xUnit.net 00:00:25.87]   Finished:    Broiler.JavaScript.Architecture.Tests (ID = 'a46b761d1edecf00ec3763c8a45a220d663500b1c401ce5d1d4615633c173d9c')
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="vm" outcome="Warning" timestamp="2026-11-22T14:57:01.5497055+00:00">
+        <Text>Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

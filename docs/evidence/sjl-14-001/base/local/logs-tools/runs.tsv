@@ -1,0 +1,9 @@
+build-parse-corpus	rc=0	wall=83.1s maxrss=327MB	started=2026-11-23T10:22:25Z	ended=2026-11-23T10:23:48Z
+parse-corpus-c	rc=0	wall=161.5s maxrss=1689MB	started=2026-11-23T10:23:48Z	ended=2026-11-23T10:26:30Z
+parse-corpus-d1	rc=0	wall=45.6s maxrss=592MB	started=2026-11-23T10:26:30Z	ended=2026-11-23T10:27:15Z
+build-side-by-side	rc=0	wall=92.8s maxrss=333MB	started=2026-11-23T10:27:15Z	ended=2026-11-23T10:28:48Z
+side-by-side	rc=0	wall=445.9s maxrss=3526MB	started=2026-11-23T10:28:48Z	ended=2026-11-23T10:36:14Z
+build-bridge-codes	rc=0	wall=32.8s maxrss=302MB	started=2026-11-23T10:36:15Z	ended=2026-11-23T10:36:47Z
+bridge-codes	rc=134	wall=0.3s maxrss=231MB	started=2026-11-23T10:36:47Z	ended=2026-11-23T10:36:48Z
+side-by-side-text	rc=0	wall=115.7s maxrss=647MB	started=2026-11-23T10:36:48Z	ended=2026-11-23T10:38:44Z
+spancheck	rc=0	wall=31.7s maxrss=312MB	started=2026-11-23T10:38:44Z	ended=2026-11-23T10:39:16Z

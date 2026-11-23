@@ -1,0 +1,9 @@
+P	1	wall=3.0s user=2.7s sys=0.4s maxrss=583MB exit=0
+P	2	wall=6.5s user=5.5s sys=1.2s maxrss=1040MB exit=0
+P	3	wall=6.5s user=5.7s sys=0.9s maxrss=1099MB exit=0
+L	1	wall=2.6s user=2.3s sys=0.5s maxrss=894MB exit=0
+L	2	wall=5.5s user=4.4s sys=1.5s maxrss=1672MB exit=0
+L	3	wall=6.0s user=5.2s sys=1.5s maxrss=1529MB exit=0
+B	1	wall=9.6s user=8.4s sys=2.0s maxrss=1922MB exit=0
+B	2	wall=18.3s user=16.5s sys=3.5s maxrss=3958MB exit=0
+B	3	wall=17.1s user=15.2s sys=3.1s maxrss=3865MB exit=0

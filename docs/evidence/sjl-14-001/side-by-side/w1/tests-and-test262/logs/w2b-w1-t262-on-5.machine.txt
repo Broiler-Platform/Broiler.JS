@@ -1,0 +1,107 @@
+=== w2b-w1-t262-on-5 before
+time: 2026-11-20T02:06:34Z
+loadavg: 0.91 3.45 4.26 1/115 28065
+nproc: 4
+sdk: 10.0.404
+os: Ubuntu 24.04.5 LTS
+disk: 11421 MiB free
+procs-matching:
+kernel: Linux 6.18.44-fc-v726 x86_64
+processes:
+      1    02:31:23 process_api     /process_api --firecracker-init --addr 0.0.0.0:2024 --max-ws-buffer-size 32768 --block-local-connections --log-vsock-port 5002 --control-vsock-port 5001 --listen-vsoc
+      2    02:31:23 kthreadd        [kthreadd]
+      3    02:31:23 pool_workqueue_ [pool_workqueue_release]
+      4    02:31:23 kworker/R-rcu_g [kworker/R-rcu_gp]
+      5    02:31:23 kworker/R-sync_ [kworker/R-sync_wq]
+      6    02:31:23 kworker/R-kvfre [kworker/R-kvfree_rcu_reclaim]
+      7    02:31:23 kworker/R-slub_ [kworker/R-slub_flushwq]
+      8    02:31:23 kworker/R-netns [kworker/R-netns]
+     10    02:31:23 kworker/0:0H-ev [kworker/0:0H-events_highpri]
+     13    02:31:23 kworker/R-mm_pe [kworker/R-mm_percpu_wq]
+     14    02:31:23 ksoftirqd/0     [ksoftirqd/0]
+     15    02:31:23 rcu_preempt     [rcu_preempt]
+     16    02:31:23 rcu_exp_par_gp_ [rcu_exp_par_gp_kthread_worker/0]
+     17    02:31:23 rcu_exp_gp_kthr [rcu_exp_gp_kthread_worker]
+     18    02:31:23 migration/0     [migration/0]
+     19    02:31:23 cpuhp/0         [cpuhp/0]
+     20    02:31:23 cpuhp/1         [cpuhp/1]
+     21    02:31:23 migration/1     [migration/1]
+     22    02:31:23 ksoftirqd/1     [ksoftirqd/1]
+     23    02:31:23 kworker/1:0-slu [kworker/1:0-slub_flushwq]
+     24    02:31:23 kworker/1:0H-kb [kworker/1:0H-kblockd]
+     25    02:31:23 cpuhp/2         [cpuhp/2]
+     26    02:31:23 migration/2     [migration/2]
+     27    02:31:23 ksoftirqd/2     [ksoftirqd/2]
+     28    02:31:23 kworker/2:0-slu [kworker/2:0-slub_flushwq]
+     29    02:31:23 kworker/2:0H-ev [kworker/2:0H-events_highpri]
+     30    02:31:23 cpuhp/3         [cpuhp/3]
+     31    02:31:23 migration/3     [migration/3]
+     32    02:31:23 ksoftirqd/3     [ksoftirqd/3]
+     33    02:31:23 kworker/3:0-slu [kworker/3:0-slub_flushwq]
+     34    02:31:23 kworker/3:0H-ev [kworker/3:0H-events_highpri]
+     35    02:31:23 kdevtmpfs       [kdevtmpfs]
+     36    02:31:23 kworker/R-inet_ [kworker/R-inet_frag_wq]
+     37    02:31:23 rcu_tasks_kthre [rcu_tasks_kthread]
+     38    02:31:23 rcu_tasks_rude_ [rcu_tasks_rude_kthread]
+     39    02:31:23 rcu_tasks_trace [rcu_tasks_trace_kthread]
+     40    02:31:23 kauditd         [kauditd]
+     41    02:31:23 khungtaskd      [khungtaskd]
+     42    02:31:23 oom_reaper      [oom_reaper]
+     44    02:31:23 kworker/R-write [kworker/R-writeback]
+     46    02:31:23 kcompactd0      [kcompactd0]
+     47    02:31:23 ksmd            [ksmd]
+     48    02:31:23 khugepaged      [khugepaged]
+     49    02:31:23 kworker/R-kbloc [kworker/R-kblockd]
+     50    02:31:23 kworker/R-blkcg [kworker/R-blkcg_punt_bio]
+     52    02:31:23 kworker/2:1-eve [kworker/2:1-events]
+     53    02:31:23 kworker/1:1-eve [kworker/1:1-events]
+     54    02:31:23 watchdogd       [watchdogd]
+     55    02:31:23 kworker/R-quota [kworker/R-quota_events_unbound]
+     56    02:31:23 kworker/2:1H-kb [kworker/2:1H-kblockd]
+     57    02:31:23 kswapd0         [kswapd0]
+     58    02:31:23 kworker/R-xfsal [kworker/R-xfsalloc]
+     59    02:31:23 kworker/R-xfs_m [kworker/R-xfs_mru_cache]
+     60    02:31:23 kworker/u17:0   [kworker/u17:0]
+     61    02:31:23 kworker/R-kthro [kworker/R-kthrotld]
+     62    02:31:23 irq/24-ACPI:Ged [irq/24-ACPI:Ged]
+     63    02:31:23 irq/25-ACPI:Ged [irq/25-ACPI:Ged]
+     64    02:31:23 hwrng           [hwrng]
+     65    02:31:22 kworker/3:1H-kb [kworker/3:1H-kblockd]
+     66    02:31:22 kworker/R-kstrp [kworker/R-kstrp]
+     69    02:31:22 kworker/0:1H-kb [kworker/0:1H-kblockd]
+     84    02:31:22 kworker/R-ext4- [kworker/R-ext4-rsv-conversion]
+     86    02:31:22 kworker/R-ext4- [kworker/R-ext4-rsv-conversion]
+     87    02:31:22 kworker/R-ext4- [kworker/R-ext4-rsv-conversion]
+     89    02:31:22 7               sbx-telemetry-collector
+     90    02:31:22 sh              /bin/sh -c if ! { [ ! -L /var/lib/ccr-ca-store ] && { [ ! -e /var/lib/ccr-ca-store ] || { [ -d /var/lib/ccr-ca-store ] && [ -O /var/lib/ccr-ca-store ] ; } ; } ; } ; t
+     91    02:31:22 kworker/1:1H-kb [kworker/1:1H-kblockd]
+     94    02:31:21 environment-man /usr/local/bin/environment-manager task-run --stdin --session cse_01EvynDJNoDfZb8zqpgEWykW --session-mode resume --upgrade-claude-code=False
+    102    02:31:20 claude          /opt/claude-code/bin/claude --preload /home/claude/.claude/remote/spare.sock
+    214    02:30:10 bash            bash /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2base/scripts/chain.sh
+    215    02:30:10 bash            bash /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2base/scripts/drive.sh 8e5519d8cf81808856e32f2275fcb4d3b98a73f3 w1 archive 
+   1748    01:20:19 kworker/0:0-eve [kworker/0:0-events]
+   2267       38:34 kworker/u16:8-i [kworker/u16:8-iou_exit]
+   3021       38:24 kworker/0:2     [kworker/0:2]
+   3314    01:59:33 bash            /bin/bash -c { \builtin typeset +x '__CLAUDE_CC_COMMAND_TEXT' 2>/dev/null || \builtin true; } && source /root/.claude/shell-snapshots/snapshot-bash-1795131344865-6uvk
+   8957       06:40 kworker/u16:3-i [kworker/u16:3-iou_exit]
+   8958       06:40 kworker/u16:5-e [kworker/u16:5-events_unbound]
+   9341       46:46 kworker/3:1-eve [kworker/3:1-events]
+  16281       13:28 kworker/u16:2-i [kworker/u16:2-iou_exit]
+  18879       12:42 kworker/u16:4-i [kworker/u16:4-iou_exit]
+  25118       01:53 kworker/u16:6-e [kworker/u16:6-events_unbound]
+  25119       01:53 kworker/u16:7   [kworker/u16:7]
+  25678       01:52 bash            bash /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/s2/ev2/scripts/run.sh w2b-w1-t262-on-5 /tmp/claude-0/-home-user/0a6f6b61-1da7-5
+  25741       20:31 kworker/u16:0-e [kworker/u16:0-events_unbound]
+  26100       20:25 kworker/u16:1-i [kworker/u16:1-iou_exit]
+  26230       01:31 sleep           sleep 120
+  28256       00:00 ps              ps -eo pid=,etime=,comm=,args=
+  28257       00:00 cut             cut -c1-200
+  28258       00:00 sed             sed s/^/  /
+=== w2b-w1-t262-on-5 after (rc=0 started=2026-11-20T02:06:34Z)
+time: 2026-11-20T02:41:35Z
+loadavg: 4.49 4.58 4.54 1/120 15092
+nproc: 4
+sdk: 10.0.404
+os: Ubuntu 24.04.5 LTS
+disk: 11415 MiB free
+procs-matching:

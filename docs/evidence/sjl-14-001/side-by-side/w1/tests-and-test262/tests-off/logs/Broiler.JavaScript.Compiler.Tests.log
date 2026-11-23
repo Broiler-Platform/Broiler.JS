@@ -1,0 +1,15 @@
+Test run for /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Compiler.Tests/bin/Release/net10.0/Broiler.JavaScript.Compiler.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:18.60]     Broiler.JavaScript.Compiler.Tests.DeclarationDenseSourceTests.ManyTopLevelDeclarations_CompileInTimeLinearInTheirCount [FAIL]
+  Failed Broiler.JavaScript.Compiler.Tests.DeclarationDenseSourceTests.ManyTopLevelDeclarations_CompileInTimeLinearInTheirCount [12 s]
+  Error Message:
+   2000 top-level declarations took 2477 ms against 308 ms for 500 (8.0x for 4x the declarations); the closure pipeline exceeded the scaling bound; inspect compilation costs and host contention.
+  Stack Trace:
+     at Broiler.JavaScript.Compiler.Tests.DeclarationDenseSourceTests.ManyTopLevelDeclarations_CompileInTimeLinearInTheirCount() in /home/user/js-w2base-build/8e5519d8/tree/Broiler.JS/Broiler.JavaScript.Compiler.Tests/DeclarationDenseSourceTests.cs:line 86
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+Results File: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2base/w1/tests-off/trx/Broiler.JavaScript.Compiler.Tests.trx
+
+Failed!  - Failed:     1, Passed:  1551, Skipped:     0, Total:  1552, Duration: 37 s - Broiler.JavaScript.Compiler.Tests.dll (net10.0)
+VSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.

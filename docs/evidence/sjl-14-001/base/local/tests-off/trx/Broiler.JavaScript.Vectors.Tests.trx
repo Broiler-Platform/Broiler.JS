@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="af5c8363-4e3f-47ef-aedd-0c5547746754" name="@vm 2026-11-22 15:00:21" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-11-22T15:00:21.1125070+00:00" queuing="2026-11-22T15:00:21.1125070+00:00" start="2026-11-22T15:00:17.3551028+00:00" finish="2026-11-22T15:43:38.1141037+00:00" />
+  <TestSettings name="default" id="a4d84547-541d-4ad3-a67f-f85dce2149f0">
+    <Deployment runDeploymentRoot="_vm_2026-11-22_15_00_21" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="e021e525-80b4-4585-8775-dec76d18ba32" testId="0c7fbfdb-7f50-4d54-4bd9-a97464497801" testName="Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 1)" computerName="vm" duration="00:00:02.2370000" startTime="2026-11-22T15:00:18.7989914+00:00" endTime="2026-11-22T15:00:21.0570634+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e021e525-80b4-4585-8775-dec76d18ba32" />
+    <UnitTestResult executionId="00a36fd6-5d53-47cf-a854-ad4f4553a9dc" testId="1720b89a-d94b-eaf2-c37f-a32a6def8767" testName="Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 3)" computerName="vm" duration="00:00:00.0020000" startTime="2026-11-22T15:00:21.0653688+00:00" endTime="2026-11-22T15:00:21.0684725+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="00a36fd6-5d53-47cf-a854-ad4f4553a9dc" />
+    <UnitTestResult executionId="3ae8e574-dcb0-4973-9482-e398993437c9" testId="ea42a658-1773-8e92-3b7f-197278340746" testName="Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place" computerName="vm" duration="00:00:00.0070000" startTime="2026-11-22T15:00:40.4792945+00:00" endTime="2026-11-22T15:00:40.4869809+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3ae8e574-dcb0-4973-9482-e398993437c9" />
+    <UnitTestResult executionId="9cad256c-f1e3-4780-a84d-096a14ff6c2f" testId="af7a0c73-70f2-0ff5-fa7c-038f2ee993e9" testName="Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way" computerName="vm" duration="00:00:05.6480000" startTime="2026-11-22T15:00:21.0716539+00:00" endTime="2026-11-22T15:00:26.7202712+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9cad256c-f1e3-4780-a84d-096a14ff6c2f" />
+    <UnitTestResult executionId="72584eba-5399-4cdb-b3da-216c95e417e1" testId="1be3eaba-d7a3-10e4-263c-f3ac6fbb8506" testName="Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified" computerName="vm" duration="00:42:40.2310000" startTime="2026-11-22T15:00:57.6866840+00:00" endTime="2026-11-22T15:43:37.9183716+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="72584eba-5399-4cdb-b3da-216c95e417e1">
+      <Output>
+        <StdOut>111374 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 42 min 40.1 s; the slowest, semantics/super/ee0131/0003, took 5.000 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003.</StdOut>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="2142f400-c3b5-4a68-9c79-e6f77de3db8a" testId="55906f6e-3142-a0bb-4e62-b099282cc6ea" testName="Broiler.JavaScript.Vectors.Tests.EngineRunTests.Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion" computerName="vm" duration="00:00:13.7540000" startTime="2026-11-22T15:00:26.7226625+00:00" endTime="2026-11-22T15:00:40.4773499+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2142f400-c3b5-4a68-9c79-e6f77de3db8a" />
+    <UnitTestResult executionId="53bf20ee-8d38-451c-adfe-fc10dce84f82" testId="f3fe877b-a04d-8270-608e-486a7f7a033f" testName="Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm" computerName="vm" duration="00:00:00.3880000" startTime="2026-11-22T15:00:57.2949933+00:00" endTime="2026-11-22T15:00:57.6837960+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="53bf20ee-8d38-451c-adfe-fc10dce84f82" />
+    <UnitTestResult executionId="d756c84e-e93e-4a62-b6e9-2e33385ffcea" testId="a8e3e031-3b9b-4934-1e93-5d9bcb71a421" testName="Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_negative_control_is_reported_as_an_unclassified_difference" computerName="vm" duration="00:00:16.8039999" startTime="2026-11-22T15:00:40.4877981+00:00" endTime="2026-11-22T15:00:57.2923153+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d756c84e-e93e-4a62-b6e9-2e33385ffcea" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.vectors.tests/bin/release/net10.0/broiler.javascript.vectors.tests.dll" id="1be3eaba-d7a3-10e4-263c-f3ac6fbb8506">
+      <Execution id="72584eba-5399-4cdb-b3da-216c95e417e1" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Vectors.Tests.EngineRunTests" name="Every_difference_from_the_corpus_is_classified" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.vectors.tests/bin/release/net10.0/broiler.javascript.vectors.tests.dll" id="ea42a658-1773-8e92-3b7f-197278340746">
+      <Execution id="3ae8e574-dcb0-4973-9482-e398993437c9" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Vectors.Tests.EngineRunTests" name="A_vector_re_checked_alone_keeps_what_it_gives_alone_in_its_own_place" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 3)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.vectors.tests/bin/release/net10.0/broiler.javascript.vectors.tests.dll" id="1720b89a-d94b-eaf2-c37f-a32a6def8767">
+      <Execution id="00a36fd6-5d53-47cf-a854-ad4f4553a9dc" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Vectors.Tests.EngineRunTests" name="A_status_vector_is_skipped_counted_and_named_in_the_summary" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.vectors.tests/bin/release/net10.0/broiler.javascript.vectors.tests.dll" id="af7a0c73-70f2-0ff5-fa7c-038f2ee993e9">
+      <Execution id="9cad256c-f1e3-4780-a84d-096a14ff6c2f" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Vectors.Tests.EngineRunTests" name="The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Vectors.Tests.EngineRunTests.Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.vectors.tests/bin/release/net10.0/broiler.javascript.vectors.tests.dll" id="55906f6e-3142-a0bb-4e62-b099282cc6ea">
+      <Execution id="2142f400-c3b5-4a68-9c79-e6f77de3db8a" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Vectors.Tests.EngineRunTests" name="Several_processes_keep_the_order_and_re_check_a_vector_that_found_no_completion" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_negative_control_is_reported_as_an_unclassified_difference" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.vectors.tests/bin/release/net10.0/broiler.javascript.vectors.tests.dll" id="a8e3e031-3b9b-4934-1e93-5d9bcb71a421">
+      <Execution id="d756c84e-e93e-4a62-b6e9-2e33385ffcea" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Vectors.Tests.EngineRunTests" name="The_negative_control_is_reported_as_an_unclassified_difference" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.vectors.tests/bin/release/net10.0/broiler.javascript.vectors.tests.dll" id="f3fe877b-a04d-8270-608e-486a7f7a033f">
+      <Execution id="53bf20ee-8d38-451c-adfe-fc10dce84f82" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Vectors.Tests.EngineRunTests" name="Each_vector_runs_in_a_fresh_realm" />
+    </UnitTest>
+    <UnitTest name="Broiler.JavaScript.Vectors.Tests.EngineRunTests.A_status_vector_is_skipped_counted_and_named_in_the_summary(workers: 1)" storage="/home/user/js-w2base-build/69a8a13b/tree/broiler.js/broiler.javascript.vectors.tests/bin/release/net10.0/broiler.javascript.vectors.tests.dll" id="0c7fbfdb-7f50-4d54-4bd9-a97464497801">
+      <Execution id="e021e525-80b4-4585-8775-dec76d18ba32" />
+      <TestMethod codeBase="/home/user/js-w2base-build/69a8a13b/tree/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Broiler.JavaScript.Vectors.Tests.EngineRunTests" name="A_status_vector_is_skipped_counted_and_named_in_the_summary" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="0c7fbfdb-7f50-4d54-4bd9-a97464497801" executionId="e021e525-80b4-4585-8775-dec76d18ba32" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1720b89a-d94b-eaf2-c37f-a32a6def8767" executionId="00a36fd6-5d53-47cf-a854-ad4f4553a9dc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ea42a658-1773-8e92-3b7f-197278340746" executionId="3ae8e574-dcb0-4973-9482-e398993437c9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="af7a0c73-70f2-0ff5-fa7c-038f2ee993e9" executionId="9cad256c-f1e3-4780-a84d-096a14ff6c2f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1be3eaba-d7a3-10e4-263c-f3ac6fbb8506" executionId="72584eba-5399-4cdb-b3da-216c95e417e1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="55906f6e-3142-a0bb-4e62-b099282cc6ea" executionId="2142f400-c3b5-4a68-9c79-e6f77de3db8a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f3fe877b-a04d-8270-608e-486a7f7a033f" executionId="53bf20ee-8d38-451c-adfe-fc10dce84f82" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a8e3e031-3b9b-4934-1e93-5d9bcb71a421" executionId="d756c84e-e93e-4a62-b6e9-2e33385ffcea" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="8" executed="8" passed="8" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.21]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.46]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.66]   Starting:    Broiler.JavaScript.Vectors.Tests
+111374 vectors in 1 evaluating process(es) (BROILER_VECTORS_WORKERS) in 42 min 40.1 s; the slowest, semantics/super/ee0131/0003, took 5.000 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003.
+[xUnit.net 00:43:19.98]   Finished:    Broiler.JavaScript.Vectors.Tests (ID = '90a0445381874bf09b15fda4989a2d97f94be99bb4d7f85cb815dbda6d3f75a6')
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="vm" outcome="Warning" timestamp="2026-11-22T15:43:38.0489789+00:00">
+        <Text>Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

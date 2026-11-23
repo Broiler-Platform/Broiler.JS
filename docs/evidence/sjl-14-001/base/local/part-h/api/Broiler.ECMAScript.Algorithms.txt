@@ -1,0 +1,1020 @@
+namespace Broiler.ECMAScript
+{
+    public readonly struct DepthLimit : System.IEquatable<Broiler.ECMAScript.DepthLimit>
+    {
+        public DepthLimit(int maximum) { }
+        public int Maximum { get; }
+        public bool Admits(int depth) { }
+    }
+    public readonly struct Failure : System.IEquatable<Broiler.ECMAScript.Failure>
+    {
+        public const int NoPosition = -1;
+        public Failure(Broiler.ECMAScript.ResultStatus status, int position, string messageId) { }
+        public string MessageId { get; }
+        public int Position { get; }
+        public Broiler.ECMAScript.ResultStatus Status { get; }
+    }
+    public readonly struct LengthLimit : System.IEquatable<Broiler.ECMAScript.LengthLimit>
+    {
+        public LengthLimit(long maximum) { }
+        public long Maximum { get; }
+        public bool Admits(long length) { }
+    }
+    public enum ResultStatus
+    {
+        Completed = 0,
+        Malformed = 1,
+        LimitExceeded = 2,
+    }
+    public delegate void WorkCharge(ulong units);
+}
+namespace Broiler.ECMAScript.Numbers
+{
+    public static class BigIntMath
+    {
+        public static Broiler.ECMAScript.ResultStatus Add(System.Numerics.BigInteger left, System.Numerics.BigInteger right, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.ResultStatus AsIntN(ulong bits, System.Numerics.BigInteger value, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.ResultStatus AsUintN(ulong bits, System.Numerics.BigInteger value, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.ResultStatus BitwiseAnd(System.Numerics.BigInteger left, System.Numerics.BigInteger right, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.ResultStatus BitwiseNot(System.Numerics.BigInteger value, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.ResultStatus BitwiseOr(System.Numerics.BigInteger left, System.Numerics.BigInteger right, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.ResultStatus BitwiseXor(System.Numerics.BigInteger left, System.Numerics.BigInteger right, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static int CompareToNumber(System.Numerics.BigInteger value, double number, Broiler.ECMAScript.WorkCharge? charge) { }
+        public static Broiler.ECMAScript.ResultStatus Divide(System.Numerics.BigInteger left, System.Numerics.BigInteger right, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static System.Numerics.BigInteger FromIntegralNumber(double number) { }
+        public static ulong LeafCost(int words) { }
+        public static Broiler.ECMAScript.ResultStatus LeftShift(System.Numerics.BigInteger value, System.Numerics.BigInteger count, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static ulong LinearCost(int words) { }
+        public static Broiler.ECMAScript.ResultStatus Multiply(System.Numerics.BigInteger left, System.Numerics.BigInteger right, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.ResultStatus Negate(System.Numerics.BigInteger value, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.ResultStatus Power(System.Numerics.BigInteger @base, System.Numerics.BigInteger exponent, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static ulong ProductCost(int leftWords, int rightWords) { }
+        public static Broiler.ECMAScript.ResultStatus Remainder(System.Numerics.BigInteger left, System.Numerics.BigInteger right, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.ResultStatus SignedRightShift(System.Numerics.BigInteger value, System.Numerics.BigInteger count, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.ResultStatus Subtract(System.Numerics.BigInteger left, System.Numerics.BigInteger right, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger result) { }
+        public static double ToNumber(System.Numerics.BigInteger value, Broiler.ECMAScript.WorkCharge? charge) { }
+        public static int Words(System.Numerics.BigInteger value) { }
+        public static int WordsOf(long bits) { }
+    }
+    public readonly struct BigIntPolicy : System.IEquatable<Broiler.ECMAScript.Numbers.BigIntPolicy>
+    {
+        public const long RepresentationLimit = 2147483520;
+        public BigIntPolicy(long maximumBits) { }
+        public long MaximumBits { get; }
+        public static Broiler.ECMAScript.Numbers.BigIntPolicy Unbounded { get; }
+        public bool Admits(System.Numerics.BigInteger value) { }
+    }
+    public static class BigIntText
+    {
+        public static Broiler.ECMAScript.ResultStatus StringToBigInt(System.ReadOnlySpan<char> text, Broiler.ECMAScript.Numbers.BigIntPolicy policy, Broiler.ECMAScript.WorkCharge? charge, out System.Numerics.BigInteger value, out int tooWideSign) { }
+        public static string ToString(System.Numerics.BigInteger value, int radix, Broiler.ECMAScript.WorkCharge? charge) { }
+    }
+    public static class ExactRounding
+    {
+        public static System.Numerics.BigInteger ApplyUnsignedRoundingMode(System.Numerics.BigInteger numerator, System.Numerics.BigInteger denominator, System.Numerics.BigInteger lower, System.Numerics.BigInteger upper, Broiler.ECMAScript.Numbers.UnsignedRoundingMode mode) { }
+        public static Broiler.ECMAScript.Numbers.UnsignedRoundingMode GetUnsignedRoundingMode(Broiler.ECMAScript.Numbers.RoundingMode mode, bool negative) { }
+        public static Broiler.ECMAScript.Numbers.RoundingMode Negate(Broiler.ECMAScript.Numbers.RoundingMode mode) { }
+        public static System.Numerics.BigInteger RoundNumberToIncrement(System.Numerics.BigInteger numerator, System.Numerics.BigInteger denominator, System.Numerics.BigInteger increment, Broiler.ECMAScript.Numbers.RoundingMode mode) { }
+        public static System.Numerics.BigInteger RoundNumberToIncrementAsIfPositive(System.Numerics.BigInteger numerator, System.Numerics.BigInteger denominator, System.Numerics.BigInteger increment, Broiler.ECMAScript.Numbers.RoundingMode mode) { }
+        public static double ToDouble(System.Numerics.BigInteger numerator, System.Numerics.BigInteger denominator) { }
+        public static bool TryParseRoundingMode(System.ReadOnlySpan<char> name, out Broiler.ECMAScript.Numbers.RoundingMode mode) { }
+    }
+    public static class Float16
+    {
+        public const ushort CanonicalNaN = 32256;
+        public static double Decode(ushort bits) { }
+        public static ushort Encode(double value, Broiler.ECMAScript.Numbers.Float16NanPolicy nanPolicy) { }
+        public static double Round(double value) { }
+    }
+    public enum Float16NanPolicy
+    {
+        Canonical = 0,
+        PreservePayload = 1,
+    }
+    public static class IntegerConversions
+    {
+        public const long MaximumSafeInteger = 9007199254740991;
+        public static long ToBigInt64(System.Numerics.BigInteger value) { }
+        public static ulong ToBigUint64(System.Numerics.BigInteger value) { }
+        public static short ToInt16(double number) { }
+        public static int ToInt32(double number) { }
+        public static sbyte ToInt8(double number) { }
+        public static double ToIntegerOrInfinity(double number) { }
+        public static long ToLength(double number) { }
+        public static ushort ToUint16(double number) { }
+        public static uint ToUint32(double number) { }
+        public static byte ToUint8(double number) { }
+        public static byte ToUint8Clamp(double number) { }
+        public static bool TryToIndex(double number, out long index) { }
+    }
+    public static class MathKernels
+    {
+        public static double Cbrt(double x) { }
+        public static double Expm1(double x) { }
+        public static double Hypot(System.ReadOnlySpan<double> values) { }
+        public static double Log1p(double x) { }
+        public static double Power(double @base, double exponent) { }
+        public static double Round(double x) { }
+    }
+    public static class NumberParsing
+    {
+        public const string UnicodeVersion = "17.0.0";
+        public static bool IsStrWhiteSpaceChar(char c) { }
+        public static double ParseFloat(System.ReadOnlySpan<char> text, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static double ParseInt(System.ReadOnlySpan<char> text, int radix, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static double StringToNumber(System.ReadOnlySpan<char> text, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static System.ReadOnlySpan<char> TrimStrWhiteSpace(System.ReadOnlySpan<char> text, Broiler.ECMAScript.Numbers.TrimEnds ends) { }
+    }
+    public static class NumberText
+    {
+        public const int MaximumLength = 26;
+        public static string ToExponential(double value) { }
+        public static string ToExponential(double value, int fractionDigits) { }
+        public static string ToFixed(double value, int fractionDigits) { }
+        public static string ToPrecision(double value, int precision) { }
+        public static string ToRadixString(double value, int radix) { }
+        public static string ToString(double value) { }
+        public static bool TryFormat(double value, System.Span<char> destination, out int written) { }
+    }
+    public static class NumericKeys
+    {
+        public const uint MaximumArrayIndex = 4294967294u;
+        public static bool IsCanonicalNumericString(System.ReadOnlySpan<char> key, out double value) { }
+        public static bool TryParseArrayIndex(System.ReadOnlySpan<char> key, out uint index) { }
+    }
+    public readonly struct NumericLiteral : System.IEquatable<Broiler.ECMAScript.Numbers.NumericLiteral>
+    {
+        public NumericLiteral(Broiler.ECMAScript.Numbers.NumericLiteralKind Kind, Broiler.ECMAScript.Numbers.NumericLiteralForm Form, double Number, System.Numerics.BigInteger BigInt) { }
+        public System.Numerics.BigInteger BigInt { get; init; }
+        public Broiler.ECMAScript.Numbers.NumericLiteralForm Form { get; init; }
+        public Broiler.ECMAScript.Numbers.NumericLiteralKind Kind { get; init; }
+        public double Number { get; init; }
+    }
+    public enum NumericLiteralForm
+    {
+        Decimal = 0,
+        NonDecimal = 1,
+        LegacyOctal = 2,
+        NonOctalDecimal = 3,
+    }
+    public enum NumericLiteralKind
+    {
+        Number = 0,
+        BigInt = 1,
+    }
+    public static class NumericLiterals
+    {
+        public static Broiler.ECMAScript.ResultStatus Evaluate(System.ReadOnlySpan<char> text, bool strict, Broiler.ECMAScript.LengthLimit bigIntBits, out Broiler.ECMAScript.Numbers.NumericLiteral literal, out Broiler.ECMAScript.Failure failure, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public sealed class PreciseSum
+    {
+        public PreciseSum() { }
+        public void Add(double value) { }
+        public double Result() { }
+    }
+    public enum RoundingMode
+    {
+        Ceil = 0,
+        Floor = 1,
+        Expand = 2,
+        Trunc = 3,
+        HalfCeil = 4,
+        HalfFloor = 5,
+        HalfExpand = 6,
+        HalfTrunc = 7,
+        HalfEven = 8,
+    }
+    [System.Flags]
+    public enum TrimEnds
+    {
+        Start = 1,
+        End = 2,
+        Both = 3,
+    }
+    public enum UnsignedRoundingMode
+    {
+        Zero = 0,
+        Infinity = 1,
+        HalfZero = 2,
+        HalfInfinity = 3,
+        HalfEven = 4,
+    }
+}
+namespace Broiler.ECMAScript.Temporal
+{
+    public readonly struct CalendarDate : System.IEquatable<Broiler.ECMAScript.Temporal.CalendarDate>
+    {
+        public CalendarDate(string? Era, long? EraYear, long Year, int Month, Broiler.ECMAScript.Temporal.MonthCode MonthCode, int Day, int DayOfWeek, int DayOfYear, int? WeekOfYear, long? YearOfWeek, int DaysInMonth, int DaysInYear, int MonthsInYear, bool InLeapYear) { }
+        public int Day { get; init; }
+        public int DayOfWeek { get; init; }
+        public int DayOfYear { get; init; }
+        public int DaysInMonth { get; init; }
+        public int DaysInWeek { get; }
+        public int DaysInYear { get; init; }
+        public string? Era { get; init; }
+        public long? EraYear { get; init; }
+        public bool InLeapYear { get; init; }
+        public int Month { get; init; }
+        public Broiler.ECMAScript.Temporal.MonthCode MonthCode { get; init; }
+        public int MonthsInYear { get; init; }
+        public int? WeekOfYear { get; init; }
+        public long Year { get; init; }
+        public long? YearOfWeek { get; init; }
+    }
+    public readonly struct CalendarDuration : System.IEquatable<Broiler.ECMAScript.Temporal.CalendarDuration>
+    {
+        public CalendarDuration(long Years, long Months, long Weeks, long Days) { }
+        public long Days { get; init; }
+        public long Months { get; init; }
+        public long Weeks { get; init; }
+        public long Years { get; init; }
+    }
+    public readonly struct CalendarFields : System.IEquatable<Broiler.ECMAScript.Temporal.CalendarFields>
+    {
+        public double? Day { get; init; }
+        public string? Era { get; init; }
+        public double? EraYear { get; init; }
+        public double? Month { get; init; }
+        public Broiler.ECMAScript.Temporal.MonthCode? MonthCode { get; init; }
+        public double? Year { get; init; }
+    }
+    public enum CalendarFieldsType
+    {
+        Date = 0,
+        YearMonth = 1,
+        MonthDay = 2,
+    }
+    public enum CalendarId
+    {
+        Iso8601 = 0,
+        Buddhist = 1,
+        Chinese = 2,
+        Coptic = 3,
+        Dangi = 4,
+        Ethioaa = 5,
+        Ethiopic = 6,
+        Gregory = 7,
+        Hebrew = 8,
+        Indian = 9,
+        IslamicCivil = 10,
+        IslamicTbla = 11,
+        IslamicUmalqura = 12,
+        Japanese = 13,
+        Persian = 14,
+        Roc = 15,
+    }
+    public enum CalendarOverflow
+    {
+        Constrain = 0,
+        Reject = 1,
+    }
+    public enum CalendarStatus
+    {
+        Completed = 0,
+        UnknownCalendar = 1,
+        InvalidMonthCode = 2,
+        MissingYear = 3,
+        MissingMonth = 4,
+        MissingDay = 5,
+        IncompleteEra = 6,
+        UnknownEra = 7,
+        EraYearMismatch = 8,
+        MonthCodeMismatch = 9,
+        MonthNotInYear = 10,
+        FieldOutOfRange = 11,
+        NoReferenceDate = 12,
+        OutOfRange = 13,
+    }
+    public enum CalendarUnit
+    {
+        Year = 0,
+        Month = 1,
+        Week = 2,
+        Day = 3,
+    }
+    public readonly struct DateDuration : System.IEquatable<Broiler.ECMAScript.Temporal.DateDuration>
+    {
+        public DateDuration(double Years, double Months, double Weeks, double Days) { }
+        public double Days { get; init; }
+        public double Months { get; init; }
+        public double Weeks { get; init; }
+        public double Years { get; init; }
+    }
+    public enum DifferenceOperation
+    {
+        Until = 0,
+        Since = 1,
+    }
+    public readonly struct DifferenceSettings : System.IEquatable<Broiler.ECMAScript.Temporal.DifferenceSettings>
+    {
+        public DifferenceSettings(Broiler.ECMAScript.Temporal.TemporalUnit SmallestUnit, Broiler.ECMAScript.Temporal.TemporalUnit LargestUnit, Broiler.ECMAScript.Numbers.RoundingMode RoundingMode, long RoundingIncrement) { }
+        public Broiler.ECMAScript.Temporal.TemporalUnit LargestUnit { get; init; }
+        public long RoundingIncrement { get; init; }
+        public Broiler.ECMAScript.Numbers.RoundingMode RoundingMode { get; init; }
+        public Broiler.ECMAScript.Temporal.TemporalUnit SmallestUnit { get; init; }
+    }
+    public readonly struct DurationFields : System.IEquatable<Broiler.ECMAScript.Temporal.DurationFields>
+    {
+        public DurationFields(double Years, double Months, double Weeks, double Days, double Hours, double Minutes, double Seconds, double Milliseconds, double Microseconds, double Nanoseconds) { }
+        public double Days { get; init; }
+        public double Hours { get; init; }
+        public double Microseconds { get; init; }
+        public double Milliseconds { get; init; }
+        public double Minutes { get; init; }
+        public double Months { get; init; }
+        public double Nanoseconds { get; init; }
+        public double Seconds { get; init; }
+        public double Weeks { get; init; }
+        public double Years { get; init; }
+    }
+    public static class DurationMath
+    {
+        public static Broiler.ECMAScript.Temporal.DurationFields Abs(Broiler.ECMAScript.Temporal.DurationFields duration) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus Add24HourDaysToTimeDuration(System.Numerics.BigInteger time, double days, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus AddDurations(Broiler.ECMAScript.Temporal.DurationFields one, Broiler.ECMAScript.Temporal.DurationFields two, out Broiler.ECMAScript.Temporal.DurationFields result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus AddTimeDuration(System.Numerics.BigInteger one, System.Numerics.BigInteger two, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus AddZonedDateTime(System.Numerics.BigInteger epochNanoseconds, Broiler.ECMAScript.Temporal.ITimeZoneArithmetic timeZone, Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Temporal.InternalDuration duration, Broiler.ECMAScript.Temporal.TemporalOverflow overflow, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus Compare(Broiler.ECMAScript.Temporal.DurationFields one, Broiler.ECMAScript.Temporal.DurationFields two, Broiler.ECMAScript.Temporal.RelativeTo relativeTo, out int result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus CreateDateDurationRecord(double years, double months, double weeks, double days, out Broiler.ECMAScript.Temporal.DateDuration result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus DateDurationDays(Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Temporal.DateDuration duration, Broiler.ECMAScript.Time.IsoDate relativeTo, out double days) { }
+        public static Broiler.ECMAScript.Temporal.TemporalUnit DefaultLargestUnit(Broiler.ECMAScript.Temporal.DurationFields duration) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus FromInternal(Broiler.ECMAScript.Temporal.InternalDuration duration, Broiler.ECMAScript.Temporal.TemporalUnit largestUnit, out Broiler.ECMAScript.Temporal.DurationFields result) { }
+        public static Broiler.ECMAScript.Temporal.DurationFields Negate(Broiler.ECMAScript.Temporal.DurationFields duration) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus Round(Broiler.ECMAScript.Temporal.DurationFields duration, Broiler.ECMAScript.Temporal.TemporalUnit largestUnit, long roundingIncrement, Broiler.ECMAScript.Temporal.TemporalUnit smallestUnit, Broiler.ECMAScript.Numbers.RoundingMode roundingMode, Broiler.ECMAScript.Temporal.RelativeTo relativeTo, out Broiler.ECMAScript.Temporal.DurationFields result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus RoundRelativeDuration(Broiler.ECMAScript.Temporal.InternalDuration duration, System.Numerics.BigInteger originEpochNanoseconds, System.Numerics.BigInteger destinationEpochNanoseconds, Broiler.ECMAScript.Time.IsoDateTime dateTime, Broiler.ECMAScript.Temporal.ITimeZoneArithmetic? timeZone, Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Temporal.TemporalUnit largestUnit, long roundingIncrement, Broiler.ECMAScript.Temporal.TemporalUnit smallestUnit, Broiler.ECMAScript.Numbers.RoundingMode roundingMode, out Broiler.ECMAScript.Temporal.InternalDuration result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus RoundTimeDuration(System.Numerics.BigInteger duration, long increment, Broiler.ECMAScript.Temporal.TemporalUnit unit, Broiler.ECMAScript.Numbers.RoundingMode mode, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus RoundTimeDurationToIncrement(System.Numerics.BigInteger duration, System.Numerics.BigInteger increment, Broiler.ECMAScript.Numbers.RoundingMode mode, out System.Numerics.BigInteger result) { }
+        public static int Sign(Broiler.ECMAScript.Temporal.DateDuration duration) { }
+        public static int Sign(Broiler.ECMAScript.Temporal.DurationFields duration) { }
+        public static int Sign(Broiler.ECMAScript.Temporal.InternalDuration duration) { }
+        public static Broiler.ECMAScript.Temporal.InternalDuration ToInternal(Broiler.ECMAScript.Temporal.DurationFields duration) { }
+        public static Broiler.ECMAScript.Temporal.InternalDuration ToInternalWith24HourDays(Broiler.ECMAScript.Temporal.DurationFields duration) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus Total(Broiler.ECMAScript.Temporal.DurationFields duration, Broiler.ECMAScript.Temporal.TemporalUnit unit, Broiler.ECMAScript.Temporal.RelativeTo relativeTo, out double total) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus TotalRelativeDuration(Broiler.ECMAScript.Temporal.InternalDuration duration, System.Numerics.BigInteger originEpochNanoseconds, System.Numerics.BigInteger destinationEpochNanoseconds, Broiler.ECMAScript.Time.IsoDateTime dateTime, Broiler.ECMAScript.Temporal.ITimeZoneArithmetic? timeZone, Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Temporal.TemporalUnit unit, out double total) { }
+        public static double TotalTimeDuration(System.Numerics.BigInteger duration, Broiler.ECMAScript.Temporal.TemporalUnit unit) { }
+    }
+    public interface ICalendarArithmetic
+    {
+        Broiler.ECMAScript.Temporal.CalendarStatus DateAdd(Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDate date, Broiler.ECMAScript.Temporal.CalendarDuration duration, Broiler.ECMAScript.Temporal.CalendarOverflow overflow, out Broiler.ECMAScript.Time.IsoDate result);
+        Broiler.ECMAScript.Temporal.CalendarStatus DateUntil(Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDate one, Broiler.ECMAScript.Time.IsoDate two, Broiler.ECMAScript.Temporal.CalendarUnit largestUnit, out Broiler.ECMAScript.Temporal.CalendarDuration result);
+    }
+    public interface ITimeZoneArithmetic
+    {
+        Broiler.ECMAScript.Time.TimeStatus GetEpochNanosecondsFor(Broiler.ECMAScript.Time.IsoDateTime dateTime, Broiler.ECMAScript.Time.Disambiguation disambiguation, out System.Numerics.BigInteger epochNanoseconds);
+        long GetOffsetNanosecondsFor(System.Numerics.BigInteger epochNanoseconds);
+        Broiler.ECMAScript.Time.TimeStatus GetStartOfDay(Broiler.ECMAScript.Time.IsoDate date, out System.Numerics.BigInteger epochNanoseconds);
+    }
+    public readonly struct InternalDuration : System.IEquatable<Broiler.ECMAScript.Temporal.InternalDuration>
+    {
+        public InternalDuration(Broiler.ECMAScript.Temporal.DateDuration Date, System.Numerics.BigInteger TimeNanoseconds) { }
+        public Broiler.ECMAScript.Temporal.DateDuration Date { get; init; }
+        public System.Numerics.BigInteger TimeNanoseconds { get; init; }
+    }
+    public static class IsoArithmetic
+    {
+        public static Broiler.ECMAScript.Time.IsoDate AddDaysToIsoDate(Broiler.ECMAScript.Time.IsoDate date, long days) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus AddInstant(System.Numerics.BigInteger epochNanoseconds, System.Numerics.BigInteger timeDuration, out System.Numerics.BigInteger result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus AddIsoDate(Broiler.ECMAScript.Time.IsoDate date, Broiler.ECMAScript.Temporal.DateDuration duration, Broiler.ECMAScript.Temporal.TemporalOverflow overflow, out Broiler.ECMAScript.Time.IsoDate result) { }
+        public static Broiler.ECMAScript.Time.IsoTime AddTime(Broiler.ECMAScript.Time.IsoTime time, System.Numerics.BigInteger timeDuration, out long days) { }
+        public static Broiler.ECMAScript.Time.IsoDate BalanceIsoDate(long year, long month, long day) { }
+        public static Broiler.ECMAScript.Time.IsoDateTime BalanceIsoDateTime(Broiler.ECMAScript.Time.IsoDate date, System.Numerics.BigInteger timeNanoseconds) { }
+        public static Broiler.ECMAScript.Time.IsoTime BalanceTime(System.Numerics.BigInteger nanoseconds, out long days) { }
+        public static Broiler.ECMAScript.Time.IsoTime BalanceTime(double hour, double minute, double second, double millisecond, double microsecond, double nanosecond, out long days) { }
+        public static int CompareIsoDate(Broiler.ECMAScript.Time.IsoDate one, Broiler.ECMAScript.Time.IsoDate two) { }
+        public static int CompareIsoDateTime(Broiler.ECMAScript.Time.IsoDateTime one, Broiler.ECMAScript.Time.IsoDateTime two) { }
+        public static int CompareTime(Broiler.ECMAScript.Time.IsoTime one, Broiler.ECMAScript.Time.IsoTime two) { }
+        public static System.Numerics.BigInteger DifferenceTime(Broiler.ECMAScript.Time.IsoTime one, Broiler.ECMAScript.Time.IsoTime two) { }
+        public static Broiler.ECMAScript.Time.IsoDateTime GetIsoPartsFromEpoch(System.Numerics.BigInteger epochNanoseconds) { }
+        public static System.Numerics.BigInteger GetUtcEpochNanoseconds(Broiler.ECMAScript.Time.IsoDateTime dateTime) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus RegulateIsoDate(long year, double month, double day, Broiler.ECMAScript.Temporal.TemporalOverflow overflow, out Broiler.ECMAScript.Time.IsoDate result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus RegulateTime(double hour, double minute, double second, double millisecond, double microsecond, double nanosecond, Broiler.ECMAScript.Temporal.TemporalOverflow overflow, out Broiler.ECMAScript.Time.IsoTime result) { }
+        public static Broiler.ECMAScript.Time.IsoDateTime RoundIsoDateTime(Broiler.ECMAScript.Time.IsoDateTime dateTime, long increment, Broiler.ECMAScript.Temporal.TemporalUnit unit, Broiler.ECMAScript.Numbers.RoundingMode mode) { }
+        public static System.Numerics.BigInteger RoundTemporalInstant(System.Numerics.BigInteger epochNanoseconds, long increment, Broiler.ECMAScript.Temporal.TemporalUnit unit, Broiler.ECMAScript.Numbers.RoundingMode mode) { }
+        public static Broiler.ECMAScript.Time.IsoTime RoundTime(Broiler.ECMAScript.Time.IsoTime time, long increment, Broiler.ECMAScript.Temporal.TemporalUnit unit, Broiler.ECMAScript.Numbers.RoundingMode mode, out long days) { }
+        public static long TimeToNanoseconds(Broiler.ECMAScript.Time.IsoTime time) { }
+    }
+    public sealed class IsoParseResult
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Temporal.TemporalAnnotation> Annotations { get; }
+        public string? Calendar { get; }
+        public int Day { get; }
+        public Broiler.ECMAScript.Temporal.TemporalGoal Goal { get; }
+        public bool HasDay { get; }
+        public int Month { get; }
+        public string? Offset { get; }
+        public bool OffsetHasSeconds { get; }
+        public long OffsetNanoseconds { get; }
+        public Broiler.ECMAScript.Time.IsoTime? Time { get; }
+        public string? TimeZone { get; }
+        public long? Year { get; }
+        public bool Z { get; }
+    }
+    public readonly struct MonthCode : System.IEquatable<Broiler.ECMAScript.Temporal.MonthCode>
+    {
+        public MonthCode(int number, bool isLeapMonth) { }
+        public bool IsLeapMonth { get; }
+        public int Number { get; }
+        public override string ToString() { }
+        public static Broiler.ECMAScript.Temporal.CalendarStatus Parse(System.ReadOnlySpan<char> text, out Broiler.ECMAScript.Temporal.MonthCode monthCode) { }
+    }
+    public readonly struct RelativeTo : System.IEquatable<Broiler.ECMAScript.Temporal.RelativeTo>
+    {
+        public Broiler.ECMAScript.Temporal.CalendarId Calendar { get; }
+        public Broiler.ECMAScript.Temporal.ICalendarArithmetic? Calendars { get; }
+        public System.Numerics.BigInteger EpochNanoseconds { get; }
+        public bool IsPlain { get; }
+        public bool IsZoned { get; }
+        public Broiler.ECMAScript.Time.IsoDate PlainDate { get; }
+        public Broiler.ECMAScript.Temporal.ITimeZoneArithmetic? TimeZone { get; }
+        public static Broiler.ECMAScript.Temporal.RelativeTo None { get; }
+        public bool Equals(Broiler.ECMAScript.Temporal.RelativeTo other) { }
+        public override bool Equals(object? obj) { }
+        public override int GetHashCode() { }
+        public static Broiler.ECMAScript.Temporal.RelativeTo FromPlainDate(Broiler.ECMAScript.Time.IsoDate date, Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar) { }
+        public static Broiler.ECMAScript.Temporal.RelativeTo FromZoned(System.Numerics.BigInteger epochNanoseconds, Broiler.ECMAScript.Temporal.ITimeZoneArithmetic timeZone, Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar) { }
+        public static bool operator !=(Broiler.ECMAScript.Temporal.RelativeTo left, Broiler.ECMAScript.Temporal.RelativeTo right) { }
+        public static bool operator ==(Broiler.ECMAScript.Temporal.RelativeTo left, Broiler.ECMAScript.Temporal.RelativeTo right) { }
+    }
+    public readonly struct SecondsStringPrecision : System.IEquatable<Broiler.ECMAScript.Temporal.SecondsStringPrecision>
+    {
+        public SecondsStringPrecision(int Precision, Broiler.ECMAScript.Temporal.TemporalUnit Unit, long Increment) { }
+        public long Increment { get; init; }
+        public int Precision { get; init; }
+        public Broiler.ECMAScript.Temporal.TemporalUnit Unit { get; init; }
+    }
+    public enum ShowCalendarName
+    {
+        Auto = 0,
+        Always = 1,
+        Never = 2,
+        Critical = 3,
+    }
+    public enum ShowOffset
+    {
+        Auto = 0,
+        Never = 1,
+    }
+    public enum ShowTimeZoneName
+    {
+        Auto = 0,
+        Never = 1,
+        Critical = 2,
+    }
+    public readonly struct TemporalAnnotation : System.IEquatable<Broiler.ECMAScript.Temporal.TemporalAnnotation>
+    {
+        public TemporalAnnotation(bool Critical, string Key, string Value) { }
+        public bool Critical { get; init; }
+        public string Key { get; init; }
+        public string Value { get; init; }
+    }
+    public sealed class TemporalCalendars : Broiler.ECMAScript.Temporal.ICalendarArithmetic
+    {
+        public TemporalCalendars(Broiler.ECMAScript.Time.ICalendarTables tables) { }
+        public Broiler.ECMAScript.Temporal.CalendarStatus DateAdd(Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDate date, Broiler.ECMAScript.Temporal.CalendarDuration duration, Broiler.ECMAScript.Temporal.CalendarOverflow overflow, out Broiler.ECMAScript.Time.IsoDate result) { }
+        public Broiler.ECMAScript.Temporal.CalendarStatus DateFromFields(Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Temporal.CalendarFields fields, Broiler.ECMAScript.Temporal.CalendarOverflow overflow, out Broiler.ECMAScript.Time.IsoDate result) { }
+        public Broiler.ECMAScript.Temporal.CalendarStatus DateToFields(Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDate date, Broiler.ECMAScript.Temporal.CalendarFieldsType type, out Broiler.ECMAScript.Temporal.CalendarFields result) { }
+        public Broiler.ECMAScript.Temporal.CalendarStatus DateToMonthDay(Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDate date, out Broiler.ECMAScript.Time.IsoDate result) { }
+        public Broiler.ECMAScript.Temporal.CalendarStatus DateToYearMonth(Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDate date, out Broiler.ECMAScript.Time.IsoDate result) { }
+        public Broiler.ECMAScript.Temporal.CalendarStatus DateUntil(Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDate one, Broiler.ECMAScript.Time.IsoDate two, Broiler.ECMAScript.Temporal.CalendarUnit largestUnit, out Broiler.ECMAScript.Temporal.CalendarDuration result) { }
+        public Broiler.ECMAScript.Temporal.CalendarStatus IsoToDate(Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDate date, out Broiler.ECMAScript.Temporal.CalendarDate result) { }
+        public Broiler.ECMAScript.Temporal.CalendarStatus MonthDayFromFields(Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Temporal.CalendarFields fields, Broiler.ECMAScript.Temporal.CalendarOverflow overflow, out Broiler.ECMAScript.Time.IsoDate result) { }
+        public Broiler.ECMAScript.Temporal.CalendarStatus MonthDayToDate(Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDate monthDay, Broiler.ECMAScript.Temporal.CalendarFields fields, out Broiler.ECMAScript.Time.IsoDate result) { }
+        public Broiler.ECMAScript.Temporal.CalendarStatus YearMonthFromFields(Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Temporal.CalendarFields fields, Broiler.ECMAScript.Temporal.CalendarOverflow overflow, out Broiler.ECMAScript.Time.IsoDate result) { }
+        public Broiler.ECMAScript.Temporal.CalendarStatus YearMonthToDate(Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDate yearMonth, Broiler.ECMAScript.Temporal.CalendarFields fields, out Broiler.ECMAScript.Time.IsoDate result) { }
+        public static Broiler.ECMAScript.Temporal.CalendarStatus Canonicalize(System.ReadOnlySpan<char> identifier, out Broiler.ECMAScript.Temporal.CalendarId calendar) { }
+        public static string Identifier(Broiler.ECMAScript.Temporal.CalendarId calendar) { }
+        public static bool IsTypeError(Broiler.ECMAScript.Temporal.CalendarStatus status) { }
+        public static Broiler.ECMAScript.Temporal.CalendarFields MergeFields(Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Temporal.CalendarFields fields, Broiler.ECMAScript.Temporal.CalendarFields additional) { }
+        public static bool SupportsEra(Broiler.ECMAScript.Temporal.CalendarId calendar) { }
+    }
+    public static class TemporalDifferences
+    {
+        public static Broiler.ECMAScript.Temporal.TemporalStatus DifferenceInstant(System.Numerics.BigInteger one, System.Numerics.BigInteger two, long roundingIncrement, Broiler.ECMAScript.Temporal.TemporalUnit smallestUnit, Broiler.ECMAScript.Numbers.RoundingMode roundingMode, out Broiler.ECMAScript.Temporal.InternalDuration result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus DifferenceIsoDateTime(Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDateTime one, Broiler.ECMAScript.Time.IsoDateTime two, Broiler.ECMAScript.Temporal.TemporalUnit largestUnit, out Broiler.ECMAScript.Temporal.InternalDuration result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus DifferencePlainDateTimeWithRounding(Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDateTime one, Broiler.ECMAScript.Time.IsoDateTime two, Broiler.ECMAScript.Temporal.TemporalUnit largestUnit, long roundingIncrement, Broiler.ECMAScript.Temporal.TemporalUnit smallestUnit, Broiler.ECMAScript.Numbers.RoundingMode roundingMode, out Broiler.ECMAScript.Temporal.InternalDuration result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus DifferencePlainDateTimeWithTotal(Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDateTime one, Broiler.ECMAScript.Time.IsoDateTime two, Broiler.ECMAScript.Temporal.TemporalUnit unit, out double total) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus DifferenceTemporalInstant(Broiler.ECMAScript.Temporal.DifferenceOperation operation, System.Numerics.BigInteger one, System.Numerics.BigInteger two, Broiler.ECMAScript.Temporal.DifferenceSettings settings, out Broiler.ECMAScript.Temporal.DurationFields result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus DifferenceTemporalPlainDate(Broiler.ECMAScript.Temporal.DifferenceOperation operation, Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDate one, Broiler.ECMAScript.Time.IsoDate two, Broiler.ECMAScript.Temporal.DifferenceSettings settings, out Broiler.ECMAScript.Temporal.DurationFields result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus DifferenceTemporalPlainDateTime(Broiler.ECMAScript.Temporal.DifferenceOperation operation, Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDateTime one, Broiler.ECMAScript.Time.IsoDateTime two, Broiler.ECMAScript.Temporal.DifferenceSettings settings, out Broiler.ECMAScript.Temporal.DurationFields result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus DifferenceTemporalPlainTime(Broiler.ECMAScript.Temporal.DifferenceOperation operation, Broiler.ECMAScript.Time.IsoTime one, Broiler.ECMAScript.Time.IsoTime two, Broiler.ECMAScript.Temporal.DifferenceSettings settings, out Broiler.ECMAScript.Temporal.DurationFields result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus DifferenceTemporalPlainYearMonth(Broiler.ECMAScript.Temporal.DifferenceOperation operation, Broiler.ECMAScript.Temporal.TemporalCalendars calendars, Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Time.IsoDate one, Broiler.ECMAScript.Time.IsoDate two, Broiler.ECMAScript.Temporal.DifferenceSettings settings, out Broiler.ECMAScript.Temporal.DurationFields result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus DifferenceTemporalZonedDateTime(Broiler.ECMAScript.Temporal.DifferenceOperation operation, System.Numerics.BigInteger one, System.Numerics.BigInteger two, Broiler.ECMAScript.Temporal.ITimeZoneArithmetic timeZone, Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Temporal.DifferenceSettings settings, out Broiler.ECMAScript.Temporal.DurationFields result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus DifferenceZonedDateTime(System.Numerics.BigInteger one, System.Numerics.BigInteger two, Broiler.ECMAScript.Temporal.ITimeZoneArithmetic timeZone, Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Temporal.TemporalUnit largestUnit, out Broiler.ECMAScript.Temporal.InternalDuration result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus DifferenceZonedDateTimeWithRounding(System.Numerics.BigInteger one, System.Numerics.BigInteger two, Broiler.ECMAScript.Temporal.ITimeZoneArithmetic timeZone, Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Temporal.TemporalUnit largestUnit, long roundingIncrement, Broiler.ECMAScript.Temporal.TemporalUnit smallestUnit, Broiler.ECMAScript.Numbers.RoundingMode roundingMode, out Broiler.ECMAScript.Temporal.InternalDuration result) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus DifferenceZonedDateTimeWithTotal(System.Numerics.BigInteger one, System.Numerics.BigInteger two, Broiler.ECMAScript.Temporal.ITimeZoneArithmetic timeZone, Broiler.ECMAScript.Temporal.ICalendarArithmetic calendars, Broiler.ECMAScript.Temporal.CalendarId calendar, Broiler.ECMAScript.Temporal.TemporalUnit unit, out double total) { }
+    }
+    public static class TemporalFormat
+    {
+        public const int AutoPrecision = -1;
+        public const int MinutePrecision = -2;
+        public static string DateTimeToString(Broiler.ECMAScript.Time.IsoDateTime dateTime, string calendar, int precision, Broiler.ECMAScript.Temporal.ShowCalendarName show) { }
+        public static string DateToString(Broiler.ECMAScript.Time.IsoDate date, string calendar, Broiler.ECMAScript.Temporal.ShowCalendarName show) { }
+        public static string DurationToString(Broiler.ECMAScript.Temporal.DurationFields duration, int precision) { }
+        public static string FormatCalendarAnnotation(string calendar, Broiler.ECMAScript.Temporal.ShowCalendarName show) { }
+        public static string FormatDateTimeUtcOffsetRounded(long offsetNanoseconds) { }
+        public static string FormatFractionalSeconds(int subSecondNanoseconds, int precision) { }
+        public static string FormatTimeString(int hour, int minute, int second, int subSecondNanoseconds, int precision) { }
+        public static string FormatUtcOffsetNanoseconds(long offsetNanoseconds) { }
+        public static string InstantToString(System.Numerics.BigInteger epochNanoseconds, long? offsetNanoseconds, int precision) { }
+        public static string MonthDayToString(Broiler.ECMAScript.Time.IsoDate isoDate, string calendar, Broiler.ECMAScript.Temporal.ShowCalendarName show) { }
+        public static string PadIsoYear(long year) { }
+        public static string PlainTimeToString(Broiler.ECMAScript.Time.IsoTime time, Broiler.ECMAScript.Temporal.SecondsStringPrecision precision, Broiler.ECMAScript.Numbers.RoundingMode mode) { }
+        public static string TimeToString(Broiler.ECMAScript.Time.IsoTime time, int precision) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus TryDurationToString(Broiler.ECMAScript.Temporal.DurationFields duration, Broiler.ECMAScript.Temporal.SecondsStringPrecision precision, Broiler.ECMAScript.Numbers.RoundingMode mode, out string? text) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus TryPlainDateTimeToString(Broiler.ECMAScript.Time.IsoDateTime dateTime, string calendar, Broiler.ECMAScript.Temporal.SecondsStringPrecision precision, Broiler.ECMAScript.Numbers.RoundingMode mode, Broiler.ECMAScript.Temporal.ShowCalendarName show, out string? text) { }
+        public static string YearMonthToString(Broiler.ECMAScript.Time.IsoDate isoDate, string calendar, Broiler.ECMAScript.Temporal.ShowCalendarName show) { }
+        public static string ZonedDateTimeToString(System.Numerics.BigInteger epochNanoseconds, long offsetNanoseconds, string timeZone, string calendar, int precision, Broiler.ECMAScript.Temporal.ShowCalendarName showCalendar, Broiler.ECMAScript.Temporal.ShowTimeZoneName showTimeZone, Broiler.ECMAScript.Temporal.ShowOffset showOffset) { }
+    }
+    public enum TemporalGoal
+    {
+        DateTime = 0,
+        ZonedDateTime = 1,
+        Instant = 2,
+        Time = 3,
+        YearMonth = 4,
+        MonthDay = 5,
+    }
+    public static class TemporalGrammar
+    {
+        public static bool IsAnnotationValue(System.ReadOnlySpan<char> text, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static bool IsTimeZoneIdentifier(System.ReadOnlySpan<char> text, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static bool IsUtcOffset(System.ReadOnlySpan<char> text, bool allowSubMinute) { }
+        public static bool TryParse(System.ReadOnlySpan<char> text, System.ReadOnlySpan<Broiler.ECMAScript.Temporal.TemporalGoal> goals, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out Broiler.ECMAScript.Temporal.IsoParseResult? result, out Broiler.ECMAScript.Temporal.TemporalParseError error, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static bool TryParseCalendarString(System.ReadOnlySpan<char> text, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out string? calendar, out Broiler.ECMAScript.Temporal.TemporalParseError error, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static bool TryParseDuration(System.ReadOnlySpan<char> text, out Broiler.ECMAScript.Temporal.DurationFields duration, out Broiler.ECMAScript.Temporal.TemporalParseError error, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static bool TryParseInstant(System.ReadOnlySpan<char> text, out System.Numerics.BigInteger epochNanoseconds, out Broiler.ECMAScript.Temporal.TemporalParseError error, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static bool TryParseOffsetString(System.ReadOnlySpan<char> text, out long offsetNanoseconds) { }
+        public static bool TryParseTimeZoneIdentifier(System.ReadOnlySpan<char> text, out Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord zone, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static bool TryParseTimeZoneString(System.ReadOnlySpan<char> text, out Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord zone, out Broiler.ECMAScript.Temporal.TemporalParseError error, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public static class TemporalLimits
+    {
+        public const double CalendarDurationLimit = 4294967296D;
+        public const long MaxEpochDays = 100000000;
+        public const long MaxYear = 275760;
+        public const long MinYear = -271821;
+        public const long NanosecondsPerDay = 86400000000000;
+        public static readonly System.Numerics.BigInteger MaxTimeDuration;
+        public static Broiler.ECMAScript.Temporal.TemporalStatus CheckDuration(Broiler.ECMAScript.Temporal.DurationFields duration) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus CheckEpochNanoseconds(System.Numerics.BigInteger epochNanoseconds) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus CheckIsoDate(Broiler.ECMAScript.Time.IsoDate date) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus CheckIsoDateTime(Broiler.ECMAScript.Time.IsoDateTime dateTime) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus CheckIsoDaysRange(Broiler.ECMAScript.Time.IsoDate date) { }
+        public static Broiler.ECMAScript.Temporal.TemporalStatus CheckIsoYearMonth(Broiler.ECMAScript.Time.IsoDate yearMonth) { }
+        public static bool IsValidTime(Broiler.ECMAScript.Time.IsoTime time) { }
+    }
+    public static class TemporalOptionRules
+    {
+        public const Broiler.ECMAScript.Numbers.RoundingMode DefaultDifferenceRoundingMode = 3;
+        public const Broiler.ECMAScript.Temporal.TemporalOverflow DefaultOverflow = 0;
+        public const Broiler.ECMAScript.Numbers.RoundingMode DefaultRoundRoundingMode = 6;
+        public const long DefaultRoundingIncrement = 1;
+        public const Broiler.ECMAScript.Numbers.RoundingMode DefaultToStringRoundingMode = 3;
+        public const long MaxRoundingIncrement = 1000000000;
+        public static bool IsCalendarUnit(Broiler.ECMAScript.Temporal.TemporalUnit unit) { }
+        public static bool IsDateUnit(Broiler.ECMAScript.Temporal.TemporalUnit unit) { }
+        public static bool IsFractionalSecondDigitsAuto(System.ReadOnlySpan<char> value) { }
+        public static bool IsValidRoundOptions(Broiler.ECMAScript.Temporal.TemporalType type, Broiler.ECMAScript.Temporal.TemporalUnit smallestUnit, long roundingIncrement) { }
+        public static bool IsValidRoundingIncrement(long increment, long dividend, bool inclusive) { }
+        public static bool IsValidToStringSmallestUnit(Broiler.ECMAScript.Temporal.TemporalUnit smallestUnit, bool duration) { }
+        public static bool IsValidTotalUnit(Broiler.ECMAScript.Temporal.TemporalUnit unit) { }
+        public static bool IsValidUnit(Broiler.ECMAScript.Temporal.TemporalUnit unit, Broiler.ECMAScript.Temporal.TemporalUnitGroup group, bool allowAuto) { }
+        public static Broiler.ECMAScript.Temporal.TemporalUnit LargerOfTwoUnits(Broiler.ECMAScript.Temporal.TemporalUnit one, Broiler.ECMAScript.Temporal.TemporalUnit two) { }
+        public static long? MaximumRoundingIncrement(Broiler.ECMAScript.Temporal.TemporalUnit unit) { }
+        public static Broiler.ECMAScript.Temporal.SecondsStringPrecision ToSecondsStringPrecisionRecord(Broiler.ECMAScript.Temporal.TemporalUnit smallestUnit, int fractionalSecondDigits) { }
+        public static bool TryGetDifferenceSettings(Broiler.ECMAScript.Temporal.TemporalType type, Broiler.ECMAScript.Temporal.DifferenceOperation operation, Broiler.ECMAScript.Temporal.TemporalUnit largestUnit, long roundingIncrement, Broiler.ECMAScript.Numbers.RoundingMode roundingMode, Broiler.ECMAScript.Temporal.TemporalUnit smallestUnit, out Broiler.ECMAScript.Temporal.DifferenceSettings settings) { }
+        public static bool TryGetDifferenceSettings(Broiler.ECMAScript.Temporal.DifferenceOperation operation, Broiler.ECMAScript.Temporal.TemporalUnitGroup group, System.ReadOnlySpan<Broiler.ECMAScript.Temporal.TemporalUnit> disallowedUnits, Broiler.ECMAScript.Temporal.TemporalUnit fallbackSmallestUnit, Broiler.ECMAScript.Temporal.TemporalUnit smallestLargestDefaultUnit, Broiler.ECMAScript.Temporal.TemporalUnit largestUnit, long roundingIncrement, Broiler.ECMAScript.Numbers.RoundingMode roundingMode, Broiler.ECMAScript.Temporal.TemporalUnit smallestUnit, out Broiler.ECMAScript.Temporal.DifferenceSettings settings) { }
+        public static bool TryGetDurationRoundUnits(Broiler.ECMAScript.Temporal.DurationFields duration, Broiler.ECMAScript.Temporal.TemporalUnit largestUnit, long roundingIncrement, Broiler.ECMAScript.Temporal.TemporalUnit smallestUnit, out Broiler.ECMAScript.Temporal.TemporalUnit resolvedLargestUnit, out Broiler.ECMAScript.Temporal.TemporalUnit resolvedSmallestUnit) { }
+        public static bool TryParseFractionalSecondDigits(double value, out int digits) { }
+        public static bool TryParseOverflow(System.ReadOnlySpan<char> value, out Broiler.ECMAScript.Temporal.TemporalOverflow overflow) { }
+        public static bool TryParseRoundingIncrement(double value, out long increment) { }
+        public static bool TryParseShowCalendarName(System.ReadOnlySpan<char> value, out Broiler.ECMAScript.Temporal.ShowCalendarName show) { }
+        public static bool TryParseShowOffset(System.ReadOnlySpan<char> value, out Broiler.ECMAScript.Temporal.ShowOffset show) { }
+        public static bool TryParseShowTimeZoneName(System.ReadOnlySpan<char> value, out Broiler.ECMAScript.Temporal.ShowTimeZoneName show) { }
+        public static bool TryParseUnit(System.ReadOnlySpan<char> value, out Broiler.ECMAScript.Temporal.TemporalUnit unit) { }
+    }
+    public enum TemporalOverflow
+    {
+        Constrain = 0,
+        Reject = 1,
+    }
+    public enum TemporalParseError
+    {
+        None = 0,
+        Malformed = 1,
+        CriticalCalendarConflict = 2,
+        UnknownCriticalAnnotation = 3,
+        YearMonthOutsideIsoCalendar = 4,
+        MonthDayOutsideIsoCalendar = 5,
+        OutOfRange = 6,
+        NoTimeZone = 7,
+        SubMinuteTimeZoneOffset = 8,
+    }
+    public enum TemporalStatus
+    {
+        Completed = 0,
+        OutOfRange = 1,
+        InvalidDate = 2,
+        InvalidTime = 3,
+        InvalidDuration = 4,
+        RelativeToRequired = 5,
+    }
+    public sealed class TemporalTimeZone : Broiler.ECMAScript.Temporal.ITimeZoneArithmetic
+    {
+        public TemporalTimeZone(Broiler.ECMAScript.Time.ITimeZoneRules rules) { }
+        public Broiler.ECMAScript.Time.ITimeZoneRules Rules { get; }
+        public Broiler.ECMAScript.Time.TimeStatus GetEpochNanosecondsFor(Broiler.ECMAScript.Time.IsoDateTime dateTime, Broiler.ECMAScript.Time.Disambiguation disambiguation, out System.Numerics.BigInteger epochNanoseconds) { }
+        public long GetOffsetNanosecondsFor(System.Numerics.BigInteger epochNanoseconds) { }
+        public Broiler.ECMAScript.Time.TimeStatus GetStartOfDay(Broiler.ECMAScript.Time.IsoDate date, out System.Numerics.BigInteger epochNanoseconds) { }
+    }
+    public enum TemporalType
+    {
+        PlainDate = 0,
+        PlainDateTime = 1,
+        PlainTime = 2,
+        PlainYearMonth = 3,
+        Instant = 4,
+        ZonedDateTime = 5,
+    }
+    public enum TemporalUnit
+    {
+        Year = 0,
+        Month = 1,
+        Week = 2,
+        Day = 3,
+        Hour = 4,
+        Minute = 5,
+        Second = 6,
+        Millisecond = 7,
+        Microsecond = 8,
+        Nanosecond = 9,
+        Unset = 10,
+        Auto = 11,
+    }
+    public enum TemporalUnitGroup
+    {
+        Date = 0,
+        Time = 1,
+        DateTime = 2,
+    }
+    public readonly struct TimeZoneIdentifierRecord : System.IEquatable<Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord>
+    {
+        public TimeZoneIdentifierRecord(string? Name, int OffsetMinutes) { }
+        public string? Name { get; init; }
+        public int OffsetMinutes { get; init; }
+    }
+}
+namespace Broiler.ECMAScript.Text
+{
+    public enum Base64Alphabet
+    {
+        Base64 = 0,
+        Base64Url = 1,
+    }
+    public static class Base64Codec
+    {
+        public static int DecodedLengthBound(int textLength) { }
+        public static Broiler.ECMAScript.ResultStatus FromBase64(System.ReadOnlySpan<char> text, Broiler.ECMAScript.Text.Base64Alphabet alphabet, Broiler.ECMAScript.Text.LastChunkHandling lastChunkHandling, System.Span<byte> destination, out int read, out int written, out Broiler.ECMAScript.Failure failure, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.ResultStatus FromHex(System.ReadOnlySpan<char> text, System.Span<byte> destination, out int read, out int written, out Broiler.ECMAScript.Failure failure, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static string ToBase64(System.ReadOnlySpan<byte> bytes, Broiler.ECMAScript.Text.Base64Alphabet alphabet, bool omitPadding, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static string ToHex(System.ReadOnlySpan<byte> bytes, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public readonly struct CodePointRecord : System.IEquatable<Broiler.ECMAScript.Text.CodePointRecord>
+    {
+        public CodePointRecord(int CodePoint, int CodeUnitCount, bool IsUnpairedSurrogate) { }
+        public int CodePoint { get; init; }
+        public int CodeUnitCount { get; init; }
+        public bool IsUnpairedSurrogate { get; init; }
+    }
+    public ref struct JsonReader
+    {
+        public JsonReader(System.ReadOnlySpan<char> text, Broiler.ECMAScript.DepthLimit maximumDepth, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public int Depth { get; }
+        public Broiler.ECMAScript.Failure Failure { get; }
+        public double NumberValue { get; }
+        public string StringValue { get; }
+        public Broiler.ECMAScript.Text.JsonToken Token { get; }
+        public int TokenEnd { get; }
+        public int TokenStart { get; }
+        public Broiler.ECMAScript.ResultStatus Read() { }
+        public static Broiler.ECMAScript.ResultStatus Validate(System.ReadOnlySpan<char> text, Broiler.ECMAScript.DepthLimit maximumDepth, out Broiler.ECMAScript.Failure failure, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public static class JsonText
+    {
+        public const int MaximumGap = 10;
+        public static string GapFromNumber(double space) { }
+        public static string GapFromString(string space) { }
+        public static string Quote(System.ReadOnlySpan<char> value, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public enum JsonToken
+    {
+        None = 0,
+        BeginObject = 1,
+        EndObject = 2,
+        BeginArray = 3,
+        EndArray = 4,
+        PropertyName = 5,
+        String = 6,
+        Number = 7,
+        True = 8,
+        False = 9,
+        Null = 10,
+        EndOfText = 11,
+    }
+    public enum LastChunkHandling
+    {
+        Loose = 0,
+        Strict = 1,
+        StopBeforePartial = 2,
+    }
+    public enum PadPlacement
+    {
+        Start = 0,
+        End = 1,
+    }
+    public static class RelativeIndex
+    {
+        public static long Clamped(double relative, long length) { }
+        public static long LastSearchStart(double relative, long length) { }
+        public static bool TryElement(double relative, long length, out long index) { }
+    }
+    public readonly struct ReplacementPart : System.IEquatable<Broiler.ECMAScript.Text.ReplacementPart>
+    {
+        public ReplacementPart(Broiler.ECMAScript.Text.ReplacementPartKind Kind, int Start, int Length, int CaptureIndex) { }
+        public int CaptureIndex { get; init; }
+        public Broiler.ECMAScript.Text.ReplacementPartKind Kind { get; init; }
+        public int Length { get; init; }
+        public int Start { get; init; }
+    }
+    public enum ReplacementPartKind
+    {
+        Literal = 0,
+        Dollar = 1,
+        Match = 2,
+        Before = 3,
+        After = 4,
+        Capture = 5,
+        NamedCapture = 6,
+    }
+    public static class ReplacementTemplate
+    {
+        public static Broiler.ECMAScript.Text.ReplacementPart[] Parse(System.ReadOnlySpan<char> template, int captureCount, bool hasNamedCaptures, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public static class StringPadding
+    {
+        public static Broiler.ECMAScript.ResultStatus Pad(string text, long maxLength, string filler, Broiler.ECMAScript.Text.PadPlacement placement, Broiler.ECMAScript.LengthLimit limit, out string result, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public static class UriCodec
+    {
+        public const string ReservedAndNumberSign = ";/?:@&=+$,#";
+        public static Broiler.ECMAScript.ResultStatus Decode(System.ReadOnlySpan<char> text, System.ReadOnlySpan<char> preserveEscapeSet, out string result, out Broiler.ECMAScript.Failure failure, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static Broiler.ECMAScript.ResultStatus Encode(System.ReadOnlySpan<char> text, System.ReadOnlySpan<char> extraUnescaped, out string result, out Broiler.ECMAScript.Failure failure, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static string Escape(System.ReadOnlySpan<char> text, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static int HexDigitValue(char unit) { }
+        public static string Unescape(System.ReadOnlySpan<char> text, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public static class Utf16
+    {
+        public const char ReplacementCharacter = '�';
+        public static long AdvanceStringIndex(System.ReadOnlySpan<char> text, long index, bool unicode) { }
+        public static Broiler.ECMAScript.Text.CodePointRecord CodePointAt(System.ReadOnlySpan<char> text, int position) { }
+        public static bool IsWellFormed(System.ReadOnlySpan<char> text, Broiler.ECMAScript.WorkCharge? charge = null) { }
+        public static string ToWellFormed(string text, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+}
+namespace Broiler.ECMAScript.Time
+{
+    public sealed class CalendarTables : Broiler.ECMAScript.Time.ICalendarTables
+    {
+        public CalendarTables(System.ReadOnlySpan<byte> table) { }
+        public bool IsPersianNonLeapYear(long year) { }
+        public bool TryGetEastAsianYear(Broiler.ECMAScript.Time.TableCalendar calendar, long relatedIsoYear, out Broiler.ECMAScript.Time.CalendarYear year) { }
+        public bool TryGetUmmAlQuraYear(long year, out Broiler.ECMAScript.Time.CalendarYear calendarYear) { }
+    }
+    public readonly struct CalendarYear : System.IEquatable<Broiler.ECMAScript.Time.CalendarYear>
+    {
+        public CalendarYear(long year, long newYearEpochDays, System.ReadOnlySpan<int> monthLengths, int leapMonth) { }
+        public int DaysInYear { get; }
+        public int LeapMonth { get; }
+        public int MonthsInYear { get; }
+        public long NewYearEpochDays { get; }
+        public long Year { get; }
+        public int DaysInMonth(int month) { }
+    }
+    public static class CalendarYears
+    {
+        public const long MaxYearMagnitude = 300000;
+        public static Broiler.ECMAScript.Time.TimeStatus GetYear(Broiler.ECMAScript.Time.ICalendarTables tables, Broiler.ECMAScript.Time.TableCalendar calendar, long year, out Broiler.ECMAScript.Time.CalendarYear result) { }
+    }
+    public enum DateParseDialect
+    {
+        Strict = 0,
+        BroilerVM = 1,
+    }
+    public enum Disambiguation
+    {
+        Compatible = 0,
+        Earlier = 1,
+        Later = 2,
+        Reject = 3,
+    }
+    public static class EcmaDateFormatter
+    {
+        public const string InvalidDate = "Invalid Date";
+        public static string DateString(double tv) { }
+        public static string TimeString(double tv) { }
+        public static string TimeZoneString(double tv, Broiler.ECMAScript.Time.ILocalTimeProvider zone) { }
+        public static string ToDateString(double tv, Broiler.ECMAScript.Time.ILocalTimeProvider zone) { }
+        public static string ToUtcString(double tv) { }
+        public static bool TryToIsoString(double tv, out string text) { }
+    }
+    public static class EcmaDateParser
+    {
+        public static Broiler.ECMAScript.Time.EcmaParsedDate Parse(System.ReadOnlySpan<char> text, Broiler.ECMAScript.Time.DateParseDialect dialect, Broiler.ECMAScript.WorkCharge? charge = null) { }
+    }
+    public static class EcmaLocalTime
+    {
+        public static double LocalTime(double t, Broiler.ECMAScript.Time.ILocalTimeProvider zone) { }
+        public static double Utc(double t, Broiler.ECMAScript.Time.ILocalTimeProvider zone) { }
+    }
+    public readonly struct EcmaParsedDate : System.IEquatable<Broiler.ECMAScript.Time.EcmaParsedDate>
+    {
+        public EcmaParsedDate(Broiler.ECMAScript.Time.EcmaParsedKind Kind, double Value) { }
+        public Broiler.ECMAScript.Time.EcmaParsedKind Kind { get; init; }
+        public double Value { get; init; }
+    }
+    public enum EcmaParsedKind
+    {
+        Invalid = 0,
+        Utc = 1,
+        Local = 2,
+    }
+    public static class EcmaTime
+    {
+        public const double MaxTimeValue = 8640000000000000D;
+        public const double MsPerDay = 86400000D;
+        public const double MsPerHour = 3600000D;
+        public const double MsPerMinute = 60000D;
+        public const double MsPerSecond = 1000D;
+        public static double DateFromTime(double t) { }
+        public static double Day(double t) { }
+        public static double DayFromYear(double y) { }
+        public static double DayWithinYear(double t) { }
+        public static double DaysInYear(double y) { }
+        public static double HourFromTime(double t) { }
+        public static double InLeapYear(double t) { }
+        public static double MakeDate(double day, double time) { }
+        public static double MakeDay(double year, double month, double date) { }
+        public static double MakeFullYear(double year) { }
+        public static double MakeTime(double hour, double minute, double second, double millisecond) { }
+        public static double MinFromTime(double t) { }
+        public static double MonthFromTime(double t) { }
+        public static double MsFromTime(double t) { }
+        public static double SecFromTime(double t) { }
+        public static double TimeClip(double time) { }
+        public static double TimeFromYear(double y) { }
+        public static double TimeWithinDay(double t) { }
+        public static double WeekDay(double t) { }
+        public static double YearFromTime(double t) { }
+    }
+    public sealed class FixedOffsetLocalTimeProvider : Broiler.ECMAScript.Time.ILocalTimeProvider
+    {
+        public FixedOffsetLocalTimeProvider(double offsetMilliseconds, string? name) { }
+        public string? GetName(double epochMilliseconds) { }
+        public double GetOffsetMilliseconds(double epochMilliseconds) { }
+    }
+    public sealed class FixedOffsetTimeZoneRules : Broiler.ECMAScript.Time.ITimeZoneRules
+    {
+        public FixedOffsetTimeZoneRules(int offsetSeconds) { }
+        public bool IsDaylightAt(long epochSeconds) { }
+        public long? NextTransition(long afterEpochSeconds, long limitEpochSeconds, bool daylightFlag) { }
+        public int OffsetSecondsAt(long epochSeconds) { }
+        public long? PreviousTransition(long beforeEpochSeconds, bool daylightFlag) { }
+    }
+    public interface ICalendarTables
+    {
+        bool IsPersianNonLeapYear(long year);
+        bool TryGetEastAsianYear(Broiler.ECMAScript.Time.TableCalendar calendar, long relatedIsoYear, out Broiler.ECMAScript.Time.CalendarYear year);
+        bool TryGetUmmAlQuraYear(long year, out Broiler.ECMAScript.Time.CalendarYear calendarYear);
+    }
+    public interface ILocalTimeProvider
+    {
+        string? GetName(double epochMilliseconds);
+        double GetOffsetMilliseconds(double epochMilliseconds);
+    }
+    public interface ITimeZoneDatabase
+    {
+        System.Collections.Generic.IReadOnlyList<string> PrimaryIdentifiers { get; }
+        string Release { get; }
+        Broiler.ECMAScript.Time.TimeZoneId Primary(Broiler.ECMAScript.Time.TimeZoneId id);
+        System.Collections.Generic.IReadOnlyList<string> RegionTimeZones(System.ReadOnlySpan<char> region);
+        Broiler.ECMAScript.Time.ITimeZoneRules Rules(Broiler.ECMAScript.Time.TimeZoneId id);
+        bool TryFind(System.ReadOnlySpan<char> identifier, out Broiler.ECMAScript.Time.TimeZoneId id);
+    }
+    public interface ITimeZoneRules
+    {
+        bool IsDaylightAt(long epochSeconds);
+        long? NextTransition(long afterEpochSeconds, long limitEpochSeconds, bool daylightFlag);
+        int OffsetSecondsAt(long epochSeconds);
+        long? PreviousTransition(long beforeEpochSeconds, bool daylightFlag);
+    }
+    public static class IsoCalendarMath
+    {
+        [return: System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "Year",
+                "Month"})]
+        public static System.ValueTuple<long, int> BalanceYearMonth(long year, long month) { }
+        public static int DayOfWeek(long year, int month, int day) { }
+        public static int DayOfYear(long year, int month, int day) { }
+        public static int DaysInMonth(long year, int month) { }
+        public static int DaysInYear(long year) { }
+        public static long EpochDays(long year, int month, int day) { }
+        [return: System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "Year",
+                "Month",
+                "Day"})]
+        public static System.ValueTuple<long, int, int> FromEpochDays(long days) { }
+        public static bool IsLeapYear(long year) { }
+        public static bool IsValidIsoDate(long year, int month, int day) { }
+        [return: System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "Week",
+                "Year"})]
+        public static System.ValueTuple<int, long> WeekOfYear(long year, int month, int day) { }
+    }
+    public readonly struct IsoDate : System.IEquatable<Broiler.ECMAScript.Time.IsoDate>
+    {
+        public IsoDate(long Year, int Month, int Day) { }
+        public int Day { get; init; }
+        public int Month { get; init; }
+        public long Year { get; init; }
+    }
+    public readonly struct IsoDateTime : System.IEquatable<Broiler.ECMAScript.Time.IsoDateTime>
+    {
+        public IsoDateTime(Broiler.ECMAScript.Time.IsoDate Date, Broiler.ECMAScript.Time.IsoTime Time) { }
+        public Broiler.ECMAScript.Time.IsoDate Date { get; init; }
+        public Broiler.ECMAScript.Time.IsoTime Time { get; init; }
+    }
+    public readonly struct IsoTime : System.IEquatable<Broiler.ECMAScript.Time.IsoTime>
+    {
+        public IsoTime(int Hour, int Minute, int Second, int Millisecond, int Microsecond, int Nanosecond) { }
+        public int Hour { get; init; }
+        public int Microsecond { get; init; }
+        public int Millisecond { get; init; }
+        public int Minute { get; init; }
+        public int Nanosecond { get; init; }
+        public int Second { get; init; }
+    }
+    public static class OffsetTimeZones
+    {
+        public static string FormatOffsetIdentifier(int offsetMinutes) { }
+        public static bool IsTimeZoneOffsetString(System.ReadOnlySpan<char> text) { }
+        public static bool TryGetEtcGmtOffset(System.ReadOnlySpan<char> primaryIdentifier, out int offsetMinutes) { }
+        public static bool TryParseOffsetIdentifier(System.ReadOnlySpan<char> text, out int offsetMinutes) { }
+    }
+    public enum TableCalendar
+    {
+        Chinese = 0,
+        Dangi = 1,
+        IslamicUmmAlQura = 2,
+        Persian = 3,
+    }
+    public enum TimeStatus
+    {
+        Completed = 0,
+        OutOfRange = 1,
+        Ambiguous = 2,
+        Skipped = 3,
+        NoStartOfDay = 4,
+    }
+    public sealed class TimeZoneDatabase : Broiler.ECMAScript.Time.ITimeZoneDatabase
+    {
+        public const long MaxEpochSeconds = 1000000000000000;
+        public TimeZoneDatabase(string release, System.ReadOnlySpan<byte> zoneTable, System.ReadOnlySpan<byte> identifierTable, System.ReadOnlySpan<byte> regionTable) { }
+        public System.Collections.Generic.IReadOnlyList<string> PrimaryIdentifiers { get; }
+        public string Release { get; }
+        public Broiler.ECMAScript.Time.TimeZoneId Primary(Broiler.ECMAScript.Time.TimeZoneId id) { }
+        public System.Collections.Generic.IReadOnlyList<string> RegionTimeZones(System.ReadOnlySpan<char> region) { }
+        public Broiler.ECMAScript.Time.ITimeZoneRules Rules(Broiler.ECMAScript.Time.TimeZoneId id) { }
+        public bool TryFind(System.ReadOnlySpan<char> identifier, out Broiler.ECMAScript.Time.TimeZoneId id) { }
+    }
+    public readonly struct TimeZoneId : System.IEquatable<Broiler.ECMAScript.Time.TimeZoneId>
+    {
+        public TimeZoneId(int Index, string Identifier) { }
+        public string Identifier { get; init; }
+        public int Index { get; init; }
+    }
+    public static class ZonedTime
+    {
+        public const int MaxPossibleEpochNanoseconds = 3;
+        public static readonly System.Numerics.BigInteger MaxEpochNanoseconds;
+        public static readonly System.Numerics.BigInteger MinEpochNanoseconds;
+        public static Broiler.ECMAScript.Time.TimeStatus DisambiguatePossibleEpochNanoseconds(Broiler.ECMAScript.Time.ITimeZoneRules rules, System.ReadOnlySpan<System.Numerics.BigInteger> possible, Broiler.ECMAScript.Time.IsoDateTime local, Broiler.ECMAScript.Time.Disambiguation mode, out System.Numerics.BigInteger epochNanoseconds) { }
+        public static Broiler.ECMAScript.Time.TimeStatus GetEpochNanosecondsFor(Broiler.ECMAScript.Time.ITimeZoneRules rules, Broiler.ECMAScript.Time.IsoDateTime local, Broiler.ECMAScript.Time.Disambiguation mode, out System.Numerics.BigInteger epochNanoseconds) { }
+        public static System.Numerics.BigInteger? GetNextTransition(Broiler.ECMAScript.Time.ITimeZoneRules rules, System.Numerics.BigInteger epochNanoseconds) { }
+        public static long GetOffsetNanosecondsFor(Broiler.ECMAScript.Time.ITimeZoneRules rules, System.Numerics.BigInteger epochNanoseconds) { }
+        public static Broiler.ECMAScript.Time.TimeStatus GetPossibleEpochNanoseconds(Broiler.ECMAScript.Time.ITimeZoneRules rules, Broiler.ECMAScript.Time.IsoDateTime local, System.Span<System.Numerics.BigInteger> destination, out int count) { }
+        public static System.Numerics.BigInteger? GetPreviousTransition(Broiler.ECMAScript.Time.ITimeZoneRules rules, System.Numerics.BigInteger epochNanoseconds) { }
+        public static Broiler.ECMAScript.Time.TimeStatus GetStartOfDay(Broiler.ECMAScript.Time.ITimeZoneRules rules, Broiler.ECMAScript.Time.IsoDate date, out System.Numerics.BigInteger epochNanoseconds) { }
+        public static bool TimeZoneEquals(Broiler.ECMAScript.Time.ITimeZoneDatabase database, System.ReadOnlySpan<char> one, System.ReadOnlySpan<char> two) { }
+    }
+}
