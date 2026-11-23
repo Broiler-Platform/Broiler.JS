@@ -100,6 +100,14 @@ internal sealed partial class BridgeTreeBuilder
     /// A block's statements as the old parser's Block kept them: an empty statement or an empty block dropped, but the
     /// first of them held while the directive prologue is open, and kept where a literal expression statement follows it.
     /// </summary>
+    /// <remarks>
+    /// An empty statement or a block with no statements that the list drops is not built at all (decision B8, a bridge
+    /// defect fixed inside W2, 2026-11-23): building it made two tokens, registered them in the chain, entered and left a
+    /// scope frame and made a block node and its statement list, all for a statement the tree never holds, so a source of
+    /// millions of empty blocks (test262's <c>regress-610026.js</c>) cost the bridge several times the library's parse.
+    /// Building a dropped statement has no other effect: it declares no name, registers no Annex B function and builds no
+    /// <c>continue</c>. The one held while the directive prologue is open is still built, since it may be kept.
+    /// </remarks>
     private Sequence<AstStatement> StatementList(IReadOnlyList<Statement> body)
     {
         var list = new Sequence<AstStatement>();
@@ -107,6 +115,9 @@ internal sealed partial class BridgeTreeBuilder
         var prologuePossible = true;
         foreach (var item in body)
         {
+            if ((!prologuePossible || held != null) && IsDroppedAsWritten(item))
+                continue;
+
             var statement = Statement(item);
             if (!prologuePossible)
             {
@@ -149,6 +160,12 @@ internal sealed partial class BridgeTreeBuilder
             AstExpressionStatement { Expression: AstEmptyExpression } => true,
             _ => false,
         };
+
+    // A statement whose built form IsElidable reads as elidable, known from the shared tree alone: an empty statement,
+    // or a block that holds no statement (Statement builds the one as an empty expression's statement and the other as
+    // a block with an empty list). A block holding only dropped statements is built, and drops its own.
+    private static bool IsDroppedAsWritten(Statement statement)
+        => statement is EmptyStatement or BlockStatement { Body.Count: 0 };
 
     // ---------------------------------------------------------------------------------------------------------------
     // Statements.
