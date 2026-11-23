@@ -738,7 +738,10 @@ step ([`driver.log`](base/local/driver.log)), every test, test262 and tool run u
 at the same path, but the files over 2 MB, retained by digest only ([`retained.txt`](base/local/retained.txt),
 [`not-retained.sha256.txt`](base/local/not-retained.sha256.txt)), with the chain's log, the memory log, the drivers and
 scripts as they were on disk, a `.gitattributes`, and [`hashes.txt`](base/local/hashes.txt), SHA-256
-`f49f3ac48270313364641378dec6f8ce1f1c2bff852bef41f9b9b01edc34f21c`. Each step's command line is in
+`f9819e16d86651ed3dead2c3ca1f9b829a8f523161b2554a243eac7f8d634628`. *(Changed the same day, after review, before this
+record merged: the digest read `f49f3ac48270313364641378dec6f8ce1f1c2bff852bef41f9b9b01edc34f21c`, before
+`retained.txt` and the folder's README added the records below on Broiler.JSeal's per-test results, the files kept
+by digest only that the after comparisons read, and the build trees.)* Each step's command line is in
 [`logs/commands.log`](base/local/logs/commands.log) and in its own `logs-<step>/commands.log`, its exit in
 `logs/runs.tsv`, and its machine records before and after in `logs/<label>.machine.txt` and `.machine-sh.txt`.
 - **Part C, the side-by-side tool** (step `tools`, 2026-11-23): the tool built in Release outside the tree and run
@@ -813,15 +816,17 @@ scripts as they were on disk, a `.gitattributes`, and [`hashes.txt`](base/local/
 **What each shows**, in words (the counts are in the files):
 - **Part E's collector** reports "offline compiler output differs from the checked-in program". The regenerated program
   differs from the checked-in `FibonacciProgram.g.cs` only in the form of its constants: by the repository's full
-  history, the checked-in copy was last written at `3a8f3022` (2026-07-17), before `ef676932` (SJL-3.7, 2026-10-13),
-  since which the portable compiler writes each number constant as `System.BitConverter.UInt64BitsToDouble(0x...UL)`.
+  history, the checked-in copy was last written at `3a8f3022` (`3a8f3022b54c490973ecb134d7fdd4be0fde8cdf`,
+  2026-07-17), before `ef676932` (`ef6769322b2189d413f1c3649df3e7aa6aaffcda`, SJL-3.7, 2026-10-13), since which the portable compiler writes each number constant as `System.BitConverter.UInt64BitsToDouble(0x...UL)`.
   The sample published with Native AOT and ran, with no dynamic code (the report's `nativeAot` fields). Part E is judged
   at the after commit only; at the base this is its record. Regenerating the sample is a separate W2 stage's, not this
   record's. *(Changed the same day, before this record merged: the sentence after the colon read "the checked-in copy
   was last written at `68f9a87a` (Broiler-Platform/Broiler.JS#1061), before `588ca262` (SJL-12.5), whose emitter writes
   each constant as `System.BitConverter.UInt64BitsToDouble(0x...UL)`", names read from this machine's shallow clone, at
   whose graft boundaries both commits stand; the chain's log records the correction at 2026-11-23T12:28:11Z, and
-  `scripts/chain2.sh`, retained as it ran, keeps the earlier names. The part E record itself is unchanged.)*
+  `scripts/chain2.sh`, retained as it ran, keeps the earlier names. The part E record itself is unchanged.)* *(Changed
+  again the same day, after review: the forty-digit ids are added beside the eight-digit names, which this machine's
+  shallow clone cannot resolve; GitHub's commit pages give them.)*
 - **Part G**: both suites ran against the base candidate; Broiler.JSeal's consumer completed, and every test of
   Broiler.HtmlBridge that ran passed. **The after run must use the same harness**: Broiler.JSeal restored in Release-VM
   first, and a candidate directory holding every package the after commit's packages introduce, at the versions they
@@ -850,13 +855,27 @@ step has no done marker, as it exited 1 and is kept as taken; the reading aid of
 "a copy of the base report with one outcome flipped and one message changed, which the comparison must report as two
 differences", belongs to the comparison with the after commit and is not taken. Parts F, I, J and K have no base run:
 each is taken at the after commit (part I on the owner's lane, with the base commit's build as its arm B).
+*(Added the same day, after review, before this record merged:)* Not taken either: every test's result of
+Broiler.JSeal's suites, which part G asks retained and compares per test. The consumer's test commands ran with no test
+logger, so [`report.json`](base/local/part-g/jseal/report.json) keeps each suite's summary and its skipped tests' names,
+not each passed test; whether the base run is taken again with per-test output or read by summary and skipped names is
+the orchestrator's to decide, and either way the after run's harness should keep a TRX for the same suites. Three files
+kept by digest only are read by the after comparisons, and their only copy is in the run folder in the session's
+scratch space, which is not durable: part C's report, part D's dump report and Broiler.HtmlBridge's TRX
+([`retained.txt`](base/local/retained.txt)); the run folder is to be kept until those comparisons are taken, unless the
+orchestrator has them kept whole in the bundle, as `side-by-side/w1/` and `bridge/` kept such files. And, a departure
+from this stage's brief: the `bin` and `obj` trees of the base build and of W1's build, outside the bundle, were deleted
+by this stage after its first commits and before review, where the brief kept that folder read-only until the commit
+was verified. Nothing retained lived there, but the shell binaries' digests can no longer be checked against the
+binaries that ran, and any further run (the reading aid that would give the library's code, a single case) needs a
+build of the base commit behind the gate.
 
 ### Part C at the base commit, classified
 
 [`base/part-c/`](base/part-c/README.md) holds every difference of the runs above that part C's comparison names, each
 with its class or found unclassified, the generated message tables of class M, and the scripts that wrote them, run
 twice with the same bytes, from the retained runs alone; [`hashes.txt`](base/part-c/hashes.txt), SHA-256
-`ce3b2ba550b0a4080f567ff75ce753e98f62354ac175badfded20021959bfa29`. The corrections it reads are K1 to K10 as the base commit holds them,
+`b9a8fd92c477cb64d7ee91695ba7dc7700b336501bd6acb07cec989dc4660c47`. The corrections it reads are K1 to K10 as the base commit holds them,
 unchanged since `232230dc` (`232230dcd2160803a3d97123abfb7e856441b442`, 2026-11-03), before the first part C base step;
 this branch adds no row of K10, as reading B9's "before the first part C base run" has passed. How each class is read
 is in that folder's README; the library's code for a refusal is not in the run, so class E is read from the bridge's
@@ -865,7 +884,8 @@ unclassified list is a lower bound until E is read by code. The run that would s
 aid with the bridge's type looked up in `Broiler.JavaScript.Parser`, on a build of the base commit behind the gate,
 when the orchestrator decides. *(Changed the same day, after review, before this record merged: the digest read `ce949d7bafbbe170d60a7ff4ff4d6e23642816927305d42d5c8033f4c3930da1`,
 as `classify_c.py` was run again with two span readings no longer read S and class E marked provisional; the
-paragraph ended at "a reader's reading.", and named `232230dc` by eight digits only.)*
+paragraph ended at "a reader's reading.", and named `232230dc` by eight digits only. Changed again for the folder
+README's forty-digit id: the digest read `ce3b2ba550b0a4080f567ff75ce753e98f62354ac175badfded20021959bfa29`.)*
 - **W1's open items at the base.** `J000557` is C1 by K8 (the correspondence's P13, which the classification names),
   and `J001072` and `J001780` by K7 (D37); the outcome moves no corrections table lists are each C1, C3 or E, but for
   those below (E provisional, above); every `both-agree` span line is read S from its two texts but for two readings,

@@ -45,7 +45,14 @@ each was taken again from its start ([`retained.txt`](retained.txt)).
 
 Every file of the run folder, unchanged, at the same path, but the files over 2 MB, which are retained by digest only
 ([`retained.txt`](retained.txt), [`not-retained.sha256.txt`](not-retained.sha256.txt)). [`hashes.txt`](hashes.txt)
-gives the SHA-256 of every file here, and a [`.gitattributes`](.gitattributes) keeps the bytes as committed.
+gives the SHA-256 of every file here, and a [`.gitattributes`](.gitattributes) keeps the bytes as committed. Three of
+the files kept by digest only are ones the after comparisons read, and their only copy is in the run folder, which is
+not durable: part C's report (which [`../part-c/scripts/read_base.sh`](../part-c/scripts/read_base.sh) reads there),
+part D's dump report and Broiler.HtmlBridge's TRX; the run folder is to be kept until those comparisons are taken,
+unless the orchestrator has them kept whole here. The build trees' `bin` and `obj` folders, outside the bundle, were
+deleted by this stage before review, against its brief; nothing retained lived there, but the shell binaries' digests
+can no longer be checked against the binaries that ran, and any further run needs a build behind the gate
+([`retained.txt`](retained.txt)). *(Both added the same day, after review.)*
 
 ## What it shows
 
@@ -55,17 +62,23 @@ A reading; part C's classes are in [`../part-c/`](../part-c/README.md), and part
   attempts, each stopped by an omission of the session's harness, before the attempt that passed. Both builds succeeded with no warning. Every test262 shard of both runs wrote its report and
   passed its self-check, with the same shell binaries in every shard.
 - **Part E.** The regenerated program differs from the checked-in `FibonacciProgram.g.cs` only in the form of its
-  constants: by the repository's full history, the copy checked in was last written at `3a8f3022` (2026-07-17), before
-  `ef676932` (SJL-3.7, 2026-10-13), since which the portable compiler writes each number constant as
+  constants: by the repository's full history, the copy checked in was last written at `3a8f3022`
+  (`3a8f3022b54c490973ecb134d7fdd4be0fde8cdf`, 2026-07-17), before `ef676932`
+  (`ef6769322b2189d413f1c3649df3e7aa6aaffcda`, SJL-3.7, 2026-10-13), since which the portable compiler writes each number constant as
   `System.BitConverter.UInt64BitsToDouble(0x...UL)`, and the regenerated program has that form. The sample published
   with Native AOT and ran, with no dynamic code (the report's `nativeAot` fields). Part E is judged at the after commit
   only; this is its base record. *(Changed the same day, before this record merged: the bullet's first sentence named
   "`68f9a87a` (Broiler-Platform/Broiler.JS#1061)" and "`588ca262` (SJL-12.5), whose emitter writes each constant as" that
   form, names read from this machine's shallow clone, at whose graft boundaries both commits stand; the chain's log
   records the correction at 2026-11-23T12:28:11Z, and `scripts/chain2.sh`, retained as it ran, keeps the earlier
-  names.)*
+  names.)* *(Changed again the same day, after review: the forty-digit ids are added beside the eight-digit names,
+  which this machine's shallow clone cannot resolve; GitHub's commit pages give them.)*
 - **Part G.** Both suites ran against the base candidate: Broiler.JSeal's consumer completed, and every test of
-  Broiler.HtmlBridge that ran passed (its TRX by digest). The after run must use the same harness: Broiler.JSeal restored
+  Broiler.HtmlBridge that ran passed (its TRX by digest). **Not taken: every test's result of Broiler.JSeal's suites.**
+  The consumer's test commands ran with no test logger, so its report keeps each suite's summary and its skipped tests'
+  names, not each passed test, while part G asks every test's result retained and compares per test; whether the base
+  run is taken again with per-test output or read by summary is the orchestrator's to decide, and the after run's
+  harness should keep a TRX for the same suites. *(Added the same day, after review.)* The after run must use the same harness: Broiler.JSeal restored
   in Release-VM first, and a candidate directory that holds every package the after commit's packages introduce, at the
   versions they declare.
 - **Parts D and H**: their reports, read and not compared, since each compares with the after commit.

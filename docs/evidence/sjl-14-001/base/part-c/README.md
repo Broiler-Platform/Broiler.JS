@@ -20,10 +20,12 @@ by this file's header; and M ... and S ..."; "every other difference is unclassi
 at the base commit is complete, and every difference is in C1, C3, E, T, M or S and is listed."
 
 **The corrections it classifies by** are [`../../corrections.md`](../../corrections.md)'s K1 to K10 as the base commit
-holds them. Neither `corrections.md` nor `corrections/` has changed since `232230dc` (2026-11-03, rows W1a to W1c), before
-the first part C base step (2026-11-22T14:51:15Z, [`../local/driver.log`](../local/driver.log)), and this branch adds
-none: reading B9's taken bullet allowed K10 rows "before the first part C base run", and that moment has passed. A
-difference no class admits is listed below as unclassified.
+holds them. Neither `corrections.md` nor `corrections/` has changed since `232230dc`
+(`232230dcd2160803a3d97123abfb7e856441b442`, 2026-11-03, rows W1a to W1c), before the first part C base step
+(2026-11-22T14:51:15Z, [`../local/driver.log`](../local/driver.log)), and this branch adds none: reading B9's taken
+bullet allowed K10 rows "before the first part C base run", and that moment has passed. A difference no class admits is
+listed below as unclassified. *(Changed the same day, after review, before this record merged: the commit was named
+`232230dc` alone.)*
 
 ## What is here
 
