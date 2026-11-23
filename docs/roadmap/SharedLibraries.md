@@ -3547,6 +3547,26 @@ first part C base run (not taken: a dated revision of the rule)"; B10's first po
 that rotates by repetition as bundle `sjl-3-001`'s run on the same lane took them"; and the sentence on
 `docs/public-api.md` is new, its notes having been taken out of this change.
 
+*(Noted 2026-11-23, during W2's hold, before W2 merges.)* The note above reads "The hold has not started." and "Nothing
+is met or accepted; every clause of this engine's, 1 to 6, is unmet." The hold started with the first base run at
+`69a8a13b`, and W2's base runs are taken and retained in bundle [`sjl-14-001`](../evidence/sjl-14-001/README.md),
+whose README reads part C at the base commit NOT MET on the retained runs under the rule as written. On 2026-11-23 the
+owner gave **answers 10 and 11**, the owner's own and not ones taken under the owner's direction of 2026-10-18, quoted
+verbatim with their questions in that README's "W2's base, records part 5". Answer 10 chose "Revise rule
+(Recommended)" — "I draft one dated revision of sjl-14-001's rule from your answer, admitting groups 1-5, 7, 8 (and 9
+if you choose C below) for part C and part D, marked as weaker evidence written after the runs were seen. Part C is
+then re-read on the same retained runs, nothing re-run, and W2 proceeds to its PR."; not taken: "Merge as NOT MET" and
+"Hold W2". Answer 11 chose "Admit by revision (Recommended)" — "Include group 9 in the dated revision. W2's trees stay
+as they are; no other span changes."; not taken: "Fix in W2". The revision is
+[`decision-rule-revised-2026-11-23.md`](../evidence/sjl-14-001/decision-rule-revised-2026-11-23.md), written after
+part C's base runs were seen and so weaker evidence: parts C and D admit the differences of the groups the answers
+name, each class naming its inputs, tests or paths, and nothing wider; group 6, `test/staging/sm/regress/regress-610026.js`,
+is not admitted, and W2 fixes it inside W2 by the bundle's decision B8 (`e0b2d17b`, with its review fix `80b04d26`, on
+branch `sjl-14-w2`); part A is not revised. **Part C, read again under the revision on the same retained runs: read
+NOT MET on the retained runs, for `regress-610026.js` alone.** The bundle records finding S14-F2 against the
+correspondence for `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js`, as part A's C1 line
+asks. The rule's file is not edited. Nothing is met or accepted; every clause of this engine's, 1 to 6, is unmet.
+
 ## Shared static semantics (SJL-15)
 
 SJL-15 makes the frontend's semantic model the single source of the static-semantics facts, and moves this engine's

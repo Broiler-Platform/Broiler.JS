@@ -15,6 +15,7 @@ Broiler.JS `33d3093b` and Broiler.VM `c5bde2b`, each repository's default branch
 | File | What |
 |---|---|
 | [`decision-rule.md`](decision-rule.md) | The rule: eleven predeclared parts, A to K, filed before any change it judges (no bridge, no switch, no adapter package, no deletion); it holds no figure |
+| [`decision-rule-revised-2026-11-23.md`](decision-rule-revised-2026-11-23.md) | The rule's dated revision, filed by the owner's answers 10 and 11 of 2026-11-23 after part C's base runs were seen, and so weaker evidence: parts C and D admit the differences those answers name, each class naming its entries, and nothing wider; it quotes the rule whole *(added 2026-11-23, records part 5)* |
 | [`corrections.md`](corrections.md) and [`corrections/`](corrections/k-rows.tsv) | The corrections K1 to K10, each with its rows and test262 paths; the classes E and T with their rows and sites; finding S14-F1; the probes' rows |
 | [`dispositions.md`](dispositions.md), [`dispositions.tsv`](dispositions.tsv) and [`api/`](api/) | Every public type and member of `Ast` and `Parser` with its disposition (decision D50), from a PublicApiGenerator listing at `33d3093b`; the non-tree types' new home; SJL-14.5's deletion list member by member |
 | [`inherited-context/`](inherited-context/README.md) | The inherited-context probes of decision D44, run on both engines with every answer recorded |
@@ -26,7 +27,7 @@ Broiler.JS `33d3093b` and Broiler.VM `c5bde2b`, each repository's default branch
 | [`base/part-a/`](base/part-a/imported.txt) | Part A's base run, `.github/workflows/test262-evidence.yml` run 44639106095 at `69a8a13b`, its artifact's entries imported unchanged (the one over 2 MB by its digest), with its run's artifacts and digests, the jobs' runner images and `hashes.txt`; read, not judged *(added 2026-11-22, during W2's base runs)* |
 | [`side-by-side/w1/tests-and-test262/`](side-by-side/w1/tests-and-test262/README.md) | Part C's other runs at W1, the test projects and test262 with the switch off and on, taken during W2's base phase, with their logs, machine records, scripts and `hashes.txt` (the files over 2 MB by digest), and a reading of them that classifies nothing; read, not judged *(added 2026-11-22, during W2's base runs)* |
 | [`base/local/`](base/local/README.md) | The base commit's local runs at `69a8a13b`: part C's side-by-side tool, test projects and test262 with the switch off and on; part D's tool; part E's collector; part G's base candidate feed with Broiler.JSeal's and Broiler.HtmlBridge's suites against it; part H's API lister; with the chain's logs, machine records, scripts and `hashes.txt` (the files over 2 MB by digest) *(added 2026-11-23, during W2's hold)* *(Noted 2026-11-23, records part 4: the three of those files the after comparisons read, part C's side-by-side report, part D's dump report and Broiler.HtmlBridge's TRX, are now kept whole there; "the files over 2 MB by digest" is left as written)* |
-| [`base/part-c/`](base/part-c/README.md) | Part C at the base commit: every difference of those runs with its class, or unclassified with its reading, the generated message tables of class M, and the scripts that wrote them; part C read NOT MET on the retained runs *(added 2026-11-23, during W2's hold)* |
+| [`base/part-c/`](base/part-c/README.md) | Part C at the base commit: every difference of those runs with its class, or unclassified with its reading, the generated message tables of class M, and the scripts that wrote them; part C read NOT MET on the retained runs *(added 2026-11-23, during W2's hold)* *(Noted 2026-11-23, records part 5: the cell before reads "part C read NOT MET on the retained runs"; part C is read again there under the rule's revision of 2026-11-23, read NOT MET on the retained runs for `test/staging/sm/regress/regress-610026.js` alone, which the revision does not admit; "W2's base, records part 5" below)* |
 
 ## What it will hold
 
@@ -936,7 +937,11 @@ README's forty-digit id: the digest read `ce3b2ba550b0a4080f567ff75ce753e98f6235
   at the base commit is complete, and every other difference is in C1, C3, E, M or S and is listed.", which went
   beyond the reading and which the two items above and class E's reading contradict.)* Part C's
   "How it is read" sends "An unclassified difference" to "a bridge or library defect, fixed as a dark merge and run
-  again before W2 merges"; what follows from each item is not decided here.
+  again before W2 merges"; what follows from each item is not decided here. *(Noted 2026-11-23, records part 5: the
+  bullet reads "Part C: read NOT MET on the retained runs, for the unclassified differences listed above" and "what
+  follows from each item is not decided here". The owner decided by answers 10 and 11 of 2026-11-23: a dated revision
+  of the rule admits every item above but `regress-610026.js`, and part C, read again under it, is read NOT MET on the
+  retained runs for that path alone ("W2's base, records part 5" below). The bullet is left as written.)*
 
 ### Parts A, D, E, G and H at the base
 
@@ -1067,7 +1072,91 @@ merged: of these, the table re-runs `d-read-*` were taken by `readD.sh`, not `st
   same day, after review, before this record merged.)*
 
 What follows from each remaining unclassified item, under part C's "How it is read" and readings B8 and B9, is the
-owner's to decide; nothing here decides it.
+owner's to decide; nothing here decides it. *(Noted 2026-11-23, records part 5: the owner has decided, by answers 10
+and 11 of 2026-11-23, recorded in "W2's base, records part 5" below; the sentence is left as written.)*
+
+## W2's base, records part 5: the rule's revision of 2026-11-23, recorded on 2026-11-23
+
+**Written:** 2026-11-23, during W2's hold, on branch `sjl-14-w2-base`, with the default branch's head read as
+`69a8a13bc446a1714d3c8be9be3cfd742aebee6e` by `git ls-remote` before the commit. **What it records:** the owner's
+answers 10 and 11 of 2026-11-23, the rule's dated revision they file, and part C read again under it on the same
+retained runs, with nothing built, run or dispatched. [`decision-rule.md`](decision-rule.md) is not edited, and no row
+is added to [`corrections.md`](corrections.md) or its tables.
+
+**The owner's answers 10 and 11 of 2026-11-23**, the owner's own and not ones taken under the owner's direction of
+2026-10-18, quoted verbatim:
+- Answer 10. Asked (2026-11-23): "SJL-14 W2: part C reads NOT MET at the base. After investigation (verified), no
+  library defect was found, so no dark merge is needed and the base runs can stand. The remaining unclassified
+  differences: (1-3) 11 inputs where the old parser wrongly accepted and the bridge correctly refuses, but with a
+  different first error row than the classification expects; (4) the switch's own architecture test; (5) a for-of
+  `await using` test that moves fail→pass (an improvement) with no correction row; (7) one Terser-minified variant the
+  runner skips; (8) 3,625 dump lines where P writes the end of input as `eof` and B writes the same offset as a number;
+  (9) 6 computed-member spans the AST type derives the same way in both trees. Groups 1-3, 8 and 9 will also reappear
+  in part D at the after run. Admitting them after the runs were seen needs a dated rule revision, which the precedents
+  (your SJL-11 answers 7 and 8) treat as yours. How should I proceed?" Chosen: "Revise rule (Recommended)" — "I draft
+  one dated revision of sjl-14-001's rule from your answer, admitting groups 1-5, 7, 8 (and 9 if you choose C below)
+  for part C and part D, marked as weaker evidence written after the runs were seen. Part C is then re-read on the same
+  retained runs, nothing re-run, and W2 proceeds to its PR." Not taken: "Merge as NOT MET" — "Change no rule. Record
+  part C as read NOT MET at the base, with the unclassified list, and proceed to W2's PR and merge anyway (nothing is
+  accepted under EX-30). Part D at the after run will then also read these as regressions."; "Hold W2" — "Stop before
+  W2's PR. Leave the hold on Broiler.JS main and the base runs as they are until you review the decision summary
+  yourself."
+- Answer 11. Asked (2026-11-23): "Group 9 (6 variants): the bridge ends a computed member like `a[b, c]` where its
+  property ends, before the `]`, because AstMemberExpression derives its end that way (the old parser included the `]`
+  only by its comma-expression overshoot). Fix it in W2 or admit it?" Chosen: "Admit by revision (Recommended)" —
+  "Include group 9 in the dated revision. W2's trees stay as they are; no other span changes." Not taken: "Fix in W2"
+  — "Change the after tree so a computed member ends at its `]`. More faithful to the source text, but it changes every
+  computed member's span in the after tree (part D would read those as class S). Needs the parse-corpus check and the
+  tests re-run."
+
+The question's groups are part C's unclassified items 1 to 9 ([`base/part-c/README.md`](base/part-c/README.md)), by
+their numbers; group 6 is not in it. The question's count for group 8 is of input variants, one row each of
+`base/part-c/unclassified.tsv`, not of dump lines.
+
+**The revision**, [`decision-rule-revised-2026-11-23.md`](decision-rule-revised-2026-11-23.md), SHA-256
+`1f9c7e539716b9d498c45592ca057ecb65e6543dcd613dfc09d2d4a6ba6b921e`, written after part C's base runs were seen and
+therefore weaker evidence, as the rule's section "Revisions" reads: "A rule revised after any run it judges has been
+seen is a new dated file in this directory. It quotes this one whole and says it was written afterwards, and its
+decision is then weaker evidence." It quotes the rule whole and the lines it changes, and changes only these: part C
+admits six classes, each naming its entries, rev-code (groups 1 to 3: the inputs and the library's codes EX0009,
+EX0008 and EE0033 by name), rev-eof (group 8: `eof` read as the same offset as the source's length, one span, for the
+input variants part C's base reading lists), rev-bracket (group 9: the member, optional-chain and import-call spans of
+`T036087`, `T039546` and `T051374`), rev-switch-test (group 4), rev-for-of (group 5, listed with K7 and D35, with the
+library's row table's note that the `using` heads are EP rows) and rev-minifier (group 7); part C's MET line reads
+with them; part D admits rev-code, rev-eof and rev-bracket, for the same entries, and its MET line and its "How it is
+read" read with them. Listing group 5 with K7 and D35 is the revision's drafting from the decision summary the
+question rested on; answer 10 names no row. **Group 6 is not admitted**: `test/staging/sm/regress/regress-610026.js`
+(both variants) is a bridge defect the bundle's decision B8 (recorded with W2 on branch `sjl-14-w2`: "One part C finds
+unclassified at the base commit is fixed inside W2, on this branch, and part C reads NOT MET for that input unless a
+class admits it.") sends inside W2, which fixes it by `e0b2d17bda6e578c0a8213f5263374f0fdb13ded` and its review fix
+`80b04d26fca6138c4337b000bc621876ec78cd7e`. Part A is not revised.
+
+**Part C, read again** on the same retained runs by [`base/part-c/scripts/read_base.sh`](base/part-c/scripts/read_base.sh)
+with the scripts taught the revision's classes, through the machine-wide lock and idle gate, the same bytes twice;
+without the revision the scripts write the earlier tables byte for byte. Each run, the tables that changed with their
+digests before and after, and the check of the new classes against the earlier `unclassified.tsv`, are in
+[`base/part-c/README.md`](base/part-c/README.md)'s "Records part 5", with the runs' logs in
+[`base/part-c/logs-revised/`](base/part-c/logs-revised/runs.tsv). That folder's [`hashes.txt`](base/part-c/hashes.txt)
+now reads SHA-256 `0e898cfaaae7185b1d8d8c95a88a64b53e5ec755ccf3be0162f01b4b9dec7927`. *(The section "W2's base, records part 4" names that file's digest as
+`992e87c1e547fe4b97e1e4a1b49cb9baa182296a120c186703ddf7a05c2c806c`, of the folder before this record; it is left as
+written there.)*
+- **Part C: read NOT MET on the retained runs**, under the rule's revision of 2026-11-23, for
+  `test/staging/sm/regress/regress-610026.js` (both variants), passing with the switch off and failing with it on,
+  which no class admits; the tables read every other difference in a class. Not judged beyond that (EX-30). The
+  reading of the section "W2's base, recorded on 2026-11-23", under the rule as written, stays on record as taken.
+- **Finding S14-F2, against the correspondence**, as part A's C1 line asks ("a C1 row that none explains is recorded as
+  a finding against the correspondence and is a regression"):
+  `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js`, original variant, fails with the switch
+  off and passes with it on, and no row of K1 to K10 explains it: the corrections' tables explain the path by the
+  correspondence's D31 bucket alone, while what the shell shows is the early error EE0056 that the old parser misses
+  for an `await using` head, which K7's D35 ("Lexical redeclarations Broiler.JS misses") describes, and the library's
+  row table calls the `using` heads, this test by name, EP rows. Recorded here, for the correspondence's owner;
+  [`base/part-c/README.md`](base/part-c/README.md)'s "Records part 5" gives the sites. Part A's lines are not
+  revised, so part A's after comparison reads this path as part A's C1 line reads it.
+- **What part D's after reading will admit**, under the revision: part C's C1, C3, E, T, M and S as the rule words them,
+  and rev-code, rev-eof and rev-bracket for the inputs and input variants the revision names, each read at entry point
+  P as the base commit's old parser against the after commit's `FastParser` facade; every other difference is a
+  regression. Groups 4 to 7 are not in part D's population. No part D after run exists.
 
 ## What it does not claim
 
