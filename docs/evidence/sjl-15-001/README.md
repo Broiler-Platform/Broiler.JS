@@ -111,3 +111,30 @@ alone, accepting it (row DE3, a correction of Broiler.JS, C1's row EA0007); Broi
 vectors do not show the answer row AB1 of the correspondence records for Broiler.VM on probes V029 and V030, whose
 sources ran as an indirect eval's code. The revision lands by this change's merge. It is no run of the rule, lets no
 SJL-15.2 code merge by itself and judges nothing; the note above is left as written.
+
+*(Noted 2026-11-24, at SJL-15.2 stage 1, written before any run of the rule.)* **The first model commit.** SJL-15.2's
+stage 1, the model's foundation, changes `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/` and
+`Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/`: the merge that lands it will be the first model commit after W2
+by the rule's "The commits, named before they exist", and is named here once it exists. It lands after
+Broiler-Platform/Broiler.VM#214 and #217, each named above with its commit, and after corpus revision 44. **Part B is
+taken after that merge, against its first parent** (decision D-js-part-b-method, recorded in
+`docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)" by this change): bundle `sjl-12-001`'s tool
+built and run as the rule says at the merge and at its first parent, each from a clean `git archive`; compared per
+input, variant and entry point by `scripts/compliance/compare_parse_corpus.py`, and per input by the dumps' hashes; with
+the push runs at the merge of both workflows that run the test projects of `Broiler.JS.slnx`,
+`.github/workflows/ci.yml` and Shared libraries (`.github/workflows/shared-libraries.yml`), imported here as bundle
+`sjl-14-001`'s `bridge/w1-ci/` imported W1's; and nothing merged to the default branch after it until its ci.yml push run
+has concluded, since a later push to the default branch cancels it. **Part B's reading at each model commit is limited
+to the model commits taken so far**, each named, as bundle `sjl-14-001`'s reading of its own part B was limited to the
+commits it had taken; the part's verdict waits for the last model commit before the base commit.
+
+**How parts F and G will include the model, by stage 8** (decisions D-js-adapter, D-js-part-g, D-js-part-f-checklist and
+D-js-library-runs, each recorded in the same section by this change): a library-level adapter for the `semantics`
+vectors' `ScriptEvaluation` and `DirectEval` operations from stage 2, answering only the rows the model reports, and
+growing stage by stage; the canonical dump's model section, which this change adds to
+`Broiler.ECMAScript/runners/SyntaxDump.cs`, requested by the corpus runner's dump mode and by the Native AOT probe by
+stage 8, with part G's control K2 planting a hash-ordered model side table; part F's checklist, a script in this bundle's
+`tools/` that extends bundle `sjl-13-001`'s `tools/contract_check.py` to the milestone's facts, committed before any run
+of part F, with part H's two controls; and parts F, G and E taken at stage 8's commit after its merge, each read as at
+the library commit if no model commit lands before the base commit, and taken again at the actual library commit if one
+does. No rule file is added or edited. This note names a merge to come and judges nothing.

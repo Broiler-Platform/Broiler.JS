@@ -626,6 +626,71 @@ whose row is EE0038 (`[[...x, y] = 1] = 2;`, `for ([[...x, y] = 1] of []);`, `({
 literal is no AssignmentExpression's target in the pattern, so EE0032 does not hold of it. EE0032 stays the row where
 nothing converts the outer literal.
 
+## 10. The library at SJL-15
+
+*(Added 2026-11-24, at SJL-15.2 stage 1.)* The semantic model's entry, its types and its scopes as the library spells
+them, for the shape Broiler.VM's area design sketches ("A sketch of the shape", `static-semantics.md` section 3) and
+JSD-0080's section "The semantic model's design" decides. Like section 9 it restates and decides nothing: the decisions
+are this repository's of 2026-11-24, recorded in `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics
+(SJL-15)" (D-js-entry, D-js-default-off, D-js-instances, D-js-kinds, D-js-scope-shape, D-js-parameters,
+D-js-declaration-of, D-js-function-kind and D-js-names among them), and where this section differs from them or from the
+records that win (the header), it is corrected to match. Section 4 stays the sketch as restated at SJL-12.1. Stage 1 is
+the model's foundation; the members the sketch names beyond it (resolution, jump targets, private names, the module
+record, named evaluation, captures and the early errors) are its later stages', and none is declared before its stage.
+
+### 10.1 The entry
+
+| Item | What | Decisions |
+|---|---|---|
+| The request | `ParseRequest.BuildSemanticModel`, init-only and false by default: a parameter of the request, as `RetainTokens` and the first-error parameter are (section 3), not a switch of the language. With it off the parse is exactly SJL-13's and SJL-14's | D-js-entry, D-js-default-off |
+| The walk | The declarations walk builds the model as it goes, in the same visit and order, with explicit stacks; it starts no second walk (the milestone's words). Its own counter numbers the model's scopes and facts, so the walk's sequence, which orders the diagnostics and the tables, is the same with the model on or off. A partial walk before a grammar refusal builds none | D-js-entry, D-js-scope-shape |
+| The result | `ParseResult.Model`, computed from the side tables (`Declarations?.Model`), so that the result keeps the layout it had at `0.1.0-preview.9`: null unless the member is on and the source is accepted, as `Declarations` is null for a refused source. With the member on, the tree, the side tables and the diagnostics are those of the parse with it off | D-js-entry |
+| Who sets it | No engine before its own cut-over: Broiler.JS's bridge does not set it before SJL-15.5, and Broiler.VM reads the model only from a published version its pin commit admits | D-js-default-off |
+
+### 10.2 The types
+
+| Sketch | The library's | What |
+|---|---|---|
+| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)` |
+| `Scope` | The tables' `Scope`, the same instances | The model's `Scopes` are a superset of `DeclarationTables.Scopes` in the same relative order, adding the kinds `With`, `ClassBody`, `FunctionName` and `Parameters`. Eval code is not a kind: its program's scope is a `Script` scope and its facts' kind `FunctionKind.EvalCode`; the separate variable environment is a function fact of a later stage |
+| `Declaration` | The tables' `Declaration`, the same instances | `BindingKind` gains `Parameter`, `FunctionName` (a named function expression's own name) and `ClassName` (a class's inner name), each with its three flags false, and `Declaration.IsMutable`, from the kind |
+| `FunctionFacts` | The tables' `FunctionFacts`, the same instances | `Kind` (`FunctionKind`), `IsAsync`, `IsGenerator`, `HasSimpleParameterList` and `HasParameterExpressions`, the same on every request; the model's `Functions` add one for every static block and every field with an initialiser |
+| `IdentifierReference`, `BreakOrContinue`, `PrivateNameReference`, `Diagnostic` | `Identifier`, `BreakStatement` and `ContinueStatement`, `PrivateIdentifier`, `SyntaxDiagnostic` | The tree's types, at the stages that read them; `Resolution`, `LabelTarget`, `PrivateNameBinding` and `ModuleRecord` are new types of those stages |
+
+Every collection is in source order: the scopes and the facts by the start of their node and, for one start, by the order
+the walk made them in, which puts a scope before the scopes inside it; every fact is keyed by node identity. A node
+that is not in the model's tree is a caller's error: `ScopeOf`, `DeclarationOf` and `FactsOf` throw
+`ArgumentException` for it, and `FactsOf` for a node of the tree that has no facts.
+
+### 10.3 Scopes and `ScopeOf`
+
+Every class has a `ClassBody` scope, an anonymous class's too; every function a `Parameters` scope, an arrow's and a
+function's without parameters too, and for the dynamic function's goals the program's `Parameters` scope is the model's
+first; a named function expression has a `FunctionName` scope. For one function the scopes run `FunctionName`,
+`Parameters`, `Function`, each the parent of the next, and an `if` clause's function's implicit `Block` comes before its
+function's scopes. A node that owns a scope is in the scope around it and its children are in its own, except:
+
+| Node | `ScopeOf` |
+|---|---|
+| The `ProgramNode` | The model's first scope |
+| A dynamic function's parameters (patterns, initialisers, computed keys) / body | Its `Parameters` scope / its `Function` scope |
+| A `FunctionNode` | The scope around it; an `if` clause's function's, its implicit `Block` |
+| A function declaration's name / a named function expression's name | The scope that binds it / its `FunctionName` scope |
+| A function's parameters, their initialisers and computed keys / its body, an arrow's expression body | `Parameters` / `Function` |
+| A `ClassNode`, its decorators, a class declaration's name | The scope around it |
+| A class expression's name; the heritage; every element, its key, computed or not, its decorators and a field's initialiser | `ClassBody` |
+| A method's `FunctionNode` | `ClassBody`, its own scopes below |
+| A static block's statements | Its `StaticBlock` scope |
+| A `switch`'s discriminant / each case, its test and its statements | The scope around it / `Switch` |
+| A `with` statement's object / body | The scope around it / `With` |
+| A `catch` parameter and its initialisers / the body's `BlockStatement` | `Catch` / `Catch`, its statements in the body's `Block` |
+| A `for` with a lexical head: the head, the test, the update, the body; a `for`-`in` or `for`-`of` with one: the head, the expression, the body | `For` |
+| A label, a `break`'s or a `continue`'s label | The scope of the statement holding it |
+
+`DeclarationOf` answers one declaration: for a class declaration's name the outer `Class` declaration the tables hold,
+the inner `ClassName` declaration, with the same node, being in the class's `ClassBody` scope; for a class
+expression's name its `ClassName` declaration.
+
 ## Corrections
 
 *(Revised 2026-10-26, at SJL-13.1; it read "None.")* Each revision of 2026-10-26 above quotes what it replaced:
