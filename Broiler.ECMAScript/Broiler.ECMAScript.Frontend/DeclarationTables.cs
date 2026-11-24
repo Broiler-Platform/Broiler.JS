@@ -53,7 +53,12 @@ public enum ScopeKind
     /// <summary>A <c>switch</c> statement's CaseBlock.</summary>
     Switch = 4,
 
-    /// <summary>A <c>catch</c> clause's parameter.</summary>
+    /// <summary>
+    /// A <c>catch</c> clause's parameter. A <c>catch</c> without a parameter keeps the tables' Catch scope too, with no
+    /// declaration, where ECMA-262 clause 14.15.2 (<c>Catch : catch Block</c>) creates no environment; the semantic model
+    /// keeps it as the tables have it, and its <see cref="SemanticModel.ParentOf"/> is then the parent of the clause's
+    /// block. <i>(Added 2026-11-24, at SJL-15.2 stage 1.)</i>
+    /// </summary>
     Catch = 5,
 
     /// <summary>The head of a <c>for</c>, <c>for</c>-<c>in</c> or <c>for</c>-<c>of</c> statement that declares lexically.</summary>
@@ -241,8 +246,16 @@ public sealed class Scope
     public SyntaxNode Node { get; }
 
     /// <summary>
-    /// The names it declares, in source order: its lexical declarations, and for a script, module, function or static block
-    /// also its var-scoped ones, from every statement down to the next function boundary.
+    /// The names it declares, in source order: in a scope of the tables' kinds, its lexical declarations, and for a script,
+    /// module, function or static block also its var-scoped ones, from every statement down to the next function boundary;
+    /// in the semantic model's own scopes, its own kind's: a <see cref="ScopeKind.Parameters"/> scope's are its parameters
+    /// (<see cref="BindingKind.Parameter"/>), one per BoundNames entry in source order, a name bound twice listed twice; a
+    /// <see cref="ScopeKind.FunctionName"/> or <see cref="ScopeKind.ClassBody"/> scope's is the inner name
+    /// (<see cref="BindingKind.FunctionName"/>, <see cref="BindingKind.ClassName"/>), a ClassBody scope of an anonymous
+    /// class having none; a <see cref="ScopeKind.With"/> scope has none. <i>(Revised 2026-11-24, at SJL-15.2 stage 1, when
+    /// the semantic model's kinds were added; it read "The names it declares, in source order: its lexical declarations,
+    /// and for a script, module, function or static block also its var-scoped ones, from every statement down to the next
+    /// function boundary.")</i>
     /// </summary>
     public IReadOnlyList<Declaration> Declarations { get; }
 }

@@ -136,7 +136,10 @@ public sealed class SemanticModelTests
                 Assert.Null(off.Model);
                 if (on.Outcome != ParseOutcome.Accepted)
                 {
+                    // A refusal has no model, so its whole dump, the ordered diagnostics with their message ids,
+                    // arguments and spans among it, is the off path's byte for byte.
                     Assert.Null(on.Model);
+                    Assert.True(SyntaxDump.Dump(off).AsSpan().SequenceEqual(SyntaxDump.Dump(on)), Name(item) + ": the refusal's dump differs");
                     r++;
                     continue;
                 }
@@ -224,9 +227,19 @@ public sealed class SemanticModelTests
 
                 // The completeness: every node reachable through AddChildren has a scope of the model's; every facts' node
                 // answers its facts; every declaration's node answers a declaration.
+                // The other way round: every BindingIdentifier of the tree declares a binding (the tree has no other kind of
+                // one: labels are IdentifierNames, and an assignment pattern's targets are expressions), so each answers a
+                // declaration, which is in one of the model's scopes.
+                var declared = new HashSet<Declaration>(model.Scopes.SelectMany(static s => s.Declarations), ReferenceEqualityComparer.Instance);
                 foreach (var node in Nodes(on.Tree!))
                 {
                     Assert.True(index.ContainsKey(model.ScopeOf(node)), name + ": a node's scope is not the model's");
+                    if (node is BindingIdentifier binding)
+                    {
+                        var declaration = model.DeclarationOf(binding);
+                        Assert.True(declaration is not null && declared.Contains(declaration), name + ": the binding " + binding.Name + " at " + binding.Span.Offset.ToString(CultureInfo.InvariantCulture) + " has no declaration of the model's");
+                    }
+
                     count++;
                 }
 
@@ -650,6 +663,81 @@ public sealed class SemanticModelTests
         Assert.Same(bodyModel.Scopes[0], bodyModel.ScopeOf(body.Tree!));
         var bodyFacts = bodyModel.FactsOf(body.Tree!);
         Assert.Equal((FunctionKind.DynamicFunction, isAsync, isGenerator, true, false), (bodyFacts.Kind, bodyFacts.IsAsync, bodyFacts.IsGenerator, bodyFacts.HasSimpleParameterList, bodyFacts.HasParameterExpressions));
+    }
+
+    // The dynamic function's goals, outside the determinism population (whose requests are Script, Module and Eval ones):
+    // the only goals where the on path adds a scope to the walk's top level (the program's Parameters scope). Each source
+    // runs under every DynamicFunctionKind, sloppy and forced strict, with every error reported; a source written to reach
+    // a row names the row's code, which at least one of its eight parses reports.
+    public static TheoryData<ParseGoal, string, string?> DynamicGoalSources() => new()
+    {
+        { ParseGoal.FormalParameters, "a, { b } = c", null },
+        { ParseGoal.FormalParameters, "a, [b, ...c], { [d]: e = f } = {}, ...g", null },
+        { ParseGoal.FormalParameters, "", null },
+        { ParseGoal.FormalParameters, "a, a", Rows.EE0070.Code },
+        { ParseGoal.FormalParameters, "a, a = 1, { b: a }", Rows.EE0069.Code },
+        { ParseGoal.FormalParameters, "a = yield, b = await", null },
+        { ParseGoal.FunctionBody, "let x; return x;", null },
+        { ParseGoal.FunctionBody, "var v; function f() {} class C {} { let w; }", null },
+        { ParseGoal.FunctionBody, "", null },
+        { ParseGoal.FunctionBody, "let x; let x;", Rows.EE0078.Code },
+        { ParseGoal.FunctionBody, "let x; var x;", Rows.EE0079.Code },
+        { ParseGoal.FunctionBody, "yield 1; await 2;", null },
+    };
+
+    [Theory]
+    [MemberData(nameof(DynamicGoalSources))]
+    public void A_dynamic_function_s_parse_with_the_member_on_is_the_parse_with_it_off(ParseGoal goal, string text, string? reaches)
+    {
+        var codes = new HashSet<string>(StringComparer.Ordinal);
+        var (accepted, refused) = (0, 0);
+        foreach (var kind in new[] { DynamicFunctionKind.Normal, DynamicFunctionKind.Generator, DynamicFunctionKind.Async, DynamicFunctionKind.AsyncGenerator })
+        {
+            foreach (var strict in new[] { false, true })
+            {
+                ParseRequest Request(bool model) => new(new SourceText(text), goal, UnicodeDataHome.Tables, NoValidator.Instance)
+                {
+                    Switches = ParseSwitches.For(goal) with { ForcedStrict = strict },
+                    Limits = new ParseLimits { Reporting = ErrorReporting.AllErrors },
+                    FunctionKind = kind,
+                    BuildSemanticModel = model,
+                };
+
+                var off = SyntaxParser.Parse(Request(model: false));
+                var on = SyntaxParser.Parse(Request(model: true));
+                var name = goal + " " + kind + (strict ? " strict" : "") + " \"" + text + "\"";
+                Assert.Null(off.Model);
+                Assert.True(off.Outcome == on.Outcome, name + ": the outcome differs");
+                Assert.True(
+                    off.Diagnostics.Select(static d => (d.Code, d.MessageId, d.Span, string.Join("\u0000", d.Arguments)))
+                        .SequenceEqual(on.Diagnostics.Select(static d => (d.Code, d.MessageId, d.Span, string.Join("\u0000", d.Arguments)))),
+                    name + ": the diagnostics differ");
+                Assert.True(SyntaxDump.Dump(off).AsSpan().SequenceEqual(SyntaxDump.Dump(on, model: false)), name + ": the dump without the model differs");
+                if (on.Outcome == ParseOutcome.Accepted)
+                {
+                    Assert.NotNull(on.Model);
+                    Assert.Equal(ScopeKind.Parameters, on.Model!.Scopes[0].Kind);
+                    accepted++;
+                }
+                else
+                {
+                    // No model on a refusal: the whole dump is the off path's.
+                    Assert.Null(on.Model);
+                    Assert.True(SyntaxDump.Dump(off).AsSpan().SequenceEqual(SyntaxDump.Dump(on)), name + ": the refusal's dump differs");
+                    refused++;
+                }
+
+                foreach (var diagnostic in on.Diagnostics)
+                    codes.Add(diagnostic.Code);
+            }
+        }
+
+        // Not vacuous: a source written to reach a row reaches it, and every other source is accepted under some kind.
+        Assert.Equal(8, accepted + refused);
+        if (reaches is not null)
+            Assert.Contains(reaches, codes);
+        else
+            Assert.True(accepted > 0, text + " is never accepted");
     }
 
     // -----------------------------------------------------------------------------------------------------------------

@@ -201,7 +201,9 @@ public sealed class SemanticModel
     /// The scope around <paramref name="scope"/>: its environment's [[OuterEnv]] as the walk reads it from the source
     /// (ECMA-262 clause 9.1.1); null for the model's first scope. For one function the chain runs
     /// <see cref="ScopeKind.FunctionName"/> (a named function expression's alone), <see cref="ScopeKind.Parameters"/>,
-    /// <see cref="ScopeKind.Function"/>, each the parent of the next.
+    /// <see cref="ScopeKind.Function"/>, each the parent of the next. A <c>catch</c> without a parameter keeps the tables'
+    /// empty <see cref="ScopeKind.Catch"/> scope, the parent of its block's, where the specification has no environment
+    /// (clause 14.15.2).
     /// </summary>
     /// <param name="scope">One of the model's scopes.</param>
     /// <returns>The parent scope, or null.</returns>

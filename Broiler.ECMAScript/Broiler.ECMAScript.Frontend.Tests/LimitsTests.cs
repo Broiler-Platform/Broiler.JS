@@ -57,16 +57,19 @@ public sealed class LimitsTests
             BuildSemanticModel = model,
         }));
 
-    // The same parse with the semantic model on (SJL-15.2): no stack overflow, and the same outcome and first diagnostic,
-    // with a model for an accepted source and none for a refused one.
+    // The same parse with the semantic model on (SJL-15.2): no stack overflow, and the same outcome and diagnostics, each
+    // with its code, message id, span and arguments, in the same order, with a model for an accepted source and none for a
+    // refused one.
     private static void AssertSameWithTheModel(ParseResult off, string text, int nesting, string name)
     {
         var on = ParseV(text, nesting, model: true);
         Assert.True(off.Outcome == on.Outcome, name + ": the outcome differs with the semantic model on");
         Assert.True((off.Outcome == ParseOutcome.Accepted) == (on.Model is not null), name + ": the model is not there as the outcome says");
         Assert.Null(off.Model);
-        if (off.Diagnostics.Count > 0)
-            Assert.True((off.Diagnostics[0].Code, off.Diagnostics[0].Span) == (on.Diagnostics[0].Code, on.Diagnostics[0].Span), name + ": the first diagnostic differs with the semantic model on");
+        Assert.True(
+            off.Diagnostics.Select(static d => (d.Code, d.MessageId, d.Span, string.Join("\u0000", d.Arguments)))
+                .SequenceEqual(on.Diagnostics.Select(static d => (d.Code, d.MessageId, d.Span, string.Join("\u0000", d.Arguments)))),
+            name + ": the diagnostics differ with the semantic model on");
     }
 
     [Fact]
