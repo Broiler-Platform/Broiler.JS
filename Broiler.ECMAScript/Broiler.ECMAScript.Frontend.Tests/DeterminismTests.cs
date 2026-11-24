@@ -18,7 +18,10 @@ namespace Broiler.ECMAScript.Syntax.Tests;
 /// Broiler.JS's) and, for an eval-family input, as eval code, the canonical dump of the parse (<see cref="SyntaxDump"/>:
 /// the tree with every node's kind, span and raw facts, the token stream, the ordered diagnostics and the side tables) is
 /// the same bytes in a repeated parse, on another thread, in the reverse order, on two threads at once, and under the
-/// cultures tr-TR, lt-LT and the invariant culture, current and UI alike.
+/// cultures tr-TR, lt-LT and the invariant culture, current and UI alike. From SJL-15.2 each parse is taken twice in the
+/// same pass, with the request's <c>BuildSemanticModel</c> off and on, and both dumps are compared, the model's section
+/// with the rest (rule part G of bundle sjl-15-001: "the model's side tables included in what the determinism runs
+/// compare").
 /// </summary>
 /// <remarks>
 /// The test262 inputs of the corpus are not stored here; the Native AOT probe's <c>--digest-corpus</c> mode runs the same
@@ -27,9 +30,9 @@ namespace Broiler.ECMAScript.Syntax.Tests;
 /// </remarks>
 public sealed class DeterminismTests
 {
-    private sealed record Item(string Id, string Variant, string Configuration, string Text);
+    internal sealed record Item(string Id, string Variant, string Configuration, string Text);
 
-    private static readonly Lazy<IReadOnlyList<Item>> Population = new(Load);
+    internal static readonly Lazy<IReadOnlyList<Item>> Population = new(Load);
 
     private static IReadOnlyList<Item> Load()
     {
@@ -61,7 +64,7 @@ public sealed class DeterminismTests
         return items;
     }
 
-    private static ParseRequest Request(Item item, bool retainTokens = false)
+    internal static ParseRequest Request(Item item, bool retainTokens = false, bool model = false)
     {
         if (item.Variant[0] == 'E')
         {
@@ -72,6 +75,7 @@ public sealed class DeterminismTests
                 Context = new InheritedContext { InFunction = strict },
                 Limits = new ParseLimits { NestingDepth = new DepthLimit(64) },
                 RetainTokens = retainTokens,
+                BuildSemanticModel = model,
             };
         }
 
@@ -84,11 +88,13 @@ public sealed class DeterminismTests
             Extensions = j ? LexerExtensions.DecimalSuffix : LexerExtensions.None,
             Limits = new ParseLimits { NestingDepth = new DepthLimit(j ? ParseLimits.MaximumSupportedNestingDepth : 64) },
             RetainTokens = retainTokens,
+            BuildSemanticModel = model,
         };
     }
 
     // The digests of every item's dump, parsed on a thread of the documented stack under the named culture, in the order
-    // given; with twice, each item is parsed a second time at once and the two dumps compared.
+    // given, with the semantic model off and on (each entry the two digests, off first); with twice, each item is parsed a
+    // second time at once, off and on, and the two dumps of each compared.
     private static string[] Digests(IReadOnlyList<Item> items, string culture, bool reverse, bool twice)
     {
         var digests = new string[items.Count];
@@ -105,14 +111,18 @@ public sealed class DeterminismTests
                     {
                         var i = reverse ? items.Count - 1 - k : k;
                         var dump = SyntaxDump.Dump(SyntaxParser.Parse(Request(items[i])));
+                        var withModel = SyntaxDump.Dump(SyntaxParser.Parse(Request(items[i], model: true)));
                         if (twice)
                         {
                             var again = SyntaxDump.Dump(SyntaxParser.Parse(Request(items[i])));
                             if (!dump.AsSpan().SequenceEqual(again))
                                 throw new InvalidOperationException(items[i].Id + " " + items[i].Variant + " " + items[i].Configuration + ": a repeated parse differs");
+                            var againWithModel = SyntaxDump.Dump(SyntaxParser.Parse(Request(items[i], model: true)));
+                            if (!withModel.AsSpan().SequenceEqual(againWithModel))
+                                throw new InvalidOperationException(items[i].Id + " " + items[i].Variant + " " + items[i].Configuration + ": a repeated parse with the model differs");
                         }
 
-                        digests[i] = Convert.ToHexStringLower(SHA256.HashData(dump));
+                        digests[i] = Convert.ToHexStringLower(SHA256.HashData(dump)) + " " + Convert.ToHexStringLower(SHA256.HashData(withModel));
                     }
                 }
                 catch (Exception e)
@@ -153,9 +163,11 @@ public sealed class DeterminismTests
         var first = Digests(items, string.Empty, reverse: false, twice: true);
         AssertSame(items, first, Digests(items, string.Empty, reverse: false, twice: false), "a second run");
 
-        // Not vacuous: accepted and refused parses are both among them.
+        // Not vacuous: accepted and refused parses are both among them, and an accepted parse's dump with the model is not
+        // its dump without it.
         var outcomes = items.Take(400).Select(static i => SyntaxParser.Parse(Request(i)).Outcome).Distinct().Count();
         Assert.Equal(2, outcomes);
+        Assert.Contains(first, static d => d.Split(' ')[0] != d.Split(' ')[1]);
     }
 
     [Fact]

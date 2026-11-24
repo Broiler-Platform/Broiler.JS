@@ -50,11 +50,24 @@ public sealed class LimitsTests
         return result;
     }
 
-    private static ParseResult ParseV(string text, int nesting) => OnDocumentedStack(() => SyntaxParser.Parse(
+    private static ParseResult ParseV(string text, int nesting, bool model = false) => OnDocumentedStack(() => SyntaxParser.Parse(
         new ParseRequest(new SourceText(text), ParseGoal.Script, Runners.UnicodeDataHome.Tables, NoValidator.Instance)
         {
             Limits = new ParseLimits { NestingDepth = new DepthLimit(nesting) },
+            BuildSemanticModel = model,
         }));
+
+    // The same parse with the semantic model on (SJL-15.2): no stack overflow, and the same outcome and first diagnostic,
+    // with a model for an accepted source and none for a refused one.
+    private static void AssertSameWithTheModel(ParseResult off, string text, int nesting, string name)
+    {
+        var on = ParseV(text, nesting, model: true);
+        Assert.True(off.Outcome == on.Outcome, name + ": the outcome differs with the semantic model on");
+        Assert.True((off.Outcome == ParseOutcome.Accepted) == (on.Model is not null), name + ": the model is not there as the outcome says");
+        Assert.Null(off.Model);
+        if (off.Diagnostics.Count > 0)
+            Assert.True((off.Diagnostics[0].Code, off.Diagnostics[0].Span) == (on.Diagnostics[0].Code, on.Diagnostics[0].Span), name + ": the first diagnostic differs with the semantic model on");
+    }
 
     [Fact]
     public void The_constants_are_the_derivation_s()
@@ -86,6 +99,7 @@ public sealed class LimitsTests
             var bytes = File.ReadAllBytes(Path.Combine(folder, file));
             Assert.Equal(sha, Convert.ToHexStringLower(SHA256.HashData(bytes)));
             var result = ParseV(Encoding.UTF8.GetString(bytes), nesting);
+            AssertSameWithTheModel(result, Encoding.UTF8.GetString(bytes), nesting, id + " " + file);
             if (expect == "accepted")
             {
                 Assert.True(result.Outcome == ParseOutcome.Accepted, id + " " + file + " was refused: " + (result.Diagnostics.Count > 0 ? result.Diagnostics[0].Code : "-"));
@@ -390,8 +404,11 @@ public sealed class LimitsTests
 
         var refusedAt = high;
         Assert.True(refusedAt >= bound / 3, "refused at " + refusedAt.ToString(CultureInfo.InvariantCulture) + " levels");
-        Assert.Equal(ParseOutcome.Accepted, ParseV(Text(refusedAt - 1), bound).Outcome);
+        var deepest = ParseV(Text(refusedAt - 1), bound);
+        Assert.Equal(ParseOutcome.Accepted, deepest.Outcome);
+        AssertSameWithTheModel(deepest, Text(refusedAt - 1), bound, "the deepest accepted");
         var refused = ParseV(Text(refusedAt), bound);
+        AssertSameWithTheModel(refused, Text(refusedAt), bound, "the first refused");
         Assert.Equal(("JSE9201", "512"), (refused.Diagnostics[0].Code, refused.Diagnostics[0].Arguments[0]));
         Assert.Equal("JSE9201", ParseV(Text(100_000), bound).Diagnostics[0].Code);
     }
