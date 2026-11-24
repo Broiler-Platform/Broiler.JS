@@ -1412,7 +1412,10 @@ after commit), with each run's re-run of its timed-out path, and its classificat
   after, within the per-test timeout in each, so it is no changed row
   ([`named-rows.log`](after/part-a/comparison/named-rows.log)); B8's fix in W2 holds in part A's runs.
 - **Part A: read NOT MET on the retained runs**, for those two rows (the files above;
-  [`after/part-a/hashes.txt`](after/part-a/hashes.txt) names each by digest). Not judged beyond that (EX-30).
+  [`after/part-a/hashes.txt`](after/part-a/hashes.txt) names each by digest). Not judged beyond that (EX-30). *(Noted
+  2026-11-24, later: the owner's answer 12 of 2026-11-24 filed the revision
+  [`decision-rule-revised-2026-11-24.md`](decision-rule-revised-2026-11-24.md); part A is read again under it in
+  "W2's after commit, records part 2, recorded on 2026-11-24" below. This reading stays as taken.)*
 
 ### The after commit's local runs, retained
 
@@ -1463,7 +1466,10 @@ acceptance`'s list to be one set, and the dump rows to be every input variant wh
   in the base records (part C's base text holds parser trees only); it was taken at the base commit after the after
   runs by the rule's own tool, its report identical line by line to the base's retained dump report
   ([`after/owed-runs/dtextbase/`](after/owed-runs/dtextbase/identity-with-base-d1.txt)), so it describes the base run's
-  trees and weakens nothing. Not judged beyond that (EX-30).
+  trees and weakens nothing. Not judged beyond that (EX-30). *(Noted 2026-11-24, later: the owner's answer 13 of
+  2026-11-24 filed the revision [`decision-rule-revised-2026-11-24.md`](decision-rule-revised-2026-11-24.md); part D
+  is read again under it in "W2's after commit, records part 2, recorded on 2026-11-24" below. This reading stays as
+  taken.)*
 - *(Noted 2026-11-24, after the comparison, in review of this record.)* The paragraphs above and
   [`after/part-d/README.md`](after/part-d/README.md) name the two commits' dump texts as "kept outside the repository,
   by digest" ([`after/part-d/texts.sha256.txt`](after/part-d/texts.sha256.txt)). On 2026-11-24, once the comparison was
@@ -1475,7 +1481,9 @@ acceptance`'s list to be one set, and the dump rows to be every input variant wh
   `run.sh`, a build at each commit) and `read_d.sh` is run on their texts; the parts that need no text
   (`acceptance.log`, `acceptance.json.gz`) regenerate from the retained reports. And the texts' own bytes were not
   shown reproducible: `identity-with-partd.txt` and `identity-with-base-d1.txt` compare the dump reports' rows, with
-  the `#` lines (among them each assembly's identifier) left out, not the texts.
+  the `#` lines (among them each assembly's identifier) left out, not the texts. *(Noted 2026-11-24, later: the
+  review's re-take of both texts, retained in [`after/owed-runs/verifier-retake/`](after/owed-runs/verifier-retake/runs/logs/runs.tsv),
+  reproduced their digests; "W2's after commit, records part 2, recorded on 2026-11-24" below records it. This sentence is left as written.)*
 
 ### Part E, read
 
@@ -1594,6 +1602,9 @@ and message, from the after run's sessions (`after/local/fuzz/session/`, `after/
     they are the seed's compile cost against the header's bound, not the machine's load. Part J's rule asks no base-side
     run, so whether the base compiles it within the bound is not read.
 - **Part J: read NOT MET on the retained runs**, for those findings (the files above). Not judged beyond that (EX-30).
+  *(Noted 2026-11-24, later: the owner's answer 14 of 2026-11-24 ordered a corrected session and filed the revision
+  [`decision-rule-revised-2026-11-24.md`](decision-rule-revised-2026-11-24.md); part J is read again on the corrected
+  session in "W2's after commit, records part 2, recorded on 2026-11-24" below. This reading stays as taken.)*
 
 ### Part K, read
 
@@ -1650,7 +1661,11 @@ not checked against `dispositions.tsv`'s member lines.
   excepts "a hit the bundle lists with the declaration that shows it is another type's member of the same name"
   ([`../sjl-11-001/decision-rule.md`](../sjl-11-001/decision-rule.md), part E). Part K restates the scope with neither
   carve-out. The files: `after/local/delsearch/` ([`after/local/hashes.txt`](after/local/hashes.txt)) and
-  `after/part-k/` ([`after/part-k/hashes.txt`](after/part-k/hashes.txt)). Not judged beyond that (EX-30).
+  `after/part-k/` ([`after/part-k/hashes.txt`](after/part-k/hashes.txt)). Not judged beyond that (EX-30). *(Noted
+  2026-11-24, later: the owner's answer 15 of 2026-11-24 filed the revision
+  [`decision-rule-revised-2026-11-24.md`](decision-rule-revised-2026-11-24.md), worded on E-1's exceptions, and
+  reading K1 was not taken; part K is read again under the revision in "W2's after commit, records part 2, recorded on 2026-11-24" below. This reading stays as
+  taken.)*
 - **Reading K1, put to the owner and not taken here:** the rule's hits are "each listed member's declarations and
   references" (its configuration's words), so a line of prose or a comment that names a member, or another type's
   member of the same name, is none, and the narrowed scopes hide no declaration of a listed type's member
@@ -1673,6 +1688,245 @@ notes when made. Part I is pending on the owner's lane. No fix and no rule chang
 in review of this record before it merged: this paragraph first read "Parts A, D and J read NOT MET, and part K rests
 on reading K1; each, with its cause as read, the rule's options and a recommendation, is in the session's decision
 summary for the owner.")*
+
+## W2's after commit, records part 2, recorded on 2026-11-24
+
+**Written:** 2026-11-24, on branch `sjl-14-after`, with the default branch's head read as
+`83a9bd82a5d258d3001468095ebf43f9efc3e9a7` by `git ls-remote` before each of this record's commits (each read, with
+its time, is kept in the session's notes). **What it records:** the owner's answers 12 to 15 of 2026-11-24; the rule's
+dated revision they file; part J's corrected session at the after commit, which answer 14 orders; part K's listing
+aid, which answer 15 asks for first; reading aids taken by others after the after runs, retained; quotes of the
+section above corrected; and parts A, D, J and K read again. [`decision-rule.md`](decision-rule.md) and
+[`decision-rule-revised-2026-11-23.md`](decision-rule-revised-2026-11-23.md) are not edited, no row is added to
+[`corrections.md`](corrections.md) or its tables, and nothing retained in [`base/`](base/local/README.md) or in the
+after runs' folders changes but [`after/owed-runs/README.md`](after/owed-runs/README.md), by a dated note, and the
+`hashes.txt` of `after/owed-runs/` and of `after/part-k/`, which name the files added there; the first readings of the
+section above stay on record, each with a dated note beside it that points here. Nothing is judged beyond the readings, and nothing is accepted (EX-30).
+
+### The owner's answers 12 to 15 of 2026-11-24
+
+The owner's own, not ones taken under the owner's direction of 2026-10-18, quoted verbatim:
+- Answer 12. Asked (2026-11-24): "SJL-14 part A (test262 at W2's merge 83a9bd82) reads NOT MET on two rows, both correct
+  behaviour after W2: (1) for-of/head-await-using-bound-names-in-stmt.js [original] fails at the base and passes after,
+  with no K row explaining it; (2) the Terser variant of dynamic-import/.../new-covered-expression-is-valid.js passes at
+  the base and is skipped after, because Terser's output is invalid JS that the new frontend correctly refuses. Your
+  2026-11-23 revision admitted both for parts C and D only. No code fix applies. What should be done for part A?"
+  Chosen: "Revise for 2 rows (Recommended)" — "Dated revision extending rev-for-of and rev-minifier to part A for
+  exactly these two path-variant rows. Weaker evidence, since written after the run was seen." Not taken: "Leave NOT
+  MET" — "Keep part A read NOT MET on record and move on (nothing is accepted under EX-30 anyway)."
+- Answer 13. Asked (2026-11-24): "SJL-14 part D (parse corpus) reads NOT MET only because of the second dump: the tree
+  after the compiler's for-loop pass, which part C never compared. For 4,364 input variants that tree differs only in
+  span lines of nodes the pass builds or copies. Their parser-tree differences are all in admitted classes, and nothing
+  differs outside spans. The pass is ForLoopPreparation.cs (SJL-12.5's, not W2's), so a fix there cannot change the
+  reading at 83a9bd82. What should be done for part D?" Chosen: "Revise by list (Recommended)" — "Dated revision
+  admitting a pass-tree dump difference for exactly the variants in after/part-d/pass/unclassified.tsv (by blob), whose
+  parser-tree difference is admitted and whose differing lines are all spans. Weaker evidence." Not taken: "Leave NOT
+  MET" — "Keep part D read NOT MET on record and move on."
+- Answer 14. Asked (2026-11-24): "SJL-14 part J (fuzz session) reads NOT MET on two seeds. T037823 (56 findings): module
+  seeds are compiled without a module record, so the compiler throws its documented import.meta ReferenceError; this is
+  a defect in the session tool W2 added, not in the engine. V000002 (22 timeouts): I compiled the seed and mutants at
+  the base commit as a reading aid. The seed takes about 15.5 s on both sides, past the 10 s bound, and 21 of 22 mutants
+  are equally slow at the base. The 22nd is refused by the old parser at the base and accepted after. So the slowness is
+  not W2's. What should be done for part J?" Chosen: "Fix tool + revise V2 (Recommended)" — "Commit a corrected session
+  that gives module seeds a module record, run it at 83a9bd82 (no rule change; recorded as corrected after the findings
+  were seen), and write a dated revision for V000002's compile-past-bound by name." Not taken: "Revise both seeds" —
+  "One dated revision reading both seeds' findings, by name, as not findings; no re-run."; "Leave NOT MET" — "Keep part
+  J read NOT MET on record and move on."
+- Answer 15. Asked (2026-11-24): "SJL-14 part K (deletion search) reads NOT MET as written. Most of its 310 hits are
+  changelog lines (e.g. CHANGELOG.md:949/951 naming W1's removed switch), comments, records, and other types' members
+  that share a name. The rule's own model, sjl-11-001's E-1 search, needed explicit carve-outs for exactly these (it
+  excludes CHANGELOG.md and other types' same-named members); part K has neither. Nothing listed is still implemented.
+  What should be done for part K?" Chosen: "Revise like E-1 (Recommended)" — "Dated revision admitting changelog,
+  comment and record lines and other types' same-named members, each listed with its declaration, plus the narrowed
+  scopes as read in scope.txt. A listing aid runs first; nothing is re-run. Weaker evidence." Not taken: "Confirm
+  reading K1" — "Accept the session's reading (prose, comments and other types' members aren't 'declarations and
+  references' of a listed member), so part K reads MET with no revision."; "Leave NOT MET" — "Keep part K read NOT MET
+  on record and move on."
+
+### The rule's revision of 2026-11-24
+
+[`decision-rule-revised-2026-11-24.md`](decision-rule-revised-2026-11-24.md), SHA-256 `d706070cda19ee77e80e21667625c831614008c1ee84e608b017b6159bb05936`, written after every
+after run and its first reading were seen, and after the reading aids below and part J's corrected session, and
+therefore weaker evidence, as the rule's section "Revisions" reads: "A rule revised after any run it judges has been
+seen is a new dated file in this directory. It quotes this one whole and says it was written afterwards, and its
+decision is then weaker evidence." It quotes the answers and the rule whole and the lines it changes, and changes only
+these: part A admits `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js` [original] by
+rev-for-of and `test/language/expressions/dynamic-import/syntax/valid/new-covered-expression-is-valid.js` [terser] by
+rev-minifier, each for that one path and variant, and its MET line reads with them (answer 12); part D admits, by
+rev-pass, a difference of the dump after the compiler's for-loop pass of an input variant
+[`after/part-d/pass/unclassified.tsv`](after/part-d/pass/unclassified.tsv) lists (blob
+`c7339ab407b3c7a8aecb92b8faa221103f8bcf5a`), whose parser-tree difference is in an admitted class and whose every
+differing pass-tree line is a span line, and its MET line and "How it is read" read with it (answer 13); part J's
+reading takes a compile past the bound of the seed V000002
+(`conformance/parse/inputs/broiler-vm/generated/refuse-more-locals-than-the-frame-admits.js`, blob
+`12412cacaebf9c23753e3f2045227abf30a793c4`), or of a mutant of it the frontend accepts, as no finding (answer 14, its
+second half); part K's MET line admits, as bundle `sjl-11-001`'s E-1 does, lines of the changelogs, code comments and
+records, and hits listed with the declaration that shows them another type's member of the same name, and its
+configuration takes the narrowed scopes as [`after/part-k/scope.txt`](after/part-k/scope.txt) reads them (blob
+`61cb2509849e28829225ce077f50790c954408a4`) (answer 15). Answer 14's first half, the corrected session, needs no rule
+change: the revision records in one sentence that it runs under the rule's unchanged words, corrected after the
+findings were seen. **What it does not admit**, among others, as it says: the first session's T037823 findings, which
+stay findings of that session; and the hits of part K that are the words of the bridge's message strings, which
+answer 15's kinds do not name.
+
+### Part J's corrected session, retained
+
+The bundle's mutation session, [`tools/fuzz/`](tools/fuzz/README.md), is corrected by
+`53afd382f2559d8c27cc42cbaf496af5d4ed161d` ("SJL-14: part J's session compiles module seeds with a module record
+(answer 14)"), committed on its own: a seed whose goal is `module` now compiles with the parameters the engine's module
+host compiles a module's body with, `import` and `#module` (`JSModuleContext`'s `ModuleParameters` at the after
+commit), `#module` being the module record the compiler's module prologue and `import.meta` read; nothing else changes
+(the tool's README, by a dated note). The session and its control were then taken at the after commit exactly as the
+after driver's `fuzz` and `fcontrol` steps took the first, from a clean archive of `83a9bd82` with the corrected tool's
+files written over their paths from their blobs, and are retained in
+[`after/part-j-corrected/`](after/part-j-corrected/README.md), which names each blob, the one departure of order (the
+control's clean comparison archive taken after the session, for the disk rule) and every file by its SHA-256
+([`hashes.txt`](after/part-j-corrected/hashes.txt)). **Recorded as corrected after the findings were seen**, and so
+weaker evidence: the tool was changed knowing what its first session found. The first session's records in
+`after/local/fuzz/` and `after/local/fcontrol/`, and part J's first reading above, stay as they are.
+[`after/part-j-corrected/findings.txt`](after/part-j-corrected/findings.txt), by
+[`read_jc.py`](after/part-j-corrected/read_jc.py), reads both sessions:
+- **The corrected session** compiles the same mutants as the first (the same seeds, indices, operators and mutant
+  SHA-256s), and every process exits 0. The mutants of T037823 that were findings of the first session now compile,
+  accepted; no other mutant's outcome moves. Its findings are V000002's alone, each a compile past the bound per
+  compile, of the same mutants as the first session's, each of which
+  [`after/owed-runs/jsingle/cases.tsv`](after/owed-runs/jsingle/cases.tsv) shows the frontend accepts when it is
+  compiled alone.
+- **Its control** compiles the same mutants. In the scratch copy whose bridge throws on a template literal it reports
+  `System.InvalidOperationException` findings ("part J control: the bridge throws on a template literal") for the seeds
+  that hold template literals, as the first control did, besides V000002's compiles past the bound; the revert is
+  checked by digest and against a clean archive ([`revert-check.txt`](after/part-j-corrected/fcontrol/revert-check.txt)).
+  Its T037823 mutants move as the session's do.
+
+### Part K's listing aid
+
+[`after/part-k/listing.tsv`](after/part-k/listing.tsv), by [`list_k.py`](after/part-k/list_k.py), lists every hit of
+[`after/part-k/hits.tsv`](after/part-k/hits.tsv) that `hits.tsv` does not sort a facade member, each with the line at
+the after commit that shows what it is: for a code line, the declaration of each occurrence of the hit's name (the
+bridge's own methods, the library's syntax tree's types and members, the old tree's and the engine's members, the
+library's own methods, the compiler's `FastCompiler` members `dispositions.md` keeps until SJL-15.5, and
+`System.HashCode.Combine`, of the .NET base class library), every declaration checked against the tree; for a changelog
+line, its entry's heading; for a record line, the member it names; for a comment, the line itself. A reading aid with
+no run, taken after part K's first reading and before the revision; it reads git objects alone, and regenerates byte
+for byte. It sorts the hits `hits.tsv` sorted OTHER in `FastScanner.cs` as the facade's own, `State` and its members,
+which `dispositions.md`'s row for `FastScanner` keeps ("the public `FastScanner` keeps its facade members (...,
+`State` and its members)"); and it finds hits that are no declaration or reference of any member: the words
+"Class", "Decorators", "Function" and "Import" in message strings of the bridge's `BridgeMessages.Text`
+(`Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs`, lines 90, 100, 113 and 120 to 123), which
+`hits.tsv` had sorted, by their folder, as the bridge's own members. [`after/part-k/hashes.txt`](after/part-k/hashes.txt)
+names both new files.
+
+### Reading aids taken after the after runs, retained
+
+In [`after/owed-runs/`](after/owed-runs/README.md), by its dated note of 2026-11-24, each copied unchanged from the
+session's notes:
+- [`after/owed-runs/verifier-retake/`](after/owed-runs/verifier-retake/runs/logs/runs.tsv): the review of the section
+  above took both commits' dump texts again from clean archives through the same `run.sh` and found their SHA-256
+  `7343c06232cd45b2efa4b91d601fb3e512016c0344fd2992a357eefa3127c50d` (the base commit's) and
+  `0db1abaf25b28b9224a2187aae79d87f3f40b7f4023acb4781ed5ba88afb65f4` (the after commit's), the digests part D's tables
+  were read from; and it took `jsingle` again, with the same outcomes.
+- [`after/owed-runs/jbase/`](after/owed-runs/jbase/README.md): the seed V000002 and its findings compiled one per
+  process at the **base** commit with the single-case aid, bound and cap of `jsingle`, taken for the owner's question
+  14: the seed and every mutant but one accepted and past the bound at the base as after; `V000002-47.js` refused at the base by
+  the old parser ("Unexpected token Identifier: var at 40284, 1") and accepted after.
+
+*(Noted 2026-11-24.)* The section above, part D, reads: "And the texts' own bytes were not shown reproducible:
+`identity-with-partd.txt` and `identity-with-base-d1.txt` compare the dump reports' rows, with the `#` lines (among
+them each assembly's identifier) left out, not the texts." The verifier's re-take shows them reproducible: a fresh build
+and run at each commit gave texts with the digests part D's tables were read from. The sentence is left as written.
+
+### Quotes of the section above, corrected
+
+*(Noted 2026-11-24.)* These quotes of the section "W2's after commit, recorded on 2026-11-24" are not exact; each is
+left as written and corrected here.
+- "The after commit and the end of the hold" quotes the rule as "The base commit is its first parent"; the rule
+  reads "**The base commit** is its first parent" (across two lines of its section "The commits, named before they
+  exist"), which the quote gives without the bold markup.
+- "Part D, read" quotes `after/part-d/README.md` as naming the dump texts "kept outside the repository, by digest";
+  that README reads "kept outside the repository by digest", with no comma.
+- "Part J, read" quotes `FastCompiler.VisitMeta.cs`'s documentation as "a deterministic ReferenceError naming that
+  rather than a silent `undefined`"; the file reads "a deterministic ReferenceError naming that rather than a silent
+  <c>undefined</c>" (across two lines of its `<remarks>`).
+
+### Part A, read again
+
+Under the rule and both revisions, on the same retained runs and comparison, with nothing re-run
+([`after/second-reading/reading.txt`](after/second-reading/reading.txt), by
+[`read_2.py`](after/second-reading/read_2.py), from `after/part-a/comparison/comparison.json` and
+`classifications.json`):
+- **Complete and comparable**, as the first reading reads them: every shard reported in both runs, one suite revision,
+  one shell, every shard in the zone, `includeNegative` true in both; the host-zone records alike; the script finds the
+  runs comparable.
+- **Every changed row** but two is C1 by the classification file, with its path, its variant and its correction, and
+  each such path is named in the changelog's section "The cut-over to the shared syntax library", as the first reading
+  checked. **The two others** are the rows the revision names: `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js`
+  [original], failing at the base and passing after, in rev-for-of, listed with K7 and its row D35, the library's row
+  table's note on EE0056, `JSE1417`, and finding S14-F2; and
+  `test/language/expressions/dynamic-import/syntax/valid/new-covered-expression-is-valid.js` [terser], passing at the
+  base and skipped after with `skipKind=minifier-invalid-output` ([`named-rows.log`](after/part-a/comparison/named-rows.log)),
+  in rev-minifier. No row is C3 or T, and no other row is changed.
+- **Part A: read MET on the retained runs**, under the revision of 2026-11-24 (weaker evidence; the files above and
+  [`after/part-a/hashes.txt`](after/part-a/hashes.txt)). The first reading, "read NOT MET on the retained runs", stays
+  on record. Not judged beyond that (EX-30).
+
+### Part D, read again
+
+Under the rule and both revisions, on the same retained tables ([`after/second-reading/reading.txt`](after/second-reading/reading.txt)):
+- **Complete, and the control is reported**, as the first reading reads them.
+- **Outcomes, messages and the parser trees' dumps:** every difference is in C1, C3, E, M, S, rev-code, rev-eof or
+  rev-bracket and is listed, as the first reading found.
+- **The dumps after the compiler's for-loop pass:** every difference is in C1, S, rev-eof or rev-bracket, or is one of
+  the input variants [`after/part-d/pass/unclassified.tsv`](after/part-d/pass/unclassified.tsv) lists (its SHA-256 the
+  one the revision names), each of which has a parser-tree difference in S or rev-eof and no outcome or message row
+  outside part D's classes, and whose differing pass-tree lines are all span lines
+  ([`pass/unclassified-lines.txt`](after/part-d/pass/unclassified-lines.txt): none is not a span line): rev-pass,
+  listed there with its lines. That count was taken from `read_d.sh`'s work file `pass-spans.tsv`, kept by digest
+  ([`after/part-d/work.sha256.txt`](after/part-d/work.sha256.txt)), written from the two dump texts whose bytes the
+  verifier's re-take above reproduced.
+- **Part D: read MET on the retained runs**, under the revision of 2026-11-24 (weaker evidence; the files above and
+  [`after/part-d/hashes.txt`](after/part-d/hashes.txt)). The first reading stays on record. Not judged beyond that
+  (EX-30).
+
+### Part J, read again
+
+On the corrected session ([`after/part-j-corrected/`](after/part-j-corrected/README.md)), under the rule's unchanged
+configuration and the revision's part J:
+- **The control is reported:** the control's session reports findings, `System.InvalidOperationException` for the
+  seeds that hold template literals, which the revision leaves findings
+  ([`findings.txt`](after/part-j-corrected/findings.txt)).
+- **No finding is reported:** the corrected session's findings are compiles past the bound of mutants of the seed
+  V000002 (`conformance/parse/inputs/broiler-vm/generated/refuse-more-locals-than-the-frame-admits.js`, blob
+  `12412cacaebf9c23753e3f2045227abf30a793c4`), each a mutant the frontend accepts, which the revision's part J reads as
+  no finding; there is no other exception type, no lost process and no compile past the bound of another seed.
+- **Part J: read MET on the retained runs** of the corrected session, under the revision of 2026-11-24. It is weaker
+  evidence twice over: the session was corrected after the first session's findings were seen, and the revision was
+  written after both were seen (the files above; [`after/part-j-corrected/hashes.txt`](after/part-j-corrected/hashes.txt)).
+  The first reading, on the first session, stays on record. Not judged beyond that (EX-30).
+
+### Part K, read again
+
+Under the rule and both revisions, on the same retained search and its tables ([`after/second-reading/reading.txt`](after/second-reading/reading.txt),
+from `hits.tsv` and `listing.tsv`):
+- **No listed implementation is found**, as the first reading reads it, and **the control is reported**.
+- **The scopes:** the search's narrowed scopes are taken as the configuration's scope, as `scope.txt` reads them.
+- **Every hit** is a facade member (the hits `hits.tsv` sorts so, and those of `FastScanner`'s `State` the listing
+  sorts as the facade's own), a line of a changelog, a code comment or a record, or a hit listed with the declaration
+  that shows it another type's member of the same name, **but the words** of the bridge's message strings in
+  `BridgeMessages.cs` (lines 90, 100, 113 and 120 to 123: "Function declarations are not allowed as the body of a loop
+  or with statement", "Class constructor may not be an accessor, a generator or an async method", "Import attribute has
+  duplicate key '{0}'", "Unexpected token in the Function constructor's source", "... parameters", "... body", and
+  "Decorators are not supported here"), each a hit of a listed member's name (`Function`, `Class`, `Import` and
+  `Decorators`, members FastParser's partial files declared) that is neither a facade member, a relocation, a line of a
+  changelog, comment or record, nor another type's member of the same name.
+- **Part K: read NOT MET on the retained runs**, under the revision of 2026-11-24, for those message-string hits (the files
+  above; [`after/part-k/hashes.txt`](after/part-k/hashes.txt)). The revision admits only the kinds answer 15 names,
+  and the owner's question did not name message strings; they go to the owner. The first reading stays on record. Not
+  judged beyond that (EX-30).
+
+### Awaiting the owner
+
+Part K's message-string hits, read above, go to the owner; no rule change and no fix is made for them here.
+Part I is pending on the owner's lane `win-x64-r7-5800x`, as the section above says.
 
 ## What it does not claim
 
