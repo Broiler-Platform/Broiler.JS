@@ -1,0 +1,22 @@
+# Part A's rows the bundle names, read from each run's test262-results.json.gz (by digest; read from its zip): path,
+# variant, the status at the base and after, and the record's fields that say why (reason, skipKind,
+# referenceCrossCheck, engineFailure or stderr, up to 300 characters, durationMs). Neither run re-ran any of them
+# (timed-out-paths.txt names another path in both).
+
+## test/staging/sm/regress/regress-610026.js (group 6, decision B8)
+original base: status=passed; durationMs=12008.005
+original after: status=passed; durationMs=12652.395
+terser base: status=passed; durationMs=9610.576
+terser after: status=passed; durationMs=10185.295
+
+## test/language/statements/for-of/head-await-using-bound-names-in-stmt.js (group 5, rev-for-of at part C only)
+original base: status=failed; reason=negative test expected SyntaxError but got different error; stderr=Uncaught String: Test262: This statement should not be evaluated. at FromValue in /_/Broiler.JS/Broiler.JavaScript.Runtime/JSException.cs:line 235  ; durationMs=770.275; hostMode=module
+original after: status=passed; durationMs=1083.488; hostMode=module; negative=True
+terser base: status=skipped; reason=module tests run as written and are not minified; skipKind=minifier-not-applicable; durationMs=0.0
+terser after: status=skipped; reason=module tests run as written and are not minified; skipKind=minifier-not-applicable; durationMs=0.0
+
+## test/language/expressions/dynamic-import/syntax/valid/new-covered-expression-is-valid.js (group 7, rev-minifier at part C only)
+original base: status=passed; durationMs=666.029
+original after: status=passed; durationMs=743.282
+terser base: status=passed; durationMs=650.81
+terser after: status=skipped; reason=node parses this test and cannot parse its minified body: the minifier emitted source no engine accepts; skipKind=minifier-invalid-output; referenceCrossCheck=minifier-invalid-output; engineFailure=Uncaught SyntaxError: Unexpected token ( at 200, 40 at Compile in /tmp/broiler-test262/tmp7b5pxwuo.js:line 200      at Compile:/tmp/broiler-test262/tmp7b5pxwuo.js:200,1   ; durationMs=528.221
