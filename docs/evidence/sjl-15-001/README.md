@@ -114,7 +114,8 @@ SJL-15.2 code merge by itself and judges nothing; the note above is left as writ
 
 *(Noted 2026-11-24, at SJL-15.2 stage 1, written before any run of the rule.)* **The first model commit.** SJL-15.2's
 stage 1, the model's foundation, changes `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/` and
-`Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/`: the merge that lands it will be the first model commit after W2
+`Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/`, among others the canonical dump in
+`Broiler.ECMAScript/runners/SyntaxDump.cs`: the merge that lands it will be the first model commit after W2
 by the rule's "The commits, named before they exist", and is named here once it exists. It lands after
 Broiler-Platform/Broiler.VM#214 and #217, each named above with its commit, and after corpus revision 44. **Part B is
 taken after that merge, against its first parent** (decision D-js-part-b-method, recorded in

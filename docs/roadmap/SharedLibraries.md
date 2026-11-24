@@ -3744,7 +3744,7 @@ tables, the column and the probes, added after the commit that first carried the
 merge, and the bundle's rule commit is the last commit that changes the rule or its revision. The paragraph above is left
 as written.
 
-*(Noted 2026-11-24, at SJL-15.2 stage 1, the first model commit.)* **SJL-15.2's stages.** SJL-15.2's model lands in
+*(Noted 2026-11-24, at SJL-15.2 stage 1, whose merge is the first model commit.)* **SJL-15.2's stages.** SJL-15.2's model lands in
 stages, each one model commit of bundle [`sjl-15-001`](../evidence/sjl-15-001/README.md)'s rule, judged by its part B
 against its own first parent, in this order: **stage 1**, the model's foundation (the request member, the model's scopes
 with their parents, each node's scope, each binding identifier's declaration and the per-function facts); **stage 2**,
