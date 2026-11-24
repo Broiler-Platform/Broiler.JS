@@ -151,7 +151,9 @@ does. No rule file is added or edited. This note names a merge to come and judge
 `be6c4a5c3e389c7eb2aff71c34e31bdae5efe276`**, the merge of Broiler-Platform/Broiler.JS#1132 (head `f0418c36`), whose
 first parent is `8b1fa311da6af71baac6378e8b4f8597a99c1312` (Broiler-Platform/Broiler.JS#1131, corpus revision 44). It
 changes `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/` and `Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/`,
-and descends from W2 (`83a9bd82`). The note above reads that the merge landing stage 1 "will be the first model commit
+among others the canonical dump in `Broiler.ECMAScript/runners/SyntaxDump.cs` and, moved to run alone,
+`Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue966InertEvalTests.cs`'s timing test, and descends from W2
+(`83a9bd82`). The note above reads that the merge landing stage 1 "will be the first model commit
 after W2 by the rule's "The commits, named before they exist", and is named here once it exists"; this names it. The
 section's second item, which says of the model commits, the library commit, the base commit and the after commit
 "named here when each exists", is left as written: the library commit, the base commit and the after commit do not
@@ -176,8 +178,8 @@ concluded. What the runs say:
 - **ci.yml's push run concluded `success` in its second attempt.** Its first attempt concluded `failure`: in
   windows-latest / Release's Test step, the test host of `Broiler.ECMAScript.Algorithms.Tests`, a project that step's
   filter selects no test of, died before any test ran ("testhost process failed to connect to datacollector process
-  after 90 seconds", "Test Run Aborted."), after every `Broiler.JavaScript.*` project the job reached had passed; the
-  isolated CompilerScaling step was then skipped. The failed jobs were re-run once, under the session's rule that
+  after 90 seconds", "Test Run Aborted."); every `Broiler.JavaScript.*` project in that job wrote "Passed!" with no
+  test failed, two of them after the host's crash; the isolated CompilerScaling step was then skipped. The failed jobs were re-run once, under the session's rule that
   allows one re-run of a job that died before any test body ran; the re-run windows-latest / Release job and the CI
   result job concluded `success`, every other job carried from the first attempt green. ci.yml's jobs carry the
   fifteen `Broiler.JavaScript.*` test projects, each passed on Linux and, in the second attempt, on Windows, and the
@@ -190,7 +192,10 @@ before the base.** Its basis, plainly: the identity half rests on the runs above
 every test project passed" is read on ci.yml's push run at `be6c4a5c` as it concluded, in its second attempt, whose
 first attempt failed in a test host before any test ran and is retained beside it, and on Shared libraries' push run.
 **The alternatives, not taken, for the owner:** to read part B NOT MET at `be6c4a5c` because that run's first attempt
-concluded `failure`; or a dated revision of the clause saying which attempt of a run it reads, which would be the
+concluded `failure`, as bundle `sjl-13-001`'s third revision of 2026-11-03
+([`decision-rule-revised-2026-11-03-third.md`](../sjl-13-001/decision-rule-revised-2026-11-03-third.md)) reads its own
+part D on a push run's first attempt ("its first attempt decides, and every attempt is retained"), a precedent this
+reading does not follow; or a dated revision of the clause saying which attempt of a run it reads, which would be the
 owner's, since the runs have been seen. A NOT MET at any later model commit makes part B NOT MET.
 
 **On ci.yml's Test step** (no part of the reading). The step runs `dotnet test` over `Broiler.JS.slnx` with a filter

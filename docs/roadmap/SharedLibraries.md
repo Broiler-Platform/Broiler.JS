@@ -3805,7 +3805,7 @@ retained beside it, and on Shared libraries' push run.
 
 | Decision | Taken | Not taken, and why |
 |---|---|---|
-| D-js-part-b-attempt | **ci.yml's push run is read as it concluded, after the one re-run of jobs that died before any test body ran**, both attempts retained | (a) Part B read NOT MET at `be6c4a5c` because the run's first attempt concluded in failure: it reads a test host's death before any test as a test project's failure. (b) A dated revision of the clause saying which attempt of a run it reads: the runs have been seen, so it would be the owner's, as weaker evidence |
+| D-js-part-b-attempt | **ci.yml's push run is read as it concluded, after the one re-run of jobs that died before any test body ran**, both attempts retained | (a) Part B read NOT MET at `be6c4a5c` because the run's first attempt concluded in failure: it reads a test host's death before any test as a test project's failure, as bundle [`sjl-13-001`](../evidence/sjl-13-001/decision-rule-revised-2026-11-03-third.md)'s third revision of 2026-11-03 reads its own part D on a push run's first attempt ("its first attempt decides, and every attempt is retained"), a precedent not followed here. (b) A dated revision of the clause saying which attempt of a run it reads: the runs have been seen, so it would be the owner's, as weaker evidence |
 
 ci.yml's Test step starts a test host for every `Broiler.ECMAScript` test project although its filter selects none of
 their tests, which Shared libraries runs; both recent Windows failures of that step were in those hosts, at the first

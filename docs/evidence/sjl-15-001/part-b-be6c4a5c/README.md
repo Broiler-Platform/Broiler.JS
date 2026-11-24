@@ -46,7 +46,9 @@ manifest `conformance/parse/corpus.manifest` is the same blob at both, `2419aa2a
   SHA-256 `f58ce79141529c9fa33592e22ff3ff0d83b83830ac8e372ecd32e1623db1c040`, checked against the manifest's
   `pin-test262-archive` line before each run and extracted afresh for it (`logs/suite.log`). The tool built with no
   warning and no error at both commits (`logs/build-parse-corpus.stdout.txt`).
-- **The comparison**, in [`identity/`](identity/commands.txt), with the commands as run:
+- **The comparison**, in [`identity/`](identity/commands.txt), with the commands as run (the scratch command log, with
+  a note of four lines, beginning "# Notes, 2026-11-24", added at its end when it was retained; the commands above it
+  are unchanged):
   - `scripts/compliance/compare_parse_corpus.py acceptance`, base `8b1fa311`, after `be6c4a5c`, the manifest at
     `be6c4a5c`, no classification file: [`identity/acceptance.txt`](identity/acceptance.txt) and `acceptance.json`. The
     script refuses runs that do not report every manifest input and variant at P and K, so it checks the default
@@ -71,7 +73,9 @@ exit, time and peak memory (`runs.tsv`, `*.time.txt`), the build's and the runs'
 record of its run: the mode, the manifest's digest and rows, the order, one thread and its stack, the environment
 (`TZ=UTC`, `LANG`, `LC_*` and `BROILER_*` unset), the invariant culture, the time zone `UTC`, the runtime, the system,
 the processors, and each engine assembly's name, version and module version id. [`logs/`](logs/runs.tsv) holds the
-stage's logs: the checks of the default branch before each step (`main-checks.log`), the gate's log, the outer
+stage's logs: the checks of the default branch logged during the stage up to the retention (`main-checks.log`, with its
+own note of the two steps before which no check was logged; the later checks are in the stage's scratch log only), the
+gate's log, the outer
 commands and runs, and the stage's notes (`notes.log`).
 
 ## What the runs say
@@ -99,18 +103,23 @@ commands and runs, and the stage's notes (`notes.log`).
     first attempt concluded `failure`**: Changed paths 138664187692, ubuntu-24.04 / Release 138664605408, engine
     vectors (ubuntu-24.04) 138664605531, (windows-latest) 138664605462 and (Windows against Linux) 138674086595 were
     `success`; windows-latest / Release 138664605556 was `failure`, and CI result 138674086204 `failure` with it. That
-    job failed in its Test step. Every `Broiler.JavaScript.*` project it reached wrote "Passed!" with no test failed;
-    then the test host of `Broiler.ECMAScript.Algorithms.Tests`, a project the step's filter selects no test of, died
-    before running any: "The active test run was aborted. Reason: Test host process crashed : Process path:
-    D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms.Tests\bin\Release\net10.0\testhost.exe",
+    job failed in its Test step. Every one of the fifteen `Broiler.JavaScript.*` projects in that job wrote "Passed!"
+    with no test failed, two of them (`Broiler.JavaScript.Vectors.Tests` and `Broiler.JavaScript.Integration.Tests`)
+    after the crash; the test host of `Broiler.ECMAScript.Algorithms.Tests`, a project the step's filter selects no test
+    of, started at 18:09:11Z, died at 18:12:36Z without running any test: "The active test run was aborted. Reason:
+    Test host process crashed : Process path: D:\a\Broiler.JS\Broiler.JS\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms.Tests\bin\Release\net10.0\testhost.exe",
     "Unhandled exception. Microsoft.VisualStudio.TestPlatform.ObjectModel.TestPlatformException: testhost process
     failed to connect to datacollector process after 90 seconds. This may occur due to machine slowness, please set
-    environment variable VSTEST_CONNECTION_TIMEOUT", "Test Run Aborted." (its log, `3_windows-latest _ Release.txt`, in
+    environment variable VSTEST_CONNECTION_TIMEOUT to increase timeout.", "Test Run Aborted." (its log,
+    `3_windows-latest _ Release.txt`, in
     [`ci/read-2026-11-24T1826Z/logs-45455636089.zip`](ci/read-2026-11-24T1826Z/commands.txt)). The step "Test compiler
     scaling in isolation" was then skipped, so that job has no CompilerScaling line. **The failed jobs were re-run once;
-    the second attempt concluded `success`**: windows-latest / Release 138692855522 and CI result 138699028280
-    `success`, every other job carried from the first attempt as `success` under a new id (Changed paths 138692954372,
-    ubuntu-24.04 / Release 138692916475, engine vectors (ubuntu-24.04) 138692858046, (windows-latest) 138692859355,
+    the second attempt concluded `success`**. The re-run was the session's, under its rule that allows one re-run of a
+    job that died before any test body ran, made before this stage resumed (the second attempt started at 18:49:42Z;
+    the stage's check on resuming is at 20:29:13Z); this stage dispatched, re-ran and cancelled nothing, and both
+    attempts' records name the same triggering account, so the API does not tell the two apart. The second attempt:
+    windows-latest / Release 138692855522 and CI result 138699028280 `success`, every other job carried from the first
+    attempt as `success` under a new id (Changed paths 138692954372, ubuntu-24.04 / Release 138692916475, engine vectors (ubuntu-24.04) 138692858046, (windows-latest) 138692859355,
     (Windows against Linux) 138692860924; [`ci/jobs-45455636089-attempt-2.json`](ci/jobs-45455636089-attempt-2.json)).
     The run's record now reads attempt 2, `completed`, `success` ([`ci/run-45455636089.json`](ci/run-45455636089.json)).
   - **The jobs that carry the test projects of `Broiler.JS.slnx`**: the six `Broiler.ECMAScript.*` projects in Shared
@@ -127,7 +136,11 @@ commands and runs, and the stage's notes (`notes.log`).
     libraries' `shared-packages` 14950257091, `native-aot-probe-linux-x64` 14949264676 and `native-aot-probe-win-x64`
     14949718488. The zips are not kept here, as `bridge/w1-ci/` kept none.
 - **The default branch** stayed at `be6c4a5c` from before the first run until after both CI runs had concluded
-  ([`logs/main-checks.log`](logs/main-checks.log)), so nothing merged while ci.yml's push run was going.
+  ([`logs/main-checks.log`](logs/main-checks.log)), so nothing merged while ci.yml's push run was going: the log has
+  no check between 18:35:30Z and 20:29:13Z, and its check at 20:29:13Z follows the second attempt's conclusion (its
+  record's `updated_at`, 18:59:50Z); a ref that is not force-pushed cannot come back to a commit it has left, and a
+  read-only listing of the default branch's push runs, made at the review's fixes at 22:15Z and not kept here, shows
+  none created after the two at `be6c4a5c`.
 
 ## What was set aside, and the method's notes
 
@@ -135,7 +148,9 @@ commands and runs, and the stage's notes (`notes.log`).
   disk gate before the dump run: the gate needs 8 GiB free before each run and found less, the shortfall being the run's
   own build tree, with the suite then extracted on disk beside it (`logs/notes.log`;
   [`8b1fa311-attempt1-disk-gate/logs/disk.log`](8b1fa311-attempt1-disk-gate/logs/disk.log)). Its default-mode report is
-  kept as it was written and is not compared.
+  kept as it was written and is not compared. It ran `pb.sh` as it was before the change below; that version is not
+  kept, here or in scratch, and differed in where the suite was extracted, on disk under the build tree, as its
+  `logs/suite.log` and `logs/commands.log` show.
 - **The suite on `/dev/shm`.** From the second attempt on, `pb.sh` checks the archive's SHA-256 and extracts the suite
   afresh before each run to `/dev/shm`, as bundle `sjl-14-001`'s `commit.sh` kept its suite, rather than on disk beside
   the build tree (the script's header). The suite is the same archive by its SHA-256 in every run.
