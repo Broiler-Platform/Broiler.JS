@@ -1703,6 +1703,10 @@ after runs' folders changes but [`after/owed-runs/README.md`](after/owed-runs/RE
 `hashes.txt` of `after/owed-runs/` and of `after/part-k/`, which name the files added there; the first readings of the
 section above stay on record, each with a dated note beside it that points here. Nothing is judged beyond the readings, and nothing is accepted (EX-30).
 
+*(Noted 2026-11-24.)* The paragraph above says "the `hashes.txt` of `after/owed-runs/` and of `after/part-k/`, which
+name the files added there"; `after/owed-runs/hashes.txt` also replaces its line for that folder's `README.md`, whose
+digest the dated note there changes.
+
 ### The owner's answers 12 to 15 of 2026-11-24
 
 The owner's own, not ones taken under the owner's direction of 2026-10-18, quoted verbatim:
@@ -1768,6 +1772,41 @@ change: the revision records in one sentence that it runs under the rule's uncha
 findings were seen. **What it does not admit**, among others, as it says: the first session's T037823 findings, which
 stay findings of that session; and the hits of part K that are the words of the bridge's message strings, which
 answer 15's kinds do not name.
+
+*(Noted 2026-11-24.)* Three points of this record and of the revision's account of itself are not exact. Each is left
+as written and made exact here; the revision is not edited.
+- **The revision has two versions.** It was committed first by `eb017a7fd9af67844bc48bfc4a2cabd6ba2f02a8` as blob
+  `01a2ca527a7668811dfc81d1388e5fd8e711337d`. `a07031092ed4beef8937739eb60f2eb7f45d032e` ("SJL-14: the revision of
+  2026-11-24 names part K's message-string hits by their lines alone") then replaced its entry "Part K's message
+  strings", which read: "**Part K's message strings.** Seven hits that
+  [`after/part-k/listing.tsv`](after/part-k/listing.tsv) lists are words of message strings of the bridge's
+  `BridgeMessages.Text` (its lines 90, 100, 113 and 120 to 123); a message string is not a line of a changelog, a code
+  comment or a record, and the word names no member of another type. Answer 15 names no such kind, and this file
+  admits none: they are read as part K's MET line, as revised, reads them." The result is blob
+  `13aa6dadcbfe34057be15e6b69b3027ee032c53c`, whose SHA-256 is the one named above; nothing else of the file changed.
+  That commit's message says "Made before any reading under the revision is recorded"; that is not so. Between the
+  two commits, `eda2e899dd6a47366a21a97981f178090389e448` retained
+  [`after/part-j-corrected/findings.txt`](after/part-j-corrected/findings.txt) and its script `read_jc.py`, which
+  read the corrected session under the revision's part J, as blob `01a2ca52` had it. That reading stands: the two
+  blobs differ in that entry alone, and every line of part J (item 6 of "What changed" and the entry "Part J's first
+  session's T037823 findings") is the same in both. The second readings below were written against blob `13aa6dad`.
+- **The revision names part J's corrected session in four places, not one.** Its entry "Part J's first session's
+  T037823 findings" says "This file names it only in this sentence."; and this section says above that "the revision
+  records in one sentence that it runs under the rule's unchanged words". The revision also names the session in its
+  "Written" paragraph ("and part J's corrected session at the after commit, which answer 14 orders and which this file
+  does not change"), in "How it reads" ("Part J is read on its corrected session, as answer 14 orders.") and in "What
+  it decides, and what it does not" ("and part J's corrected session had been seen"). Each of those three says what
+  was seen before the file was written or which session part J is read on; none changes a line of the rule, and the
+  revision's part J admits only the compiles past the bound of V000002 and of its accepted mutants.
+- **When it was written, against the corrected session's runs.** The revision's first commit (06:23:17Z) came after
+  the corrected session's step ended (06:14:59Z) and while its control was still running (06:15:41Z to 06:27:16Z,
+  [`after/part-j-corrected/logs/runs.tsv`](after/part-j-corrected/logs/runs.tsv)); its one later change (06:28:24Z)
+  came after the control ended. So the revision's "It is written **after every after run was seen and read**" and
+  "and part J's corrected session had been seen", this section's "written after every after run and its first reading
+  were seen, and after the reading aids below and part J's corrected session", and "Part J, read again"'s "the
+  revision was written after both were seen" hold for the corrected session and not for its control. A run seen later
+  takes nothing from the revision's evidence, and the revision leaves the control's template-literal findings as
+  findings.
 
 ### Part J's corrected session, retained
 
@@ -1922,6 +1961,15 @@ from `hits.tsv` and `listing.tsv`):
   above; [`after/part-k/hashes.txt`](after/part-k/hashes.txt)). The revision admits only the kinds answer 15 names,
   and the owner's question did not name message strings; they go to the owner. The first reading stays on record. Not
   judged beyond that (EX-30).
+
+*(Noted 2026-11-24.)* The reading above counts among the hits "listed with the declaration that shows it another
+type's member of the same name" one hit that has no declaration in the repository: `listing.tsv`'s row for `Combine`
+at `Broiler.JS/Broiler.JavaScript.Parser/FastParserOptions.cs:112`, whose declaration column reads "- :: -" and whose
+note reads "System.HashCode, of the .NET base class library: no declaration in the repository". It did not name that
+hit. It is read as admitted with the .NET type named in place of a file and line, which the revision's "listed with the
+declaration that shows it" does not say in so many words; this point goes to the owner beside the message strings, so
+that a further revision can settle both. The reading of part K does not move: it is read NOT MET for the
+message-string hits either way.
 
 ### Awaiting the owner
 
