@@ -35,3 +35,32 @@ removed with the build folder that held it, `/home/user/js-w2read-build/`; it re
 (the bundle README's part D, and `../part-d/README.md`). The sentence about `rstep.sh.before-fix` above first read
 "whose SHA-256 is the first one recorded in"; it is the line for `rstep.sh.before-fix` in
 [`scripts/as-started.sha256.txt`](scripts/as-started.sha256.txt), which now carries a header saying what it records.
+
+*(Added 2026-11-24, later, by the records stage of the owner's answers 12 to 15 of 2026-11-24, on branch
+`sjl-14-after`.)* Two further folders are retained here, each a record of runs taken after every after run by others
+than this folder's stage, copied unchanged from the session's notes (every file's SHA-256 equal to its source's when
+copied), each named by its SHA-256 in [`hashes.txt`](hashes.txt). Neither is a run of a part.
+- [`verifier-retake/`](verifier-retake/runs/logs/runs.tsv): the review of this folder's stage took the two commits'
+  dump texts again, each from a clean `git archive` built in Release through the same `run.sh` (lock and idle gate,
+  `env -i` with `TZ=UTC`), as `dtext` and `dtextbase` ran them ([`scripts/vstep.sh`](verifier-retake/scripts/vstep.sh),
+  2026-11-24, 05:21Z to 05:27Z), and the single-case aid `jsingle` again
+  ([`scripts/vsingle.sh`](verifier-retake/scripts/vsingle.sh), 05:36Z to 05:43Z). The texts' digests,
+  [`runs/69a8a13b/text.sha256.txt`](verifier-retake/runs/69a8a13b/text.sha256.txt) and
+  [`runs/83a9bd82/text.sha256.txt`](verifier-retake/runs/83a9bd82/text.sha256.txt), are
+  `7343c06232cd45b2efa4b91d601fb3e512016c0344fd2992a357eefa3127c50d` (the base commit's) and
+  `0db1abaf25b28b9224a2187aae79d87f3f40b7f4023acb4781ed5ba88afb65f4` (the after commit's), the digests
+  [`dtextbase/text.sha256.txt`](dtextbase/text.sha256.txt) and `../local/dtext/text.sha256.txt` record for the texts
+  part D's tables were read from: the texts' bytes are reproduced by a fresh build and run at each commit. The texts
+  themselves were removed with the verifier's build folder; the build logs, the binaries' digests and run.sh's records
+  are here. The single-case re-take gives every file the same SHA-256, outcome, type, message and `within-bound` as
+  [`jsingle/cases.tsv`](jsingle/cases.tsv) (only the times differ).
+- [`jbase/`](jbase/README.md): a reading aid for part J at the **base** commit `69a8a13b`, taken for the owner's
+  question 14 (2026-11-24, 05:49Z to 05:56Z, through the same `run.sh`): the seed V000002 and its 22 findings of the
+  after session, each compiled alone in a process of its own by this folder's single-case aid
+  ([`scripts/single-case/`](scripts/single-case/Program.cs)) built inside a clean archive of the base commit, with the
+  same bound and cap as `jsingle` ([`jbase/scripts/jbase.sh`](jbase/scripts/jbase.sh), SHA-256
+  `aa172d0cdc20e86be9384afb51bb992e1ef16e6019595084322617d348ee433c`; [`jbase/runs/cases.tsv`](jbase/runs/cases.tsv),
+  SHA-256 `eee7329431f40c66fd22b7af74c1d6c8bbab961775fab9c0b4af399a87f7c415`; run.sh's records in
+  [`jbase/logs/`](jbase/logs/runs.tsv)). Its README is its author's note as written. A reading aid taken after the
+  after runs: the seed and 21 of its mutants are accepted at the base and compile past the bound there as after; the
+  mutant `V000002-47.js` is refused at the base by the old parser and accepted after.
