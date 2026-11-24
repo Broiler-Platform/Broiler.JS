@@ -28,6 +28,9 @@ bytes both times. [`../../decision-rule.md`](../../decision-rule.md) and its rev
 - **The two readings agree**: [`cross-check.txt`](cross-check.txt) finds every difference `acceptance.json.gz` lists
   among `parser/`'s outcome and message rows and the converse, and every input variant whose `parser-sha256` or
   `pass-sha256` differs among the dump rows of `parser/` or `pass/` and the converse.
+- **The reports against part C's**: [`identity-with-part-c.txt`](identity-with-part-c.txt), by
+  [`scripts/identity_with_part_c.py`](scripts/identity_with_part_c.py), finds the base commit's P and K rows and parser
+  dump hashes equal to the base side-by-side report's P and K, and the after commit's to its B and K-on, row by row.
 - **The pass trees' unclassified differences** are counted line by line, with each input variant's class at the parser
   trees, in [`pass/unclassified-lines.txt`](pass/unclassified-lines.txt).
 
