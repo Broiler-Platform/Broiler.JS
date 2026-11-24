@@ -570,6 +570,32 @@ Not yet packed under a version of its own: the stream's next version is set when
   - `IntlGeneratorOptions.CalendarPreferences` and the enum `IntlCalendarPreferences` (`None`, the default and Broiler.VM's;
     `Regions`), which writes the `CalendarPreferences` table.
 
+- `Broiler.ECMAScript.Frontend`: **the semantic model's foundation** (milestone SJL-15.2, stage 1; Broiler.VM's JSD-0080,
+  "The semantic model's design"; the decisions of 2026-11-24 in `docs/roadmap/SharedLibraries.md`'s section "Shared
+  static semantics (SJL-15)"; design [`docs/frontend/design.md`](docs/frontend/design.md), section 10). The declarations
+  walk builds the model in the same visit when the request asks for it, and only then. A minor change under convention
+  16, which no published version carries: nothing is removed, and with the new request member off the parse answers as
+  before, its tree, side tables and diagnostics unchanged. It adds:
+  - `ParseRequest.BuildSemanticModel`, false by default: whether the parse also builds the semantic model;
+  - `ParseResult.Model`: the model of an accepted source when the request asks for it, and null otherwise, held by the
+    side tables so that the result keeps its layout;
+  - `SemanticModel`, sealed, its constructor internal: `Scopes`, every scope in source order, a superset of the side
+    tables' sharing their instances; `Functions`, the program's, every function's, every static block's and every
+    initialised field's facts, a superset of the side tables' sharing their instances; `ScopeOf`, the scope where a node
+    is evaluated or bound; `ParentOf`, a scope's parent, null for the first; `DeclarationOf`, the declaration a binding
+    identifier or an `export default` makes, one per node; `FactsOf`, the facts of the program, a function, a static
+    block or an initialised field. Each throws `ArgumentException` for a node or scope that is not the model's;
+  - `ScopeKind.With`, `ClassBody`, `FunctionName` and `Parameters`, the model's alone;
+  - `BindingKind.Parameter`, `FunctionName` and `ClassName`, the model's alone, and `Declaration.IsMutable`, from the
+    kind;
+  - `FunctionKind` (`Normal`, `Arrow`, `Method`, `Getter`, `Setter`, `ClassConstructor`, `DerivedConstructor`,
+    `FieldInitializer`, `StaticBlock`, `Script`, `Module`, `EvalCode` and `DynamicFunction`), and
+    `FunctionFacts.Kind`, `IsAsync`, `IsGenerator`, `HasSimpleParameterList` and `HasParameterExpressions`, filled on
+    every request, the member on or off.
+
+  The canonical dump of a parse (`runners/SyntaxDump.cs`) writes a model section when the result has a model, and is the
+  same bytes as before when it has none. No observable change: no engine sets the member, and with it off nothing moves.
+
 ### Changed
 
 - `Broiler.ECMAScript.Intl`'s `NumberFormatter`, over data that carries them (the owner's decision of 2026-11-08, "Keep + fix

@@ -5,11 +5,14 @@ Broiler.ECMAScript.Semantics.BindingKind enum
 Broiler.ECMAScript.Semantics.BindingKind.AwaitUsing = 4
 Broiler.ECMAScript.Semantics.BindingKind.CatchParameter = 8
 Broiler.ECMAScript.Semantics.BindingKind.Class = 6
+Broiler.ECMAScript.Semantics.BindingKind.ClassName = 12
 Broiler.ECMAScript.Semantics.BindingKind.Const = 2
 Broiler.ECMAScript.Semantics.BindingKind.ExportDefault = 9
 Broiler.ECMAScript.Semantics.BindingKind.Function = 5
+Broiler.ECMAScript.Semantics.BindingKind.FunctionName = 11
 Broiler.ECMAScript.Semantics.BindingKind.Import = 7
 Broiler.ECMAScript.Semantics.BindingKind.Let = 1
+Broiler.ECMAScript.Semantics.BindingKind.Parameter = 10
 Broiler.ECMAScript.Semantics.BindingKind.Using = 3
 Broiler.ECMAScript.Semantics.BindingKind.Var = 0
 Broiler.ECMAScript.Semantics.BindingKind.value__ field System.Int32
@@ -17,6 +20,7 @@ Broiler.ECMAScript.Semantics.Declaration sealed class
 Broiler.ECMAScript.Semantics.Declaration.get_IsBlockFunction() method System.Boolean
 Broiler.ECMAScript.Semantics.Declaration.get_IsIfClauseFunction() method System.Boolean
 Broiler.ECMAScript.Semantics.Declaration.get_IsLexical() method System.Boolean
+Broiler.ECMAScript.Semantics.Declaration.get_IsMutable() method System.Boolean
 Broiler.ECMAScript.Semantics.Declaration.get_Kind() method Broiler.ECMAScript.Semantics.BindingKind
 Broiler.ECMAScript.Semantics.Declaration.get_Name() method System.String
 Broiler.ECMAScript.Semantics.Declaration.get_Node() method Broiler.ECMAScript.Syntax.SyntaxNode
@@ -24,9 +28,29 @@ Broiler.ECMAScript.Semantics.DeclarationTables sealed class
 Broiler.ECMAScript.Semantics.DeclarationTables.get_Functions() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.FunctionFacts>
 Broiler.ECMAScript.Semantics.DeclarationTables.get_Scopes() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.Scope>
 Broiler.ECMAScript.Semantics.FunctionFacts sealed class
+Broiler.ECMAScript.Semantics.FunctionFacts.get_HasParameterExpressions() method System.Boolean
+Broiler.ECMAScript.Semantics.FunctionFacts.get_HasSimpleParameterList() method System.Boolean
+Broiler.ECMAScript.Semantics.FunctionFacts.get_IsAsync() method System.Boolean
+Broiler.ECMAScript.Semantics.FunctionFacts.get_IsGenerator() method System.Boolean
 Broiler.ECMAScript.Semantics.FunctionFacts.get_IsStrict() method System.Boolean
+Broiler.ECMAScript.Semantics.FunctionFacts.get_Kind() method Broiler.ECMAScript.Semantics.FunctionKind
 Broiler.ECMAScript.Semantics.FunctionFacts.get_Node() method Broiler.ECMAScript.Syntax.SyntaxNode
 Broiler.ECMAScript.Semantics.FunctionFacts.get_ParameterNames() method System.Collections.Generic.IReadOnlyList`1<System.String>
+Broiler.ECMAScript.Semantics.FunctionKind enum
+Broiler.ECMAScript.Semantics.FunctionKind.Arrow = 1
+Broiler.ECMAScript.Semantics.FunctionKind.ClassConstructor = 5
+Broiler.ECMAScript.Semantics.FunctionKind.DerivedConstructor = 6
+Broiler.ECMAScript.Semantics.FunctionKind.DynamicFunction = 12
+Broiler.ECMAScript.Semantics.FunctionKind.EvalCode = 11
+Broiler.ECMAScript.Semantics.FunctionKind.FieldInitializer = 7
+Broiler.ECMAScript.Semantics.FunctionKind.Getter = 3
+Broiler.ECMAScript.Semantics.FunctionKind.Method = 2
+Broiler.ECMAScript.Semantics.FunctionKind.Module = 10
+Broiler.ECMAScript.Semantics.FunctionKind.Normal = 0
+Broiler.ECMAScript.Semantics.FunctionKind.Script = 9
+Broiler.ECMAScript.Semantics.FunctionKind.Setter = 4
+Broiler.ECMAScript.Semantics.FunctionKind.StaticBlock = 8
+Broiler.ECMAScript.Semantics.FunctionKind.value__ field System.Int32
 Broiler.ECMAScript.Semantics.Scope sealed class
 Broiler.ECMAScript.Semantics.Scope.get_Declarations() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.Declaration>
 Broiler.ECMAScript.Semantics.Scope.get_Kind() method Broiler.ECMAScript.Semantics.ScopeKind
@@ -34,13 +58,24 @@ Broiler.ECMAScript.Semantics.Scope.get_Node() method Broiler.ECMAScript.Syntax.S
 Broiler.ECMAScript.Semantics.ScopeKind enum
 Broiler.ECMAScript.Semantics.ScopeKind.Block = 3
 Broiler.ECMAScript.Semantics.ScopeKind.Catch = 5
+Broiler.ECMAScript.Semantics.ScopeKind.ClassBody = 9
 Broiler.ECMAScript.Semantics.ScopeKind.For = 6
 Broiler.ECMAScript.Semantics.ScopeKind.Function = 2
+Broiler.ECMAScript.Semantics.ScopeKind.FunctionName = 10
 Broiler.ECMAScript.Semantics.ScopeKind.Module = 1
+Broiler.ECMAScript.Semantics.ScopeKind.Parameters = 11
 Broiler.ECMAScript.Semantics.ScopeKind.Script = 0
 Broiler.ECMAScript.Semantics.ScopeKind.StaticBlock = 7
 Broiler.ECMAScript.Semantics.ScopeKind.Switch = 4
+Broiler.ECMAScript.Semantics.ScopeKind.With = 8
 Broiler.ECMAScript.Semantics.ScopeKind.value__ field System.Int32
+Broiler.ECMAScript.Semantics.SemanticModel sealed class
+Broiler.ECMAScript.Semantics.SemanticModel.DeclarationOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.Declaration
+Broiler.ECMAScript.Semantics.SemanticModel.FactsOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.FunctionFacts
+Broiler.ECMAScript.Semantics.SemanticModel.ParentOf(Broiler.ECMAScript.Semantics.Scope) method Broiler.ECMAScript.Semantics.Scope
+Broiler.ECMAScript.Semantics.SemanticModel.ScopeOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.Scope
+Broiler.ECMAScript.Semantics.SemanticModel.get_Functions() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.FunctionFacts>
+Broiler.ECMAScript.Semantics.SemanticModel.get_Scopes() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.Scope>
 Broiler.ECMAScript.Syntax.ArrayLiteral sealed class : Broiler.ECMAScript.Syntax.Expression
 Broiler.ECMAScript.Syntax.ArrayLiteral.get_Elements() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.Expression>
 Broiler.ECMAScript.Syntax.ArrayLiteral.get_TrailingComma() method System.Boolean
@@ -359,6 +394,7 @@ Broiler.ECMAScript.Syntax.ParseOutcome.Refused = 1
 Broiler.ECMAScript.Syntax.ParseOutcome.value__ field System.Int32
 Broiler.ECMAScript.Syntax.ParseRequest sealed class
 Broiler.ECMAScript.Syntax.ParseRequest..ctor(Broiler.ECMAScript.Syntax.SourceText, Broiler.ECMAScript.Syntax.ParseGoal, Broiler.Unicode.Algorithms.IUnicodeTables, Broiler.ECMAScript.Syntax.IRegularExpressionValidator) method System.Void
+Broiler.ECMAScript.Syntax.ParseRequest.get_BuildSemanticModel() method System.Boolean
 Broiler.ECMAScript.Syntax.ParseRequest.get_Context() method Broiler.ECMAScript.Syntax.InheritedContext
 Broiler.ECMAScript.Syntax.ParseRequest.get_Extensions() method Broiler.ECMAScript.Syntax.LexerExtensions
 Broiler.ECMAScript.Syntax.ParseRequest.get_FunctionKind() method Broiler.ECMAScript.Syntax.DynamicFunctionKind
@@ -371,6 +407,7 @@ Broiler.ECMAScript.Syntax.ParseRequest.get_RetainTokens() method System.Boolean
 Broiler.ECMAScript.Syntax.ParseRequest.get_Source() method Broiler.ECMAScript.Syntax.SourceText
 Broiler.ECMAScript.Syntax.ParseRequest.get_Switches() method Broiler.ECMAScript.Syntax.ParseSwitches
 Broiler.ECMAScript.Syntax.ParseRequest.get_UnicodeTables() method Broiler.Unicode.Algorithms.IUnicodeTables
+Broiler.ECMAScript.Syntax.ParseRequest.set_BuildSemanticModel(System.Boolean) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Syntax.ParseRequest.set_Context(Broiler.ECMAScript.Syntax.InheritedContext) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Syntax.ParseRequest.set_Extensions(Broiler.ECMAScript.Syntax.LexerExtensions) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Syntax.ParseRequest.set_FunctionKind(Broiler.ECMAScript.Syntax.DynamicFunctionKind) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
@@ -382,6 +419,7 @@ Broiler.ECMAScript.Syntax.ParseRequest.set_Switches(Broiler.ECMAScript.Syntax.Pa
 Broiler.ECMAScript.Syntax.ParseResult sealed class
 Broiler.ECMAScript.Syntax.ParseResult.get_Declarations() method Broiler.ECMAScript.Semantics.DeclarationTables
 Broiler.ECMAScript.Syntax.ParseResult.get_Diagnostics() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.SyntaxDiagnostic>
+Broiler.ECMAScript.Syntax.ParseResult.get_Model() method Broiler.ECMAScript.Semantics.SemanticModel
 Broiler.ECMAScript.Syntax.ParseResult.get_Outcome() method Broiler.ECMAScript.Syntax.ParseOutcome
 Broiler.ECMAScript.Syntax.ParseResult.get_Tokens() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.Token>
 Broiler.ECMAScript.Syntax.ParseResult.get_Tree() method Broiler.ECMAScript.Syntax.ProgramNode

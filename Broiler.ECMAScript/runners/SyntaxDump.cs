@@ -21,11 +21,21 @@ namespace Broiler.ECMAScript.Runners;
 /// dumped is the result's internal <c>TokenStream</c>, the one the parse read, whether or not the request retains it for
 /// the result's public <c>Tokens</c> (2026-11-04), so a dump is the same bytes with the request's <c>RetainTokens</c> off
 /// or on.
+/// <para>
+/// From SJL-15.2 a parse whose request builds the semantic model (<c>ParseResult.Model</c>) is dumped with a model section
+/// after the side tables: each model scope's kind, node and parent, each of its declarations with its mutability, each of
+/// its facts, the new ones included, and per node in tree order its scope and its declaration. A parse without a model is
+/// dumped as before, byte for byte; <see cref="Dump(ParseResult, bool)"/> leaves the section out on request, so that the
+/// model's tests can compare the rest of a dump with the model on and off (2026-11-24, SJL-15.2 stage 1).
+/// </para>
 /// </remarks>
 internal static class SyntaxDump
 {
     /// <summary>The canonical dump of <paramref name="result"/>, as UTF-8 text with LF line ends.</summary>
-    internal static byte[] Dump(ParseResult result)
+    internal static byte[] Dump(ParseResult result) => Dump(result, model: true);
+
+    /// <summary>The canonical dump of <paramref name="result"/>, with or without its semantic model's section.</summary>
+    internal static byte[] Dump(ParseResult result, bool model)
     {
         ArgumentNullException.ThrowIfNull(result);
         var text = new StringBuilder();
@@ -58,6 +68,7 @@ internal static class SyntaxDump
         }
 
         var order = new Dictionary<SyntaxNode, int>(ReferenceEqualityComparer.Instance);
+        var nodes = new List<SyntaxNode>();
         if (result.Tree is { } tree)
         {
             var pending = new Stack<(SyntaxNode Node, int Depth)>();
@@ -67,6 +78,7 @@ internal static class SyntaxDump
             {
                 var (node, depth) = pending.Pop();
                 order[node] = order.Count;
+                nodes.Add(node);
                 text.Append("node ").Append(Number(depth)).Append(' ').Append(Number((int)node.Kind)).Append(' ');
                 Span(text, node.Span);
                 Facts(text, node);
@@ -105,7 +117,58 @@ internal static class SyntaxDump
             }
         }
 
+        if (model && result.Model is { } semantic)
+            Model(text, semantic, order, nodes);
+
         return Encoding.UTF8.GetBytes(text.ToString());
+    }
+
+    // The semantic model's section: its scopes with their parents and declarations, its facts, and every node's scope and
+    // declaration in tree order, each scope and declaration named by its place in the section.
+    private static void Model(StringBuilder text, SemanticModel model, Dictionary<SyntaxNode, int> order, List<SyntaxNode> nodes)
+    {
+        var scopeIndex = new Dictionary<Scope, int>(ReferenceEqualityComparer.Instance);
+        var declarationIndex = new Dictionary<Declaration, string>(ReferenceEqualityComparer.Instance);
+        foreach (var scope in model.Scopes)
+            scopeIndex[scope] = scopeIndex.Count;
+        foreach (var scope in model.Scopes)
+        {
+            var parent = model.ParentOf(scope);
+            text.Append("model-scope ").Append(Number(scopeIndex[scope])).Append(' ').Append(Number((int)scope.Kind)).Append(' ')
+                .Append(Reference(order, scope.Node)).Append(' ').Append(parent is null ? "-" : Number(scopeIndex[parent])).Append('\n');
+            for (var d = 0; d < scope.Declarations.Count; d++)
+            {
+                var declaration = scope.Declarations[d];
+                declarationIndex.TryAdd(declaration, Number(scopeIndex[scope]) + "." + Number(d));
+                text.Append("model-declaration ");
+                Escaped(text, declaration.Name);
+                text.Append(' ').Append(Number((int)declaration.Kind)).Append(' ').Append(Reference(order, declaration.Node)).Append(' ')
+                    .Append(Flag(declaration.IsLexical)).Append(Flag(declaration.IsBlockFunction)).Append(Flag(declaration.IsIfClauseFunction))
+                    .Append(Flag(declaration.IsMutable)).Append('\n');
+            }
+        }
+
+        foreach (var function in model.Functions)
+        {
+            text.Append("model-function ").Append(Reference(order, function.Node)).Append(' ').Append(Number((int)function.Kind)).Append(' ')
+                .Append(Flag(function.IsStrict)).Append(Flag(function.IsAsync)).Append(Flag(function.IsGenerator))
+                .Append(Flag(function.HasSimpleParameterList)).Append(Flag(function.HasParameterExpressions));
+            foreach (var name in function.ParameterNames)
+            {
+                text.Append(' ');
+                Escaped(text, name);
+            }
+
+            text.Append('\n');
+        }
+
+        for (var i = 0; i < nodes.Count; i++)
+        {
+            text.Append("model-node ").Append(Number(i)).Append(' ').Append(Number(scopeIndex[model.ScopeOf(nodes[i])]));
+            if (model.DeclarationOf(nodes[i]) is { } declaration)
+                text.Append(' ').Append(declarationIndex[declaration]);
+            text.Append('\n');
+        }
     }
 
     /// <summary>The SHA-256 of the canonical dump, in lowercase hexadecimal.</summary>

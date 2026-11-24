@@ -96,7 +96,20 @@ public class Issue966InertEvalTests
         Assert.Equal("1", Eval("'use strict'; eval('//c\\n1')"));
         Assert.Equal("0", Eval("'use strict'; var yy = 0; eval('//c'); yy"));
     }
+}
 
+// The timing test of the class above, on its own and outside every parallel test (added 2026-11-24). Its bound is wall
+// clock: with the rest of this project running beside it on a hosted runner's few cores, it read 69.0s (CI run
+// 45264206854, at 83a9bd82) and 69.5s (CI run 45449458150, at 871b0ead) where it runs in about two seconds alone, so
+// the bound measured the machine's other work, which its comment says it must not. A collection with parallelization
+// disabled runs after the parallel tests have finished, alone. The test, its program and its bound are unchanged; it
+// was Issue966InertEvalTests.TheTimingOutTestShapeCompletesQuickly.
+[CollectionDefinition(nameof(Issue966InertEvalTimingTests), DisableParallelization = true)]
+public sealed class Issue966InertEvalTimingCollectionDefinition;
+
+[Collection(nameof(Issue966InertEvalTimingTests))]
+public sealed class Issue966InertEvalTimingTests
+{
     [Fact]
     public void TheTimingOutTestShapeCompletesQuickly()
     {

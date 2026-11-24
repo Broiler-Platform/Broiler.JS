@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   8
-// Annotated:        8/8
+// Relevant units:   9
+// Annotated:        9/9
 // Exempt:           9
-// Human-reviewed:   0/8
+// Human-reviewed:   0/9
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         1/1
 // Resource impact:  2/10 max
-// Unverified:       8
+// Unverified:       9
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -125,6 +125,16 @@ public sealed class ParseResult
     /// refused source.
     /// </summary>
     public Semantics.DeclarationTables? Declarations { get; }
+
+    /// <summary>
+    /// The semantic model the declarations walk built beside the side tables (Broiler.VM's JSD-0080, "The semantic model's
+    /// design"; milestone SJL-15.2), when the request set <see cref="ParseRequest.BuildSemanticModel"/> and the source was
+    /// accepted; null otherwise. It is held by the side tables, so that the result keeps the layout it had at
+    /// 0.1.0-preview.9.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model per compilation unit, JSD-0083 D10 side tables; IP=Low; Security=Low; Resources=1; Fingerprint=2CCF58
+    // Hairs-Human:        PENDING
+    public Semantics.SemanticModel? Model => Declarations?.Model;
 
     /// <summary>The answer of a parse that accepts the source.</summary>
     // Hairs-AI:           Origin=AI; Spec=JSD-0083 SJL-13.2c parse entry, D11, D21 retained tokens; IP=Low; Security=Medium; Resources=1; Fingerprint=9DE218

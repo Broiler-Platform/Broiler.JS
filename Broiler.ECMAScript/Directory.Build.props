@@ -27,7 +27,12 @@
        this file's suffix and comment),
        since window W2 of milestone SJL-14: from W2 Broiler.JavaScript.Parser's package depends on
        Broiler.ECMAScript.Frontend at this version, which must be one a consumer can restore (decision D30; the session's
-       decision B5 of 2026-11-19). It read preview.8, which nuget.org never had for Frontend. Moving it publishes nothing. -->
+       decision B5 of 2026-11-19). It read preview.8, which nuget.org never had for Frontend. Moving it publishes nothing.
+       (Noted 2026-11-24, at SJL-15.2 stage 1: from that commit this tree's Broiler.ECMAScript/ has moved past preview.12 by
+       SJL-15.2's semantic model, which is unpublished, so "whose Broiler.ECMAScript/ equals this tree's but for this file's
+       suffix and comment" no longer holds; the suffix still names the stream's last published version, and a version
+       carrying the model is published only by the owner's choice (decision D30; the session's decision D-js-packable of
+       2026-11-24).) -->
   <PropertyGroup>
     <VersionPrefix>0.1.0</VersionPrefix>
     <VersionSuffix>preview.12</VersionSuffix>
