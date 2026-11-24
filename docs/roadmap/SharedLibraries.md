@@ -3782,6 +3782,38 @@ Every later stage's decisions are recorded when that stage lands.
 
 None of it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
 
+*(Noted 2026-11-24, after part B's runs at the first model commit.)* The note of 2026-11-24 at SJL-15.2 stage 1 reads
+that each stage is "judged by its part B against its own first parent", and decision D-js-part-b-method's cell reads
+"nothing merged to the default branch after a model commit until its ci.yml push run has concluded". Stage 1 merged as
+Broiler-Platform/Broiler.JS#1132, `be6c4a5c3e389c7eb2aff71c34e31bdae5efe276`, **the first model commit after W2**,
+named with its first parent `8b1fa311` in bundle [`sjl-15-001`](../evidence/sjl-15-001/README.md)'s README. Nothing
+merged to the default branch until both push runs at it had concluded. Part B is taken at it and at its first parent
+and retained in the bundle's [`part-b-be6c4a5c/`](../evidence/sjl-15-001/part-b-be6c4a5c/README.md), as that README's
+note of 2026-11-24 records: bundle `sjl-12-001`'s tool byte-unchanged, built and run from a clean archive of each
+commit; both runs complete and identical in every field, compared by `scripts/compliance/compare_parse_corpus.py` with no
+admitted class and by the dumps' hashes, the reports' headers differing only in each assembly's module version id,
+which names a build; Shared libraries' push run green in its first attempt; ci.yml's push run green in its second
+attempt, its first having failed when a test host of the `Broiler.ECMAScript` test projects, whose tests that step's
+filter leaves to Shared libraries, died before any test ran, and the failed jobs re-run once.
+
+**The reading**, taken as recommended under the owner's direction quoted above and recorded as the owner's decision of
+2026-11-24, flagged for the owner: **part B read MET on the retained runs at the model commits taken so far
+(`be6c4a5c3e389c7eb2aff71c34e31bdae5efe276`), limited to them; the part's verdict waits for the last model commit before
+the base.** Its basis: the rule's "the commit's CI run of every test project passed" is read on ci.yml's push run at
+`be6c4a5c` as it concluded, in its second attempt, whose first attempt failed in a test host before any test ran and is
+retained beside it, and on Shared libraries' push run.
+
+| Decision | Taken | Not taken, and why |
+|---|---|---|
+| D-js-part-b-attempt | **ci.yml's push run is read as it concluded, after the one re-run of jobs that died before any test body ran**, both attempts retained | (a) Part B read NOT MET at `be6c4a5c` because the run's first attempt concluded in failure: it reads a test host's death before any test as a test project's failure. (b) A dated revision of the clause saying which attempt of a run it reads: the runs have been seen, so it would be the owner's, as weaker evidence |
+
+ci.yml's Test step starts a test host for every `Broiler.ECMAScript` test project although its filter selects none of
+their tests, which Shared libraries runs; both recent Windows failures of that step were in those hosts, at the first
+parent's push run (`Broiler.ECMAScript.Frontend.Tests`) and in the first attempt at `be6c4a5c`
+(`Broiler.ECMAScript.Algorithms.Tests`). Next: a separate change, before stage 2, leaves those projects out of that
+step; then stage 2. None of it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in both
+repositories.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
