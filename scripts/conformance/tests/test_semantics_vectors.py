@@ -122,8 +122,8 @@ class GeneratorTests(unittest.TestCase):
         self.assertEqual(revision_42, produced)
 
     def test_without_the_vectors_revision_44_adds_it_writes_revision_43_byte_for_byte(self) -> None:
-        # The same convention for the next revision: revision 43's files (commit 1f1f2bab, as main's head 69a8a13b holds
-        # them), each by its SHA-256, are what the vectors added at revisions 42 and 43 write with revision 43's
+        # The same convention for the next revision: revision 43's files (commit 1f1f2bab, as main 4f697339 holds them),
+        # each by its SHA-256, are what the vectors added at revisions 42 and 43 write with revision 43's
         # divergences file. That file is read from a byte-for-byte copy beside this test, checked by its SHA-256 at
         # 1f1f2bab, not from scripts/conformance/semantics-divergences.txt, which later revisions change: a line that
         # classifies a vector added later, or a line retired or changed, would otherwise fail this check or alter the
