@@ -2055,6 +2055,22 @@ used by reflection or lookup; and a member of a type outside the repository, of 
 that type and its assembly in place of a file and line. It says how the literals were checked, by the extension above,
 and that the revision of 2026-11-24's entry on part K's message strings stays true of that file's words.
 
+*(Noted 2026-11-24, after review.)* The revision's account of what was seen, and its quote of answer 16, are made
+exact here; the revision is not edited.
+- **Its statement of what was seen is its "Written" paragraph.** That paragraph says it was written "after every run,
+  reading aid and reading that branch holds up to that commit was seen", and the list after its colon names part K's
+  items only: the branch at that commit also held, and the session had seen, the after runs of the other parts and
+  their readings, among them part J's corrected session and the second readings of parts A, D and J. The revision
+  changes nothing of those parts and, outside its quote of the rule, names none of them. Two later passages restate
+  parts of that paragraph and add nothing to it: "Why it is written" quotes this README's second reading of part K and
+  its dated note on the hit `Combine`, and "What it decides, and what it does not" says it "was written after part K's
+  after run, its first and second readings and the reading aids named at the top of this file had been seen", a
+  shorter list than the paragraph's.
+- **Answer 16's quote follows its rendered text.** The session's copy of the answer writes the quotation marks inside
+  the question as escaped marks (`\"`); the revision, and this README's section "The owner's answer 16 of
+  2026-11-24", write them as plain ones, which is how the copy renders. Apart from that and the line breaks, the
+  quotes are the copy's text.
+
 ### Part K, read a third time
 
 Under the rule and its three revisions, on the same retained search and its tables
