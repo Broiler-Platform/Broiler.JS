@@ -205,10 +205,10 @@ The bundle README's section "W2's after commit, recorded on 2026-11-24" reads, o
   unchanged words, "a seeded mutation session, committed to the bundle, compiling each mutant through
   CoreScript.Compile at the after commit in Release", corrected after the findings were seen. This file names it only
   in this sentence. The first session's findings of T037823 stay findings of that session, read as the rule reads them.
-- **Part K's message strings.** Seven hits that [`after/part-k/listing.tsv`](after/part-k/listing.tsv) lists are words
-  of message strings of the bridge's `BridgeMessages.Text` (its lines 90, 100, 113 and 120 to 123); a message string
-  is not a line of a changelog, a code comment or a record, and the word names no member of another type. Answer 15
-  names no such kind, and this file admits none: they are read as part K's MET line, as revised, reads them.
+- **Part K's message strings.** The hits that [`after/part-k/listing.tsv`](after/part-k/listing.tsv) lists as words
+  of message strings of the bridge's `BridgeMessages.Text` (its lines 90, 100, 113 and 120 to 123) are not admitted: a
+  message string is not a line of a changelog, a code comment or a record, and the word names no member of another
+  type. Answer 15 names no such kind: they are read as part K's MET line, as revised, reads them.
 - **Anything beyond the entries named.** Another path or variant at part A, another input variant or another kind of
   line at part D, another seed or another kind of finding at part J, and another kind of hit at part K are read as the
   rule reads them.
