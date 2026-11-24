@@ -3569,6 +3569,26 @@ NOT MET on the retained runs, for `regress-610026.js` alone.** The bundle record
 correspondence for `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js`, as part A's C1 line
 asks. The rule's file is not edited. Nothing is met or accepted; every clause of this engine's, 1 to 6, is unmet.
 
+*(Noted 2026-11-24, after W2's merge.)* The note above reads "during W2's hold, before W2 merges" and "W2 fixes it
+inside W2 ... on branch `sjl-14-w2`". **W2 merged** on 2026-11-23 as `83a9bd82a5d258d3001468095ebf43f9efc3e9a7`, the
+merge of Broiler-Platform/Broiler.JS#1129, its first parent the base commit `69a8a13b`: it is the rule's after commit,
+and **the hold of the owner's answer 9 ended** with it. Part A's after run, `test262-evidence.yml` run 45264304825 at
+the after commit, and the after commit's local runs of parts D, E, F, G, H, J and K are retained in bundle
+[`sjl-14-001`](../evidence/sjl-14-001/README.md)'s `after/`, with the runs the readings owed, and its README's "W2's
+after commit, recorded on 2026-11-24" reads each part in the rule's words, under the revision where it changes the
+part: **part A read NOT MET on the retained runs** (the `await using` for-of path of finding S14-F2, which part A's C1
+line reads as a regression, and a Terser variant the runner skips as minifier-invalid output; `regress-610026.js`
+passes at both commits); **part D read NOT MET on the retained runs** (span lines of the trees after the compiler's
+for-loop pass, which part C never compared and no class admits; every outcome, message and parser-tree difference is
+in a class); **parts E, F, G and H read MET on the retained runs** (part G with Broiler.JSeal's base side per test
+taken after the after runs, under the base's harness); **part J read NOT MET on the retained runs** (the compiler's
+documented `import.meta` refusal for module code without a module record, which the session's harness compiles, and
+timeouts of one generated seed that reproduce unloaded); **part K read MET on the retained runs** on a reading taken
+under the owner's direction of 2026-10-18, with its alternative recorded. **Part I is pending** on the owner's lane
+`win-x64-r7-5800x`, its runs to be retained in the bundle's `measurement/`. The items read NOT MET, and part K's
+reading, **await the owner**; no fix and no rule change is made for them. The rule's files are not edited. Nothing is
+met or accepted; every clause of this engine's, 1 to 6, is unmet.
+
 ## Shared static semantics (SJL-15)
 
 SJL-15 makes the frontend's semantic model the single source of the static-semantics facts, and moves this engine's
