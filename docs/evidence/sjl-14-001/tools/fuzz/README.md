@@ -26,3 +26,20 @@ change on 2026-11-19, before any run of part J. It runs nothing on its own and j
   produce (for example `BridgeTreeBuilder`'s case for a template literal), built and run over the seeds; the session
   must report a finding. The copy is never committed, and the revert is checked. Unlike part K's `--control`, the
   control is not scripted here: its scratch edit and the check of its revert are the run's own steps, recorded with it.
+
+*(Corrected 2026-11-24, after part J's first session at the after commit was run and its findings seen, by the owner's
+answer 14 of 2026-11-24: "Commit a corrected session that gives module seeds a module record, run it at 83a9bd82 (no
+rule change; recorded as corrected after the findings were seen), and write a dated revision for V000002's
+compile-past-bound by name.")* The session compiled a module seed through `CoreScript.Compile(..., isModule: true)` with
+no parameters, so the compiler had no module record to read, and `import.meta` in module code threw the compiler's
+ReferenceError for that case ("import.meta is not available: this module has no module record",
+`Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMeta.cs`). The engine's module host,
+`Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs` at the after commit, compiles a module's body with the
+parameters `import` and `#module` (its `ModuleParameters`), `#module` being the module record the compiler's module
+prologue and `import.meta` read (`FastCompiler.Module.cs`'s `ModuleEnvironmentArgument`). `Program.cs` now passes those
+two parameters, as `Session.ModuleParameters`, for a seed whose goal is `module`, and nothing else changes: a script
+seed compiles as before, a module still compiles with the context's options as a module (the host also permits
+top-level `await`, which the session's options do not, and which this correction leaves as it was), and the seeds,
+their counts, the bound, the session seed and the operators are unchanged. The first session's text is the blob
+`docs/evidence/sjl-14-001/tools/fuzz/Program.cs` of the after commit `83a9bd82`; its runs stay retained in
+`after/local/fuzz/` and `after/local/fcontrol/`, and the corrected session's in `after/part-j-corrected/`.
