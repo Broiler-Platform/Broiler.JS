@@ -1,0 +1,3 @@
+file	sha256	results	outcomes	configuration	code-bases
+_vm_2026-11-23_22_14_06_net10.0.trx	13153ac72606c7d010cc5ff11677a814f849fed5c289f8fdc555be6c2de6e449	357	NotExecuted=2,Passed=355	Release	/tmp/jseal-package-consumer-267f01c92f8a41d18625107dbc2ef140/source/Broiler.JSeal.Tests/bin/Release/net10.0/Broiler.JSeal.Tests.dll
+_vm_2026-11-23_22_14_21_net10.0.trx	f9e984d7acea835072a82ce4e8929763feeb83287a755d837b3c36cce9c910d6	642	NotExecuted=2,Passed=640	Release-VM	/tmp/jseal-package-consumer-267f01c92f8a41d18625107dbc2ef140/source/Broiler.JSeal.Tests/bin/Release-VM/net10.0/Broiler.JSeal.Tests.dll

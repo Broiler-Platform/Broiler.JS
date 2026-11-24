@@ -1,0 +1,5 @@
+revert: the file written again from the after commit's blob (git show 83a9bd82a5d258d3001468095ebf43f9efc3e9a7:Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs)
+sha256 of Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs after the revert: 624971c4880c29d5ec16a1fc0ecc5bf89b8b284dd7b400c8cb0f07537a6255af
+sha256 of Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs at the after commit: 624971c4880c29d5ec16a1fc0ecc5bf89b8b284dd7b400c8cb0f07537a6255af
+diff -r -q -x bin -x obj against a clean archive of the after commit:
+diff exit 0

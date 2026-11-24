@@ -1,0 +1,464 @@
+namespace Broiler.JavaScript.Storage
+{
+    public class ConcurrentNameMap
+    {
+        public ConcurrentNameMap() { }
+        [return: System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "Key",
+                "Name"})]
+        public System.ValueTuple<uint, Broiler.JavaScript.Ast.Misc.StringSpan> Get(in Broiler.JavaScript.Ast.Misc.StringSpan name) { }
+        public bool TryGetValue(in Broiler.JavaScript.Ast.Misc.StringSpan name, [System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "Key",
+                "Name"})] out System.ValueTuple<uint, Broiler.JavaScript.Ast.Misc.StringSpan> value) { }
+    }
+    public class ConcurrentStringMap<T>
+    {
+        public ConcurrentStringMap() { }
+        public T this[Broiler.JavaScript.Ast.Misc.StringSpan& key] { get; set; }
+        public T GetOrCreate(in Broiler.JavaScript.Ast.Misc.StringSpan key, System.Func<Broiler.JavaScript.Ast.Misc.StringSpan, T> value) { }
+        public bool TryGetValue(in Broiler.JavaScript.Ast.Misc.StringSpan key, out T value) { }
+        public static Broiler.JavaScript.Storage.ConcurrentStringMap<T> Create() { }
+    }
+    public static class ConcurrentTypeCache
+    {
+        public static uint GetOrCreate(System.Type name, string suffix = "") { }
+    }
+    public class ConcurrentTypeTrie<T>
+    {
+        public ConcurrentTypeTrie(System.Func<System.Type, T> factory) { }
+        public T this[System.Type key] { get; }
+    }
+    public class ConcurrentUInt32Map<T>
+    {
+        public ConcurrentUInt32Map() { }
+        public System.Collections.Generic.IEnumerable<T> All { get; }
+        public T this[uint key] { get; set; }
+        public T GetOrCreate(uint key, System.Func<T> value) { }
+        public T GetOrCreate<TP>(uint key, System.Func<TP, T> value, in TP p) { }
+        public bool TryGetValue(uint key, out T value) { }
+        public static Broiler.JavaScript.Storage.ConcurrentUInt32Map<T> Create() { }
+    }
+    public struct ElementArray
+    {
+        public int Capacity { get; }
+        public int Count { get; }
+        public bool HasDefaultDescriptors { get; }
+        public bool IsDense { get; }
+        public bool IsNull { get; }
+        public Broiler.JavaScript.Storage.JSProperty this[uint index] { get; }
+        public Broiler.JavaScript.Storage.ElementKind Kind { get; }
+        public uint Length { get; }
+        public Broiler.JavaScript.Storage.ElementArray.ValueEnumerable AllValues() { }
+        public Broiler.JavaScript.Storage.JSProperty Get(uint index) { }
+        public bool HasKey(uint index) { }
+        public Broiler.JavaScript.Storage.JSProperty& Put(uint index) { }
+        public void Put(uint index, Broiler.JavaScript.Ast.Misc.IPropertyValue value, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 25) { }
+        public void Put(uint index, Broiler.JavaScript.Ast.Misc.IPropertyAccessor getter, Broiler.JavaScript.Ast.Misc.IPropertyAccessor setter, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 26) { }
+        public void QuickSort(System.Comparison<Broiler.JavaScript.Ast.Misc.IPropertyValue> comparer, uint start, uint end) { }
+        public bool RemoveAt(uint index) { }
+        public void Resize(uint size) { }
+        public void Set(uint index, in Broiler.JavaScript.Storage.JSProperty property) { }
+        public Broiler.JavaScript.Storage.ElementArray.ValueEnumerable StoredValues() { }
+        public bool TryCopyWithin(uint target, uint start, uint count, uint logicalLength) { }
+        public bool TryFill(uint start, uint end, Broiler.JavaScript.Ast.Misc.IPropertyValue value, uint logicalLength) { }
+        public bool TryGetValue(uint index, out Broiler.JavaScript.Storage.JSProperty value) { }
+        public bool TryRemove(uint index, out Broiler.JavaScript.Storage.JSProperty value) { }
+        public bool TryReverse(uint logicalLength) { }
+        public readonly struct ValueEnumerable : System.Collections.Generic.IEnumerable<System.ValueTuple<uint, Broiler.JavaScript.Storage.JSProperty>>, System.Collections.IEnumerable
+        {
+            public Broiler.JavaScript.Storage.ElementArray.ValueEnumerator GetEnumerator() { }
+        }
+        public struct ValueEnumerator : System.Collections.Generic.IEnumerator<System.ValueTuple<uint, Broiler.JavaScript.Storage.JSProperty>>, System.Collections.IEnumerator, System.IDisposable
+        {
+            [System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                    "Key",
+                    "Value"})]
+            public System.ValueTuple<uint, Broiler.JavaScript.Storage.JSProperty> Current { get; }
+            public void Dispose() { }
+            public bool MoveNext() { }
+            public void Reset() { }
+        }
+    }
+    public enum ElementKind : byte
+    {
+        Empty = 0,
+        Packed = 1,
+        Holey = 2,
+        Dictionary = 3,
+    }
+    public readonly struct HashedString : System.IComparable<Broiler.JavaScript.Storage.HashedString>, System.IEquatable<Broiler.JavaScript.Storage.HashedString>
+    {
+        public readonly int Hash;
+        public readonly Broiler.JavaScript.Ast.Misc.StringSpan Value;
+        public HashedString(in Broiler.JavaScript.Ast.Misc.StringSpan value) { }
+        public HashedString(string value) { }
+        public int CompareTo(Broiler.JavaScript.Storage.HashedString other) { }
+        public int CompareToRef(in Broiler.JavaScript.Storage.HashedString other) { }
+        public bool Equals(Broiler.JavaScript.Storage.HashedString other) { }
+        public override bool Equals(object obj) { }
+        public override int GetHashCode() { }
+        public override string ToString() { }
+        public static Broiler.JavaScript.Storage.HashedString op_Implicit(in Broiler.JavaScript.Ast.Misc.StringSpan v) { }
+        public static Broiler.JavaScript.Storage.HashedString op_Implicit(string v) { }
+        public static bool operator !=(Broiler.JavaScript.Storage.HashedString left, Broiler.JavaScript.Storage.HashedString right) { }
+        public static bool operator ==(Broiler.JavaScript.Storage.HashedString left, Broiler.JavaScript.Storage.HashedString right) { }
+    }
+    public delegate System.Exception JSErrorFactory(string message, [System.Runtime.CompilerServices.CallerMemberName] string function = null, [System.Runtime.CompilerServices.CallerFilePath] string filePath = null, [System.Runtime.CompilerServices.CallerLineNumber] int line = 0);
+    public struct JSObjectProperty
+    {
+        public uint Next;
+        public uint Previous;
+        public Broiler.JavaScript.Storage.JSProperty Property;
+        public static Broiler.JavaScript.Storage.JSObjectProperty Empty;
+    }
+    [System.Diagnostics.DebuggerDisplay("{key}={get},{set},{value}")]
+    public readonly struct JSProperty
+    {
+        public readonly Broiler.JavaScript.Storage.JSPropertyAttributes Attributes;
+        public readonly Broiler.JavaScript.Ast.Misc.IPropertyAccessor get;
+        public readonly uint key;
+        public readonly Broiler.JavaScript.Ast.Misc.IPropertyAccessor set;
+        public readonly Broiler.JavaScript.Ast.Misc.IPropertyValue value;
+        public static Broiler.JavaScript.Storage.JSProperty Empty;
+        public JSProperty(in Broiler.JavaScript.Storage.KeyString key, Broiler.JavaScript.Ast.Misc.IPropertyValue get, Broiler.JavaScript.Storage.JSPropertyAttributes attributes) { }
+        public JSProperty(uint key, Broiler.JavaScript.Ast.Misc.IPropertyValue get, Broiler.JavaScript.Storage.JSPropertyAttributes attributes) { }
+        public JSProperty(in Broiler.JavaScript.Storage.KeyString key, Broiler.JavaScript.Ast.Misc.IPropertyAccessor get, Broiler.JavaScript.Ast.Misc.IPropertyAccessor set, Broiler.JavaScript.Storage.JSPropertyAttributes attributes) { }
+        public JSProperty(in Broiler.JavaScript.Storage.KeyString key, Broiler.JavaScript.Ast.Misc.IPropertyAccessor get, Broiler.JavaScript.Ast.Misc.IPropertyAccessor set, Broiler.JavaScript.Ast.Misc.IPropertyValue value, Broiler.JavaScript.Storage.JSPropertyAttributes attributes) { }
+        public JSProperty(uint key, Broiler.JavaScript.Ast.Misc.IPropertyAccessor get, Broiler.JavaScript.Ast.Misc.IPropertyAccessor set, Broiler.JavaScript.Ast.Misc.IPropertyValue value, Broiler.JavaScript.Storage.JSPropertyAttributes attributes) { }
+        public bool IsConfigurable { get; }
+        public bool IsEmpty { get; }
+        public bool IsEnumerable { get; }
+        public bool IsProperty { get; }
+        public bool IsReadOnly { get; }
+        public bool IsValue { get; }
+        public Broiler.JavaScript.Storage.JSProperty ToNotReadOnly() { }
+        public Broiler.JavaScript.Storage.JSProperty With(in Broiler.JavaScript.Storage.KeyString key) { }
+        public static Broiler.JavaScript.Storage.JSProperty Property(Broiler.JavaScript.Ast.Misc.IPropertyValue d, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 25) { }
+        public static Broiler.JavaScript.Storage.JSProperty Property(Broiler.JavaScript.Ast.Misc.IPropertyAccessor get, Broiler.JavaScript.Ast.Misc.IPropertyAccessor set = null, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 26) { }
+        public static Broiler.JavaScript.Storage.JSProperty Property(in Broiler.JavaScript.Storage.KeyString key, Broiler.JavaScript.Ast.Misc.IPropertyAccessor d, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 25) { }
+        public static Broiler.JavaScript.Storage.JSProperty Property(in Broiler.JavaScript.Storage.KeyString key, Broiler.JavaScript.Ast.Misc.IPropertyValue d, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 25) { }
+        public static Broiler.JavaScript.Storage.JSProperty Property(uint key, Broiler.JavaScript.Ast.Misc.IPropertyValue d, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 25) { }
+        public static Broiler.JavaScript.Storage.JSProperty Property(in Broiler.JavaScript.Storage.KeyString key, Broiler.JavaScript.Ast.Misc.IPropertyAccessor get, Broiler.JavaScript.Ast.Misc.IPropertyAccessor set = null, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 26) { }
+    }
+    public enum JSPropertyAttributes : byte
+    {
+        Empty = 0,
+        Value = 1,
+        Property = 2,
+        Configurable = 8,
+        Enumerable = 16,
+        Readonly = 32,
+        EnumerableConfigurableValue = 25,
+        EnumerableConfigurableReadonlyValue = 57,
+        ConfigurableValue = 9,
+        ConfigurableReadonlyValue = 41,
+        EnumerableConfigurableProperty = 26,
+        EnumerableConfigurableReadonlyProperty = 58,
+        ConfigurableProperty = 10,
+        ConfigurableReadonlyProperty = 42,
+        ReadonlyValue = 33,
+        ReadonlyProperty = 34,
+        EnumerableReadonlyValue = 49,
+        EnumerableReadonlyProperty = 50,
+    }
+    public readonly struct KeyMetadata
+    {
+        public readonly uint ArrayIndex;
+        public readonly double CanonicalNumericIndex;
+        public readonly bool IsArrayIndex;
+        public readonly bool IsCanonicalNumericIndex;
+        public readonly bool IsPrivateName;
+        public readonly int StableOrdinalHash;
+    }
+    [System.Diagnostics.DebuggerDisplay("Key:{Key},{Value}")]
+    public readonly struct KeyString
+    {
+        public readonly uint Key;
+        public static readonly Broiler.JavaScript.Storage.KeyString Empty;
+        public bool HasValue { get; }
+        public Broiler.JavaScript.Storage.KeyMetadata Metadata { get; }
+        public Broiler.JavaScript.Ast.Misc.StringSpan Value { get; }
+        public override bool Equals(object obj) { }
+        public override int GetHashCode() { }
+        public override string ToString() { }
+        public static Broiler.JavaScript.Storage.KeyString op_Implicit(in Broiler.JavaScript.Ast.Misc.StringSpan value) { }
+        public static Broiler.JavaScript.Storage.KeyString op_Implicit(string value) { }
+    }
+    public static class KeyStrings
+    {
+        public static readonly Broiler.JavaScript.Storage.KeyString Array;
+        public static readonly Broiler.JavaScript.Storage.KeyString ArrayBuffer;
+        public static readonly Broiler.JavaScript.Storage.KeyString BigInt;
+        public static readonly Broiler.JavaScript.Storage.KeyString Boolean;
+        public static readonly Broiler.JavaScript.Storage.KeyString DataView;
+        public static readonly Broiler.JavaScript.Storage.KeyString Date;
+        public static readonly Broiler.JavaScript.Storage.KeyString Error;
+        public static readonly Broiler.JavaScript.Storage.KeyString EvalError;
+        public static readonly Broiler.JavaScript.Storage.KeyString FinalizationRegistry;
+        public static readonly Broiler.JavaScript.Storage.KeyString Float32Array;
+        public static readonly Broiler.JavaScript.Storage.KeyString Float64Array;
+        public static readonly Broiler.JavaScript.Storage.KeyString Function;
+        public static readonly Broiler.JavaScript.Storage.KeyString Generator;
+        public static readonly Broiler.JavaScript.Storage.KeyString Infinity;
+        public static readonly Broiler.JavaScript.Storage.KeyString Int16Array;
+        public static readonly Broiler.JavaScript.Storage.KeyString Int32Array;
+        public static readonly Broiler.JavaScript.Storage.KeyString Int8Array;
+        public static readonly Broiler.JavaScript.Storage.KeyString JSON;
+        public static readonly Broiler.JavaScript.Storage.KeyString Map;
+        public static readonly Broiler.JavaScript.Storage.KeyString Math;
+        public static readonly Broiler.JavaScript.Storage.KeyString Module;
+        public static readonly Broiler.JavaScript.Storage.KeyString NaN;
+        public static readonly Broiler.JavaScript.Storage.KeyString Number;
+        public static readonly Broiler.JavaScript.Storage.KeyString Object;
+        public static readonly Broiler.JavaScript.Storage.KeyString Promise;
+        public static readonly Broiler.JavaScript.Storage.KeyString RangeError;
+        public static readonly Broiler.JavaScript.Storage.KeyString ReferenceError;
+        public static readonly Broiler.JavaScript.Storage.KeyString Reflect;
+        public static readonly Broiler.JavaScript.Storage.KeyString RegExp;
+        public static readonly Broiler.JavaScript.Storage.KeyString Set;
+        public static readonly Broiler.JavaScript.Storage.KeyString String;
+        public static readonly Broiler.JavaScript.Storage.KeyString Symbol;
+        public static readonly Broiler.JavaScript.Storage.KeyString SyntaxError;
+        public static readonly Broiler.JavaScript.Storage.KeyString TypeError;
+        public static readonly Broiler.JavaScript.Storage.KeyString URIError;
+        public static readonly Broiler.JavaScript.Storage.KeyString Uint16Array;
+        public static readonly Broiler.JavaScript.Storage.KeyString Uint32Array;
+        public static readonly Broiler.JavaScript.Storage.KeyString Uint8Array;
+        public static readonly Broiler.JavaScript.Storage.KeyString Uint8ClampedArray;
+        public static readonly Broiler.JavaScript.Storage.KeyString WeakMap;
+        public static readonly Broiler.JavaScript.Storage.KeyString WeakRef;
+        public static readonly Broiler.JavaScript.Storage.KeyString WeakSet;
+        public static readonly Broiler.JavaScript.Storage.KeyString @__proto__;
+        public static readonly Broiler.JavaScript.Storage.KeyString apply;
+        public static readonly Broiler.JavaScript.Storage.KeyString arguments;
+        public static readonly Broiler.JavaScript.Storage.KeyString assert;
+        public static readonly Broiler.JavaScript.Storage.KeyString bind;
+        public static readonly Broiler.JavaScript.Storage.KeyString bubbles;
+        public static readonly Broiler.JavaScript.Storage.KeyString call;
+        public static readonly Broiler.JavaScript.Storage.KeyString callee;
+        public static readonly Broiler.JavaScript.Storage.KeyString cancelable;
+        public static readonly Broiler.JavaScript.Storage.KeyString capture;
+        public static readonly Broiler.JavaScript.Storage.KeyString @catch;
+        public static readonly Broiler.JavaScript.Storage.KeyString clr;
+        public static readonly Broiler.JavaScript.Storage.KeyString composed;
+        public static readonly Broiler.JavaScript.Storage.KeyString configurable;
+        public static readonly Broiler.JavaScript.Storage.KeyString console;
+        public static readonly Broiler.JavaScript.Storage.KeyString constructor;
+        public static readonly Broiler.JavaScript.Storage.KeyString day;
+        public static readonly Broiler.JavaScript.Storage.KeyString debug;
+        public static readonly Broiler.JavaScript.Storage.KeyString decodeURI;
+        public static readonly Broiler.JavaScript.Storage.KeyString decodeURIComponent;
+        public static readonly Broiler.JavaScript.Storage.KeyString @default;
+        public static readonly Broiler.JavaScript.Storage.KeyString deferred;
+        public static readonly Broiler.JavaScript.Storage.KeyString defineProperty;
+        public static readonly Broiler.JavaScript.Storage.KeyString deleteProperty;
+        public static readonly Broiler.JavaScript.Storage.KeyString detail;
+        public static readonly Broiler.JavaScript.Storage.KeyString done;
+        public static readonly Broiler.JavaScript.Storage.KeyString encodeURI;
+        public static readonly Broiler.JavaScript.Storage.KeyString encodeURIComponent;
+        public static readonly Broiler.JavaScript.Storage.KeyString enumerable;
+        public static readonly Broiler.JavaScript.Storage.KeyString eval;
+        public static readonly Broiler.JavaScript.Storage.KeyString exports;
+        public static readonly Broiler.JavaScript.Storage.KeyString @false;
+        public static readonly Broiler.JavaScript.Storage.KeyString get;
+        public static readonly Broiler.JavaScript.Storage.KeyString getPrototypeOf;
+        public static readonly Broiler.JavaScript.Storage.KeyString global;
+        public static readonly Broiler.JavaScript.Storage.KeyString globalThis;
+        public static readonly Broiler.JavaScript.Storage.KeyString hour;
+        public static readonly Broiler.JavaScript.Storage.KeyString import;
+        public static readonly Broiler.JavaScript.Storage.KeyString index;
+        public static readonly Broiler.JavaScript.Storage.KeyString input;
+        public static readonly Broiler.JavaScript.Storage.KeyString isFinite;
+        public static readonly Broiler.JavaScript.Storage.KeyString isNaN;
+        public static readonly Broiler.JavaScript.Storage.KeyString join;
+        public static readonly Broiler.JavaScript.Storage.KeyString lastIndex;
+        public static readonly Broiler.JavaScript.Storage.KeyString length;
+        public static readonly Broiler.JavaScript.Storage.KeyString log;
+        public static readonly Broiler.JavaScript.Storage.KeyString message;
+        public static readonly Broiler.JavaScript.Storage.KeyString minute;
+        public static readonly Broiler.JavaScript.Storage.KeyString module;
+        public static readonly Broiler.JavaScript.Storage.KeyString month;
+        public static readonly Broiler.JavaScript.Storage.KeyString name;
+        public static readonly Broiler.JavaScript.Storage.KeyString native;
+        public static readonly Broiler.JavaScript.Storage.KeyString next;
+        public static readonly Broiler.JavaScript.Storage.KeyString @null;
+        public static readonly Broiler.JavaScript.Storage.KeyString once;
+        public static readonly Broiler.JavaScript.Storage.KeyString ownKeys;
+        public static readonly Broiler.JavaScript.Storage.KeyString parse;
+        public static readonly Broiler.JavaScript.Storage.KeyString parseFloat;
+        public static readonly Broiler.JavaScript.Storage.KeyString parseInt;
+        public static readonly Broiler.JavaScript.Storage.KeyString prototype;
+        public static readonly Broiler.JavaScript.Storage.KeyString raw;
+        public static readonly Broiler.JavaScript.Storage.KeyString @readonly;
+        public static readonly Broiler.JavaScript.Storage.KeyString require;
+        public static readonly Broiler.JavaScript.Storage.KeyString resolve;
+        public static readonly Broiler.JavaScript.Storage.KeyString @return;
+        public static readonly Broiler.JavaScript.Storage.KeyString second;
+        public static readonly Broiler.JavaScript.Storage.KeyString set;
+        public static readonly Broiler.JavaScript.Storage.KeyString setPrototypeOf;
+        public static readonly Broiler.JavaScript.Storage.KeyString stack;
+        public static readonly Broiler.JavaScript.Storage.KeyString stringify;
+        public static readonly Broiler.JavaScript.Storage.KeyString substring;
+        public static readonly Broiler.JavaScript.Storage.KeyString test;
+        public static readonly Broiler.JavaScript.Storage.KeyString then;
+        public static readonly Broiler.JavaScript.Storage.KeyString @throw;
+        public static readonly Broiler.JavaScript.Storage.KeyString toJSON;
+        public static readonly Broiler.JavaScript.Storage.KeyString toString;
+        public static readonly Broiler.JavaScript.Storage.KeyString @true;
+        public static readonly Broiler.JavaScript.Storage.KeyString undefined;
+        public static readonly Broiler.JavaScript.Storage.KeyString value;
+        public static readonly Broiler.JavaScript.Storage.KeyString valueOf;
+        public static readonly Broiler.JavaScript.Storage.KeyString weekday;
+        public static readonly Broiler.JavaScript.Storage.KeyString writable;
+        public static readonly Broiler.JavaScript.Storage.KeyString year;
+        public static Broiler.JavaScript.Storage.KeyMetadata GetMetadata(uint id) { }
+        public static Broiler.JavaScript.Storage.KeyString GetName(uint id) { }
+        public static Broiler.JavaScript.Ast.Misc.StringSpan GetNameString(uint id) { }
+        public static Broiler.JavaScript.Storage.KeyString GetOrCreate(in Broiler.JavaScript.Ast.Misc.StringSpan key) { }
+        public static bool TryGet(in Broiler.JavaScript.Ast.Misc.StringSpan key, out Broiler.JavaScript.Storage.KeyString result) { }
+    }
+    public enum KeyType
+    {
+        Empty = 0,
+        UInt = 1,
+        String = 2,
+        Symbol = 3,
+    }
+    public struct PropertySequence
+    {
+        public uint Head { get; }
+        public bool IsEmpty { get; }
+        public static Broiler.JavaScript.Storage.JSErrorFactory? TypeErrorFactory { get; set; }
+        public Broiler.JavaScript.Storage.PropertySequence.PropertyEnumerator GetEnumerator(bool showEnumerableOnly = true) { }
+        public Broiler.JavaScript.Storage.SAUint32Map<>& GetMap() { }
+        public Broiler.JavaScript.Storage.JSProperty& GetValue(uint key) { }
+        public bool HasKey(uint key) { }
+        public Broiler.JavaScript.Storage.JSProperty& Put(uint key) { }
+        public void Put(in Broiler.JavaScript.Storage.KeyString key, Broiler.JavaScript.Ast.Misc.IPropertyValue value, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 25) { }
+        public void Put(uint key, Broiler.JavaScript.Ast.Misc.IPropertyValue value, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 25) { }
+        public void Put(in Broiler.JavaScript.Storage.KeyString key, Broiler.JavaScript.Ast.Misc.IPropertyAccessor getter, Broiler.JavaScript.Ast.Misc.IPropertyAccessor setter, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 26) { }
+        public bool RemoveAt(uint key) { }
+        public bool TryGetValue(uint key, out Broiler.JavaScript.Storage.JSProperty obj) { }
+        public void Update(Broiler.JavaScript.Storage.Updater<uint, Broiler.JavaScript.Storage.JSProperty> func) { }
+        public struct PropertyEnumerator
+        {
+            public PropertyEnumerator(Broiler.JavaScript.Storage.PropertySequence sequence, bool showEnumerableOnly) { }
+            public bool MoveNext(out Broiler.JavaScript.Storage.JSProperty property) { }
+            public bool MoveNext(out Broiler.JavaScript.Storage.KeyString key, out Broiler.JavaScript.Storage.JSProperty property) { }
+            public bool MoveNextKey(out Broiler.JavaScript.Storage.KeyString key) { }
+        }
+    }
+    public static class PropertyStorageMetrics
+    {
+        public const int MaxTrackedGroups = 64;
+        public static bool Enabled;
+        public static System.Func<object, bool> IsNumericValue;
+        public static long DenseNumericReads { get; }
+        public static long DenseNumericWrites { get; }
+        public static long DenseReads { get; }
+        public static long DenseWrites { get; }
+        public static long ResetStraddlingMaps { get; }
+        public static Broiler.JavaScript.Storage.PropertyStorageMetrics.RecordingScope Enable() { }
+        public static long[] HistogramFor(System.Type valueType) { }
+        public static void RecordGroupAllocation(long[] histogram, int groupsAfter, int nodesCopiedByResize) { }
+        public static void Reset() { }
+        public static Broiler.JavaScript.Storage.PropertyStorageSnapshot Snapshot() { }
+        public readonly struct RecordingScope : System.IDisposable
+        {
+            public void Dispose() { }
+        }
+    }
+    public readonly struct PropertyStorageSnapshot : System.IEquatable<Broiler.JavaScript.Storage.PropertyStorageSnapshot>
+    {
+        public PropertyStorageSnapshot(long GroupAllocations, long BackingArrayResizes, long NodesCopiedByResizes, System.Collections.Generic.IReadOnlyDictionary<string, long[]> FinalGroupCountsByValueType) { }
+        public long BackingArrayResizes { get; init; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, long[]> FinalGroupCountsByValueType { get; init; }
+        public long GroupAllocations { get; init; }
+        public long NodesCopiedByResizes { get; init; }
+    }
+    public struct SAUint32Map<T>
+    {
+        public const int NodeBlock = 4;
+        public System.Collections.Generic.IEnumerable<Broiler.JavaScript.Storage.SAUint32Map<T>.KeyValue> All { get; }
+        public int Capacity { get; }
+        public int Count { get; }
+        public bool IsNull { get; }
+        public T this[uint index] { get; }
+        public int UsedNodeCount { get; }
+        public static int NodeSizeBytes { get; }
+        public Broiler.JavaScript.Storage.SAUint32Map<T>.ValueEnumerable AllValues() { }
+        public T& GetRefOrDefault(uint key, ref T def) { }
+        public bool HasKey(uint key) { }
+        public T& Put(uint key) { }
+        public bool RemoveAt(uint key) { }
+        public void Resize(int size) { }
+        public void Save(uint key, T value) { }
+        public bool TryGetValue(uint key, out T value) { }
+        public bool TryRemove(uint key, out T value) { }
+        [System.Diagnostics.DebuggerDisplay("{Key}: {Value}")]
+        public struct KeyValue
+        {
+            public uint Key;
+            public T Value;
+        }
+        public readonly struct ValueEnumerable : System.Collections.Generic.IEnumerable<System.ValueTuple<uint, T>>, System.Collections.IEnumerable
+        {
+            public Broiler.JavaScript.Storage.SAUint32Map<T>.ValueEnumerator GetEnumerator() { }
+        }
+        public struct ValueEnumerator : System.Collections.Generic.IEnumerator<System.ValueTuple<uint, T>>, System.Collections.IEnumerator, System.IDisposable
+        {
+            [System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                    "Key",
+                    "Value"})]
+            public System.ValueTuple<uint, T> Current { get; }
+            public void Dispose() { }
+            public bool MoveNext() { }
+            public void Reset() { }
+        }
+    }
+    public class StringArray
+    {
+        public StringArray() { }
+        public Broiler.JavaScript.ExpressionCompiler.Core.Sequence<Broiler.JavaScript.Ast.Misc.StringSpan> List { get; }
+        public uint GetOrAdd(in Broiler.JavaScript.Ast.Misc.StringSpan code) { }
+    }
+    public struct StringMap<T>
+    {
+        public bool IsNull { get; }
+        [set: System.Obsolete("Use Put")]
+        public T this[Broiler.JavaScript.Ast.Misc.StringSpan& index] { get; set; }
+        [return: System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "Key",
+                "Value"})]
+        public System.Collections.Generic.IEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, T>> AllValues() { }
+        public bool HasKey(in Broiler.JavaScript.Ast.Misc.StringSpan key) { }
+        public T& Put(in Broiler.JavaScript.Storage.HashedString index) { }
+        public bool RemoveAt(in Broiler.JavaScript.Ast.Misc.StringSpan key) { }
+        public void Save(in Broiler.JavaScript.Storage.HashedString key, T value) { }
+        public bool TryGetValue(in Broiler.JavaScript.Ast.Misc.StringSpan key, out T value) { }
+        public bool TryGetValue(in Broiler.JavaScript.Storage.HashedString key, out T value) { }
+        public bool TryRemove(in Broiler.JavaScript.Ast.Misc.StringSpan key, out T value) { }
+    }
+    public delegate void Updater<TKey, TValue>(TKey key, ref TValue value);
+    public readonly struct VirtualArray
+    {
+        public readonly int Length;
+        public readonly int Offset;
+        public VirtualArray(int offset, int length) { }
+        public bool IsEmpty { get; }
+    }
+    public struct VirtualMemory<T>
+    {
+        public VirtualMemory() { }
+        public int Capacity { get; }
+        public int Count { get; }
+        public int HighWaterMark { get; }
+        public bool IsEmpty { get; }
+        public T& this[Broiler.JavaScript.Storage.VirtualArray a, int index] { get; }
+        public int UsedCount { get; }
+        public Broiler.JavaScript.Storage.VirtualArray Allocate(int length) { }
+        [System.ComponentModel.Browsable(false)]
+        public T& GetAt(int index) { }
+        public void SetCapacity(int max) { }
+    }
+}

@@ -1,0 +1,3 @@
+  Determining projects to restore...
+  Restored /tmp/broiler-feed-check-be00f080-518c-4d64-b04c-446415d28510/Consumer.csproj (in 1.38 sec).
+Consumer restore verified 20 packages against nuget.org.

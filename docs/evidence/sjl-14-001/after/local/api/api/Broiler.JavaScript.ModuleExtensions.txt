@@ -1,0 +1,17 @@
+namespace Broiler.JavaScript.ModuleExtensions
+{
+    public static class JSModuleContextExtension
+    {
+        public static void CreateModule(this Broiler.JavaScript.Modules.JSModuleContext context, string moduleName, System.Action<Broiler.JavaScript.ModuleExtensions.ModuleBuilder> builder) { }
+        public static Broiler.JavaScript.Runtime.JSValue ImportModule(this Broiler.JavaScript.Modules.JSModuleContext context, in Broiler.JavaScript.Storage.KeyString name) { }
+    }
+    public class ModuleBuilder
+    {
+        public ModuleBuilder(string moduleName) { }
+        public void AddModuleToContext(Broiler.JavaScript.Modules.JSModuleContext context) { }
+        public Broiler.JavaScript.ModuleExtensions.ModuleBuilder ExportFunction(string name, Broiler.JavaScript.Runtime.JSFunctionDelegate func) { }
+        public Broiler.JavaScript.ModuleExtensions.ModuleBuilder ExportType(System.Type type, string? name = null) { }
+        public Broiler.JavaScript.ModuleExtensions.ModuleBuilder ExportType<T>(string? name = null) { }
+        public Broiler.JavaScript.ModuleExtensions.ModuleBuilder ExportValue(string name, object value) { }
+    }
+}

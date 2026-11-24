@@ -1,0 +1,4 @@
+planted T000001 strict P
+planted T000741 strict K
+rows 213926; differences 2: T000001 strict P, T000741 strict K
+control reported

@@ -1,0 +1,9 @@
+  Determining projects to restore...
+  Restored /home/user/js-w2after-build/83a9bd82/obsolete/docs/evidence/sjl-14-001/tools/obsolete-reader/obsolete-reader.csproj (in 296 ms).
+  obsolete-reader -> /home/user/js-w2after-build/83a9bd82/art-obsolete/or/bin/obsolete-reader/release/obsolete-reader.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.45

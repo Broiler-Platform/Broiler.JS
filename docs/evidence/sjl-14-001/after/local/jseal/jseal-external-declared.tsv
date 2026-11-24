@@ -1,0 +1,3 @@
+Broiler.Regex	0.1.0-preview.6	Broiler.JavaScript.BuiltIns.0.1.0-preview.1402.nupkg,Broiler.JavaScript.Expressions.0.1.0-preview.1402.nupkg,Broiler.JavaScript.Parser.0.1.0-preview.1402.nupkg,Broiler.JavaScript.Portable.Compiler.0.1.0-preview.1402.nupkg
+Broiler.Unicode.Algorithms	0.1.0-preview.6	Broiler.ECMAScript.Frontend.0.1.0-preview.12.nupkg,Broiler.ECMAScript.Intl.0.1.0-preview.12.nupkg,Broiler.JavaScript.Expressions.0.1.0-preview.1402.nupkg
+Broiler.Unicode.Segmentation	0.1.0-preview.6	Broiler.JavaScript.BuiltIns.0.1.0-preview.1402.nupkg

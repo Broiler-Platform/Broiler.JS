@@ -1,0 +1,8 @@
+# Bundle sjl-14-001's after/local/: the after commit's local runs of parts D, E, F, G, H, J and K, retained as written
+# (logs, reports, machine records) and each named by its SHA-256 in hashes.txt, so they are checked out exactly as
+# committed (no end-of-line conversion), and git's whitespace checks skip them. Added 2026-11-24.
+* -text -whitespace
+# The two files over 2 MB the after comparisons read, kept whole here, are binary to git (no diff, merge or
+# end-of-line conversion), as base/local/ marks their counterparts.
+partd/parse-corpus-d1.tsv.gz binary
+html/htmlbridge/trx/htmlbridge.trx binary

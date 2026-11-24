@@ -1,0 +1,4 @@
+bfe1111c86085d1824f53dfbe487c198cc49d0c1e0777f9156317272bfe9e475  /home/user/js-w2after-build/83a9bd82/art-obsolete/or/bin/obsolete-reader/release/obsolete-reader.dll
+bfe1111c86085d1824f53dfbe487c198cc49d0c1e0777f9156317272bfe9e475  /home/user/js-w2after-build/83a9bd82/art-obsolete/or/obj/obsolete-reader/release/obsolete-reader.dll
+d9d885146e24fa9130586e10f36a942fa1f08456c9bd2acf06c3e9beb38bf0b4  /home/user/js-w2after-build/83a9bd82/art-obsolete/or/obj/obsolete-reader/release/ref/obsolete-reader.dll
+d9d885146e24fa9130586e10f36a942fa1f08456c9bd2acf06c3e9beb38bf0b4  /home/user/js-w2after-build/83a9bd82/art-obsolete/or/obj/obsolete-reader/release/refint/obsolete-reader.dll

@@ -1,0 +1,12 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+Project 'Broiler.JavaScript.Portable.Compiler' has the following package references
+   [net10.0]: 
+   Top-level Package                                Requested         Resolved       
+   > Broiler.Regex                                  0.1.0-preview.6   0.1.0-preview.6
+   > Microsoft.CodeAnalysis.BannedApiAnalyzers      5.6.0             5.6.0          
+   > Microsoft.Net.Compilers.Toolset                5.12.0            5.12.0         
+
+   Transitive Package                Resolved       
+   > Broiler.Unicode.Algorithms      0.1.0-preview.6
+

@@ -1,0 +1,14 @@
+# The after commit's SharedSyntaxBridge.Request takes a third parameter, bool retainTokens = false
+# (Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs); reflection fills no optional parameter, so the
+# aid passes false, the value the bridge's own Parse passes. Nothing else is changed.
+--- a/docs/evidence/sjl-14-001/base/part-c/scripts/bridge-codes/Program.cs
++++ b/docs/evidence/sjl-14-001/base/part-c/scripts/bridge-codes/Program.cs
+@@ -30,7 +30,7 @@
+             var composed = variant == "strict" ? manifest.StrictPrologue + source : source;
+             var ps = request.GetParameters();
+             var span = Activator.CreateInstance(ps[0].ParameterType.GetElementType()!, composed)!;
+-            var req = (ParseRequest)request.Invoke(null, [span, variant == "module" ? module : script])!;
++            var req = (ParseRequest)request.Invoke(null, [span, variant == "module" ? module : script, false])!;
+             var result = SyntaxParser.Parse(req);
+             lines.Add(string.Join('\t', row.Id, variant, result.Outcome.ToString(),
+                 string.Join(';', result.Diagnostics.Select(d => d.Code + ":" + d.MessageId))));

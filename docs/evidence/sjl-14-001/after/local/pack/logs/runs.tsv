@@ -1,0 +1,4 @@
+pack-engine	rc=0	wall=180.6s maxrss=330MB	started=2026-11-23T21:50:39Z	ended=2026-11-23T21:53:40Z
+pack-shared	rc=0	wall=18.2s maxrss=283MB	started=2026-11-23T21:53:40Z	ended=2026-11-23T21:53:58Z
+verify-feed-engine	rc=0	wall=3.1s maxrss=194MB	started=2026-11-23T21:53:58Z	ended=2026-11-23T21:54:01Z
+verify-feed-shared	rc=0	wall=2.6s maxrss=176MB	started=2026-11-23T21:54:01Z	ended=2026-11-23T21:54:03Z

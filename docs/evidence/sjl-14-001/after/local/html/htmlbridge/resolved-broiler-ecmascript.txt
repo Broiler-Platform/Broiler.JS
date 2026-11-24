@@ -1,0 +1,3 @@
+broiler.ecmascript.algorithms/0.1.0-preview.12
+broiler.ecmascript.frontend/0.1.0-preview.12
+broiler.ecmascript.intl/0.1.0-preview.12

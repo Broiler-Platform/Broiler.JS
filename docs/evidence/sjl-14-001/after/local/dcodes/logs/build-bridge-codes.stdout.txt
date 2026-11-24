@@ -1,0 +1,24 @@
+  Determining projects to restore...
+  Restored /home/user/js-w2after-build/83a9bd82/dcodes/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 376 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/dcodes/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj (in 377 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/bridge-codes/bridge-codes.csproj (in 377 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/dcodes/Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj (in 377 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/dcodes/Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj (in 3 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/dcodes/Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj (in 7 ms).
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2after-build/83a9bd82/art-dcodes/codes/bin/Broiler.ECMAScript.Algorithms/release/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2after-build/83a9bd82/art-dcodes/codes/bin/Broiler.ECMAScript.Frontend/release/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2after-build/83a9bd82/art-dcodes/codes/bin/Broiler.JavaScript.Expressions/release/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2after-build/83a9bd82/art-dcodes/codes/bin/Broiler.JavaScript.Ast/release/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2after-build/83a9bd82/art-dcodes/codes/bin/Broiler.JavaScript.Parser/release/Broiler.JavaScript.Parser.dll
+/home/user/js-w2after-build/83a9bd82/bridge-codes/Program.cs(16,21): warning BJS0002: 'FastParser' is obsolete: 'Broiler.JavaScript.Parser is a facade over the shared syntax library (Broiler.ECMAScript.Frontend; parse with Broiler.ECMAScript.Syntax.SyntaxParser) since milestone SJL-14, and is removed in version 1.0.0.' [/home/user/js-w2after-build/83a9bd82/bridge-codes/bridge-codes.csproj]
+/home/user/js-w2after-build/83a9bd82/bridge-codes/Program.cs(17,22): warning BJS0002: 'FastParser' is obsolete: 'Broiler.JavaScript.Parser is a facade over the shared syntax library (Broiler.ECMAScript.Frontend; parse with Broiler.ECMAScript.Syntax.SyntaxParser) since milestone SJL-14, and is removed in version 1.0.0.' [/home/user/js-w2after-build/83a9bd82/bridge-codes/bridge-codes.csproj]
+  bridge-codes -> /home/user/js-w2after-build/83a9bd82/art-dcodes/codes/bin/bridge-codes/release/bridge-codes.dll
+
+Build succeeded.
+
+/home/user/js-w2after-build/83a9bd82/bridge-codes/Program.cs(16,21): warning BJS0002: 'FastParser' is obsolete: 'Broiler.JavaScript.Parser is a facade over the shared syntax library (Broiler.ECMAScript.Frontend; parse with Broiler.ECMAScript.Syntax.SyntaxParser) since milestone SJL-14, and is removed in version 1.0.0.' [/home/user/js-w2after-build/83a9bd82/bridge-codes/bridge-codes.csproj]
+/home/user/js-w2after-build/83a9bd82/bridge-codes/Program.cs(17,22): warning BJS0002: 'FastParser' is obsolete: 'Broiler.JavaScript.Parser is a facade over the shared syntax library (Broiler.ECMAScript.Frontend; parse with Broiler.ECMAScript.Syntax.SyntaxParser) since milestone SJL-14, and is removed in version 1.0.0.' [/home/user/js-w2after-build/83a9bd82/bridge-codes/bridge-codes.csproj]
+    2 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:29.85

@@ -1,0 +1,7 @@
+feed: 24 packages copied from /home/user/js-w2after-build/83a9bd82/feed/engine, /home/user/js-w2after-build/83a9bd82/feed/shared
+control: removed Broiler.ECMAScript.Frontend.0.1.0-preview.12.nupkg from the feed
+  Determining projects to restore...
+/tmp/broiler-pristine-consumer-a65sedjh/consumer/Consumer.csproj : error NU1101: Unable to find package Broiler.ECMAScript.Frontend. No packages exist with this id in source(s): phase1-local. PackageSourceMapping is enabled, the following source(s) were not considered: nuget.org.
+  Failed to restore /tmp/broiler-pristine-consumer-a65sedjh/consumer/Consumer.csproj (in 1.18 sec).
+
+control: the restore failed with the missing-package error for Broiler.ECMAScript.Frontend, as expected

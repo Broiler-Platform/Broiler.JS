@@ -1,0 +1,1008 @@
+namespace Broiler.ECMAScript.Semantics
+{
+    public enum BindingKind
+    {
+        Var = 0,
+        Let = 1,
+        Const = 2,
+        Using = 3,
+        AwaitUsing = 4,
+        Function = 5,
+        Class = 6,
+        Import = 7,
+        CatchParameter = 8,
+        ExportDefault = 9,
+    }
+    public sealed class Declaration
+    {
+        public bool IsBlockFunction { get; }
+        public bool IsIfClauseFunction { get; }
+        public bool IsLexical { get; }
+        public Broiler.ECMAScript.Semantics.BindingKind Kind { get; }
+        public string Name { get; }
+        public Broiler.ECMAScript.Syntax.SyntaxNode Node { get; }
+    }
+    public sealed class DeclarationTables
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Semantics.FunctionFacts> Functions { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Semantics.Scope> Scopes { get; }
+    }
+    public sealed class FunctionFacts
+    {
+        public bool IsStrict { get; }
+        public Broiler.ECMAScript.Syntax.SyntaxNode Node { get; }
+        public System.Collections.Generic.IReadOnlyList<string> ParameterNames { get; }
+    }
+    public sealed class Scope
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Semantics.Declaration> Declarations { get; }
+        public Broiler.ECMAScript.Semantics.ScopeKind Kind { get; }
+        public Broiler.ECMAScript.Syntax.SyntaxNode Node { get; }
+    }
+    public enum ScopeKind
+    {
+        Script = 0,
+        Module = 1,
+        Function = 2,
+        Block = 3,
+        Switch = 4,
+        Catch = 5,
+        For = 6,
+        StaticBlock = 7,
+    }
+}
+namespace Broiler.ECMAScript.Syntax
+{
+    public sealed class ArrayLiteral : Broiler.ECMAScript.Syntax.Expression
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Expression?> Elements { get; }
+        public bool TrailingComma { get; }
+    }
+    public sealed class ArrayPattern : Broiler.ECMAScript.Syntax.Pattern
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Pattern?> Elements { get; }
+        public bool TrailingComma { get; }
+    }
+    public sealed class ArrowFunctionExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.FunctionNode Function { get; }
+    }
+    public sealed class AssignmentExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.AssignmentOperator Operator { get; }
+        public Broiler.ECMAScript.Syntax.SyntaxNode Target { get; }
+        public Broiler.ECMAScript.Syntax.Expression Value { get; }
+    }
+    public enum AssignmentOperator
+    {
+        Assign = 0,
+        MultiplyAssign = 1,
+        DivideAssign = 2,
+        RemainderAssign = 3,
+        AddAssign = 4,
+        SubtractAssign = 5,
+        LeftShiftAssign = 6,
+        SignedRightShiftAssign = 7,
+        UnsignedRightShiftAssign = 8,
+        BitwiseAndAssign = 9,
+        BitwiseXorAssign = 10,
+        BitwiseOrAssign = 11,
+        ExponentAssign = 12,
+        AndAssign = 13,
+        OrAssign = 14,
+        CoalesceAssign = 15,
+    }
+    public sealed class AssignmentPattern : Broiler.ECMAScript.Syntax.Pattern
+    {
+        public Broiler.ECMAScript.Syntax.Expression Initializer { get; }
+        public Broiler.ECMAScript.Syntax.Pattern Target { get; }
+    }
+    public sealed class AwaitExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.Expression Argument { get; }
+    }
+    public sealed class BinaryExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.Expression Left { get; }
+        public Broiler.ECMAScript.Syntax.BinaryOperator Operator { get; }
+        public Broiler.ECMAScript.Syntax.Expression Right { get; }
+    }
+    public enum BinaryOperator
+    {
+        Exponent = 0,
+        Multiply = 1,
+        Divide = 2,
+        Remainder = 3,
+        Add = 4,
+        Subtract = 5,
+        LeftShift = 6,
+        SignedRightShift = 7,
+        UnsignedRightShift = 8,
+        LessThan = 9,
+        GreaterThan = 10,
+        LessThanOrEqual = 11,
+        GreaterThanOrEqual = 12,
+        Instanceof = 13,
+        In = 14,
+        Equal = 15,
+        NotEqual = 16,
+        StrictEqual = 17,
+        StrictNotEqual = 18,
+        BitwiseAnd = 19,
+        BitwiseXor = 20,
+        BitwiseOr = 21,
+    }
+    public sealed class BindingIdentifier : Broiler.ECMAScript.Syntax.Pattern
+    {
+        public bool IsEscaped { get; }
+        public string Name { get; }
+    }
+    public sealed class BlockStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Statement> Body { get; }
+    }
+    public sealed class BooleanLiteral : Broiler.ECMAScript.Syntax.Expression
+    {
+        public bool Value { get; }
+    }
+    public sealed class BreakStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.IdentifierName? Label { get; }
+    }
+    public sealed class CallExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Expression> Arguments { get; }
+        public Broiler.ECMAScript.Syntax.Expression Callee { get; }
+        public bool IsOptional { get; }
+        public bool TrailingComma { get; }
+    }
+    public sealed class CatchClause : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public Broiler.ECMAScript.Syntax.BlockStatement Body { get; }
+        public Broiler.ECMAScript.Syntax.Pattern? Parameter { get; }
+    }
+    public sealed class ChainExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.Expression Expression { get; }
+    }
+    public sealed class ClassDeclaration : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.ClassNode Class { get; }
+    }
+    public sealed class ClassExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.ClassNode Class { get; }
+    }
+    public sealed class ClassNode : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Decorator> Decorators { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.SyntaxNode> Elements { get; }
+        public Broiler.ECMAScript.Syntax.Expression? Heritage { get; }
+        public Broiler.ECMAScript.Syntax.BindingIdentifier? Name { get; }
+    }
+    public sealed class ComputedPropertyName : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public Broiler.ECMAScript.Syntax.Expression Expression { get; }
+    }
+    public sealed class ConditionalExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.Expression Alternate { get; }
+        public Broiler.ECMAScript.Syntax.Expression Consequent { get; }
+        public Broiler.ECMAScript.Syntax.Expression Test { get; }
+    }
+    public sealed class ContinueStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.IdentifierName? Label { get; }
+    }
+    public sealed class DebuggerStatement : Broiler.ECMAScript.Syntax.Statement { }
+    public enum DeclarationKind
+    {
+        Var = 0,
+        Let = 1,
+        Const = 2,
+        Using = 3,
+        AwaitUsing = 4,
+    }
+    public sealed class Decorator : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public Broiler.ECMAScript.Syntax.Expression Expression { get; }
+    }
+    public enum DiagnosticPhase
+    {
+        Tokenizer = 0,
+        Parser = 1,
+        Semantics = 2,
+    }
+    public sealed class DoWhileStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.Statement Body { get; }
+        public Broiler.ECMAScript.Syntax.Expression Test { get; }
+    }
+    public enum DynamicFunctionKind
+    {
+        Normal = 0,
+        Generator = 1,
+        Async = 2,
+        AsyncGenerator = 3,
+    }
+    public sealed class EmptyStatement : Broiler.ECMAScript.Syntax.Statement { }
+    public enum ErrorReporting
+    {
+        FirstError = 0,
+        AllErrors = 1,
+    }
+    public sealed class ExportAllDeclaration : Broiler.ECMAScript.Syntax.Statement
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.ImportAttribute>? Attributes { get; }
+        public bool AttributesTrailingComma { get; }
+        public Broiler.ECMAScript.Syntax.SyntaxNode? Exported { get; }
+        public Broiler.ECMAScript.Syntax.StringLiteral Source { get; }
+    }
+    public sealed class ExportDefaultDeclaration : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.SyntaxNode Declaration { get; }
+    }
+    public sealed class ExportNamedDeclaration : Broiler.ECMAScript.Syntax.Statement
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.ImportAttribute>? Attributes { get; }
+        public bool AttributesTrailingComma { get; }
+        public Broiler.ECMAScript.Syntax.Statement? Declaration { get; }
+        public Broiler.ECMAScript.Syntax.StringLiteral? Source { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.ExportSpecifier> Specifiers { get; }
+        public bool SpecifiersTrailingComma { get; }
+    }
+    public sealed class ExportSpecifier : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public Broiler.ECMAScript.Syntax.SyntaxNode? Exported { get; }
+        public Broiler.ECMAScript.Syntax.SyntaxNode Local { get; }
+    }
+    public abstract class Expression : Broiler.ECMAScript.Syntax.SyntaxNode { }
+    public sealed class ExpressionStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public string? Directive { get; }
+        public Broiler.ECMAScript.Syntax.Expression Expression { get; }
+    }
+    public sealed class FieldDefinition : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Decorator> Decorators { get; }
+        public bool IsAccessor { get; }
+        public bool IsStatic { get; }
+        public Broiler.ECMAScript.Syntax.SyntaxNode Key { get; }
+        public Broiler.ECMAScript.Syntax.Expression? Value { get; }
+    }
+    public sealed class ForInStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.Statement Body { get; }
+        public Broiler.ECMAScript.Syntax.SyntaxNode Left { get; }
+        public Broiler.ECMAScript.Syntax.Expression Right { get; }
+    }
+    public sealed class ForOfStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.Statement Body { get; }
+        public bool IsAwait { get; }
+        public Broiler.ECMAScript.Syntax.SyntaxNode Left { get; }
+        public Broiler.ECMAScript.Syntax.Expression Right { get; }
+    }
+    public sealed class ForStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.Statement Body { get; }
+        public Broiler.ECMAScript.Syntax.SyntaxNode? Init { get; }
+        public Broiler.ECMAScript.Syntax.Expression? Test { get; }
+        public Broiler.ECMAScript.Syntax.Expression? Update { get; }
+    }
+    public sealed class FunctionDeclaration : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.FunctionNode Function { get; }
+    }
+    public sealed class FunctionExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.FunctionNode Function { get; }
+    }
+    public sealed class FunctionNode : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Statement> Body { get; }
+        public Broiler.ECMAScript.Syntax.Expression? ExpressionBody { get; }
+        public bool IsArrow { get; }
+        public bool IsAsync { get; }
+        public bool IsGenerator { get; }
+        public Broiler.ECMAScript.Syntax.BindingIdentifier? Name { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Pattern> Parameters { get; }
+        public bool ParametersTrailingComma { get; }
+    }
+    public interface IRegularExpressionValidator
+    {
+        Broiler.ECMAScript.Syntax.RegularExpressionVerdict Validate(string pattern, string flags);
+    }
+    public sealed class Identifier : Broiler.ECMAScript.Syntax.Expression
+    {
+        public bool IsEscaped { get; }
+        public string Name { get; }
+    }
+    public sealed class IdentifierName : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public bool IsEscaped { get; }
+        public string Name { get; }
+    }
+    public sealed class IfStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.Statement? Alternate { get; }
+        public Broiler.ECMAScript.Syntax.Statement Consequent { get; }
+        public Broiler.ECMAScript.Syntax.Expression Test { get; }
+    }
+    public sealed class ImportAttribute : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public Broiler.ECMAScript.Syntax.SyntaxNode Key { get; }
+        public Broiler.ECMAScript.Syntax.StringLiteral Value { get; }
+    }
+    public sealed class ImportCall : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.Expression? Options { get; }
+        public Broiler.ECMAScript.Syntax.ImportPhase Phase { get; }
+        public Broiler.ECMAScript.Syntax.Expression Source { get; }
+        public bool TrailingComma { get; }
+    }
+    public sealed class ImportDeclaration : Broiler.ECMAScript.Syntax.Statement
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.ImportAttribute>? Attributes { get; }
+        public bool AttributesTrailingComma { get; }
+        public Broiler.ECMAScript.Syntax.BindingIdentifier? DefaultBinding { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.ImportSpecifier>? NamedImports { get; }
+        public bool NamedImportsTrailingComma { get; }
+        public Broiler.ECMAScript.Syntax.BindingIdentifier? NamespaceBinding { get; }
+        public Broiler.ECMAScript.Syntax.ImportPhase Phase { get; }
+        public Broiler.ECMAScript.Syntax.StringLiteral Source { get; }
+    }
+    public enum ImportPhase
+    {
+        Evaluation = 0,
+        Source = 1,
+        Defer = 2,
+    }
+    public sealed class ImportSpecifier : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public Broiler.ECMAScript.Syntax.SyntaxNode? Imported { get; }
+        public Broiler.ECMAScript.Syntax.BindingIdentifier Local { get; }
+    }
+    public sealed class InheritedContext
+    {
+        public InheritedContext() { }
+        public bool InClassFieldInitializer { get; init; }
+        public bool InDerivedConstructor { get; init; }
+        public bool InFunction { get; init; }
+        public bool InMethod { get; init; }
+        public System.Collections.Generic.IReadOnlyList<string>? VisiblePrivateNames { get; init; }
+        public static Broiler.ECMAScript.Syntax.InheritedContext TopLevel { get; }
+    }
+    public sealed class LabelledStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.Statement Body { get; }
+        public Broiler.ECMAScript.Syntax.IdentifierName Label { get; }
+    }
+    [System.Flags]
+    public enum LexerExtensions
+    {
+        None = 0,
+        DecimalSuffix = 1,
+    }
+    public sealed class LogicalExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.Expression Left { get; }
+        public Broiler.ECMAScript.Syntax.LogicalOperator Operator { get; }
+        public Broiler.ECMAScript.Syntax.Expression Right { get; }
+    }
+    public enum LogicalOperator
+    {
+        And = 0,
+        Or = 1,
+        Coalesce = 2,
+    }
+    public sealed class MemberExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public bool IsComputed { get; }
+        public bool IsOptional { get; }
+        public Broiler.ECMAScript.Syntax.Expression Object { get; }
+        public Broiler.ECMAScript.Syntax.SyntaxNode Property { get; }
+    }
+    public sealed class MetaProperty : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.IdentifierName Meta { get; }
+        public Broiler.ECMAScript.Syntax.IdentifierName Property { get; }
+    }
+    public sealed class MethodDefinition : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Decorator> Decorators { get; }
+        public Broiler.ECMAScript.Syntax.FunctionNode Function { get; }
+        public bool IsStatic { get; }
+        public Broiler.ECMAScript.Syntax.SyntaxNode Key { get; }
+        public Broiler.ECMAScript.Syntax.MethodKind MethodKind { get; }
+    }
+    public enum MethodKind
+    {
+        Method = 0,
+        Get = 1,
+        Set = 2,
+    }
+    public sealed class NewExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Expression> Arguments { get; }
+        public Broiler.ECMAScript.Syntax.Expression Callee { get; }
+        public bool HasArgumentList { get; }
+        public bool TrailingComma { get; }
+    }
+    public sealed class NullLiteral : Broiler.ECMAScript.Syntax.Expression { }
+    public sealed class NumericLiteral : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.NumericLiteralFlags Flags { get; }
+        public string Text { get; }
+        public double Value { get; }
+    }
+    [System.Flags]
+    public enum NumericLiteralFlags
+    {
+        None = 0,
+        LegacyOctal = 1,
+        NonOctalDecimal = 2,
+        BigInt = 4,
+        DecimalSuffix = 8,
+    }
+    public sealed class ObjectLiteral : Broiler.ECMAScript.Syntax.Expression
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.SyntaxNode> Properties { get; }
+        public bool TrailingComma { get; }
+    }
+    public sealed class ObjectPattern : Broiler.ECMAScript.Syntax.Pattern
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.SyntaxNode> Properties { get; }
+        public bool TrailingComma { get; }
+    }
+    public sealed class ParenthesizedExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.Expression Expression { get; }
+    }
+    public enum ParseGoal
+    {
+        Script = 0,
+        Module = 1,
+        Eval = 2,
+        FormalParameters = 3,
+        FunctionBody = 4,
+    }
+    public sealed class ParseLimits
+    {
+        public const int MaximumSupportedNestingDepth = 512;
+        public const int MaximumTreeDepth = 10000;
+        public const int StackBytes = 16777216;
+        public ParseLimits() { }
+        public int DiagnosticCap { get; init; }
+        public Broiler.ECMAScript.DepthLimit NestingDepth { get; init; }
+        public Broiler.ECMAScript.Syntax.ErrorReporting Reporting { get; init; }
+        public static Broiler.ECMAScript.Syntax.ParseLimits Default { get; }
+    }
+    public enum ParseOutcome
+    {
+        Accepted = 0,
+        Refused = 1,
+        NotImplemented = 2,
+    }
+    public sealed class ParseRequest
+    {
+        public ParseRequest(Broiler.ECMAScript.Syntax.SourceText source, Broiler.ECMAScript.Syntax.ParseGoal goal, Broiler.Unicode.Algorithms.IUnicodeTables unicodeTables, Broiler.ECMAScript.Syntax.IRegularExpressionValidator regularExpressions) { }
+        public Broiler.ECMAScript.Syntax.InheritedContext? Context { get; init; }
+        public Broiler.ECMAScript.Syntax.LexerExtensions Extensions { get; init; }
+        public Broiler.ECMAScript.Syntax.DynamicFunctionKind FunctionKind { get; init; }
+        public Broiler.ECMAScript.Syntax.ParseGoal Goal { get; }
+        public Broiler.ECMAScript.Syntax.ParseLimits Limits { get; init; }
+        public Broiler.ECMAScript.WorkCharge? Meter { get; init; }
+        public Broiler.ECMAScript.Syntax.ProposalFlags Proposals { get; init; }
+        public Broiler.ECMAScript.Syntax.IRegularExpressionValidator RegularExpressions { get; }
+        public bool RetainTokens { get; init; }
+        public Broiler.ECMAScript.Syntax.SourceText Source { get; }
+        public Broiler.ECMAScript.Syntax.ParseSwitches Switches { get; init; }
+        public Broiler.Unicode.Algorithms.IUnicodeTables UnicodeTables { get; }
+    }
+    public sealed class ParseResult
+    {
+        public Broiler.ECMAScript.Semantics.DeclarationTables? Declarations { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.SyntaxDiagnostic> Diagnostics { get; }
+        public Broiler.ECMAScript.Syntax.ParseOutcome Outcome { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Token> Tokens { get; }
+        public Broiler.ECMAScript.Syntax.ProgramNode? Tree { get; }
+    }
+    public readonly struct ParseSwitches : System.IEquatable<Broiler.ECMAScript.Syntax.ParseSwitches>
+    {
+        public bool AnnexB { get; init; }
+        public bool ForcedStrict { get; init; }
+        public bool HtmlLikeComments { get; init; }
+        public bool TopLevelAwait { get; init; }
+        public static Broiler.ECMAScript.Syntax.ParseSwitches For(Broiler.ECMAScript.Syntax.ParseGoal goal) { }
+    }
+    public abstract class Pattern : Broiler.ECMAScript.Syntax.SyntaxNode { }
+    public sealed class PatternProperty : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public bool IsShorthand { get; }
+        public Broiler.ECMAScript.Syntax.SyntaxNode Key { get; }
+        public Broiler.ECMAScript.Syntax.Pattern Value { get; }
+    }
+    public sealed class PrivateIdentifier : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public bool IsEscaped { get; }
+        public string Name { get; }
+    }
+    public sealed class PrivateInExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.PrivateIdentifier Name { get; }
+        public Broiler.ECMAScript.Syntax.Expression Right { get; }
+    }
+    public sealed class ProgramNode : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Statement> Body { get; }
+        public Broiler.ECMAScript.Syntax.ParseGoal Goal { get; }
+        public bool HasTopLevelAwait { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Pattern> Parameters { get; }
+        public bool ParametersTrailingComma { get; }
+    }
+    public sealed class PropertyDefinition : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public Broiler.ECMAScript.Syntax.SyntaxNode Key { get; }
+        public Broiler.ECMAScript.Syntax.PropertyKind PropertyKind { get; }
+        public Broiler.ECMAScript.Syntax.Expression Value { get; }
+    }
+    public enum PropertyKind
+    {
+        Init = 0,
+        Shorthand = 1,
+        Method = 2,
+        Get = 3,
+        Set = 4,
+    }
+    [System.Flags]
+    public enum ProposalFlags
+    {
+        None = 0,
+        Decorators = 1,
+        AutoAccessors = 2,
+        ImportSourceDeclarations = 4,
+        ImportSourceCalls = 8,
+        ImportDeferDeclarations = 16,
+        ImportDeferCalls = 32,
+    }
+    public sealed class RegularExpressionLiteral : Broiler.ECMAScript.Syntax.Expression
+    {
+        public string Flags { get; }
+        public string Pattern { get; }
+    }
+    public enum RegularExpressionStatus
+    {
+        Valid = 0,
+        Invalid = 1,
+        LimitExceeded = 2,
+    }
+    public readonly struct RegularExpressionVerdict : System.IEquatable<Broiler.ECMAScript.Syntax.RegularExpressionVerdict>
+    {
+        public string? Argument { get; }
+        public int Code { get; }
+        public bool InFlags { get; }
+        public string? MessageId { get; }
+        public int Position { get; }
+        public Broiler.ECMAScript.Syntax.RegularExpressionStatus Status { get; }
+        public static Broiler.ECMAScript.Syntax.RegularExpressionVerdict Valid { get; }
+        public static Broiler.ECMAScript.Syntax.RegularExpressionVerdict Invalid(string messageId, string? argument, int code, int position, bool inFlags) { }
+        public static Broiler.ECMAScript.Syntax.RegularExpressionVerdict NestedTooDeep(string messageId, string? argument, int code, int position) { }
+    }
+    public sealed class RestElement : Broiler.ECMAScript.Syntax.Pattern
+    {
+        public Broiler.ECMAScript.Syntax.Pattern Argument { get; }
+    }
+    public sealed class ReturnStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.Expression? Argument { get; }
+    }
+    public sealed class SequenceExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Expression> Expressions { get; }
+    }
+    public readonly struct SourceSpan : System.IEquatable<Broiler.ECMAScript.Syntax.SourceSpan>
+    {
+        public SourceSpan(int offset, int length, int line, int column) { }
+        public int Column { get; }
+        public int Length { get; }
+        public int Line { get; }
+        public int Offset { get; }
+    }
+    public sealed class SourceText
+    {
+        public SourceText(string text, string name = "", int baseOffset = 0, int baseLine = 1, int baseColumn = 1) { }
+        public int BaseColumn { get; }
+        public int BaseLine { get; }
+        public int BaseOffset { get; }
+        public string Name { get; }
+        public string Text { get; }
+    }
+    public sealed class SpreadElement : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.Expression Argument { get; }
+    }
+    public abstract class Statement : Broiler.ECMAScript.Syntax.SyntaxNode { }
+    public sealed class StaticBlock : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Statement> Body { get; }
+    }
+    public sealed class StringLiteral : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.StringLiteralFlags Flags { get; }
+        public string Value { get; }
+    }
+    [System.Flags]
+    public enum StringLiteralFlags
+    {
+        None = 0,
+        LegacyOctalEscape = 1,
+        NonOctalDecimalEscape = 2,
+        HasEscape = 4,
+    }
+    public sealed class SuperExpression : Broiler.ECMAScript.Syntax.Expression { }
+    public sealed class SwitchCase : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Statement> Consequent { get; }
+        public Broiler.ECMAScript.Syntax.Expression? Test { get; }
+    }
+    public sealed class SwitchStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.SwitchCase> Cases { get; }
+        public Broiler.ECMAScript.Syntax.Expression Discriminant { get; }
+    }
+    public sealed class SyntaxDiagnostic
+    {
+        public SyntaxDiagnostic(string code, string messageId, System.Collections.Generic.IReadOnlyList<string> arguments, Broiler.ECMAScript.Syntax.DiagnosticPhase phase, Broiler.ECMAScript.Syntax.SourceSpan span, string sourceName) { }
+        public System.Collections.Generic.IReadOnlyList<string> Arguments { get; }
+        public string Code { get; }
+        public string MessageId { get; }
+        public Broiler.ECMAScript.Syntax.DiagnosticPhase Phase { get; }
+        public string SourceName { get; }
+        public Broiler.ECMAScript.Syntax.SourceSpan Span { get; }
+    }
+    public enum SyntaxKind
+    {
+        Program = 0,
+        Identifier = 1,
+        BindingIdentifier = 2,
+        IdentifierName = 3,
+        PrivateIdentifier = 4,
+        ThisExpression = 5,
+        SuperExpression = 6,
+        NullLiteral = 7,
+        BooleanLiteral = 8,
+        NumericLiteral = 9,
+        StringLiteral = 10,
+        RegularExpressionLiteral = 11,
+        TemplateLiteral = 12,
+        TemplateElement = 13,
+        TaggedTemplateExpression = 14,
+        ArrayLiteral = 15,
+        ObjectLiteral = 16,
+        PropertyDefinition = 17,
+        ComputedPropertyName = 18,
+        SpreadElement = 19,
+        ParenthesizedExpression = 20,
+        FunctionExpression = 21,
+        ArrowFunctionExpression = 22,
+        ClassExpression = 23,
+        MemberExpression = 24,
+        CallExpression = 25,
+        ChainExpression = 26,
+        NewExpression = 27,
+        MetaProperty = 28,
+        ImportCall = 29,
+        UpdateExpression = 30,
+        UnaryExpression = 31,
+        AwaitExpression = 32,
+        BinaryExpression = 33,
+        LogicalExpression = 34,
+        PrivateInExpression = 35,
+        ConditionalExpression = 36,
+        AssignmentExpression = 37,
+        SequenceExpression = 38,
+        YieldExpression = 39,
+        Decorator = 40,
+        ArrayPattern = 41,
+        ObjectPattern = 42,
+        PatternProperty = 43,
+        AssignmentPattern = 44,
+        RestElement = 45,
+        TargetPattern = 46,
+        Function = 47,
+        Class = 48,
+        MethodDefinition = 49,
+        FieldDefinition = 50,
+        StaticBlock = 51,
+        BlockStatement = 52,
+        VariableDeclaration = 53,
+        VariableDeclarator = 54,
+        EmptyStatement = 55,
+        ExpressionStatement = 56,
+        IfStatement = 57,
+        DoWhileStatement = 58,
+        WhileStatement = 59,
+        ForStatement = 60,
+        ForInStatement = 61,
+        ForOfStatement = 62,
+        ContinueStatement = 63,
+        BreakStatement = 64,
+        ReturnStatement = 65,
+        WithStatement = 66,
+        SwitchStatement = 67,
+        SwitchCase = 68,
+        LabelledStatement = 69,
+        ThrowStatement = 70,
+        TryStatement = 71,
+        CatchClause = 72,
+        DebuggerStatement = 73,
+        FunctionDeclaration = 74,
+        ClassDeclaration = 75,
+        ImportDeclaration = 76,
+        ImportSpecifier = 77,
+        ImportAttribute = 78,
+        ExportNamedDeclaration = 79,
+        ExportDefaultDeclaration = 80,
+        ExportAllDeclaration = 81,
+        ExportSpecifier = 82,
+    }
+    public abstract class SyntaxNode
+    {
+        public Broiler.ECMAScript.Syntax.SyntaxKind Kind { get; }
+        public Broiler.ECMAScript.Syntax.SourceSpan Span { get; }
+    }
+    public static class SyntaxParser
+    {
+        public static Broiler.ECMAScript.Syntax.ParseResult Parse(Broiler.ECMAScript.Syntax.ParseRequest request) { }
+    }
+    public sealed class TaggedTemplateExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.TemplateLiteral Quasi { get; }
+        public Broiler.ECMAScript.Syntax.Expression Tag { get; }
+    }
+    public sealed class TargetPattern : Broiler.ECMAScript.Syntax.Pattern
+    {
+        public Broiler.ECMAScript.Syntax.Expression Target { get; }
+    }
+    public sealed class TemplateElement : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public string? Cooked { get; }
+        public string Raw { get; }
+    }
+    public sealed class TemplateLiteral : Broiler.ECMAScript.Syntax.Expression
+    {
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.Expression> Expressions { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.TemplateElement> Quasis { get; }
+    }
+    public sealed class ThisExpression : Broiler.ECMAScript.Syntax.Expression { }
+    public sealed class ThrowStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.Expression Argument { get; }
+    }
+    public readonly struct Token
+    {
+        public int Column { get; }
+        public int End { get; }
+        public Broiler.ECMAScript.Syntax.TokenFlags Flags { get; }
+        public bool IsEscaped { get; }
+        public Broiler.ECMAScript.Syntax.TokenKind Kind { get; }
+        public int Length { get; }
+        public int Line { get; }
+        public bool NewLineBefore { get; }
+        public double Number { get; }
+        public string? Raw { get; }
+        public int Start { get; }
+        public string? Value { get; }
+        public Broiler.ECMAScript.Syntax.Word Word { get; }
+    }
+    [System.Flags]
+    public enum TokenFlags
+    {
+        None = 0,
+        NewLineBefore = 1,
+        Escaped = 2,
+        LegacyOctal = 4,
+        NonOctalDecimal = 8,
+        LegacyOctalEscape = 16,
+        NonOctalDecimalEscape = 32,
+        NotEscapeSequence = 64,
+        BigInt = 128,
+        DecimalSuffix = 256,
+        StringHasEscape = 512,
+    }
+    public enum TokenKind
+    {
+        EndOfInput = 0,
+        Invalid = 1,
+        IdentifierName = 2,
+        PrivateIdentifier = 3,
+        NumericLiteral = 4,
+        StringLiteral = 5,
+        NoSubstitutionTemplate = 6,
+        TemplateHead = 7,
+        TemplateMiddle = 8,
+        TemplateTail = 9,
+        RegularExpressionLiteral = 10,
+        LeftBrace = 11,
+        RightBrace = 12,
+        LeftParen = 13,
+        RightParen = 14,
+        LeftBracket = 15,
+        RightBracket = 16,
+        Dot = 17,
+        Ellipsis = 18,
+        Semicolon = 19,
+        Comma = 20,
+        LessThan = 21,
+        GreaterThan = 22,
+        LessThanEquals = 23,
+        GreaterThanEquals = 24,
+        EqualsEquals = 25,
+        NotEquals = 26,
+        EqualsEqualsEquals = 27,
+        NotEqualsEquals = 28,
+        Plus = 29,
+        Minus = 30,
+        Star = 31,
+        StarStar = 32,
+        Slash = 33,
+        Percent = 34,
+        PlusPlus = 35,
+        MinusMinus = 36,
+        LeftShift = 37,
+        RightShift = 38,
+        UnsignedRightShift = 39,
+        Ampersand = 40,
+        Bar = 41,
+        Caret = 42,
+        Bang = 43,
+        Tilde = 44,
+        AmpersandAmpersand = 45,
+        BarBar = 46,
+        QuestionQuestion = 47,
+        Question = 48,
+        QuestionDot = 49,
+        Colon = 50,
+        Equals = 51,
+        PlusEquals = 52,
+        MinusEquals = 53,
+        StarEquals = 54,
+        SlashEquals = 55,
+        PercentEquals = 56,
+        StarStarEquals = 57,
+        LeftShiftEquals = 58,
+        RightShiftEquals = 59,
+        UnsignedRightShiftEquals = 60,
+        AmpersandEquals = 61,
+        BarEquals = 62,
+        CaretEquals = 63,
+        AmpersandAmpersandEquals = 64,
+        BarBarEquals = 65,
+        QuestionQuestionEquals = 66,
+        Arrow = 67,
+        At = 68,
+    }
+    public sealed class TryStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.BlockStatement Block { get; }
+        public Broiler.ECMAScript.Syntax.BlockStatement? Finalizer { get; }
+        public Broiler.ECMAScript.Syntax.CatchClause? Handler { get; }
+    }
+    public sealed class UnaryExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.Expression Operand { get; }
+        public Broiler.ECMAScript.Syntax.UnaryOperator Operator { get; }
+    }
+    public enum UnaryOperator
+    {
+        Delete = 0,
+        Void = 1,
+        Typeof = 2,
+        Plus = 3,
+        Minus = 4,
+        BitwiseNot = 5,
+        LogicalNot = 6,
+    }
+    public sealed class UpdateExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public bool IsPrefix { get; }
+        public Broiler.ECMAScript.Syntax.Expression Operand { get; }
+        public Broiler.ECMAScript.Syntax.UpdateOperator Operator { get; }
+    }
+    public enum UpdateOperator
+    {
+        Increment = 0,
+        Decrement = 1,
+    }
+    public sealed class VariableDeclaration : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.DeclarationKind DeclarationKind { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.ECMAScript.Syntax.VariableDeclarator> Declarations { get; }
+    }
+    public sealed class VariableDeclarator : Broiler.ECMAScript.Syntax.SyntaxNode
+    {
+        public Broiler.ECMAScript.Syntax.Expression? Initializer { get; }
+        public Broiler.ECMAScript.Syntax.Pattern Target { get; }
+    }
+    public sealed class WhileStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.Statement Body { get; }
+        public Broiler.ECMAScript.Syntax.Expression Test { get; }
+    }
+    public sealed class WithStatement : Broiler.ECMAScript.Syntax.Statement
+    {
+        public Broiler.ECMAScript.Syntax.Statement Body { get; }
+        public Broiler.ECMAScript.Syntax.Expression Object { get; }
+    }
+    public enum Word
+    {
+        None = 0,
+        Await = 1,
+        Break = 2,
+        Case = 3,
+        Catch = 4,
+        Class = 5,
+        Const = 6,
+        Continue = 7,
+        Debugger = 8,
+        Default = 9,
+        Delete = 10,
+        Do = 11,
+        Else = 12,
+        Enum = 13,
+        Export = 14,
+        Extends = 15,
+        False = 16,
+        Finally = 17,
+        For = 18,
+        Function = 19,
+        If = 20,
+        Import = 21,
+        In = 22,
+        Instanceof = 23,
+        New = 24,
+        Null = 25,
+        Return = 26,
+        Super = 27,
+        Switch = 28,
+        This = 29,
+        Throw = 30,
+        True = 31,
+        Try = 32,
+        Typeof = 33,
+        Var = 34,
+        Void = 35,
+        While = 36,
+        With = 37,
+        Yield = 38,
+        Implements = 39,
+        Interface = 40,
+        Let = 41,
+        Package = 42,
+        Private = 43,
+        Protected = 44,
+        Public = 45,
+        Static = 46,
+        As = 47,
+        Async = 48,
+        From = 49,
+        Get = 50,
+        Meta = 51,
+        Of = 52,
+        Set = 53,
+        Target = 54,
+        Using = 55,
+        Accessor = 56,
+        Source = 57,
+        Defer = 58,
+        Constructor = 59,
+        Arguments = 60,
+        Eval = 61,
+    }
+    public sealed class YieldExpression : Broiler.ECMAScript.Syntax.Expression
+    {
+        public Broiler.ECMAScript.Syntax.Expression? Argument { get; }
+        public bool IsDelegate { get; }
+    }
+}

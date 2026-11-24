@@ -1,0 +1,950 @@
+namespace Broiler.JavaScript.Ast
+{
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstBlock : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.StringSpan>? AnnexBFunctionNames;
+        public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.StringSpan>? HoistingScope;
+        public bool IsSyntheticFunctionStatementBlock;
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Statements.AstStatement> Statements;
+        public AstBlock(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Statements.AstStatement> list) { }
+        protected AstBlock(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastNodeType type, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Statements.AstStatement> statements) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstClassProperty : Broiler.JavaScript.Ast.AstNode
+    {
+        public readonly bool Computed;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Init;
+        public readonly bool IsAutoAccessor;
+        public readonly bool IsPrivate;
+        public readonly bool IsStatic;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Key;
+        public readonly Broiler.JavaScript.Ast.AstPropertyKind Kind;
+        public readonly bool UsesAssign;
+        public readonly bool UsesColon;
+        public AstClassProperty(Broiler.JavaScript.Ast.Misc.FastToken begin, Broiler.JavaScript.Ast.Misc.FastToken last, Broiler.JavaScript.Ast.AstPropertyKind propertyKind, bool isPrivate, bool isStatic, Broiler.JavaScript.Ast.Expressions.AstExpression propertyName, bool computed, Broiler.JavaScript.Ast.Expressions.AstExpression init, bool usesColon = false, bool usesAssign = false, bool isAutoAccessor = false) { }
+        public Broiler.JavaScript.Ast.AstClassProperty Reduce(Broiler.JavaScript.Ast.Expressions.AstExpression key, Broiler.JavaScript.Ast.Expressions.AstExpression init) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public static class AstExpressionExtensions
+    {
+        public static Broiler.JavaScript.Ast.Misc.StringSpan AccessCode(this Broiler.JavaScript.Ast.Expressions.AstMemberExpression member) { }
+        public static Broiler.JavaScript.Ast.Expressions.AstExpression Computed(this Broiler.JavaScript.Ast.Expressions.AstExpression left, Broiler.JavaScript.Ast.Expressions.AstExpression right) { }
+        public static bool IsBinaryExpression(this Broiler.JavaScript.Ast.AstNode exp, out Broiler.JavaScript.Ast.Expressions.AstBinaryExpression binary) { }
+        public static bool IsExpressionStatement(this Broiler.JavaScript.Ast.AstNode exp, out Broiler.JavaScript.Ast.Statements.AstExpressionStatement value) { }
+        public static bool IsFunction(this Broiler.JavaScript.Ast.AstNode exp, out Broiler.JavaScript.Ast.Expressions.AstFunctionExpression value) { }
+        public static bool IsNumberLiteral(this Broiler.JavaScript.Ast.AstNode exp, out double value) { }
+        public static bool IsSpreadElement(this Broiler.JavaScript.Ast.AstNode node, out Broiler.JavaScript.Ast.AstSpreadElement value) { }
+        public static bool IsStringLiteral(this Broiler.JavaScript.Ast.AstNode exp, out string value) { }
+        public static bool IsUIntLiteral(this Broiler.JavaScript.Ast.AstNode exp, out uint value) { }
+        public static bool IsUnaryExpression(this Broiler.JavaScript.Ast.AstNode exp, out Broiler.JavaScript.Ast.Expressions.AstUnaryExpression unary) { }
+        public static Broiler.JavaScript.Ast.Expressions.AstExpression Member(this Broiler.JavaScript.Ast.Expressions.AstExpression left, Broiler.JavaScript.Ast.Expressions.AstExpression right, bool computed = false, bool coalesce = false, bool inOptionalChain = false) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstIdentifier : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.Ast.Misc.StringSpan Name;
+        public AstIdentifier(Broiler.JavaScript.Ast.Misc.FastToken identifier) { }
+        public AstIdentifier(Broiler.JavaScript.Ast.Misc.FastToken token, string id) { }
+        public string InferenceName { get; set; }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstIdentifierReplacer : Broiler.JavaScript.Ast.AstReduce
+    {
+        protected override Broiler.JavaScript.Ast.AstNode VisitIdentifier(Broiler.JavaScript.Ast.AstIdentifier identifier) { }
+        public static Broiler.JavaScript.Ast.AstNode Replace(Broiler.JavaScript.Ast.AstNode node, [System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "from",
+                "temp"})] Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<string, Broiler.JavaScript.Ast.AstIdentifier>> changes) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstLiteral : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.Ast.Misc.TokenTypes TokenType;
+        public AstLiteral(Broiler.JavaScript.Ast.Misc.TokenTypes tokenType, Broiler.JavaScript.Ast.Misc.FastToken token) { }
+        public double NumericValue { get; }
+        [System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "Pattern",
+                "Flags"})]
+        public System.ValueTuple<string, string> Regex { get; }
+        public string StringValue { get; }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public abstract class AstMapVisitor<T>
+    {
+        protected AstMapVisitor() { }
+        public bool Debug { get; set; }
+        public bool IsStrictMode { get; set; }
+        public T Visit(Broiler.JavaScript.Ast.AstNode node) { }
+        protected abstract T VisitArrayExpression(Broiler.JavaScript.Ast.Expressions.AstArrayExpression arrayExpression);
+        protected abstract T VisitArrayPattern(Broiler.JavaScript.Ast.Patterns.AstArrayPattern arrayPattern);
+        protected abstract T VisitAwaitExpression(Broiler.JavaScript.Ast.Expressions.AstAwaitExpression node);
+        protected abstract T VisitBinaryExpression(Broiler.JavaScript.Ast.Expressions.AstBinaryExpression binaryExpression);
+        protected abstract T VisitBlock(Broiler.JavaScript.Ast.AstBlock block);
+        protected abstract T VisitBreakStatement(Broiler.JavaScript.Ast.Statements.AstBreakStatement breakStatement);
+        protected abstract T VisitCallExpression(Broiler.JavaScript.Ast.Expressions.AstCallExpression callExpression);
+        protected virtual T VisitClassProperty(Broiler.JavaScript.Ast.AstClassProperty property) { }
+        protected abstract T VisitClassStatement(Broiler.JavaScript.Ast.Statements.AstClassExpression classStatement);
+        protected abstract T VisitConditionalExpression(Broiler.JavaScript.Ast.Expressions.AstConditionalExpression conditionalExpression);
+        protected abstract T VisitContinueStatement(Broiler.JavaScript.Ast.Statements.AstContinueStatement continueStatement);
+        protected abstract T VisitDebuggerStatement(Broiler.JavaScript.Ast.Statements.AstDebuggerStatement debuggerStatement);
+        protected abstract T VisitDoWhileStatement(Broiler.JavaScript.Ast.Statements.AstDoWhileStatement doWhileStatement, string label = null);
+        protected abstract T VisitEmptyExpression(Broiler.JavaScript.Ast.Expressions.AstEmptyExpression emptyExpression);
+        protected abstract T VisitExportStatement(Broiler.JavaScript.Ast.Statements.AstExportStatement astExportStatement);
+        protected abstract T VisitExpressionStatement(Broiler.JavaScript.Ast.Statements.AstExpressionStatement expressionStatement);
+        protected abstract T VisitForInStatement(Broiler.JavaScript.Ast.Statements.AstForInStatement forInStatement, string label = null);
+        protected abstract T VisitForOfStatement(Broiler.JavaScript.Ast.Statements.AstForOfStatement forOfStatement, string label = null);
+        protected abstract T VisitForStatement(Broiler.JavaScript.Ast.Statements.AstForStatement forStatement, string label = null);
+        protected abstract T VisitFunctionExpression(Broiler.JavaScript.Ast.Expressions.AstFunctionExpression functionExpression);
+        protected abstract T VisitIdentifier(Broiler.JavaScript.Ast.AstIdentifier identifier);
+        protected abstract T VisitIfStatement(Broiler.JavaScript.Ast.Statements.AstIfStatement ifStatement);
+        protected abstract T VisitImportCall(Broiler.JavaScript.Ast.Expressions.AstImportCall node);
+        protected abstract T VisitImportStatement(Broiler.JavaScript.Ast.Statements.AstImportStatement astImportStatement);
+        protected abstract T VisitLabeledStatement(Broiler.JavaScript.Ast.Statements.AstLabeledStatement labeledStatement);
+        protected abstract T VisitLiteral(Broiler.JavaScript.Ast.AstLiteral literal);
+        protected abstract T VisitMemberExpression(Broiler.JavaScript.Ast.Expressions.AstMemberExpression memberExpression);
+        protected abstract T VisitMeta(Broiler.JavaScript.Ast.AstMeta astMeta);
+        protected abstract T VisitNewExpression(Broiler.JavaScript.Ast.Expressions.AstNewExpression newExpression);
+        protected abstract T VisitObjectLiteral(Broiler.JavaScript.Ast.AstObjectLiteral objectLiteral);
+        protected abstract T VisitObjectPattern(Broiler.JavaScript.Ast.Patterns.AstObjectPattern objectPattern);
+        protected abstract T VisitOptionalChain(Broiler.JavaScript.Ast.Expressions.AstOptionalChain node);
+        protected abstract T VisitProgram(Broiler.JavaScript.Ast.AstProgram program);
+        protected abstract T VisitReturnStatement(Broiler.JavaScript.Ast.Statements.AstReturnStatement returnStatement);
+        protected abstract T VisitSequenceExpression(Broiler.JavaScript.Ast.Expressions.AstSequenceExpression sequenceExpression);
+        protected abstract T VisitSpreadElement(Broiler.JavaScript.Ast.AstSpreadElement spreadElement);
+        protected abstract T VisitSuper(Broiler.JavaScript.Ast.AstSuper super);
+        protected abstract T VisitSwitchStatement(Broiler.JavaScript.Ast.Statements.AstSwitchStatement switchStatement);
+        protected abstract T VisitTaggedTemplateExpression(Broiler.JavaScript.Ast.Expressions.AstTaggedTemplateExpression astTaggedTemplateExpression);
+        protected abstract T VisitTemplateExpression(Broiler.JavaScript.Ast.Expressions.AstTemplateExpression templateExpression);
+        protected abstract T VisitThrowStatement(Broiler.JavaScript.Ast.Statements.AstThrowStatement throwStatement);
+        protected abstract T VisitTryStatement(Broiler.JavaScript.Ast.Statements.AstTryStatement tryStatement);
+        protected abstract T VisitUnaryExpression(Broiler.JavaScript.Ast.Expressions.AstUnaryExpression unaryExpression);
+        protected abstract T VisitVariableDeclaration(Broiler.JavaScript.Ast.AstVariableDeclaration variableDeclaration);
+        protected abstract T VisitWhileStatement(Broiler.JavaScript.Ast.Statements.AstWhileStatement whileStatement, string label = null);
+        protected abstract T VisitWithStatement(Broiler.JavaScript.Ast.Statements.AstWithStatement withStatement);
+        protected abstract T VisitYieldExpression(Broiler.JavaScript.Ast.Expressions.AstYieldExpression yieldExpression);
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstMeta : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.Ast.AstIdentifier Identifier;
+        public readonly Broiler.JavaScript.Ast.AstIdentifier Property;
+        public AstMeta(Broiler.JavaScript.Ast.AstIdentifier id, Broiler.JavaScript.Ast.AstIdentifier property) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public abstract class AstNode
+    {
+        public readonly Broiler.JavaScript.Ast.Misc.FastToken End;
+        public readonly bool IsBinding;
+        public readonly bool IsStatement;
+        public readonly Broiler.JavaScript.Ast.Misc.FastToken Start;
+        public readonly Broiler.JavaScript.Ast.Misc.FastNodeType Type;
+        protected AstNode(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastNodeType type, Broiler.JavaScript.Ast.Misc.FastToken end, bool isStatement = false, bool isBinding = false) { }
+        public Broiler.JavaScript.Ast.Misc.StringSpan Code { get; }
+        public bool WasParenthesized { get; set; }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstObjectLiteral : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.AstNode> Properties;
+        public AstObjectLiteral(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.AstNode> objectProperties) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstProgram : Broiler.JavaScript.Ast.AstBlock
+    {
+        public readonly bool IsAsync;
+        public AstProgram(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Statements.AstStatement> statements, bool isAsync) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public enum AstPropertyKind
+    {
+        Get = 0,
+        Set = 1,
+        Data = 2,
+        Init = 3,
+        Constructor = 4,
+        Method = 5,
+        None = 6,
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public abstract class AstReduce : Broiler.JavaScript.Ast.AstMapVisitor<Broiler.JavaScript.Ast.AstNode>
+    {
+        protected AstReduce() { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitArrayExpression(Broiler.JavaScript.Ast.Expressions.AstArrayExpression arrayExpression) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitArrayPattern(Broiler.JavaScript.Ast.Patterns.AstArrayPattern arrayPattern) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitAwaitExpression(Broiler.JavaScript.Ast.Expressions.AstAwaitExpression node) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitBinaryExpression(Broiler.JavaScript.Ast.Expressions.AstBinaryExpression binaryExpression) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitBlock(Broiler.JavaScript.Ast.AstBlock block) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitBreakStatement(Broiler.JavaScript.Ast.Statements.AstBreakStatement breakStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitCallExpression(Broiler.JavaScript.Ast.Expressions.AstCallExpression callExpression) { }
+        protected virtual Broiler.JavaScript.Ast.Misc.Case VisitCase(Broiler.JavaScript.Ast.Misc.Case property) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitClassProperty(Broiler.JavaScript.Ast.AstClassProperty property) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitClassStatement(Broiler.JavaScript.Ast.Statements.AstClassExpression classStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitConditionalExpression(Broiler.JavaScript.Ast.Expressions.AstConditionalExpression conditionalExpression) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitContinueStatement(Broiler.JavaScript.Ast.Statements.AstContinueStatement continueStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitDebuggerStatement(Broiler.JavaScript.Ast.Statements.AstDebuggerStatement debuggerStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitDoWhileStatement(Broiler.JavaScript.Ast.Statements.AstDoWhileStatement doWhileStatement, string label = null) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitEmptyExpression(Broiler.JavaScript.Ast.Expressions.AstEmptyExpression emptyExpression) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitExportStatement(Broiler.JavaScript.Ast.Statements.AstExportStatement astExportStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitExpressionStatement(Broiler.JavaScript.Ast.Statements.AstExpressionStatement expressionStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitForInStatement(Broiler.JavaScript.Ast.Statements.AstForInStatement forInStatement, string label = null) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitForOfStatement(Broiler.JavaScript.Ast.Statements.AstForOfStatement forOfStatement, string label = null) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitForStatement(Broiler.JavaScript.Ast.Statements.AstForStatement forStatement, string label = null) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitFunctionExpression(Broiler.JavaScript.Ast.Expressions.AstFunctionExpression functionExpression) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitIdentifier(Broiler.JavaScript.Ast.AstIdentifier identifier) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitIfStatement(Broiler.JavaScript.Ast.Statements.AstIfStatement ifStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitImportCall(Broiler.JavaScript.Ast.Expressions.AstImportCall node) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitImportStatement(Broiler.JavaScript.Ast.Statements.AstImportStatement astImportStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitLabeledStatement(Broiler.JavaScript.Ast.Statements.AstLabeledStatement labeledStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitLiteral(Broiler.JavaScript.Ast.AstLiteral literal) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitMemberExpression(Broiler.JavaScript.Ast.Expressions.AstMemberExpression memberExpression) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitMeta(Broiler.JavaScript.Ast.AstMeta astMeta) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitNewExpression(Broiler.JavaScript.Ast.Expressions.AstNewExpression newExpression) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitObjectLiteral(Broiler.JavaScript.Ast.AstObjectLiteral objectLiteral) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitObjectPattern(Broiler.JavaScript.Ast.Patterns.AstObjectPattern objectPattern) { }
+        protected virtual Broiler.JavaScript.Ast.ObjectProperty VisitObjectProperty(Broiler.JavaScript.Ast.ObjectProperty property) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitOptionalChain(Broiler.JavaScript.Ast.Expressions.AstOptionalChain node) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitProgram(Broiler.JavaScript.Ast.AstProgram program) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitReturnStatement(Broiler.JavaScript.Ast.Statements.AstReturnStatement returnStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitSequenceExpression(Broiler.JavaScript.Ast.Expressions.AstSequenceExpression sequenceExpression) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitSpreadElement(Broiler.JavaScript.Ast.AstSpreadElement spreadElement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitSuper(Broiler.JavaScript.Ast.AstSuper super) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitSwitchStatement(Broiler.JavaScript.Ast.Statements.AstSwitchStatement switchStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitTaggedTemplateExpression(Broiler.JavaScript.Ast.Expressions.AstTaggedTemplateExpression taggedTemplateExpression) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitTemplateExpression(Broiler.JavaScript.Ast.Expressions.AstTemplateExpression templateExpression) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitThrowStatement(Broiler.JavaScript.Ast.Statements.AstThrowStatement throwStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitTryStatement(Broiler.JavaScript.Ast.Statements.AstTryStatement tryStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitUnaryExpression(Broiler.JavaScript.Ast.Expressions.AstUnaryExpression unaryExpression) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitVariableDeclaration(Broiler.JavaScript.Ast.AstVariableDeclaration variableDeclaration) { }
+        protected virtual Broiler.JavaScript.Ast.VariableDeclarator VisitVariableDeclarator(Broiler.JavaScript.Ast.VariableDeclarator property) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitWhileStatement(Broiler.JavaScript.Ast.Statements.AstWhileStatement whileStatement, string label = null) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitWithStatement(Broiler.JavaScript.Ast.Statements.AstWithStatement withStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitYieldExpression(Broiler.JavaScript.Ast.Expressions.AstYieldExpression yieldExpression) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstSpreadElement : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Argument;
+        public AstSpreadElement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.Ast.Expressions.AstExpression element) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstSuper : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.Ast.Misc.TokenTypes TokenType;
+        public AstSuper(Broiler.JavaScript.Ast.Misc.FastToken token) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstVariableDeclaration : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly bool AwaitUsing;
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.VariableDeclarator> Declarators;
+        public readonly Broiler.JavaScript.Ast.FastVariableKind Kind;
+        public readonly bool Using;
+        public AstVariableDeclaration(Broiler.JavaScript.Ast.Misc.FastToken begin, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.VariableDeclarator> declarators, Broiler.JavaScript.Ast.FastVariableKind kind = 3, bool using = false, bool await = false) { }
+        public AstVariableDeclaration(Broiler.JavaScript.Ast.Misc.FastToken begin, Broiler.JavaScript.Ast.Misc.FastToken previousToken, in Broiler.JavaScript.Ast.VariableDeclarator declarator, Broiler.JavaScript.Ast.FastVariableKind kind = 3, bool using = false, bool await = false) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public sealed class AwaitYieldParameterDetector : Broiler.JavaScript.Ast.AstReduce
+    {
+        public AwaitYieldParameterDetector() { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitAwaitExpression(Broiler.JavaScript.Ast.Expressions.AstAwaitExpression node) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitClassStatement(Broiler.JavaScript.Ast.Statements.AstClassExpression classStatement) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitFunctionExpression(Broiler.JavaScript.Ast.Expressions.AstFunctionExpression functionExpression) { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitYieldExpression(Broiler.JavaScript.Ast.Expressions.AstYieldExpression yieldExpression) { }
+        public static bool Contains(Broiler.JavaScript.Ast.AstNode node) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public sealed class ClosureDetector : Broiler.JavaScript.Ast.AstReduce
+    {
+        public ClosureDetector() { }
+        public bool Found { get; }
+        protected override Broiler.JavaScript.Ast.AstNode VisitFunctionExpression(Broiler.JavaScript.Ast.Expressions.AstFunctionExpression functionExpression) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public static class ExpressionPatternExtensions
+    {
+        public static Broiler.JavaScript.Ast.Expressions.AstExpression ToPattern(this Broiler.JavaScript.Ast.Expressions.AstExpression exp) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public enum FastVariableKind
+    {
+        None = 0,
+        Let = 1,
+        Const = 2,
+        Var = 3,
+        Function = 4,
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public sealed class IdentifierNameCollector : Broiler.JavaScript.Ast.AstReduce
+    {
+        public IdentifierNameCollector() { }
+        protected override Broiler.JavaScript.Ast.AstNode VisitIdentifier(Broiler.JavaScript.Ast.AstIdentifier identifier) { }
+        public static System.Collections.Generic.HashSet<string> Collect(params Broiler.JavaScript.Ast.AstNode?[] nodes) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public readonly struct ObjectProperty
+    {
+        public readonly bool Computed;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Init;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Key;
+        public readonly bool Spread;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Value;
+        public ObjectProperty(Broiler.JavaScript.Ast.Expressions.AstExpression left, Broiler.JavaScript.Ast.Expressions.AstExpression right, Broiler.JavaScript.Ast.Expressions.AstExpression init, bool spread = false, bool computed = false) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public readonly struct VariableDeclarator
+    {
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Identifier;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression? Init;
+        public VariableDeclarator(Broiler.JavaScript.Ast.Expressions.AstExpression identifier, Broiler.JavaScript.Ast.Expressions.AstExpression? init = null) { }
+        public bool Equals(Broiler.JavaScript.Ast.VariableDeclarator d) { }
+        public override string ToString() { }
+        public static Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.VariableDeclarator> From(Broiler.JavaScript.Ast.Expressions.AstExpression node) { }
+        public static Broiler.JavaScript.ExpressionCompiler.Core.Sequence<Broiler.JavaScript.Ast.VariableDeclarator> From(in Broiler.JavaScript.Ast.Misc.ArraySpan<Broiler.JavaScript.Ast.Expressions.AstExpression> nodes) { }
+    }
+}
+namespace Broiler.JavaScript.Ast.Expressions
+{
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstArrayExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> Elements;
+        public AstArrayExpression(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> nodes) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstAwaitExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Argument;
+        public AstAwaitExpression(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.Expressions.AstExpression target) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstBinaryExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Left;
+        public readonly Broiler.JavaScript.Ast.Misc.TokenTypes Operator;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Right;
+        public AstBinaryExpression(Broiler.JavaScript.Ast.Expressions.AstExpression node, Broiler.JavaScript.Ast.Misc.TokenTypes type, Broiler.JavaScript.Ast.Expressions.AstExpression right) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstCallExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> Arguments;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Callee;
+        public readonly bool Coalesce;
+        public readonly bool InOptionalChain;
+        public AstCallExpression(Broiler.JavaScript.Ast.Expressions.AstExpression previous, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> plist, bool coalesce = false, bool inOptionalChain = false) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstConditionalExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression False;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Test;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression True;
+        public AstConditionalExpression(Broiler.JavaScript.Ast.Expressions.AstExpression previous, Broiler.JavaScript.Ast.Expressions.AstExpression @true, Broiler.JavaScript.Ast.Expressions.AstExpression @false) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstEmptyExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public AstEmptyExpression(Broiler.JavaScript.Ast.Misc.FastToken start, bool isBinding = false) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstExpression : Broiler.JavaScript.Ast.AstNode
+    {
+        public AstExpression(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastNodeType type, Broiler.JavaScript.Ast.Misc.FastToken end, bool isBinding = false) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstFunctionExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public bool Async;
+        public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body;
+        public bool Generator;
+        public readonly Broiler.JavaScript.Ast.AstIdentifier? Id;
+        public readonly bool IsArrowFunction;
+        public readonly bool IsStatement;
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.VariableDeclarator> Params;
+        public AstFunctionExpression(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, bool isArrow, bool isAsync, bool generator, Broiler.JavaScript.Ast.AstIdentifier? id, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.VariableDeclarator> declarators, Broiler.JavaScript.Ast.Statements.AstStatement body, bool isStatement = false) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstImportCall : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Options;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Source;
+        public AstImportCall(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Expressions.AstExpression source, Broiler.JavaScript.Ast.Expressions.AstExpression options, Broiler.JavaScript.Ast.Misc.FastToken end) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstMemberExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly bool Coalesce;
+        public readonly bool Computed;
+        public readonly bool InOptionalChain;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Object;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Property;
+        public AstMemberExpression(Broiler.JavaScript.Ast.Expressions.AstExpression target, Broiler.JavaScript.Ast.Expressions.AstExpression node, bool computed = false, bool coalesce = false, bool inOptionalChain = false) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstNewExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> Arguments;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Callee;
+        public AstNewExpression(Broiler.JavaScript.Ast.Misc.FastToken begin, Broiler.JavaScript.Ast.Expressions.AstExpression node, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> arguments) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstOptionalChain : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Expression;
+        public AstOptionalChain(Broiler.JavaScript.Ast.Expressions.AstExpression expression) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstSequenceExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> Expressions;
+        public AstSequenceExpression(Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> expressions) { }
+        public AstSequenceExpression(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> expressions) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstTaggedTemplateExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> Arguments;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Tag;
+        public AstTaggedTemplateExpression(Broiler.JavaScript.Ast.Expressions.AstExpression tag, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> arguments) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstTemplateExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> Parts;
+        public AstTemplateExpression(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> astExpressions) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstUnaryExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Argument;
+        public readonly Broiler.JavaScript.Ast.Misc.UnaryOperator Operator;
+        public readonly bool Prefix;
+        public AstUnaryExpression(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Expressions.AstExpression argument, Broiler.JavaScript.Ast.Misc.UnaryOperator tokenType, bool prefix = true) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstYieldExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Argument;
+        public readonly bool Delegate;
+        public AstYieldExpression(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.Expressions.AstExpression target, bool delegate = false) { }
+    }
+}
+namespace Broiler.JavaScript.Ast.Misc
+{
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public readonly struct Case
+    {
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Statements.AstStatement> Statements;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Test;
+        public Case(Broiler.JavaScript.Ast.Expressions.AstExpression test, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Statements.AstStatement> last) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public enum FastKeywords
+    {
+        none = 0,
+        @break = 1,
+        @do = 2,
+        instanceof = 3,
+        @typeof = 4,
+        @case = 5,
+        @else = 6,
+        @new = 7,
+        var = 8,
+        @catch = 9,
+        @finally = 10,
+        @return = 11,
+        @void = 12,
+        @continue = 13,
+        @for = 14,
+        @switch = 15,
+        @while = 16,
+        debugger = 17,
+        function = 18,
+        @this = 19,
+        with = 20,
+        @default = 21,
+        @if = 22,
+        @throw = 23,
+        delete = 24,
+        @in = 25,
+        @try = 26,
+        @class = 27,
+        @enum = 28,
+        extends = 29,
+        super = 30,
+        @const = 31,
+        export = 32,
+        import = 33,
+        implements = 34,
+        let = 35,
+        @private = 36,
+        @public = 37,
+        @interface = 38,
+        package = 39,
+        @protected = 40,
+        @static = 41,
+        @yield = 42,
+        async = 43,
+        @using = 44,
+        await = 45,
+        @null = 46,
+        @true = 47,
+        @false = 48,
+        get = 49,
+        set = 50,
+        of = 51,
+        constructor = 52,
+        from = 53,
+        @as = 54,
+        accessor = 55,
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public enum FastNodeType
+    {
+        Node = 0,
+        Block = 1,
+        Program = 2,
+        BinaryExpression = 3,
+        VariableDeclaration = 4,
+        ExpressionStatement = 5,
+        FunctionExpression = 6,
+        Identifier = 7,
+        ObjectPattern = 8,
+        SpreadElement = 9,
+        IfStatement = 10,
+        WhileStatement = 11,
+        DoWhileStatement = 12,
+        SequenceExpression = 13,
+        ForStatement = 14,
+        ForInStatement = 15,
+        ForOfStatement = 16,
+        ContinueStatement = 17,
+        ThrowStatement = 18,
+        TryStatement = 19,
+        WithStatement = 20,
+        DebuggerStatement = 21,
+        Literal = 22,
+        MemberExpression = 23,
+        ClassStatement = 24,
+        SwitchStatement = 25,
+        EmptyExpression = 26,
+        ArrayExpression = 27,
+        ObjectLiteral = 28,
+        TemplateExpression = 29,
+        UnaryExpression = 30,
+        CallExpression = 31,
+        ConditionalExpression = 32,
+        YieldExpression = 33,
+        LabeledStatement = 34,
+        ArrayPattern = 35,
+        Super = 36,
+        BreakStatement = 37,
+        NewExpression = 38,
+        ClassProperty = 39,
+        ReturnStatement = 40,
+        ExportStatement = 41,
+        ImportStatement = 42,
+        Meta = 43,
+        TaggedTemplateExpression = 44,
+        AwaitExpression = 45,
+        ImportCall = 46,
+        OptionalChain = 47,
+    }
+    public class FastParseException : System.Exception
+    {
+        public readonly Broiler.JavaScript.Ast.Misc.FastToken Token;
+        public FastParseException(Broiler.JavaScript.Ast.Misc.FastToken token, string message) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class FastToken
+    {
+        public readonly Broiler.JavaScript.Ast.Misc.FastKeywords ContextualKeyword;
+        public readonly bool CookedInvalid;
+        public readonly string? CookedText;
+        public readonly Broiler.JavaScript.Ast.Misc.SpanLocation End;
+        public readonly string? Flags;
+        public readonly bool IsEscapedReservedWord;
+        public readonly bool IsKeyword;
+        public readonly Broiler.JavaScript.Ast.Misc.FastKeywords Keyword;
+        public Broiler.JavaScript.Ast.Misc.FastToken? Next;
+        public readonly double Number;
+        public Broiler.JavaScript.Ast.Misc.FastToken? Previous;
+        public readonly Broiler.JavaScript.Ast.Misc.StringSpan Span;
+        public readonly Broiler.JavaScript.Ast.Misc.SpanLocation Start;
+        public readonly Broiler.JavaScript.Ast.Misc.TokenTypes Type;
+        public static Broiler.JavaScript.Ast.Misc.FastToken? Empty;
+        public FastToken(Broiler.JavaScript.Ast.Misc.TokenTypes type, string? source = null, string? cooked = null, string? flags = null, int start = 0, int length = 0, in Broiler.JavaScript.Ast.Misc.SpanLocation startLocation = null, in Broiler.JavaScript.Ast.Misc.SpanLocation endLocation = null, double number = 0, bool isKeyword = false, Broiler.JavaScript.Ast.Misc.FastKeywords keyword = 0, Broiler.JavaScript.Ast.Misc.FastKeywords contextualKeyword = 0, bool isEscapedReservedWord = false, bool cookedInvalid = false) { }
+        public Broiler.JavaScript.Ast.Misc.FastToken AsString() { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public readonly struct SpanLocation
+    {
+        public readonly int Column;
+        public readonly int Line;
+        public SpanLocation(int line, int column) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public static class TokenTypesExtensions
+    {
+        public static bool IsAssignmentOperator(this Broiler.JavaScript.Ast.Misc.TokenTypes type) { }
+        public static bool IsOperator(this Broiler.JavaScript.Ast.Misc.TokenTypes type) { }
+    }
+}
+namespace Broiler.JavaScript.Ast.Patterns
+{
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstArrayPattern : Broiler.JavaScript.Ast.Patterns.AstBindingPattern
+    {
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> Elements;
+        public AstArrayPattern(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> elements) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstBindingPattern : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public AstBindingPattern(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastNodeType type, Broiler.JavaScript.Ast.Misc.FastToken end) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstObjectPattern : Broiler.JavaScript.Ast.Patterns.AstBindingPattern
+    {
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.ObjectProperty> Properties;
+        public AstObjectPattern(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.ObjectProperty> properties) { }
+    }
+}
+namespace Broiler.JavaScript.Ast.Statements
+{
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstBreakStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.AstIdentifier? Label;
+        public AstBreakStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.AstIdentifier? label = null) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstClassExpression : Broiler.JavaScript.Ast.Expressions.AstExpression
+    {
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression? Base;
+        public readonly Broiler.JavaScript.Ast.AstIdentifier? Identifier;
+        public readonly bool IsDeclaration;
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.AstClassProperty> Members;
+        public AstClassExpression(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.AstIdentifier? identifier, Broiler.JavaScript.Ast.Expressions.AstExpression? @base, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.AstClassProperty> astClassProperties, bool isDeclaration = false) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstContinueStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.AstIdentifier? Label;
+        public AstContinueStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.AstIdentifier? label = null) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstDebuggerStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public AstDebuggerStatement(Broiler.JavaScript.Ast.Misc.FastToken token) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstDoWhileStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Test;
+        public AstDoWhileStatement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.Ast.Expressions.AstExpression test, Broiler.JavaScript.Ast.Statements.AstStatement statement) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstExportStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        [System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "key",
+                "value"})]
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.AstLiteral>>? Attributes;
+        public readonly Broiler.JavaScript.Ast.AstNode? Declaration;
+        public readonly bool ExportAll;
+        public readonly bool IsDefault;
+        [System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "name",
+                "asName"})]
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.Misc.StringSpan>>? Members;
+        public readonly Broiler.JavaScript.Ast.AstNode? Source;
+        public AstExportStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.AstNode argument, bool IsDefault = false) { }
+        public AstExportStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.AstNode? argument, Broiler.JavaScript.Ast.AstNode source, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.AstLiteral>>? attributes = null) { }
+        public AstExportStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.Misc.StringSpan>> members, Broiler.JavaScript.Ast.AstLiteral? source, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.AstLiteral>>? attributes = null) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstExpressionStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Expression;
+        public AstExpressionStatement(Broiler.JavaScript.Ast.Expressions.AstExpression expression) { }
+        public AstExpressionStatement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.Ast.Expressions.AstExpression expression) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstForInStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body;
+        public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.StringSpan>? HeadTdzNames;
+        public readonly Broiler.JavaScript.Ast.AstNode Init;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Target;
+        public AstForInStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.AstNode beginNode, Broiler.JavaScript.Ast.Expressions.AstExpression target, Broiler.JavaScript.Ast.Statements.AstStatement statement) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstForOfStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body;
+        public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.StringSpan>? HeadTdzNames;
+        public readonly Broiler.JavaScript.Ast.AstNode Init;
+        public readonly bool IsAwait;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Target;
+        public AstForOfStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.AstNode beginNode, Broiler.JavaScript.Ast.Expressions.AstExpression target, Broiler.JavaScript.Ast.Statements.AstStatement statement, bool isAwait = false) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstForStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body;
+        public readonly Broiler.JavaScript.Ast.AstNode Init;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Test;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Update;
+        public AstForStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.AstNode beginNode, Broiler.JavaScript.Ast.Expressions.AstExpression test, Broiler.JavaScript.Ast.Expressions.AstExpression preTest, Broiler.JavaScript.Ast.Statements.AstStatement statement) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstIfStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.Statements.AstStatement? False;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Test;
+        public readonly Broiler.JavaScript.Ast.Statements.AstStatement True;
+        public AstIfStatement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.Ast.Expressions.AstExpression test, Broiler.JavaScript.Ast.Statements.AstStatement @true, Broiler.JavaScript.Ast.Statements.AstStatement? false = null) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstImportStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.AstIdentifier? All;
+        [System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "key",
+                "value"})]
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.AstLiteral>>? Attributes;
+        public readonly Broiler.JavaScript.Ast.AstIdentifier? Default;
+        [System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "name",
+                "asName"})]
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.Misc.StringSpan>>? Members;
+        public readonly Broiler.JavaScript.Ast.AstLiteral Source;
+        public AstImportStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.AstIdentifier? defaultIdentifier, Broiler.JavaScript.Ast.AstIdentifier? all, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.Misc.StringSpan>>? members, Broiler.JavaScript.Ast.AstLiteral source, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, Broiler.JavaScript.Ast.AstLiteral>>? attributes = null) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstLabeledStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body;
+        public readonly Broiler.JavaScript.Ast.Misc.FastToken Label;
+        public AstLabeledStatement(Broiler.JavaScript.Ast.Misc.FastToken id, Broiler.JavaScript.Ast.Statements.AstStatement statement) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstReturnStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression? Argument;
+        public AstReturnStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.Expressions.AstExpression? target = null) { }
+        public override string ToString() { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstStatement : Broiler.JavaScript.Ast.AstNode
+    {
+        public AstStatement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastNodeType type, Broiler.JavaScript.Ast.Misc.FastToken end) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstSwitchStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.Case> Cases;
+        public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.StringSpan>? HoistingScope;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Target;
+        public AstSwitchStatement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.Ast.Expressions.AstExpression target, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.Case> astCases) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstThrowStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Argument;
+        public AstThrowStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.Expressions.AstExpression target) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstTryStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.Statements.AstStatement Block;
+        public readonly Broiler.JavaScript.Ast.Statements.AstStatement Catch;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression CatchParam;
+        public readonly Broiler.JavaScript.Ast.Statements.AstStatement Finally;
+        public AstTryStatement(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastToken previousToken, Broiler.JavaScript.Ast.Statements.AstStatement body, Broiler.JavaScript.Ast.Expressions.AstExpression catchParam, Broiler.JavaScript.Ast.Statements.AstStatement @catch, Broiler.JavaScript.Ast.Statements.AstStatement @finally) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstWhileStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Test;
+        public AstWhileStatement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.Ast.Expressions.AstExpression test, Broiler.JavaScript.Ast.Statements.AstStatement statement) { }
+    }
+    [System.Obsolete("Broiler.JavaScript.Ast\'s tree is built by an adapter over the shared syntax libra" +
+        "ry\'s tree (Broiler.ECMAScript.Frontend, namespace Broiler.ECMAScript.Syntax) sin" +
+        "ce milestone SJL-14, and is removed in version 1.0.0.", DiagnosticId="BJS0002")]
+    public class AstWithStatement : Broiler.JavaScript.Ast.Statements.AstStatement
+    {
+        public readonly Broiler.JavaScript.Ast.Statements.AstStatement Body;
+        public readonly Broiler.JavaScript.Ast.Expressions.AstExpression Object;
+        public AstWithStatement(Broiler.JavaScript.Ast.Misc.FastToken start, Broiler.JavaScript.Ast.Misc.FastToken end, Broiler.JavaScript.Ast.Expressions.AstExpression @object, Broiler.JavaScript.Ast.Statements.AstStatement body) { }
+    }
+}

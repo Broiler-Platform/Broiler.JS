@@ -1,0 +1,7 @@
+feed: 24 packages copied from /home/user/js-w2after-build/83a9bd82/feed/engine, /home/user/js-w2after-build/83a9bd82/feed/shared
++ dotnet restore --configfile /tmp/broiler-pristine-consumer-9hp_zymy/NuGet.Config
+  Determining projects to restore...
+  Restored /tmp/broiler-pristine-consumer-9hp_zymy/consumer/Consumer.csproj (in 1.05 sec).
++ dotnet run -c Release --no-restore
+pristine-consumer: 42
+Validated Broiler.JavaScript.All 0.1.0-preview.1402 from 24 locally produced packages

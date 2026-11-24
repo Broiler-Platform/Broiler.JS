@@ -1,0 +1,538 @@
+# Part K's deletion search at 83a9bd82a5d258d3001468095ebf43f9efc3e9a7, over /home/user/js-w2after-build/83a9bd82/delsearch (a tree of that commit), by search.py.
+# A word search (git grep --no-index -w -n -I), one name at a time; each section names its scope.
+
+== FastParser's partial files: each absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.ArrayExpression.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.AssignmentLeftPattern.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.Block.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.Class.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.Decorator.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.DoWhile.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.Export.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.Expression.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.ForStatement.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.Function.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.Identifier.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.IfStatement.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.Import.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.Literal.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.NextExpression.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.NonDeclarativeStatement.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.ObjectLiteral.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.Parameters.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.Program.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.PropertyName.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.SingleExpression.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.SingleMemberExpression.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.SinglePostfixPrefixExpression.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.Statement.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.Switch.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.Template.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.VariableDeclaration.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.WhileStatement.cs: absent
+Broiler.JS/Broiler.JavaScript.Parser/FastParser.WithStatement.cs: absent
+
+== The members FastParser's partial files declared at 33d3093b, each by name (scope: Broiler.JS/Broiler.JavaScript.Parser)
+-- ArrayExpression (FastParser.ArrayExpression.cs): 0 hit(s)
+-- AssignmentLeftPattern (FastParser.AssignmentLeftPattern.cs): 2 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:164:    /// <summary>A binding pattern, as the old parser's AssignmentLeftPattern read it, its names declared as <paramref name="kind"/>.</summary>
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:257:    // A binding property's name, as AssignmentLeftPattern's ReadObjectPattern read it: a name is the name's token, a
+-- AsyncFunctionDeclarationFollows (FastParser.Export.cs): 0 hit(s)
+-- BigIntLiteral (FastParser.Literal.cs): 0 hit(s)
+-- Block (FastParser.Block.cs): 11 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:105:        Block,
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:120:        internal bool IsBody => Kind == FrameKind.Block && (Parent is null || Parent.Kind == FrameKind.Function);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:131:    internal void EnterBody() => top = new Frame(FrameKind.Block, top);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:141:    internal void EnterBlock() => top = new Frame(FrameKind.Block, top);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:143:    internal void EnterStaticBlock() => top = new Frame(FrameKind.Block, top) { IsStaticBlock = true };
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:100:    /// A block's statements as the old parser's Block kept them: an empty statement or an empty block dropped, but the
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:178:                return Block(block);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:264:    private AstBlock Block(BlockStatement block)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:415:        var block = Block(@try.Block);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:427:            handler = Block(clause.Body);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:432:        var finalizer = @try.Finalizer is null ? null : Block(@try.Finalizer);
+-- Class (FastParser.Class.cs): 6 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:100:        "class.constructor.special-method" => "Class constructor may not be an accessor, a generator or an async method",
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:61:                return Class(@class.Class, isDeclaration: false);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:351:    private AstClassExpression Class(ClassNode @class, bool isDeclaration)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Modules.cs:40:                ClassDeclaration @class => Class(@class.Class, isDeclaration: true),
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Modules.cs:67:            ClassDeclaration @class => Class(@class.Class, isDeclaration: true),
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:192:                return new AstExpressionStatement(Class(declaration.Class, isDeclaration: true));
+-- ClassExpression (FastParser.Class.cs): 2 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:60:            case ClassExpression @class:
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:347:    /// A class, as the old parser's ClassExpression built it: its elements <see cref="AstClassProperty"/>s, its name
+-- Combine (FastParser.NextExpression.cs): 3 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs:173:    public AstExpression Combine(AstExpression left, TokenTypes type, AstExpression right, TokenTypes next = TokenTypes.SemiColon)
+   Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs:28:/// first statement; <see cref="Combine"/> builds the node its operator names, as it did, and no longer parses: its
+   Broiler.JS/Broiler.JavaScript.Parser/FastParserOptions.cs:112:    public override int GetHashCode() => HashCode.Combine(goal, AllowTopLevelAwait, unicodeTables);
+-- ConsumeSpan (FastParser.Import.cs): 0 hit(s)
+-- Decorator (FastParser.Decorator.cs): 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:426:    private FastToken ElementStart(SyntaxNode element, IReadOnlyList<Decorator> decorators)
+-- Decorators (FastParser.Decorator.cs): 7 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:123:        "decorator.not-in-edition" => "Decorators are not supported here",
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:348:    /// declared (as a lexical binding) once its body is read, where it is a declaration. Decorators leave no node, as
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:353:        var begin = @class.Decorators.Count > 0
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:354:            ? tokens.After(EndOf(@class.Decorators[@class.Decorators.Count - 1]))
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:375:                var current = ElementStart(method, method.Decorators);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:391:                var current = ElementStart(field, field.Decorators);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs:47:    private const ProposalFlags Proposals = ProposalFlags.Decorators | ProposalFlags.AutoAccessors
+-- DoWhileStatement (FastParser.DoWhile.cs): 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:202:            case DoWhileStatement doWhile:
+-- ExpectEndOfModuleItem (FastParser.Export.cs): 0 hit(s)
+-- ExpectStringLiteral (FastParser.Export.cs): 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs:132:    public AstLiteral ExpectStringLiteral()
+-- Export (FastParser.Export.cs): 4 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Modules.cs:31:    private AstStatement Export(ExportNamedDeclaration export)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:254:                return Export(export);
+   Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs:143:    public bool Export(FastToken start, out AstStatement statement)
+   Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs:26:/// deletion list). The members that parsed a piece of the program at the stream's position, <see cref="Export"/> and
+-- ExportDefaultDeclaration (FastParser.Export.cs): 2 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Modules.cs:61:    private AstStatement ExportDefault(ExportDefaultDeclaration export)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:255:            case ExportDefaultDeclaration exportDefault:
+-- Expression (FastParser.Expression.cs): 65 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:105:                var argument = @yield.Argument is null ? null : Expression(@yield.Argument);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:111:                var left = Expression(binary.Left);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:112:                var right = Expression(binary.Right);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:118:                var left = Expression(logical.Left);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:119:                var right = Expression(logical.Right);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:132:                var right = Expression(privateIn.Right);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:138:                var test = Expression(conditional.Test);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:139:                var consequent = Expression(conditional.Consequent);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:140:                var alternate = Expression(conditional.Alternate);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:149:                    Expression simple => Expression(simple),
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:152:                var value = Expression(assignment.Value);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:15:    private AstExpression Expression(Expression expression)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:169:    private Sequence<AstExpression> Expressions(IReadOnlyList<Expression> expressions)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:173:            list.Add(Expression(item));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:180:        var argument = Expression(spread.Argument);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:207:        AstExpression node = parenthesized.Expression is SequenceExpression sequence
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:209:            : Expression(parenthesized.Expression);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:219:            list.Add(element is null ? null! : Expression(element));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:257:                var value = Expression(definition.Value);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:291:                return (Expression(computed.Expression), true, false);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:308:    private AstExpression Callee(Expression callee)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:309:        => callee is MemberExpression or CallExpression or TaggedTemplateExpression ? Link(callee, out _) : Expression(callee);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:316:    private AstExpression Link(Expression expression, out bool inOptional)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:328:                    Expression computed => Expression(computed),
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:349:                return Expression(expression);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:352:        AstExpression Inner(Expression inner, out bool optional)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:357:            return Expression(inner);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:384:                parts.Add(Expression(template.Expressions[i]));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:49:                return new AstOptionalChain(Link(chain.Expression, out _));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:74:                var source = Expression(import.Source);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:75:                var options = import.Options is null ? null : Expression(import.Options);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:81:                var operand = Expression(update.Operand);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:91:                var operand = Expression(unary.Operand);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:98:                var argument = Expression(@await.Argument);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:151:                ? new AstDeclarator(BindingPattern(assignment.Target, FastVariableKind.Var), Expression(assignment.Initializer))
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:179:                return new AstBinaryExpression(target, TokenTypes.Assign, Expression(assignment.Initializer));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:245:                    var initializer = entry.Value is AssignmentPattern withInitializer ? Expression(withInitializer.Initializer) : null;
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:274:                return (Expression(computed.Expression), true);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:290:                return Expression(target.Target);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:296:                return new AstBinaryExpression(target, TokenTypes.Assign, Expression(assignment.Initializer));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:331:                    var initializer = entry.Value is AssignmentPattern withInitializer ? Expression(withInitializer.Initializer) : null;
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:357:        var heritage = @class.Heritage is null ? null : Expression(@class.Heritage);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:397:                var value = Expression(field.Value);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:69:                AssignmentPattern assignment => new AstDeclarator(CoverPattern(assignment.Target), Expression(assignment.Initializer)),
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:82:            var value = Expression(expression);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Modules.cs:68:            Expression expression => Expression(expression),
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:135:            if (statement is AstExpressionStatement { Expression: AstLiteral })
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:160:            AstExpressionStatement { Expression: AstEmptyExpression } => true,
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:183:                var value = Expression(expression.Expression);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:197:                var test = Expression(@while.Test);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:205:                var test = Expression(doWhile.Test);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:222:                var argument = @return.Argument is null ? null : Expression(@return.Argument);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:228:                var argument = Expression(@throw.Argument);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:244:                var @object = Expression(with.Object);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:294:            var initializer = declarator.Initializer is null ? null : Expression(declarator.Initializer);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:303:        var test = Expression(@if.Test);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:345:                Expression expression => Expression(expression),
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:348:            var test = @for.Test is null ? null : Expression(@for.Test);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:349:            var update = @for.Update is null ? null : Expression(@for.Update);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:369:            var right = Expression(forIn.Right);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:389:            var right = Expression(forOf.Right);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:409:            Expression expression => Expression(expression),
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:438:        var discriminant = Expression(@switch.Discriminant);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:443:            var test = @case.Test is null ? null : Expression(@case.Test);
+   Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs:158:            or AstExpressionStatement { Expression: AstFunctionExpression or AstClassExpression })
+-- ExpressionCore (FastParser.Expression.cs): 0 hit(s)
+-- ExpressionSequence (FastParser.WhileStatement.cs): 0 hit(s)
+-- ForStatement (FastParser.ForStatement.cs): 2 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:209:            case ForStatement @for:
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:336:    private AstStatement For(ForStatement @for)
+-- Function (FastParser.Function.cs): 35 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:120:        "dynamic-function.source.invalid" => "Unexpected token in the Function constructor's source",
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:121:        "dynamic-function.parameters.invalid" => "Unexpected token in the Function constructor's parameters",
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:122:        "dynamic-function.body.invalid" => "Unexpected token in the Function constructor's body",
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:90:        "statement.labelled-function" => "Function declarations are not allowed as the body of a loop or with statement",
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeRequest.cs:19:    /// <summary>The <c>Function</c> constructor's parameter text, parsed alone.</summary>
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeRequest.cs:22:    /// <summary>The <c>Function</c> constructor's body text, parsed alone.</summary>
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeRequest.cs:26:/// <summary>The kind of function the <c>Function</c> constructors build (CreateDynamicFunction's <c>kind</c>).</summary>
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeRequest.cs:29:    /// <summary><c>Function</c>.</summary>
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeRequest.cs:45:/// it; for the <c>Function</c> constructor's pieces, the function's kind.
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:104:        Function,
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:120:        internal bool IsBody => Kind == FrameKind.Block && (Parent is null || Parent.Kind == FrameKind.Function);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:126:    internal void EnterFunction(bool isArrow) => top = new Frame(FrameKind.Function, top) { IsArrow = isArrow };
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:156:        if (top.Kind == FrameKind.Function)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:162:        if (kind is FastVariableKind.Let or FastVariableKind.Const or FastVariableKind.Function)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:175:        var kind = top.IsBody ? FastVariableKind.Var : FastVariableKind.Function;
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:183:        while (frame != null && frame.Kind != FrameKind.Function)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:201:        if (target.Parent is { Kind: FrameKind.Function } function)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:238:        if (scope.Kind == ScopeKind.Function && node is FunctionNode { IsArrow: false } && functions.TryGetValue(node, out var facts))
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:263:                var function = Method(((FunctionExpression)definition.Value).Function, EndOf(definition.Key));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:57:                return Function(function.Function, isStatement: false, ifClause: false);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:59:                return Arrow(arrow.Function);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:20:        => Function(function, isStatement: true, ifClause);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:27:    private AstFunctionExpression Function(FunctionNode function, bool isStatement, bool ifClause)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:376:                var function = Method(method.Function, EndOf(method.Key));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Modules.cs:39:                FunctionDeclaration function => FunctionStatement(function.Function, ifClause: false),
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Modules.cs:66:            FunctionDeclaration function => FunctionStatement(function.Function, ifClause: false),
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:190:                return new AstExpressionStatement(FunctionStatement(function.Function, ifClause: false));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:317:        if (function.Function.Name is { } name && scopes.ShadowsParameter(RawName(name)))
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:320:            var inner = new AstExpressionStatement(FunctionStatement(function.Function, ifClause: false));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:330:        return new AstExpressionStatement(FunctionStatement(function.Function, ifClause: true));
+   Broiler.JS/Broiler.JavaScript.Parser/FastParserGoal.cs:11:/// PerformEval parses it; the Function constructor assembles its source and parses that as a
+   Broiler.JS/Broiler.JavaScript.Parser/FastParserGoal.cs:17:    /// <summary>The <i>Script</i> goal: script code, eval code and the Function constructor's source.</summary>
+   Broiler.JS/Broiler.JavaScript.Parser/FastParserGoal.cs:29:    /// <summary>Reserved: the Function constructor's parameter text, parsed alone. Refused at SJL-12.</summary>
+   Broiler.JS/Broiler.JavaScript.Parser/FastParserGoal.cs:32:    /// <summary>Reserved: the Function constructor's body text, parsed alone. Refused at SJL-12.</summary>
+   Broiler.JS/Broiler.JavaScript.Parser/FastParserOptions.cs:42:    /// What the constructors without options parse, and what eval code, the Function constructor's
+-- FunctionExpression (FastParser.Function.cs): 4 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:166:    /// <summary>A function declaration's name, as the old parser's <c>FunctionExpression</c> registered it.</summary>
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:263:                var function = Method(((FunctionExpression)definition.Value).Function, EndOf(definition.Key));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:56:            case FunctionExpression function:
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:23:    /// A function declaration's or expression's function, as the old parser's FunctionExpression built it: its name
+-- Identitifer (FastParser.Identifier.cs): 0 hit(s)
+-- IfStatement (FastParser.IfStatement.cs): 2 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:193:            case IfStatement @if:
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:301:    private AstStatement If(IfStatement @if)
+-- Import (FastParser.Import.cs): 5 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:113:        "module.import-attribute.duplicate-key" => "Import attribute has duplicate key '{0}'",
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:21:/// <c>switch</c>'s lexical names, an Annex B.3.4 block's function. Import bindings and a module's
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:245:            if (declaration.Kind is BindingKind.Import or BindingKind.ExportDefault)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Modules.cs:14:    private AstStatement Import(ImportDeclaration import)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:252:                return Import(import);
+-- IsDisallowedBindingKeyword (FastParser.AssignmentLeftPattern.cs): 0 hit(s)
+-- IsElidableStatementListItem (FastParser.Block.cs): 0 hit(s)
+-- IsEscapedKeyword (FastParser.ForStatement.cs): 0 hit(s)
+-- IsKeywordPropertyName (FastParser.PropertyName.cs): 0 hit(s)
+-- IsLiteralValueStart (FastParser.Expression.cs): 0 hit(s)
+-- IsStrictModeRestrictedBindingName (FastParser.Import.cs): 0 hit(s)
+-- LetBeginsLexicalDeclaration (FastParser.Statement.cs): 0 hit(s)
+-- Literal (FastParser.Literal.cs): 0 hit(s)
+-- LooksLikeAsyncFunctionOrArrow (FastParser.SinglePostfixPrefixExpression.cs): 0 hit(s)
+-- ModuleExportNameLiteral (FastParser.Import.cs): 0 hit(s)
+-- NestedFunctionShadowsParameter (FastParser.Statement.cs): 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:179:    /// <summary>Whether the nearest function's parameters bind <paramref name="name"/> (the old parser's NestedFunctionShadowsParameter).</summary>
+-- NestedStatement (FastParser.Statement.cs): 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:309:    // An `if` clause, as the old parser's NestedStatement read it: a function declaration there is Annex B.3.4's,
+-- NextExpression (FastParser.NextExpression.cs): 0 hit(s)
+-- NonDeclarativeStatement (FastParser.NonDeclarativeStatement.cs): 2 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs:154:    public bool NonDeclarativeStatement(out AstStatement statement)
+   Broiler.JS/Broiler.JavaScript.Parser/FastParser.cs:27:/// <see cref="NonDeclarativeStatement"/>, parse the rest of the text from that position through the bridge and take its
+-- NumberLiteral (FastParser.Literal.cs): 0 hit(s)
+-- ObjectLiteral (FastParser.ObjectLiteral.cs): 2 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:223:    private AstObjectLiteral Object(ObjectLiteral @object)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:52:            case ObjectLiteral @object:
+-- ObjectProperty (FastParser.ObjectLiteral.cs): 7 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:245:    // An object literal's entry, as the old parser's ObjectProperty made it. The name is built first, so that the
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:219:                var list = new Sequence<ObjectProperty>(@object.Properties.Count);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:225:                        list.Add(new ObjectProperty(spread, spread, null!, computed: false));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:246:                    list.Add(new ObjectProperty(key, target, initializer!, computed: computed));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:318:                var list = new Sequence<ObjectProperty>(@object.Properties.Count);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:323:                        list.Add(new ObjectProperty(null!, CoverPattern(rest.Argument), null!, spread: true));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:332:                    list.Add(new ObjectProperty(key, target, initializer!, computed: computed));
+-- OperatorPrecedence (FastParser.NextExpression.cs): 0 hit(s)
+-- Parameters (FastParser.Parameters.cs): 13 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:116:        internal HashSet<string>? Parameters;
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:158:            (top.Parameters ??= new HashSet<string>(System.StringComparer.Ordinal)).Add(name);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:185:        return frame?.Parameters?.Contains(name) == true;
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:203:            if (function.Parameters?.Contains(value) == true)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:121:        if (function.Parameters.Count > 0)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:123:            at = tokens.SkipTrivia(EndOf(function.Parameters[function.Parameters.Count - 1]));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:143:    // The FormalParameters, as the old parser's Parameters read them: each a binding pattern declared in the
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:145:    private Sequence<AstDeclarator> Parameters(IReadOnlyList<Pattern> parameters)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:38:        var parameters = Parameters(function.Parameters);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:51:        var parameters = Parameters(function.Parameters);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:64:        var parameters = new Sequence<AstDeclarator>(function.Parameters.Count);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:65:        foreach (var parameter in function.Parameters)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:76:        if (parameters.Count == 1 && function.Parameters[0] is BindingIdentifier && HeadIsParenthesized(function))
+-- ParseImportCall (FastParser.SingleMemberExpression.cs): 0 hit(s)
+-- ParsedContinueCount (FastParser.ForStatement.cs): 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:54:    // The old parser's ParsedContinueCount: a loop contains a continue when one was built while its body was.
+-- Precedes (FastParser.NextExpression.cs): 0 hit(s)
+-- PreventStackoverFlow (FastParser.Expression.cs): 0 hit(s)
+-- PrivateIdentifierName (FastParser.Identifier.cs): 0 hit(s)
+-- Program (FastParser.Program.cs): 0 hit(s)
+-- PropertyName (FastParser.PropertyName.cs): 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:275:    /// <summary>A property's or a class element's name, as the old parser's PropertyName read it.</summary>
+-- RebaseFunctionStart (FastParser.ObjectLiteral.cs): 0 hit(s)
+-- RegisterAnnexBFunctionHoisting (FastParser.Function.cs): 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:27:/// <b>AnnexBFunctionNames</b> follows the old parser's <c>RegisterAnnexBFunctionHoisting</c>: a plain function
+-- RejectReservedImportedBinding (FastParser.Import.cs): 0 hit(s)
+-- RequireModuleItemPosition (FastParser.Statement.cs): 0 hit(s)
+-- RightOperandFloor (FastParser.NextExpression.cs): 0 hit(s)
+-- SingleExpression (FastParser.SingleExpression.cs): 0 hit(s)
+-- SingleMemberExpression (FastParser.SingleMemberExpression.cs): 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:312:    /// A link of a member, call or tagged-template chain, as the old parser's SingleMemberExpression built it left to
+-- SinglePrefixPostfixExpression (FastParser.SinglePostfixPrefixExpression.cs): 0 hit(s)
+-- SingleStatement (FastParser.Statement.cs): 0 hit(s)
+-- SkipNewLines (FastParser.Block.cs): 15 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:112:        SkipNewLines();
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:125:        SkipNewLines();
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:139:        var m = SkipNewLines();
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:156:        var m = SkipNewLines();
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:186:        var m = SkipNewLines();
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:202:        var m = SkipNewLines();
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:219:        var m = SkipNewLines();
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:238:        var m = SkipNewLines();
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:258:        var m = SkipNewLines();
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:275:        var m = SkipNewLines();
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:292:        var m = SkipNewLines();
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:315:    public Marker SkipNewLines()
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:333:        var marker = SkipNewLines();
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:339:            SkipNewLines();
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:99:        SkipNewLines();
+-- Statement (FastParser.Statement.cs): 16 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:111:    private Sequence<AstStatement> StatementList(IReadOnlyList<Statement> body)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:121:            var statement = Statement(item);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:165:    // or a block that holds no statement (Statement builds the one as an empty expression's statement and the other as
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:167:    private static bool IsDroppedAsWritten(Statement statement)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:173:    private AstStatement Statement(Statement statement)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:198:                var body = Statement(@while.Body);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:204:                var body = Statement(doWhile.Body);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:239:                return new AstLabeledStatement(label, Statement(labelled.Body));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:245:                var body = Statement(with.Body);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:312:    private AstStatement Clause(Statement clause)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:315:            return Statement(clause);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:351:            var body = Statement(@for.Body);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:371:            var body = Statement(forIn.Body);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:391:            var body = Statement(forOf.Body);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:446:                statements.Add(Statement(item));
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:97:    // Statement lists.
+-- StringLiteral (FastParser.Literal.cs): 9 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTokens.cs:513:                case Broiler.ECMAScript.Syntax.TokenKind.StringLiteral:
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:195:    private AstLiteral String(StringLiteral @string)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:286:            case StringLiteral @string:
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:35:            case StringLiteral @string:
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:269:            case StringLiteral @string:
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs:378:                    && method.Key is IdentifierName { Name: "constructor" } or StringLiteral { Value: "constructor" };
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Modules.cs:127:                case StringLiteral @string:
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Modules.cs:80:            StringLiteral @string => String(@string),
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Modules.cs:94:            case StringLiteral @string:
+-- Switch (FastParser.Switch.cs): 2 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:235:                return Switch(@switch);
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:436:    private AstStatement Switch(SwitchStatement @switch)
+-- Template (FastParser.Template.cs): 2 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:363:    private AstTemplateExpression Template(TemplateLiteral template)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:45:                return Template(template);
+-- ValidateDeclaratorInitializers (FastParser.VariableDeclaration.cs): 0 hit(s)
+-- VariableDeclaration (FastParser.VariableDeclaration.cs): 5 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Modules.cs:38:                VariableDeclaration variables => Declaration(variables),
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:187:            case VariableDeclaration declaration:
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:279:    private AstVariableDeclaration Declaration(VariableDeclaration declaration)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:344:                VariableDeclaration declaration => Declaration(declaration),
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:407:            VariableDeclaration declaration => Declaration(declaration),
+-- VariableDeclarationStatement (FastParser.VariableDeclaration.cs): 0 hit(s)
+-- WhileStatement (FastParser.WhileStatement.cs): 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:195:            case WhileStatement @while:
+-- WithStatement (FastParser.WithStatement.cs): 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:242:            case WithStatement with:
+-- YieldExpression (FastParser.Expression.cs): 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs:102:            case YieldExpression @yield:
+-- caseBlockDepth (FastParser.Statement.cs): 0 hit(s)
+-- classStaticBlockDepth (FastParser.ObjectLiteral.cs): 0 hit(s)
+-- expressionDepth (FastParser.Expression.cs): 0 hit(s)
+-- expressionSegment (FastParser.Expression.cs): 0 hit(s)
+-- lastExpressionIndex (FastParser.Expression.cs): 0 hit(s)
+-- lastNextExpressionPosition (FastParser.NextExpression.cs): 0 hit(s)
+-- lastObjectPropertyIndex (FastParser.ObjectLiteral.cs): 0 hit(s)
+-- lastStatementPosition (FastParser.Statement.cs): 0 hit(s)
+
+== FastScanner's scanning code: distinctive names (scope: Broiler.JS and Broiler.ECMAScript outside docs/)
+-- SaveCursor: 0 hit(s)
+-- RestoreCursor: 0 hit(s)
+-- ConsumeAndNext: 0 hit(s)
+-- CanConsumeNext: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue849Tests.cs:308:    // (§11.8.4), but the old `case '\r'` consumed `\r`, called CanConsumeNext('\n')
+-- ReadToken: 5 hit(s)
+   Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Tokenizer.cs:165:        var token = ReadToken(goal);
+   Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Tokenizer.cs:287:    private Token ReadToken(LexicalGoal goal)
+   Broiler.ECMAScript/CODE-ASSURANCE.md:199:- `Broiler.ECMAScript.Syntax.Tokenizer.ReadToken(LexicalGoal)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, human line PENDING
+   Broiler.ECMAScript/HUMAN_REVIEW.md:530:- `Broiler.ECMAScript.Syntax.Tokenizer.ReadToken(LexicalGoal)` in `Broiler.ECMAScript.Frontend/Tokenizer.cs` - Security=High, Spec=ECMA-262 s12 InputElement goal symbols, `F693F8`, PENDING
+   Broiler.ECMAScript/hairs.manifest.json:3253:    { "name": "Broiler.ECMAScript.Syntax.Tokenizer.ReadToken(LexicalGoal)", "file": "Broiler.ECMAScript.Frontend/Tokenizer.cs", "exempt": false, "exemption": "None", "fingerprint": "F693F8" },
+-- _ReadToken: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser.Tests/ParserTests.cs:1057:        // stack of such a failure shows only FastScanner._ReadToken.
+-- ReadTemplateString: 0 hit(s)
+-- ReadSymbol: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue737Tests.cs:11://   token type but SkipMultilineComment returned via ReadSymbol, which Consume()'d
+-- ReadCommentsOrRegExOrSymbol: 0 hit(s)
+-- SkipMultilineComment: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue737Tests.cs:11://   token type but SkipMultilineComment returned via ReadSymbol, which Consume()'d
+-- SkipSingleLineComment: 0 hit(s)
+-- ReadIdentifierEscape: 0 hit(s)
+-- ReadNumber: 10 hit(s)
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Text/JsonReader.cs:333:                return ReadNumber();
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Text/JsonReader.cs:395:    private ResultStatus ReadNumber()
+   Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsNumberData.cs:160:        result.ReadNumber(number);
+   Broiler.ECMAScript/Broiler.ECMAScript.Intl.Tests/Differential/Vm/JsNumberData.cs:288:    private void ReadNumber(string number)
+   Broiler.ECMAScript/Broiler.ECMAScript.Intl/NumberFormatter.cs:1418:        result.ReadNumber(number);
+   Broiler.ECMAScript/Broiler.ECMAScript.Intl/NumberFormatter.cs:1553:    private void ReadNumber(string number)
+   Broiler.ECMAScript/CODE-ASSURANCE.md:154:- `Broiler.ECMAScript.Text.JsonReader.ReadNumber()` in `Broiler.ECMAScript.Algorithms/Text/JsonReader.cs` - Security=High, human line PENDING
+   Broiler.ECMAScript/HUMAN_REVIEW.md:440:- `Broiler.ECMAScript.Text.JsonReader.ReadNumber()` in `Broiler.ECMAScript.Algorithms/Text/JsonReader.cs` - Security=High, Spec=ECMA-262 25.5.1, `C7413D`, PENDING
+   Broiler.ECMAScript/hairs.manifest.json:1152:    { "name": "Broiler.ECMAScript.Text.JsonReader.ReadNumber()", "file": "Broiler.ECMAScript.Algorithms/Text/JsonReader.cs", "exempt": false, "exemption": "None", "fingerprint": "C7413D" },
+   Broiler.ECMAScript/hairs.manifest.json:4649:    { "name": "Broiler.ECMAScript.Intl.NumberPattern.ReadNumber(string)", "file": "Broiler.ECMAScript.Intl/NumberFormatter.cs", "exempt": false, "exemption": "None", "fingerprint": "A31F46" },
+-- ScanEscaped: 0 hit(s)
+-- ScanUnicodeCodePointEscape: 0 hit(s)
+-- HexDigitValue: 15 hit(s)
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSUInt8ArrayText.cs:10://     (:405-441), TryParseHexByte and HexDigitValue (:443-462)
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSUInt8ArrayText.cs:285:        var hi = HexDigitValue(hex[offset]);
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSUInt8ArrayText.cs:286:        var lo = HexDigitValue(hex[offset + 1]);
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/J/JSUInt8ArrayText.cs:296:    internal static int HexDigitValue(char c) => c switch
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt:819:Broiler.ECMAScript.Text.UriCodec.HexDigitValue(System.Char) method static System.Int32
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Text/Base64Codec.cs:237:            var value = (UriCodec.HexDigitValue(text[read]) << 4) | UriCodec.HexDigitValue(text[read + 1]);
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Text/JsonReader.cs:514:                        var digit = UriCodec.HexDigitValue(text[position + step]);
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Text/UriCodec.cs:221:                    var value = (HexDigitValue(text[at + 2]) << 12) | (HexDigitValue(text[at + 3]) << 8)
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Text/UriCodec.cs:222:                        | (HexDigitValue(text[at + 4]) << 4) | HexDigitValue(text[at + 5]);
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Text/UriCodec.cs:231:                    var value = (HexDigitValue(text[at + 1]) << 4) | HexDigitValue(text[at + 2]);
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Text/UriCodec.cs:252:    public static int HexDigitValue(char unit) => unit switch
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Text/UriCodec.cs:267:        var value = (HexDigitValue(text[at + 1]) << 4) | HexDigitValue(text[at + 2]);
+   Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-text.md:189:public static int HexDigitValue(char unit);
+   Broiler.ECMAScript/CHANGELOG.md:1002:  - `UriCodec`: `Encode`, `Decode`, Annex B's `Escape` and `Unescape`, and `HexDigitValue`;
+   Broiler.ECMAScript/hairs.manifest.json:1229:    { "name": "Broiler.ECMAScript.Text.UriCodec.HexDigitValue(char)", "file": "Broiler.ECMAScript.Algorithms/Text/UriCodec.cs", "exempt": false, "exemption": "None", "fingerprint": "039EF5" },
+-- OpensStatementHead: 0 hit(s)
+-- IsHtmlOpenCommentStart: 0 hit(s)
+-- IsHtmlCloseCommentStart: 0 hit(s)
+-- IsHashbangStart: 0 hit(s)
+-- UnexpectedCharacter: 8 hit(s)
+   Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Tokenizer.cs:1051:            return UnexpectedCharacter(start);
+   Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Tokenizer.cs:1067:    private Token UnexpectedCharacter(int start)
+   Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Tokenizer.cs:1071:        Refuse(Catalogue.UnexpectedCharacter, start, line, lineStart);
+   Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Tokenizer.cs:1234:    internal static LexicalRefusal UnexpectedCharacter => new("JSE9101", "syntax.character.unexpected");
+   Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Tokenizer.cs:312:            return UnexpectedCharacter(start);
+   Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Tokenizer.cs:356:                    Refuse(Catalogue.UnexpectedCharacter, start, startLine, startLineStart);
+   Broiler.ECMAScript/hairs.manifest.json:3224:    { "name": "Broiler.ECMAScript.Syntax.Catalogue.UnexpectedCharacter", "file": "Broiler.ECMAScript.Frontend/Tokenizer.cs", "exempt": false, "exemption": "None", "fingerprint": "E7BC20" },
+   Broiler.ECMAScript/hairs.manifest.json:3275:    { "name": "Broiler.ECMAScript.Syntax.Tokenizer.UnexpectedCharacter(int)", "file": "Broiler.ECMAScript.Frontend/Tokenizer.cs", "exempt": false, "exemption": "None", "fingerprint": "314920" },
+-- NoBigIntWidth: 3 hit(s)
+   Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Tokenizer.cs:534:        var status = NumericLiterals.Evaluate(text.AsSpan(start, valueEnd - start), strict: false, new LengthLimit(NoBigIntWidth), out var literal, out _);
+   Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Tokenizer.cs:63:    private const long NoBigIntWidth = 0;
+   Broiler.ECMAScript/hairs.manifest.json:3243:    { "name": "Broiler.ECMAScript.Syntax.Tokenizer.NoBigIntWidth", "file": "Broiler.ECMAScript.Frontend/Tokenizer.cs", "exempt": false, "exemption": "None", "fingerprint": "B4141B" },
+-- CommitIdentifier: 0 hit(s)
+-- templateParts: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue669Tests.cs:31://                  flat `templateParts` counter treated the first inner `}` as the
+-- templateBraceDepth: 0 hit(s)
+-- templateBraceDepthStack: 0 hit(s)
+-- templateCookedInvalid: 0 hit(s)
+-- lastSignificantToken: 0 hit(s)
+-- parenIsStatementHead: 0 hit(s)
+-- lastCloseParenEndedStatementHead: 0 hit(s)
+
+== FastScanner's scanning code: common names, in its own file (scope: Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs)
+-- position: 6 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:101:    /// <c>position</c>, the parameter's name as it was before window W2). A commit makes a token of the text from there to
+   Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:105:    public struct State(FastScanner scanner, int position)
+   Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:114:            var from = scanner.Text.Offset + position;
+   Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:122:        public void Reset() => position = scanner.Offset - scanner.Text.Offset;
+   Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:125:        public void Dispose() => scanner.ResetTo(scanner.Text.Offset + position);
+   Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:129:            var from = scanner.Text.Offset + position;
+-- line: 0 hit(s)
+-- column: 0 hit(s)
+-- nextToken: 0 hit(s)
+-- lastToken: 0 hit(s)
+-- Peek: 0 hit(s)
+-- Next: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:71:            token = current.Next ?? current;
+-- Consume: 0 hit(s)
+-- CanConsume: 0 hit(s)
+-- ReadString: 0 hit(s)
+-- ReadIdentifier: 0 hit(s)
+-- HexDigit: 0 hit(s)
+-- IsWhiteSpace: 0 hit(s)
+-- IsIdentifierStart: 0 hit(s)
+-- IsIdentifierPart: 0 hit(s)
+-- Unterminated: 0 hit(s)
+
+== FastTokenStream's scanning code, in its own file (scope: Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs)
+-- scanner: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:17:/// Until W2 it drove the old scanner and kept the high-water mark of a parse for the old parser's reports; W2
+-- furthest: 0 hit(s)
+-- LineTerminator: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs:321:        while (c == TokenTypes.LineTerminator)
+-- Unexpected: 0 hit(s)
+-- UnexpectedStatement: 0 hit(s)
+
+== FastKeywordMap's table, in its own file (scope: Broiler.JS/Broiler.JavaScript.Parser/FastKeywordMap.cs)
+-- switch: 0 hit(s)
+-- case: 0 hit(s)
+
+== CharExtensions' scanner members, in the parser (scope: Broiler.JS/Broiler.JavaScript.Parser)
+-- FromCodePoint: 0 hit(s)
+-- HexValue: 0 hit(s)
+-- IsDigitPart: 0 hit(s)
+-- IsLineTerminator: 0 hit(s)
+
+== The parser's half of FastScope, in its own files (scope: Broiler.JS/Broiler.JavaScript.Parser/FastScope*.cs)
+-- Push: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastScope.cs:19:    public FastScopeItem Push(FastToken token, FastNodeType nodeType) => Push(new FastScopeItem(nodeType));
+-- Variables: 0 hit(s)
+-- annexBFunctionNames: 0 hit(s)
+-- varDeclaredNames: 0 hit(s)
+-- MarkVarDeclaredName: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastScopeItem.cs:28:    public void MarkVarDeclaredName(string name)
+-- HasVarDeclaredName: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastScopeItem.cs:33:    public bool HasVarDeclaredName(string name) => false;
+-- AddAnnexBName: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastScopeItem.cs:36:    public void AddAnnexBName(in StringSpan name)
+-- GetAnnexBNames: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastScopeItem.cs:41:    public IFastEnumerable<StringSpan> GetAnnexBNames() => Sequence<StringSpan>.Empty;
+-- HasLexicalBinding: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastScopeItem.cs:44:    public bool HasLexicalBinding(in StringSpan name) => false;
+-- DeclaresVariable: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastScopeItem.cs:47:    public bool DeclaresVariable(in StringSpan name) => false;
+-- AddVariable: 2 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastScopeItem.cs:12:/// Until W2 the old parser filled these scopes as it parsed and <see cref="AddVariable"/> carried its declaration
+   Broiler.JS/Broiler.JavaScript.Parser/FastScopeItem.cs:53:    public void AddVariable(FastToken token, in StringSpan name, FastVariableKind kind = FastVariableKind.Var, bool throwError = true)
+-- GetVariables: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Parser/FastScopeItem.cs:58:    public IFastEnumerable<StringSpan> GetVariables() => Sequence<StringSpan>.Empty;
+
+== RegExpValidator, DecodeBracedUnicodeEscapes and the parenthesis-balance patch (scope: Broiler.JS and Broiler.ECMAScript outside docs/)
+-- RegExpValidator: 1 hit(s)
+   Broiler.JS/CHANGELOG.md:216:- in `Broiler.JavaScript.Parser`: `RegExpValidator`, which validated with .NET; and in `FastScanner`, the rewrite of a
+-- DecodeBracedUnicodeEscapes: 2 hit(s)
+   Broiler.JS/CHANGELOG.md:217:  literal's braced `\u{…}` escapes (`DecodeBracedUnicodeEscapes`, `TryDecodeBracedUnicodeEscapes`) and the
+   Broiler.JS/CHANGELOG.md:79:  - T26 (Broiler.JS): The source of a u or v literal keeps a braced escape as written; at the base, DecodeBracedUnicodeEscapes rewrites the pattern text (\u{1F600} read as 😀).
+
+== The division fallback (scope: Broiler.JS and Broiler.ECMAScript outside docs/)
+-- ScanRegEx: 0 hit(s)
+-- ScanFlags: 0 hit(s)
+-- divideAndAssign: 0 hit(s)
+
+== The two token re-scans and the direct-eval prefix (scope: Broiler.JS and Broiler.ECMAScript outside docs/)
+-- ContainsLegacyOctalLiteral: 2 hit(s)
+   Broiler.JS/Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:21:        if (ContainsLegacyOctalLiteral(functionDeclaration.Body))
+   Broiler.JS/Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:99:    private static bool ContainsLegacyOctalLiteral(AstStatement body)
+-- ContainsStrictReservedWordUsage: 0 hit(s)
+-- IsStrictReservedWord: 0 hit(s)
+-- injectedStrictDirective: 0 hit(s)
+-- TryGetLegacyOctalToken: 2 hit(s)
+   Broiler.JS/Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:113:                && TryGetLegacyOctalToken(literal.Start.Span.Value))
+   Broiler.JS/Broiler.JavaScript.Compiler/FastCompiler.EarlyErrors.cs:128:    private static bool TryGetLegacyOctalToken(string tokenText)
+
+== The test-only switch (scope: Broiler.JS and Broiler.ECMAScript outside docs/)
+-- ParseThroughBridge: 1 hit(s)
+   Broiler.JS/CHANGELOG.md:949:- **The switch.** The internal `JSCompilationOptions.ParseThroughBridge`, off by default, sends the compiler, direct
+-- ParsesThroughBridge: 0 hit(s)
+-- BridgeByDefault: 0 hit(s)
+-- BROILER_PARSE_THROUGH_BRIDGE: 0 hit(s)
+-- BroilerParseThroughBridge: 1 hit(s)
+   Broiler.JS/CHANGELOG.md:951:  `--parse-through-bridge` (in every mode) and the build property `BroilerParseThroughBridge=true` turn it on for tests;
+-- BroilerBridgeBuild: 0 hit(s)
+-- parse-through-bridge: 1 hit(s)
+   Broiler.JS/CHANGELOG.md:951:  `--parse-through-bridge` (in every mode) and the build property `BroilerParseThroughBridge=true` turn it on for tests;
+-- parseThroughBridge: 0 hit(s)
+-- ParseThroughBridgeFlag: 0 hit(s)
+
+== The direct-eval prefix, as text: "\"use strict\";\n" (scope: Broiler.JS/Broiler.JavaScript.Compiler)
+-- 0 hit(s)
+
+== The parenthesis-balance patch's marker, as text: Validate parentheses balance (scope: Broiler.JS and Broiler.ECMAScript outside docs/)
+-- 0 hit(s)
