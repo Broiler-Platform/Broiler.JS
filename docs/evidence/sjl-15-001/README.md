@@ -23,7 +23,7 @@ default branch on 2026-11-17.
 | [`correspondence-broiler-js.md`](correspondence-broiler-js.md) | This engine's column of Broiler.VM's correspondence, read from code at `6fda6ca4`, each row with its class across both engines (decisions D-x2 and D-js-column), and its findings J1 to J7 |
 | [`probes/`](probes/README.md) | The probes that settle the rows a reading cannot, run on both engines' default branches, every answer recorded beside the specification's |
 | [`corrections.md`](corrections.md) and [`corrections/`](corrections/class-t.tsv) | The classes E and T and the corrections C1, each by row, before any run, written by [`tools/write_lists.py`](tools/write_lists.py) from the stage table and the probes |
-| [`engine/`](engine/commands.txt) | The `semantics` vectors' runs: each engine's first run on corpus revision 42, with its negative control; both engines' runs on revision 43 as drafted, for the vectors it adds; and both engines' runs on revision 43, with their negative controls. Not runs of the rule |
+| [`engine/`](engine/commands.txt) | The `semantics` vectors' runs: each engine's first run on corpus revision 42, with its negative control; both engines' runs on revision 43 as drafted, for the vectors it adds; and both engines' runs on revision 43, with their negative controls. Not runs of the rule *(noted 2026-11-24, at corpus revision 44: the folder also holds both engines' runs on revision 44 as drafted, for the vectors it adds, and both engines' runs on revision 44, with their negative controls; the cell is left as written)* |
 | [`hashes.txt`](hashes.txt) | The SHA-256 of every other file of the bundle |
 
 ## What it will hold
@@ -100,3 +100,14 @@ binds as well: the rule reads "None lands while SJL-11.5's bases are held (bundl
 D16)", and its revision leaves it: "The rest of the definition (W2, the dark windows of bundle `sjl-14-001`, SJL-11.5's
 hold) is unchanged." No SJL-15.2 merge lands while those bases are held. This note names a merge and judges nothing;
 the paragraph above is left as written.
+
+*(Noted 2026-11-24, at corpus revision 44, before any SJL-15.2 code.)* The note above reads "No such revision exists
+yet: `conformance/vectors/REVISIONS.md` ends at revision 43." This change adds it: corpus revision 44 (that file's row
+44) adds the eval-code inputs of probes V029, V030 and V046 as `DirectEval` vectors, `since: 44`, and classifies both
+engines' runs on them as revision 43's additions were, in `scripts/conformance/semantics-divergences.txt`: Broiler.JS's
+at the default branch's engine `4f697339`, after SJL-14's W2, and Broiler.VM's at its origin/main `90e4cd24` from a
+scratch pin. The runs and their commands are in [`engine/`](engine/commands.txt). Broiler.JS differs on V046's input
+alone, accepting it (row DE3, a correction of Broiler.JS, C1's row EA0007); Broiler.VM differs on none of them, so the
+vectors do not show the answer row AB1 of the correspondence records for Broiler.VM on probes V029 and V030, whose
+sources ran as an indirect eval's code. The revision lands by this change's merge. It is no run of the rule, lets no
+SJL-15.2 code merge by itself and judges nothing; the note above is left as written.
