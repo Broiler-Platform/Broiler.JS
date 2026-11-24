@@ -3615,6 +3615,22 @@ which answer 15 does not name; they go to the owner. **Part I is pending**
 on the owner's lane `win-x64-r7-5800x`. The rule's files are not edited. Nothing is met or accepted; every clause of
 this engine's, 1 to 6, is unmet.
 
+*(Noted 2026-11-24, later, on the owner's answer 16.)* The note above reads "**part K read NOT MET on the retained
+runs** under the revision, for the hits that are the words of the bridge's message strings, which answer 15 does not
+name; they go to the owner." On 2026-11-24 the owner gave answer 16 ("Revise for msg text (Recommended)"), the owner's
+own and not one taken under the owner's direction of 2026-10-18, quoted with its question in bundle
+[`sjl-14-001`](../evidence/sjl-14-001/README.md)'s README, "W2's after commit, records part 3, recorded on
+2026-11-24". It files one more dated revision,
+[`decision-rule-revised-2026-11-24-k.md`](../evidence/sjl-14-001/decision-rule-revised-2026-11-24-k.md), written after
+the runs and part K's first and second readings were seen and so weaker evidence, which changes part K alone: its MET
+line also admits words inside a string literal that is a message text, listed with the message table that holds it
+and checked to be no member name used by reflection or lookup, and lets a member of a .NET library type be shown by
+naming that type and its assembly in place of a file and line; nothing wider. Part K's listing aid was extended to
+list those hits so. Read a third time on the retained search, the first and second readings left on record, **part K
+read MET on the retained runs** under the rule and its three revisions. **Part I is pending** on the owner's lane
+`win-x64-r7-5800x`. The rule's earlier files are not edited. Nothing is met or accepted; every clause of this
+engine's, 1 to 6, is unmet.
+
 ## Shared static semantics (SJL-15)
 
 SJL-15 makes the frontend's semantic model the single source of the static-semantics facts, and moves this engine's
