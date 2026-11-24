@@ -1,4 +1,4 @@
-"""Tests of the semantics area's generator (corpus revisions 42 and 43, milestone SJL-15).
+"""Tests of the semantics area's generator (corpus revisions 42, 43 and 44, milestone SJL-15).
 
 The generator states every expected value itself, from the specification, so the committed files are checked against
 what it writes everywhere. The check against the reference Node.js v26.12.0 that bundle sjl-9-001's reference.txt
@@ -121,6 +121,32 @@ class GeneratorTests(unittest.TestCase):
             produced = {p.stem: hashlib.sha256(p.read_bytes()).hexdigest() for p in Path(scratch).glob("*.vectors")}
         self.assertEqual(revision_42, produced)
 
+    def test_without_the_vectors_revision_44_adds_it_writes_revision_43_byte_for_byte(self) -> None:
+        # The same convention for the next revision: revision 43's files (commit 1f1f2bab, as main 4f697339 holds them),
+        # each by its SHA-256, are what the vectors added at revisions 42 and 43 write with revision 43's
+        # divergences file. That file is read from a byte-for-byte copy beside this test, checked by its SHA-256 at
+        # 1f1f2bab, not from scripts/conformance/semantics-divergences.txt, which later revisions change: a line that
+        # classifies a vector added later, or a line retired or changed, would otherwise fail this check or alter the
+        # bytes it compares.
+        divergences = Path(__file__).resolve().parent / "semantics-divergences-revision-43.txt"
+        self.assertEqual("d67faef209f12982dfd3157d54a71df1bd5da67a6a0cc2616b612655e6242821",
+                         hashlib.sha256(divergences.read_bytes()).hexdigest())
+        revision_43 = {
+            "annex-b": "e09430c0154954c5bea5d7dd53c0b9c530d32f425816e6b77f8c3ba8a696a2bb",
+            "arguments": "b4d627782a5f18c558af75716a9203cc2f25fdf70022f510424dd778b7e4fedf",
+            "expressions": "477795a8d00d40e3893206cae9cd31eebc87eedfbae2826e72d63ace6844a71d",
+            "jumps": "ec3efba152744420ee4081a57acfb29dee4b6306518115ffab61a279e829da3b",
+            "named-evaluation": "e9a16243430851c79ad94e894d39e90442660ff4bb2638f757487957c24217c5",
+            "private-names": "9776c18397f2014016e44d2fa67599f93a94b63434e8ebe54a36e12728167d5a",
+            "scopes": "f0de1779ed83ad9d6587c60e1a577a8d90b81785bc28fab3bfb2880dbccc6406",
+            "super": "80bcb22549c1c5b84a467ded13a469c0391c7107c5c415cbcc82a4c4da15616a",
+        }
+        cases = [case for case in generator.build() if case.since in (generator.SINCE, generator.EVAL_CODE)]
+        with tempfile.TemporaryDirectory() as scratch:
+            generator.write_files(generator.identifiers(cases), Path(scratch), generator.read_divergences(divergences))
+            produced = {p.stem: hashlib.sha256(p.read_bytes()).hexdigest() for p in Path(scratch).glob("*.vectors")}
+        self.assertEqual(revision_43, produced)
+
     def test_every_semantics_row_is_covered_or_named_with_its_reason(self) -> None:
         cases = generator.build()
         rows = generator.semantics_rows()
@@ -147,7 +173,7 @@ class GeneratorTests(unittest.TestCase):
             for kwargs in ({"rows": ("EE0015",)}, {"clauses": ("sec-scripts",)},
                            {"rows": ("EE0015",), "clauses": ("sec-scripts",), "op": "ParseScript"},
                            {"rows": ("EE0015",), "clauses": ("sec-scripts",), "op": "DirectEval"},
-                           {"rows": ("EE0015",), "clauses": ("sec-scripts",), "since": 44}):
+                           {"rows": ("EE0015",), "clauses": ("sec-scripts",), "since": 45}):
                 with self.assertRaises(generator.GeneratorError, msg=str(kwargs)):
                     generator.add("super", "x", "1", generator.V(1), **kwargs)
             with self.assertRaises(generator.GeneratorError):
@@ -252,9 +278,12 @@ class CommittedFileTests(unittest.TestCase):
         self.assertEqual(list(range(1, len(rows) + 1)), rows)
         self.assertEqual(generator.CORPUS_REVISION, rows[-1])
         self.assertLessEqual(generator.SINCE, generator.CORPUS_REVISION)
-        # Revision 42 added the area; revision 43 added the eval-code vectors the probes asked for, each a direct eval.
-        self.assertEqual({str(generator.SINCE), str(generator.EVAL_CODE)}, {v["since"] for v in self.vectors.values()})
-        self.assertTrue(all(v["op"] == "DirectEval" for v in self.vectors.values() if v["since"] == str(generator.EVAL_CODE)))
+        # Revision 42 added the area; revision 43 added the eval-code vectors the probes asked for, and revision 44 the
+        # eval-code inputs of probes V029, V030 and V046, each a direct eval.
+        self.assertEqual({str(generator.SINCE), str(generator.EVAL_CODE), str(generator.PROBE_INPUTS)},
+                         {v["since"] for v in self.vectors.values()})
+        later = (str(generator.EVAL_CODE), str(generator.PROBE_INPUTS))
+        self.assertTrue(all(v["op"] == "DirectEval" for v in self.vectors.values() if v["since"] in later))
 
     def test_one_file_per_kind_of_fact_and_ids_by_file(self) -> None:
         self.assertEqual(sorted(generator.FILES), sorted(FILES))

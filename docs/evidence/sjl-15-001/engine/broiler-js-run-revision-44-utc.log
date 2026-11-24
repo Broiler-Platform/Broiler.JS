@@ -1,0 +1,19 @@
+# Broiler.JS engine-level run, corpus 0a23c33a3ed5c87385f212a1864b0b8ad066653a (rev44), Broiler.JS/ of the same archive
+# started 2026-11-24T10:14:53Z
+Test run for /home/user/js-rev44land-build/js/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.18]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.42]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.65]   Starting:    Broiler.JavaScript.Vectors.Tests
+111377 vectors in 4 evaluating process(es) (BROILER_VECTORS_WORKERS) in 12 min 7.9 s; the slowest, semantics/super/ee0131/0003, took 5.001 s of the 5 s limit; 18 vectors whose out is a status were skipped and given no line, library-level (SCHEMA.md section 4): regexp/budget/k-catastrophic/0001, regexp/budget/k-catastrophic/0002, regexp/budget/k-catastrophic/0003, regexp/budget/k-catastrophic/0004, regexp/budget/k-catastrophic/0005, regexp/budget/a-alternation/0001, regexp/budget/a-alternation/0002, regexp/budget/a-alternation/0003, regexp/budget/l-look-around/0001, regexp/budget/l-look-around/0002, regexp/budget/l-look-around/0003, regexp/budget/l-look-around/0004, regexp/budget/l-look-around/0005, regexp/budget/w-one-alternative/0001, regexp/budget/w-one-alternative/0002, regexp/budget/g-greedy-run/0001, regexp/budget/g-greedy-run/0002, regexp/budget/g-greedy-run/0003; 1 found no completion in the parallel pass and were run again alone: semantics/super/ee0131/0003.
+[xUnit.net 00:12:11.52]   Finished:    Broiler.JavaScript.Vectors.Tests (ID = 'f5a7d3d4d4071bb23c18b0b45c89cf01c9f0f8973cc81abaedde91b44d84cd9d')
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [12 m 10 s]
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 12.2064 Minutes
+VSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.
+# exit 0, ended 2026-11-24T10:27:06Z

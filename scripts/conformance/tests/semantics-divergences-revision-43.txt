@@ -1,0 +1,76 @@
+# The semantics area's classified differences, read by generate_semantics_vectors.py.
+#
+# A line `reason <key>: <text>` defines a reason. A line `<engine> <key> <id>` classifies the vector <id> as a
+# divergence of <engine> for that reason: the generator writes the field divergence.<engine>: <text>. A normative
+# vector becomes a divergence. An impl-defined one stays impl-defined: its per-engine.<engine> field is the
+# expectation that engine's records commit it to, and the divergence field says the engine does not meet it yet
+# (SCHEMA.md section 5). The vector's expected value never changes.
+#
+# A line is added in a new corpus revision, with a dated row in conformance/vectors/REVISIONS.md, and is removed only
+# the same way, when the engine's cut-over corrects the difference (decision D61, the route the syntax vectors took).
+# Every reason names the row of bundle sjl-15-001's correspondence from code (Broiler.VM's
+# docs/evidence/sjl-15-001/correspondence.md, whose Broiler.JS column is this repository's
+# docs/evidence/sjl-15-001/correspondence-broiler-js.md) whose answer the engine gives in the difference, which is a
+# row the vector's note names; the engine's answer as that row records it; the row's class across both engines; and
+# the record that answers it: for Broiler.VM, SJL-15.3, its lowering on the model (JSD-0088, and the classes of its
+# bundle sjl-15-001's rule); for Broiler.JS, SJL-15.5, its compiler on the model, whose bundle sjl-15-001's rule lists
+# this engine's corrections by row before any run (corrections.md, classes T and C1). A reason is in ASCII.
+#
+# Revision 43, 2026-11-17: every difference of both engines' first engine-level runs on the semantics area, at
+# revision 42 (1cb27c7b), Broiler.JS under TZ=UTC from a clean archive of that commit and Broiler.VM at its origin/main
+# 5e90bfe4 from a scratch archive of that commit's corpus and a scratch pin; and every difference of both engines'
+# runs on the vectors revision 43 adds (`since: 43`), the eval-code refusals and names bundle sjl-15-001's probes asked
+# for, taken on revision 43 as drafted before it was committed. The runs are retained in docs/evidence/sjl-15-001/engine/.
+
+# Broiler.JS, revision 42's first run: 5 differences.
+reason js-ee0138: row EE1: Broiler.JS checks no rule of EE0138 (the stage table's js_stage none), so a class static block that names arguments, directly or in an arrow, is accepted and runs (bundle sjl-15-001's correspondence-broiler-js.md, row EE1); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row EE0138), which SJL-15.5, its compiler on the model, answers
+reason js-ee0054: row EE1: Broiler.JS checks no rule of EE0054 (the stage table's js_stage none), so this as a for-in statement's target is accepted and the loop assigns nothing (bundle sjl-15-001's correspondence-broiler-js.md, row EE1); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row EE0054), which SJL-15.5 answers
+reason js-ff4: row FF4: Broiler.JS separates a function's parameter environment from its body's only where a sloppy function holds a direct eval, not wherever the list has parameter expressions, so a closure in the parameters reads the body's var of the parameter's name (bundle sjl-15-001's correspondence-broiler-js.md, row FF4, probe V010); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row FF4), which SJL-15.5 answers by reading the model's fact
+reason js-ff5: row FF5: a direct eval in an arrow declares its var in the enclosing function's variable environment, not the arrow's own (bundle sjl-15-001's correspondence-broiler-js.md, row FF5, probe V015); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row FF5), which SJL-15.5 answers by reading the model's direct-eval facts
+broiler-js js-ee0138 semantics/arguments/ee0138/0002
+broiler-js js-ee0138 semantics/arguments/ee0138/0003
+broiler-js js-ee0054 semantics/expressions/ee0054/0003
+broiler-js js-ff4 semantics/scopes/ff4/0002
+broiler-js js-ff5 semantics/scopes/ff5/0004
+
+# Broiler.VM, revision 42's first run: 4 differences.
+reason vm-ab1: row AB1: Broiler.VM keeps the arguments object for a block function named arguments, where the pinned edition's FunctionDeclarationInstantiation, which makes no var binding for arguments, sets the arguments binding to the function when the declaration is evaluated (Broiler.JS's bundle sjl-15-001's correspondence-broiler-js.md, row AB1, probe V028); test262's annexB/language/function-code/block-decl-func-skip-arguments.js at ccaac100 asserts Broiler.VM's answer, an earlier edition's reading; a correction of Broiler.VM across both engines, which SJL-15.3, its lowering on the model's alias decision, answers (JSD-0088; the row is not yet among the corrections its bundle sjl-15-001's rule lists by row)
+reason vm-lb1: row LB1: Broiler.VM's binder refuses continue naming an outer label of a loop's label set (Broiler.VM's bundle sjl-15-001's correspondence, row LB1; bundle sjl-13-001's row D30, JSD-0083's hand-off H20); a correction of Broiler.VM, class F of its bundle sjl-15-001's rule, which SJL-15.3 makes from the model's jump targets (JSD-0088's decision D-handoffs)
+broiler-vm vm-ab1 semantics/annex-b/ab1/0005
+broiler-vm vm-lb1 semantics/jumps/lb1/0001
+broiler-vm vm-lb1 semantics/jumps/lb1/0002
+broiler-vm vm-lb1 semantics/jumps/lb1/0003
+
+# Broiler.JS, the vectors revision 43 adds (eval code a direct eval at a Script's top level evaluates): 28 differences.
+reason js-ee1-eval: row EE1: in eval code, Broiler.JS leaves the row unchecked and accepts the eval code: its compiler's checks of the row skip direct-eval code (Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs:397, FastCompiler.VisitMemberExpression.cs:25 and FastCompiler.VisitIdentifier.cs:344 at 6fda6ca4), and DirectEvalSupport's validator checks the eval code's own top level and no method or function in it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J1); a correction of Broiler.JS, class T of its bundle sjl-15-001's rule (corrections/class-t.tsv), which SJL-15.5, its compiler on the model, answers by the model's refusal at the parse of the eval code
+reason js-ee1-eval-host: row EE1: in eval code, Broiler.JS's compiler throws a .NET ArgumentNullException on a super call in a function's, a generator's or an async function's parameters or body, which escapes the evaluation (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J2); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv), which SJL-15.5 answers by the model's refusal at the parse of the eval code
+reason js-ee1-eval-hang: row EE1: in eval code, Broiler.JS compiles a field initialiser that holds a super call, in a class in a function expression, without end, and the runner's time limit stops it (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J2, probes T077 and T078); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row EE0131), which SJL-15.5 answers by the model's refusal at the parse of the eval code
+reason js-ee1-eval-typeerror: row EE1: in eval code, Broiler.JS accepts a class static block that holds a super call, and evaluating the block throws a TypeError (bundle sjl-15-001's correspondence-broiler-js.md, row EE1, finding J2, probe T088); a correction of Broiler.JS, class C1 of its bundle sjl-15-001's rule (corrections.tsv, row EE0139), which SJL-15.5 answers by the model's refusal at the parse of the eval code
+broiler-js js-ee1-eval semantics/super/ee0015/0004
+broiler-js js-ee1-eval semantics/super/ee0074/0003
+broiler-js js-ee1-eval semantics/super/ee0075/0003
+broiler-js js-ee1-eval semantics/super/ee0093/0003
+broiler-js js-ee1-eval semantics/super/ee0102/0003
+broiler-js js-ee1-eval semantics/super/ee0103/0003
+broiler-js js-ee1-eval semantics/super/ee0106/0003
+broiler-js js-ee1-eval semantics/super/ee0117/0003
+broiler-js js-ee1-eval semantics/super/ee0118/0003
+broiler-js js-ee1-eval semantics/super/ee0121/0003
+broiler-js js-ee1-eval semantics/super/ee0124/0004
+broiler-js js-ee1-eval semantics/super/ee0126/0003
+broiler-js js-ee1-eval semantics/super/ee0142/0003
+broiler-js js-ee1-eval semantics/super/ee0150/0003
+broiler-js js-ee1-eval semantics/super/ee0151/0003
+broiler-js js-ee1-eval semantics/arguments/ee0130/0005
+broiler-js js-ee1-eval-host semantics/super/ee0076/0003
+broiler-js js-ee1-eval-host semantics/super/ee0077/0004
+broiler-js js-ee1-eval-host semantics/super/ee0104/0003
+broiler-js js-ee1-eval-host semantics/super/ee0105/0003
+broiler-js js-ee1-eval-host semantics/super/ee0119/0003
+broiler-js js-ee1-eval-host semantics/super/ee0120/0003
+broiler-js js-ee1-eval-host semantics/super/ee0152/0003
+broiler-js js-ee1-eval-host semantics/super/ee0153/0003
+broiler-js js-ee1-eval-hang semantics/super/ee0131/0003
+broiler-js js-ee1-eval-typeerror semantics/super/ee0139/0003
+broiler-js js-ee0138 semantics/arguments/ee0138/0004
+broiler-js js-ee0054 semantics/expressions/ee0054/0005

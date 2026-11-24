@@ -262,3 +262,15 @@ prov: spec:es2026@0248456c#sec-evaldeclarationinstantiation spec:es2026@0248456c
 script: var r; try { throw 1; } catch (x) { eval('var x = 2;'); r = x; } r
 note: catalogue row EA0007; correspondence row DE3: accepted, a var of eval code may name a catch parameter (B.3.4); Annex B is required of a web-browser host and optional for any other, so the outcome is the host's: both engines' requests turn it on for scripts (Broiler.VM's JSD-0083, decision D17, and its bundle sjl-13-001's correspondence, row R08, same; Broiler.JS's docs/roadmap/SharedLibraries.md, the frontend's syntax half, the request's switches), so each engine's expectation is the extension's outcome
 since: 42
+
+id: semantics/scopes/ea0007/0005
+area: semantics
+op: DirectEval
+in: str:"eval(\"let x; eval('var x;')\")"
+out: error: SyntaxError
+class: divergence
+divergence.broiler-js: row DE3: in eval code a direct eval at a Script's top level evaluates, Broiler.JS accepts a var of the eval code that eval code's own direct eval evaluates against the let of that name in the calling eval code, which the specification refuses by EvalDeclarationInstantiation's step 3.d.i.2.a.i (catalogue row EA0007), as probe V046 showed in an indirect eval's code (bundle sjl-15-001's correspondence-broiler-js.md, row DE3, probe V046); the row's class across both engines, which reads (its emphasis left out) "correction of Broiler.JS for a `var` of eval code against a lexical declaration of the eval code that called it (V046; C1's row EA0007)", class C1 of its bundle sjl-15-001's rule (corrections.tsv, row EA0007), which SJL-15.5, its compiler on the model, answers by the model's conflicts with the caller's lexical names in the inherited context
+prov: spec:es2026@0248456c#sec-evaldeclarationinstantiation spec:es2026@0248456c#sec-performeval
+script: eval("let x; eval('var x;')")
+note: catalogue row EA0007; correspondence row DE3: refused, a var of eval code against the lexical declaration of the eval code that calls it, in eval code a direct eval at a Script's top level evaluates (bundle sjl-15-001's probe V046)
+since: 44

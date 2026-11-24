@@ -79,3 +79,50 @@ Broiler.VM.
   exit     0 for the run: no unclassified difference; of the semantics area, 213 match and 4 are classified
            divergences; 1 for the negative control, its one difference
   files    broiler-vm-run-revision-43.log and its report .tsv.gz; broiler-vm-negative-control-revision-43.log and .tsv
+
+*(Noted 2026-11-24, at revision 44.)* Revision 44's runs were taken with the commands above and one difference, fixed
+before any of them ran: their scratch folders were on the machine's disk under /home/user/js-rev44land-build/, not on
+/dev/shm, since the machine's working rules of 2026-11-18 allow no more than 500 MB written to /dev/shm and put each
+build under /home/user/<stage>-build/, removed afterwards. Each tree was written by a plain git archive of the whole
+commit, as above. Where the paragraphs above name 6fda6ca4's product paths and Broiler.VM's origin/main 5e90bfe4, the
+runs of revision 44 have the product paths of Broiler.JS's default branch at 4f697339d2b360b422d4c0e32898cefca3423d95
+(Broiler-Platform/Broiler.JS#1130, after SJL-14's W2, Broiler-Platform/Broiler.JS#1129), which revision 44's commits
+leave unchanged, and Broiler.VM's origin/main 90e4cd24ba182bbfc1f45e2db128d650c1dbc9ba
+(Broiler-Platform/Broiler.VM#223), which descends from Broiler.VM's earlier origin/main
+258e8596022b787c3e54d97fe65d541c3f8f9651 and differs from it only in files under docs/, so the engine built from it is
+258e8596's. The host is the one named above. Besides the runs the first paragraph lists, this folder now holds both
+engines' runs on revision 44 as drafted and both engines' runs on revision 44 with their negative controls; that
+paragraph is left as written.
+
+== Revision 44 as drafted, before it was committed
+
+The tree: Broiler.JS faf4e27fc32bfabbc3908bdd60f5e43f005ce5ee (this branch: the default branch's 4f697339 with the
+vectors revision 44 adds, `since: 44`, and a draft row 44 in REVISIONS.md, before the classification was written).
+Broiler.VM's archive of its corpus was written by git archive and pinned by broiler-vm-revision-44-drafted.pin. No
+negative control was taken on it, as on revision 43 as drafted.
+  Broiler.JS   09:49:45Z to 10:01:56Z; exit 1: 1 unclassified difference, semantics/scopes/ea0007/0005, of the vectors
+               revision 44 adds; the area's 33 classified divergences hold; broiler-js-run-revision-44-drafted-utc.log
+               and .tsv.gz
+  Broiler.VM   10:02:43Z to 10:08:06Z; exit 0: no unclassified difference; none of the added vectors differs, and the
+               area's 4 classified divergences hold; broiler-vm-run-revision-44-drafted.log and .tsv.gz
+
+== Revision 44, corpus 0a23c33a3ed5c87385f212a1864b0b8ad066653a
+
+The corpus as committed, its divergence fields read by each runner; no later commit of this change touches
+conformance/vectors/.
+Broiler.JS.
+  times    run 10:14:53Z to 10:27:06Z; negative control 10:27:06Z to 10:38:37Z
+  exit     0 for the run: no unclassified difference, and the run's test passes; of the semantics area, 186 match and
+           34 are classified divergences; 1 under the negative control, its one difference
+  files    broiler-js-run-revision-44-utc.log and its report .tsv.gz; broiler-js-negative-control-revision-44-utc.log
+           and .tsv
+  also     outside the semantics area, 250 vectors whose divergence.broiler-js field no longer holds match (the
+           report's "match (divergence no longer holds)"; 30 in revision 43's run, each among them), in this run and in
+           the run on revision 44 as drafted alike; revision 44 retires none of those fields
+
+Broiler.VM.
+  pin      broiler-vm-revision-44.pin
+  times    run 10:39:23Z to 10:44:29Z; negative control 10:44:29Z to 10:49:28Z
+  exit     0 for the run: no unclassified difference; of the semantics area, 216 match and 4 are classified
+           divergences; 1 for the negative control, its one difference
+  files    broiler-vm-run-revision-44.log and its report .tsv.gz; broiler-vm-negative-control-revision-44.log and .tsv

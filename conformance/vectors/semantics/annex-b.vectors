@@ -141,3 +141,25 @@ prov: spec:es2026@0248456c#sec-block-level-function-declarations-web-legacy-comp
 script: 'use strict'; { function g() {} } typeof g
 note: correspondence row AB1: accepted, no alias in strict code
 since: 42
+
+id: semantics/annex-b/ab1/0012
+area: semantics
+op: DirectEval
+in: str:"eval('function f() { { let g = 1; { function g() {} } } return typeof g; } f()')"
+out: value: str:"undefined"
+class: normative
+prov: spec:es2026@0248456c#sec-block-level-function-declarations-web-legacy-compatibility-semantics spec:es2026@0248456c#sec-functiondeclarationinstantiation spec:es2026@0248456c#sec-performeval
+script: eval('function f() { { let g = 1; { function g() {} } } return typeof g; } f()')
+note: correspondence row AB1: accepted, no alias where the replacing var would conflict with a lexical declaration it hoists through, in a function declared in eval code a direct eval at a Script's top level evaluates (bundle sjl-15-001's probe V029)
+since: 44
+
+id: semantics/annex-b/ab1/0013
+area: semantics
+op: DirectEval
+in: str:"eval(\"'use strict'; { function g() {} } typeof g\")"
+out: value: str:"undefined"
+class: normative
+prov: spec:es2026@0248456c#sec-block-level-function-declarations-web-legacy-compatibility-semantics spec:es2026@0248456c#sec-evaldeclarationinstantiation spec:es2026@0248456c#sec-strict-mode-code spec:es2026@0248456c#sec-performeval
+script: eval("'use strict'; { function g() {} } typeof g")
+note: correspondence row AB1: accepted, no alias in strict code, in eval code a direct eval at a Script's top level evaluates (bundle sjl-15-001's probe V030)
+since: 44

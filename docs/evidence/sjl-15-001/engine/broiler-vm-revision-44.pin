@@ -1,0 +1,12 @@
+# broiler-js-conformance retained suite pin 1
+#
+# A scratch pin (SJL-15, corpus revision 44, Broiler.JS's change), not a record.
+
+suite broiler-js-vectors
+upstream Broiler-Platform/broiler.js
+revision 0a23c33a3ed5c87385f212a1864b0b8ad066653a
+archive git archive --format=tar.gz 0a23c33a3ed5c87385f212a1864b0b8ad066653a -- conformance/vectors :(exclude)conformance/vectors/controls
+archive-sha256 4cf235434d5dc23da574cf370910efb8d51ef2d68295cd8b69167fce3821cb76
+content-sha256 783926efcef34ed1883d39b72243f818969fdc596107547bc9d43d9a8ef507a5
+files 89
+archived no
