@@ -74,3 +74,15 @@ broiler-js js-ee1-eval-hang semantics/super/ee0131/0003
 broiler-js js-ee1-eval-typeerror semantics/super/ee0139/0003
 broiler-js js-ee0138 semantics/arguments/ee0138/0004
 broiler-js js-ee0054 semantics/expressions/ee0054/0005
+
+# Revision 44, 2026-11-24: every difference of both engines' runs on the vectors revision 44 adds (`since: 44`), the
+# eval-code inputs of bundle sjl-15-001's probes V029, V030 and V046, taken on revision 44 as drafted before it was
+# committed (faf4e27f): Broiler.JS at that commit, whose engine is the default branch's 4f697339 (after SJL-14's W2),
+# under TZ=UTC from a clean archive of it, and Broiler.VM at its origin/main 90e4cd24 from a scratch archive of that
+# commit's corpus and a scratch pin. Broiler.VM differs on none of the three, and Broiler.JS on the V046 input alone.
+# Revision 43's lines are unchanged: each difference they classify is a difference in both engines' runs on revision 44.
+# The runs are retained in docs/evidence/sjl-15-001/engine/.
+
+# Broiler.JS, the vectors revision 44 adds: 1 difference.
+reason js-de3-eval: row DE3: in eval code a direct eval at a Script's top level evaluates, Broiler.JS accepts a var of the eval code that eval code's own direct eval evaluates against the let of that name in the calling eval code, which the specification refuses by EvalDeclarationInstantiation's step 3.d.i.2.a.i (catalogue row EA0007), as probe V046 showed in an indirect eval's code (bundle sjl-15-001's correspondence-broiler-js.md, row DE3, probe V046); the row's class across both engines, which reads (its emphasis left out) "correction of Broiler.JS for a `var` of eval code against a lexical declaration of the eval code that called it (V046; C1's row EA0007)", class C1 of its bundle sjl-15-001's rule (corrections.tsv, row EA0007), which SJL-15.5, its compiler on the model, answers by the model's conflicts with the caller's lexical names in the inherited context
+broiler-js js-de3-eval semantics/scopes/ea0007/0005
