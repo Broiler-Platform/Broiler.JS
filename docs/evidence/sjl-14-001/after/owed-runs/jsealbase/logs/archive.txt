@@ -1,0 +1,2 @@
+free before: 9G
+jseal: a1216a80034e185d69d0d76d9ef855105698c00b (scratch clone of the read-only clone)

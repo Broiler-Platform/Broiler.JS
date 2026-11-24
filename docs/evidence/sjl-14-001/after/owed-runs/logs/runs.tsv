@@ -1,0 +1,4 @@
+w2r-dtextbase	rc=0	wall=150.8s maxrss=617MB	started=2026-11-24T03:36:49Z	ended=2026-11-24T03:39:20Z
+w2r-jsealbase	rc=3	wall=0.0s maxrss=12MB	started=2026-11-24T03:40:13Z	ended=2026-11-24T03:40:13Z
+w2r-jsingle	rc=0	wall=455.6s maxrss=849MB	started=2026-11-24T03:40:14Z	ended=2026-11-24T03:47:50Z
+w2r-jsealbase	rc=0	wall=66.9s maxrss=271MB	started=2026-11-24T03:48:49Z	ended=2026-11-24T03:49:56Z

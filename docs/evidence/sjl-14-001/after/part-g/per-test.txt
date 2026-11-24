@@ -1,0 +1,23 @@
+# read_g.py: part G per test, each suite's TRX at the base candidate and at the after candidate, as given
+## HtmlBridge
+base: docs/evidence/sjl-14-001/base/local/part-g/htmlbridge/trx/htmlbridge.trx
+after: docs/evidence/sjl-14-001/after/local/html/htmlbridge/trx/htmlbridge.trx
+results at the base: 2371 (NotExecuted 21, Passed 2350); after: 2371 (NotExecuted 21, Passed 2350); test keys on both: 2370; at the base only: 0; after only: 0
+outcome differs: 0
+passing against the base candidate and not passing against the after candidate: 0
+
+## JSeal-Release
+base: docs/evidence/sjl-14-001/after/owed-runs/jsealbase/jseal-trx/_vm_2026-11-24_03_49_32_net10.0.trx
+after: docs/evidence/sjl-14-001/after/local/jseal/jseal-trx/_vm_2026-11-23_22_14_06_net10.0.trx
+results at the base: 357 (NotExecuted 2, Passed 355); after: 357 (NotExecuted 2, Passed 355); test keys on both: 357; at the base only: 0; after only: 0
+outcome differs: 0
+passing against the base candidate and not passing against the after candidate: 0
+
+## JSeal-Release-VM
+base: docs/evidence/sjl-14-001/after/owed-runs/jsealbase/jseal-trx/_vm_2026-11-24_03_49_45_net10.0.trx
+after: docs/evidence/sjl-14-001/after/local/jseal/jseal-trx/_vm_2026-11-23_22_14_21_net10.0.trx
+results at the base: 642 (NotExecuted 2, Passed 640); after: 642 (NotExecuted 2, Passed 640); test keys on both: 642; at the base only: 0; after only: 0
+outcome differs: 0
+passing against the base candidate and not passing against the after candidate: 0
+
+every test that passes against the base candidate passes against the after candidate, in every suite above: True

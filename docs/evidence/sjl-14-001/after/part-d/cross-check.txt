@@ -1,0 +1,24 @@
+acceptance.json.gz lists 16704 differences; parser/differences.tsv.gz has 16704 outcome, type or message rows; the same set: True
+parser trees: 85608 input variants accepted at both commits whose parser-sha256 differs; parser/differences.tsv.gz has 85608 dump rows; the same set: True
+pass trees: 85412 input variants accepted at both commits whose pass-sha256 differs; pass/differences.tsv.gz has 85412 dump rows; the same set: True
+## parser/differences.tsv.gz by pair (P/B: P at the base against P after; K/K-on: K at the base against K after), kind and class
+6833	K/K-on	message	M
+1214	K/K-on	outcome	C1
+6	K/K-on	outcome	C3
+10	P/B	dump	C1
+81967	P/B	dump	S
+6	P/B	dump	rev-bracket
+3625	P/B	dump	rev-eof
+5415	P/B	message	M
+1223	P/B	outcome	C1
+6	P/B	outcome	C3
+1985	P/B	outcome	E
+22	P/B	outcome	rev-code
+unclassified: 0
+## pass/differences.tsv.gz by pair (P/B: P at the base against P after; K/K-on: K at the base against K after), kind and class, dump rows only (its outcome rows are parser/'s)
+10	P/B	dump	C1
+77428	P/B	dump	S
+6	P/B	dump	rev-bracket
+3604	P/B	dump	rev-eof
+4364	P/B	dump	unclassified
+unclassified: 4364

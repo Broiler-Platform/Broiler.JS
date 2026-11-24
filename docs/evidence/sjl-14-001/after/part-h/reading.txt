@@ -1,0 +1,13 @@
+# read_h.py: part H's members that differ between the base and after listings, by assembly, kind and the row of
+# docs/public-api.md (W2's section) that covers each; members.tsv lists each with both attribute texts.
+assemblies at the base: 22; at the after commit: 22; members read: 9541 at the base, 9542 after
+178	Broiler.JavaScript.Ast	moved to Broiler.JavaScript.Expressions	row 4: the non-tree types moved from Ast to Expressions, Ast forwarding each, (a) forwarder (moved-forwarded)
+568	Broiler.JavaScript.Ast	newly obsolete	row 3: every public type of Broiler.JavaScript.Ast but the non-tree types and FastParseException, (b) obsolete, removal 1.0.0 (obsolete)
+1	Broiler.JavaScript.Compiler	added	row 6: DirectEvalSupport.Execute(...), the new overload with bool inDerivedConstructor, added
+178	Broiler.JavaScript.Expressions	moved from Broiler.JavaScript.Ast	row 4: the non-tree types moved from Ast to Expressions, Ast forwarding each, (a) forwarder (moved-forwarded)
+186	Broiler.JavaScript.Parser	newly obsolete	row 1: every public type of Broiler.JavaScript.Parser and every member of each, (b) obsolete, removal 1.0.0 (facade-obsolete)
+## dispositions.tsv against the row, per member the row covers
+186	row 1:	dispositions.tsv agrees
+568	row 3:	dispositions.tsv agrees
+356	row 4:	dispositions.tsv agrees
+members no row covers, or whose check fails: 0

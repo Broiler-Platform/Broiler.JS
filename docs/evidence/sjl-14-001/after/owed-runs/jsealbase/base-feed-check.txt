@@ -1,0 +1,1 @@
+the base candidate feed's packages, against base/local/part-g/candidate-feed.sha256.txt: 70 recorded, 70 equal, 0 differ or missing

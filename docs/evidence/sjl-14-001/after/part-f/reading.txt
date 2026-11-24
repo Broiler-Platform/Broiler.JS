@@ -1,0 +1,107 @@
+# read_f.py: each public type the after commit's metadata reader lists, with dispositions.tsv's line for it
+assembly	type	reader	diagnosticId	message names 1.0.0	dispositions.tsv	removal	reading
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstBlock	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstClassProperty	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstExpressionExtensions	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstIdentifier	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstIdentifierReplacer	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstLiteral	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstMapVisitor`1	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstMeta	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstNode	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstObjectLiteral	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstProgram	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstPropertyKind	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstReduce	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstSpreadElement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstSuper	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AstVariableDeclaration	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.AwaitYieldParameterDetector	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.ClosureDetector	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.ExpressionPatternExtensions	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstArrayExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstAwaitExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstBinaryExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstCallExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstConditionalExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstEmptyExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstFunctionExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstImportCall	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstMemberExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstNewExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstOptionalChain	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstSequenceExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstTaggedTemplateExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstTemplateExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstUnaryExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Expressions.AstYieldExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.FastVariableKind	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.IdentifierNameCollector	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc.ArraySpan`1	forwarded	-	-	moved-forwarded	-	forwarded to Broiler.JavaScript.Expressions
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc.Case	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc.FastKeywords	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc.FastNodeType	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc.FastParseException	no	-	-	moved-forwarded	-	not forwarded, not marked: dispositions.md marks it moved-forwarded, which asks no mark
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc.FastToken	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc.IPropertyAccessor	forwarded	-	-	moved-forwarded	-	forwarded to Broiler.JavaScript.Expressions
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc.IPropertyValue	forwarded	-	-	moved-forwarded	-	forwarded to Broiler.JavaScript.Expressions
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc.SpanLocation	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc.StringSpan	forwarded	-	-	moved-forwarded	-	forwarded to Broiler.JavaScript.Expressions
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc.StringSpanReader	forwarded	-	-	moved-forwarded	-	forwarded to Broiler.JavaScript.Expressions
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc.TokenTypes	forwarded	-	-	moved-forwarded	-	forwarded to Broiler.JavaScript.Expressions
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc.TokenTypesExtensions	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Misc.UnaryOperator	forwarded	-	-	moved-forwarded	-	forwarded to Broiler.JavaScript.Expressions
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.ObjectProperty	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Patterns.AstArrayPattern	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Patterns.AstBindingPattern	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Patterns.AstObjectPattern	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstBreakStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstClassExpression	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstContinueStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstDebuggerStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstDoWhileStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstExportStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstExpressionStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstForInStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstForOfStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstForStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstIfStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstImportStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstLabeledStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstReturnStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstSwitchStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstThrowStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstTryStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstWhileStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.Statements.AstWithStatement	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Ast.VariableDeclarator	yes	BJS0002	true	obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Ast	Broiler.JavaScript.Runtime.CancellableDisposableAction	forwarded	-	-	moved-forwarded	-	forwarded to Broiler.JavaScript.Expressions
+Broiler.JavaScript.Ast	Broiler.JavaScript.Runtime.RegExpUnicodeValidator	forwarded	-	-	moved-forwarded	-	forwarded to Broiler.JavaScript.Expressions
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.CharExtensions	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.DisposableList	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.Error	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.ErrorHandler	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastKeywordMap	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastList`1	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastList`1+FastEnumerator	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastList`1+ReverseEnumerator	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastParser	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastParser+StreamLocation	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastParserGoal	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastParserOptions	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastPool	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastPool+Scope	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastScanner	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastScanner+State	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastScope	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastScopeItem	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastStack`1	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastStringBuilder	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastTokenStream	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.FastTokenStream+Marker	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.IParser	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+Broiler.JavaScript.Parser	Broiler.JavaScript.Parser.QueueExtensions	yes	BJS0002	true	facade-obsolete	1.0.0	marked, as dispositions.md asks
+# rows: 103; read as dispositions.md asks: 103; not: 0
+# types dispositions.tsv marks obsolete that the reader does not list (a public type absent at the after commit): 0

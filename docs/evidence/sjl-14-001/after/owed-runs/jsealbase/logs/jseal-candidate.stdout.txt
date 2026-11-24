@@ -1,0 +1,28 @@
+J02: revision
+J02: working-tree
+J02: sdk
+J02: node
+J02: candidate-source-files
+J02: candidate-pins
+J02: pack
+J02: gate-source
+J02: BroilerJs-restore
+J02: BroilerJs-build
+J02: BroilerJs-run
+J02: BroilerJs-empty-feed
+J02: BroilerJs-missing-contracts
+J02: Vm-restore
+J02: Vm-build
+J02: Vm-run
+J02: Vm-empty-feed
+J02: Vm-missing-contracts
+J02: Both-restore
+J02: Both-build
+J02: Both-run
+J02: Both-empty-feed
+J02: Both-missing-contracts
+J02: gate
+J02: candidate-test-Release
+J02: candidate-test-Release-VM
+J19: candidate package gate passed (BroilerJs, Vm and Both consumers).
+J02 report: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2read/runs/jsealbase/jseal

@@ -1,0 +1,1 @@
+the candidate directory's packages are the base run's, byte for byte (same names and SHA-256)

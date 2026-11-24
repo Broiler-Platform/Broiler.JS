@@ -1,0 +1,5 @@
+  Determining projects to restore...
+  Restored /home/user/js-w2read-build/69a8a13b/jsealbase/Broiler.JSeal/Broiler.JSeal.csproj (in 174 ms).
+  Restored /home/user/js-w2read-build/69a8a13b/jsealbase/Broiler.JSeal.Vm/Broiler.JSeal.Vm.csproj (in 1.33 sec).
+  Restored /home/user/js-w2read-build/69a8a13b/jsealbase/Broiler.JSeal.BroilerJs/Broiler.JSeal.BroilerJs.csproj (in 1.33 sec).
+  Restored /home/user/js-w2read-build/69a8a13b/jsealbase/Broiler.JSeal.Tests/Broiler.JSeal.Tests.csproj (in 1.58 sec).
