@@ -1392,8 +1392,11 @@ after commit), with each run's re-run of its timed-out path, and its classificat
   ([`compare-checks.log`](after/part-a/comparison/compare-checks.log)).
 - **Every changed row but two** fails at the base and passes after on a path `corrections/k-paths.tsv` lists for a row
   of K1 to K10, and is C1, listed in `classifications.json` with its path, its variant and its correction (part C's
-  reading of a test262 case, `base/part-c/scripts/classify_local.py`); the changelog's section "The cut-over to the
-  shared syntax library" names K1 to K10 by row. No row is C3 or T.
+  reading of a test262 case, `base/part-c/scripts/classify_local.py`); and each such path is listed by name, in
+  backquotes, in `Broiler.JS/CHANGELOG.md`'s section "The cut-over to the shared syntax library", which names K1 to K10
+  by row (checked path by path at the after commit, 2026-11-24, in review of this record), as C1's "and in the
+  changelog" asks. No row is C3 or T. *(Revised 2026-11-24, in review: this sentence first read "the changelog's
+  section "The cut-over to the shared syntax library" names K1 to K10 by row".)*
 - **The two others:**
   - `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js`, original variant, fails at the base and
     passes after, and no row of K1 to K10 explains it: part A's C1 line reads "a C1 row that none explains is recorded
@@ -1461,6 +1464,18 @@ acceptance`'s list to be one set, and the dump rows to be every input variant wh
   runs by the rule's own tool, its report identical line by line to the base's retained dump report
   ([`after/owed-runs/dtextbase/`](after/owed-runs/dtextbase/identity-with-base-d1.txt)), so it describes the base run's
   trees and weakens nothing. Not judged beyond that (EX-30).
+- *(Noted 2026-11-24, after the comparison, in review of this record.)* The paragraphs above and
+  [`after/part-d/README.md`](after/part-d/README.md) name the two commits' dump texts as "kept outside the repository,
+  by digest" ([`after/part-d/texts.sha256.txt`](after/part-d/texts.sha256.txt)). On 2026-11-24, once the comparison was
+  done, both texts (`/home/user/js-w2read-build/69a8a13b/text/dumps-p.txt.gz` and
+  `/home/user/js-w2after-build/83a9bd82/text/dumps-p.txt.gz`), `read_d.sh`'s work files
+  ([`after/part-d/work.sha256.txt`](after/part-d/work.sha256.txt)) and the after commit's candidate feed were removed
+  with the build folders that held them; they remain named by digest only. So `parser/`'s and `pass/`'s tables
+  regenerate only after the after driver's `dtext` step and the owed `dtextbase` step are taken again (through
+  `run.sh`, a build at each commit) and `read_d.sh` is run on their texts; the parts that need no text
+  (`acceptance.log`, `acceptance.json.gz`) regenerate from the retained reports. And the texts' own bytes were not
+  shown reproducible: `identity-with-partd.txt` and `identity-with-base-d1.txt` compare the dump reports' rows, with
+  the `#` lines (among them each assembly's identifier) left out, not the texts.
 
 ### Part E, read
 
@@ -1564,8 +1579,14 @@ and message, from the after run's sessions (`after/local/fuzz/session/`, `after/
     (`Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMeta.cs`, unchanged since `68f9a87a`, before
     W1), which its documentation calls deliberate ("a deterministic ReferenceError naming that rather than a silent
     `undefined`"), and the session compiles every module seed through `CoreScript.Compile(..., isModule: true)` with no
-    module record. Read: a fuzz-harness input defect (a module seed compiled where no module record exists), not W2's;
-    by the rule's reading ("a finding is any other exception type") each is a finding.
+    module record. Read: the engine's throw site is not W2's change (no commit from `68f9a87a` to the after commit
+    touches that file); the input defect, a module seed compiled where no module record exists, is the session's, and
+    the session is W2's own tool, committed to the bundle with the after commit's change (`8a0928f4`, "SJL-14: W2, part
+    J's mutation session and part K's deletion search, committed with the after commit's change", and W2's review fixes
+    `a352fd1c`; neither is in the base commit), whose `tools/fuzz/Program.cs` calls `CoreScript.Compile(...,
+    isModule: module)` with no module record. By the rule's reading ("a finding is any other exception type") each is a
+    finding. *(Revised 2026-11-24, in review of this record before it merged: this sentence first read "Read: a
+    fuzz-harness input defect (a module seed compiled where no module record exists), not W2's".)*
   - **V000002** (`inputs/broiler-vm/generated/refuse-more-locals-than-the-frame-admits.js`, goal script, a generated
     program of very many declarations): mutants that the frontend accepts compile past the session's bound per compile.
     The seed itself, and each of its timed-out mutants, compiled alone with nothing else running, takes longer than the
@@ -1580,33 +1601,78 @@ and message, from the after run's sessions (`after/local/fuzz/session/`, `after/
 (`after/local/delsearch/search.txt`) again from the after commit's tree and sorts it as the search's README says the
 reading does: facade members, the compiler's own `ContainsLegacyOctalLiteral` (and its helper) that `dispositions.md`
 keeps until SJL-15.5, other types' members of the same name (the bridge's, the library's, a token's), and text (code
-comments, and lines of changelogs, assurance records and manifests).
-- **No listed implementation is found:** the old parser's partial files are absent; the scanning code's distinctive
-  names, the division fallback, the re-scans, the direct-eval prefix and the parenthesis-balance marker have no hit but
-  text, other types' members and the compiler's own kept `ContainsLegacyOctalLiteral`; every hit in the facade files is
-  a facade member `dispositions.md` keeps over the bridge, a comment, or a name of another type used there.
-- **`Broiler.JS/CHANGELOG.md:951`** (`--parse-through-bridge`, `BroilerParseThroughBridge`; with `:949`,
-  `JSCompilationOptions.ParseThroughBridge`) is inside part K's scope ("over Broiler.JS/ and Broiler.ECMAScript/ outside
-  docs/"; the changelog is under `Broiler.JS/`, and the rule's list of product paths, which leaves it out, is not part
-  K's scope). It is the changelog's entry of 2026-11-03 for W1, prose naming the test-only switch as W1 added it; the
-  switch, which `dispositions.md` lists as "added at W1, removed at W2", has no declaration or reference left in code
-  (its section's other names have no hit). The changelog's lines `:79` (W2's own entry, correction K6's row T26, "at the
-  base, DecodeBracedUnicodeEscapes rewrites the pattern text"), `:216` and `:217` (SJL-11.5's entry) name
-  `DecodeBracedUnicodeEscapes` and `RegExpValidator` in the same way, as removed.
+comments, and lines of changelogs, assurance records and manifests). **The sort is by file and by the line's own
+text** ([`read_k.py`](after/part-k/read_k.py)'s docstring): a code line of a facade file is sorted a facade member, a
+code line under the bridge's folder the bridge's own member, and a code line under `Broiler.ECMAScript/` the library's
+own; only the lines it names one by one are read singly. It does not read each hit's declaration: the bridge's and the
+library's hits are not listed with the declaration that shows them another type's member, and a facade file's hit is
+not checked against `dispositions.tsv`'s member lines.
+- **No listed implementation is found, as far as that sort reads:** the old parser's partial files are absent; the
+  scanning code's distinctive names, the division fallback, the re-scans, the direct-eval prefix and the
+  parenthesis-balance marker have no hit but text, lines sorted to other types' members and the compiler's own kept
+  `ContainsLegacyOctalLiteral`; every code hit in the facade files is a line of a facade file `dispositions.md` keeps
+  over the bridge, or, read singly, a name of another type used there.
+- **The search's narrowed scopes.** The rule's configuration searches "over Broiler.JS/ and Broiler.ECMAScript/ outside
+  docs/". The committed search ([`tools/deletion-search/search.py`](tools/deletion-search/search.py): a name that is a
+  common word of the engine's code "is searched in the file that declared it at 33d3093b") took these items in
+  narrower scopes, each printed in `search.txt`'s section header: the members FastParser's partial files declared, in
+  the parser's folder `Broiler.JS/Broiler.JavaScript.Parser`; FastScanner's common names, in its `FastScanner.cs`;
+  FastTokenStream's scanning code, in its `FastTokenStream.cs`; FastKeywordMap's table, in its `FastKeywordMap.cs`;
+  CharExtensions' scanner members, in the parser's folder; the parser's half of FastScope, in its `FastScope*.cs`; and
+  the direct-eval prefix's text, in `Broiler.JS/Broiler.JavaScript.Compiler`. That is a departure from the rule's
+  configuration. [`after/part-k/scope.txt`](after/part-k/scope.txt), by [`scope_k.py`](after/part-k/scope_k.py) at the
+  after commit, reads it against the rule's scope: every file of the rule's scope that declares one of the listed
+  types, at `33d3093b` and at the after commit, lies inside the narrowed scope that type's names were searched in, and
+  the parser's project compiles no file from outside its folder, so the narrowing hides no declaration of a listed
+  type's own member, and a reference to one could only name a member declared there. What it leaves out are the same
+  words outside those scopes, which `scope.txt` counts name by name and does not list (other types' members and text),
+  and the prefix's text in two files of `Broiler.ECMAScript/` (the library's own strict prologue, in its determinism
+  tests and its probe, not `DirectEvalSupport`'s). Read as the rule is written, those are further hits that are neither
+  facade members nor relocations; under reading K1 below they are not hits of a listed member.
+- **The changelogs' lines** are inside part K's scope ("over Broiler.JS/ and Broiler.ECMAScript/ outside docs/"; both
+  changelogs are under those folders, and the rule's list of product paths, which leaves them out, is not part K's
+  scope). `Broiler.JS/CHANGELOG.md:951` (`--parse-through-bridge`, `BroilerParseThroughBridge`; with `:949`,
+  `JSCompilationOptions.ParseThroughBridge`) is the changelog's entry of 2026-11-03 for W1, prose naming the test-only
+  switch as W1 added it; the switch, which `dispositions.md` lists as "added at W1, removed at W2", has no declaration
+  or reference left in code (its section's other names have no hit). The changelog's lines `:79` (W2's own entry,
+  correction K6's row T26, "at the base, DecodeBracedUnicodeEscapes rewrites the pattern text"), `:216` and `:217`
+  (SJL-11.5's entry) name `DecodeBracedUnicodeEscapes` and `RegExpValidator` in the same way, as removed; and
+  `Broiler.ECMAScript/CHANGELOG.md:1002`, the library's own changelog, names its `UriCodec`'s `HexDigitValue`, the
+  library's member of the same name as FastScanner's deleted one.
 - **The control is reported:** a deleted member declared again in a scratch copy is found, and after the revert the copy
   equals the clean tree (`after/local/delsearch/control.txt`, `revert-check.txt`).
-- **Part K: read MET on the retained runs**, by the session's reading K1: the rule's hits are "each listed member's
-  declarations and references", and a line of prose or a comment that names a member, or another type's member of the
-  same name, is neither; so every hit of a listed member is a facade member `dispositions.md` lists, and no listed
-  implementation is found. *Not taken:* reading every word hit as a hit, under which the changelog's lines, the
-  comments and the other types' members are neither facade members nor relocations and part K reads NOT MET. A reading
-  under the owner's direction of 2026-10-18, not the owner's; the owner may take the other.
+- **Part K: read NOT MET on the retained runs**, as the rule is written. Its MET line asks that "every hit is a facade
+  member dispositions.md lists as an obsolete forwarder over the bridge or a relocation decision D51 allows", and the
+  changelogs' lines above, the code comments, the manifests' and assurance records' lines and the other types' members
+  of the same name (`hits.tsv`'s sorts other than the facade members and the compiler's kept member) are neither; and
+  the narrowed scopes depart from its configuration. The model the rule names, "as bundle sjl-11-001's part E runs its
+  E-1 search", needed explicit words for exactly these hits: E-1 searches "over Broiler.JS/ but CHANGELOG.md" and
+  excepts "a hit the bundle lists with the declaration that shows it is another type's member of the same name"
+  ([`../sjl-11-001/decision-rule.md`](../sjl-11-001/decision-rule.md), part E). Part K restates the scope with neither
+  carve-out. The files: `after/local/delsearch/` ([`after/local/hashes.txt`](after/local/hashes.txt)) and
+  `after/part-k/` ([`after/part-k/hashes.txt`](after/part-k/hashes.txt)). Not judged beyond that (EX-30).
+- **Reading K1, put to the owner and not taken here:** the rule's hits are "each listed member's declarations and
+  references" (its configuration's words), so a line of prose or a comment that names a member, or another type's
+  member of the same name, is none, and the narrowed scopes hide no declaration of a listed type's member
+  (`scope.txt`); under it every hit of a listed member is a line of a facade file `dispositions.md` keeps, and part K
+  would read MET. It is the session's, under the owner's direction of 2026-10-18; the owner may confirm it, take it as a
+  dated revision worded on E-1's exceptions (weaker evidence, written after the run was seen; such a revision would
+  also want the bridge's and the library's hits listed with their declarations, which `hits.tsv` does not give), or
+  leave part K read NOT MET. *(Revised 2026-11-24, in review of this record before it merged: the reading bullet first
+  read "Part K: read MET on the retained runs, by the session's reading K1", with reading every word hit as a hit "Not
+  taken: ... part K reads NOT MET"; and the second bullet read "No listed implementation is found:" and "every hit in
+  the facade files is a facade member `dispositions.md` keeps over the bridge, a comment, or a name of another type
+  used there".)*
 
 ### Awaiting the owner
 
-Parts A, D and J read NOT MET, and part K rests on reading K1; each, with its cause as read, the rule's options and a
-recommendation, is in the session's decision summary for the owner. Part I is pending on the owner's lane. No fix and
-no rule change is made here.
+Parts A, D, J and K read NOT MET (part K with reading K1 put to the owner); each, with its cause as read, the rule's
+options and a recommendation, is in the session's decision summary for the owner, sent to the owner with this
+record's report on 2026-11-24 and not retained in this repository; the owner's choices are recorded here by dated
+notes when made. Part I is pending on the owner's lane. No fix and no rule change is made here. *(Revised 2026-11-24,
+in review of this record before it merged: this paragraph first read "Parts A, D and J read NOT MET, and part K rests
+on reading K1; each, with its cause as read, the rule's options and a recommendation, is in the session's decision
+summary for the owner.")*
 
 ## What it does not claim
 
