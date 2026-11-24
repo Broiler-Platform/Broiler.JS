@@ -33,3 +33,10 @@ scripts are in [`scripts/`](scripts/) as they ran and, for the three replaced wh
 (`*.before-fix`), with the patch that replaced them; the chain's log and the memory log are
 [`chain.log`](chain.log) and [`memwatch.log`](memwatch.log). [`hashes.txt`](hashes.txt) gives the SHA-256 of every file
 here, and a [`.gitattributes`](.gitattributes) keeps the bytes as committed.
+
+*(Noted 2026-11-24, after the comparisons, in review of this record.)* [`retained.txt`](retained.txt), the run's
+record, names the after commit's dump text (`/home/user/js-w2after-build/83a9bd82/text/dumps-p.txt.gz`) and the after
+candidate feed (`/home/user/js-w2after-build/83a9bd82/feed`) as kept "outside the repository, by digest". On
+2026-11-24, once every comparison that read them was done, `/home/user/js-w2after-build/83a9bd82/` was removed with
+both; they remain named by digest only (`dtext/text.sha256.txt`, `pack/candidate-feed.sha256.txt`). Part D's tables
+that read the text regenerate only after the `dtext` step is taken again (the bundle README's part D).

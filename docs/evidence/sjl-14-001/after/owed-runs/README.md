@@ -19,7 +19,7 @@ commit, recorded on 2026-11-24".
 **`jsealbase` was taken twice.** Its first attempt stopped at this stage's own check of the base feed, before any
 consumer command (exit 3): the check listed only the feed's `.nupkg` files against the base's digest list, which also
 names `.snupkg` files. The check was corrected to list every file, `rstep.sh` written again (its first text is
-[`scripts/rstep.sh.before-fix`](scripts/rstep.sh.before-fix), whose SHA-256 is the first one recorded in
+[`scripts/rstep.sh.before-fix`](scripts/rstep.sh.before-fix), whose SHA-256 is its line in
 [`scripts/as-started.sha256.txt`](scripts/as-started.sha256.txt); `dtextbase`, the first attempt and `jsingle` ran that
 text), and the step taken again; the first attempt's folder and run.sh files are kept in
 [`jsealbase-attempt-1/`](jsealbase-attempt-1/base-feed-check.txt).
@@ -27,3 +27,11 @@ text), and the step taken again; the first attempt's folder and run.sh files are
 [`hashes.txt`](hashes.txt) gives the SHA-256 of every file here, and a [`.gitattributes`](.gitattributes) keeps the
 bytes as committed. Outside the repository, by digest: the base commit's dump text
 (`/home/user/js-w2read-build/69a8a13b/text/dumps-p.txt.gz`, `dtextbase/text.sha256.txt`).
+
+*(Noted 2026-11-24, after the comparisons, in review of this record.)* The sentence above names the base commit's
+dump text as kept "Outside the repository, by digest". On 2026-11-24, once part D's comparison was done, that text was
+removed with the build folder that held it, `/home/user/js-w2read-build/`; it remains named by digest only
+(`dtextbase/text.sha256.txt`), and part D's tables that read it regenerate only after `dtextbase` is taken again
+(the bundle README's part D, and `../part-d/README.md`). The sentence about `rstep.sh.before-fix` above first read
+"whose SHA-256 is the first one recorded in"; it is the line for `rstep.sh.before-fix` in
+[`scripts/as-started.sha256.txt`](scripts/as-started.sha256.txt), which now carries a header saying what it records.

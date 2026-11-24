@@ -36,3 +36,15 @@ bytes both times. [`../../decision-rule.md`](../../decision-rule.md) and its rev
 
 [`hashes.txt`](hashes.txt) gives the SHA-256 of every file here; [`work.sha256.txt`](work.sha256.txt) those of the
 inputs `make_inputs.py` and `spancheck.py` wrote, kept outside the repository. The reading is the bundle README's.
+
+*(Noted 2026-11-24, after the comparison, in review of this record.)* The paragraphs above name the two dump texts as
+"kept outside the repository by digest" ([`texts.sha256.txt`](texts.sha256.txt)) and `make_inputs.py`'s and
+`spancheck.py`'s inputs as "kept outside the repository" ([`work.sha256.txt`](work.sha256.txt)). On 2026-11-24, once
+this comparison was done, both texts (`/home/user/js-w2read-build/69a8a13b/text/dumps-p.txt.gz`, the base commit's,
+and `/home/user/js-w2after-build/83a9bd82/text/dumps-p.txt.gz`, the after commit's), those work files and the after
+commit's candidate feed were removed with the build folders that held them; they remain named by digest only. So
+`parser/`'s and `pass/`'s tables regenerate only after the after driver's `dtext` step and the owed `dtextbase` step
+are taken again (through `run.sh`, a build at each commit) and `read_d.sh` is run on their texts; `acceptance.log` and
+`acceptance.json.gz`, which need no text, regenerate from the retained reports. The texts' own bytes were not shown
+reproducible: `../local/dtext/identity-with-partd.txt` and `../owed-runs/dtextbase/identity-with-base-d1.txt` compare
+the dump reports' rows with the `#` lines left out (among them each assembly's identifier), not the texts.
