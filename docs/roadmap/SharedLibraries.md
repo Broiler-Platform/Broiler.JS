@@ -3583,11 +3583,17 @@ for-loop pass, which part C never compared and no class admits; every outcome, m
 in a class); **parts E, F, G and H read MET on the retained runs** (part G with Broiler.JSeal's base side per test
 taken after the after runs, under the base's harness); **part J read NOT MET on the retained runs** (the compiler's
 documented `import.meta` refusal for module code without a module record, which the session's harness compiles, and
-timeouts of one generated seed that reproduce unloaded); **part K read MET on the retained runs** on a reading taken
-under the owner's direction of 2026-10-18, with its alternative recorded. **Part I is pending** on the owner's lane
-`win-x64-r7-5800x`, its runs to be retained in the bundle's `measurement/`. The items read NOT MET, and part K's
-reading, **await the owner**; no fix and no rule change is made for them. The rule's files are not edited. Nothing is
-met or accepted; every clause of this engine's, 1 to 6, is unmet.
+timeouts of one generated seed that reproduce unloaded; the session that compiles those module seeds is W2's own
+tool); **part K read NOT MET on the retained runs** as the rule is written (lines of the changelogs, comments and
+records, and other types' members of the same name, are hits that are neither facade members nor relocations, and the
+search took common-word names in narrower scopes than the rule's, where bundle `sjl-11-001`'s E-1, the model part K
+names, had explicit exceptions for such hits), with reading K1, under which it would read MET, put to the owner.
+**Part I is pending** on the owner's lane `win-x64-r7-5800x`, its runs to be retained in the bundle's `measurement/`.
+The items read NOT MET, with reading K1, **await the owner**; no fix and no rule change is made for them. The rule's
+files are not edited. Nothing is met or accepted; every clause of this engine's, 1 to 6, is unmet. *(Revised
+2026-11-24, in review of this note before it merged: it read "**part K read MET on the retained runs** on a reading
+taken under the owner's direction of 2026-10-18, with its alternative recorded" and "The items read NOT MET, and part
+K's reading, **await the owner**".)*
 
 ## Shared static semantics (SJL-15)
 
