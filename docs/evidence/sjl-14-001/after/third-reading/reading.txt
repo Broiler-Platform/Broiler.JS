@@ -1,0 +1,28 @@
+# read_3.py: part K read a third time, under the rule and its revisions of 2026-11-23, 2026-11-24 and 2026-11-24-k
+
+## the files read
+after/part-k/hits.tsv	154402dc1a55536470dac2ec70a83c6968d83ddb343f8c45e7d22906788172c6	as after/part-k/hashes.txt names it
+after/part-k/listing.tsv	192019c5b50e202505ce8e0e01e20f14d26370ebbf5173edc1e053ccf6aa416e	as after/part-k/hashes.txt names it
+after/part-k/listing-2.tsv	89f60c40f0f274b5a059635de546482ca08ceecaa77b6416e8ce22183ea02334	as after/part-k/hashes.txt names it; the revision of 2026-11-24-k's
+after/part-k/scope.txt	1cc113c548816a83eed6618890131f3bcaeea542d9ff1647f536626f6ef710e6	as after/part-k/hashes.txt names it; the revision of 2026-11-24's
+# listing-2.tsv's header: every check held
+# the control (after/local/delsearch/control.txt): reported, the revert equal to the commit's blob
+
+## part K's hits (after/part-k/hits.tsv), each read
+2026-11-24-k	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:100	Class	message text	the message table BridgeMessages.Text, its arm for the message identifier class.constructor.special-method	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:34 :: private static string? Text(string messageId) => messageId switch
+2026-11-24-k	Broiler.JS/Broiler.JavaScript.Parser/FastParserOptions.cs:112	Combine	.NET library type	System.HashCode.Combine	System.HashCode, in the reference assembly System.Runtime (Microsoft.NETCore.App.Ref, ref/net10.0), in place of a file and line
+2026-11-24-k	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:123	Decorators	message text	the message table BridgeMessages.Text, its arm for the message identifier decorator.not-in-edition	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:34 :: private static string? Text(string messageId) => messageId switch
+2026-11-24-k	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:120	Function	message text	the message table BridgeMessages.Text, its arm for the message identifier dynamic-function.source.invalid	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:34 :: private static string? Text(string messageId) => messageId switch
+2026-11-24-k	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:121	Function	message text	the message table BridgeMessages.Text, its arm for the message identifier dynamic-function.parameters.invalid	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:34 :: private static string? Text(string messageId) => messageId switch
+2026-11-24-k	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:122	Function	message text	the message table BridgeMessages.Text, its arm for the message identifier dynamic-function.body.invalid	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:34 :: private static string? Text(string messageId) => messageId switch
+2026-11-24-k	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:90	Function	message text	the message table BridgeMessages.Text, its arm for the message identifier statement.labelled-function	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:34 :: private static string? Text(string messageId) => messageId switch
+2026-11-24-k	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:113	Import	message text	the message table BridgeMessages.Text, its arm for the message identifier module.import-attribute.duplicate-key	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:34 :: private static string? Text(string messageId) => messageId switch
+40	a code comment
+28	a facade member (hits.tsv's sort)
+5	a facade member (listing.tsv: the facade's own: FastScanner's State and its members, which dispositions.md keeps)
+7	a line of a changelog
+13	a line of a record
+209	another type's member of the same name, listed with its declaration
+1	another type's member of the same name, shown by its .NET library type and assembly (listing-2.tsv)
+7	words inside a string literal that is a message text, listed with its message table (listing-2.tsv)
+# hits read NOT ADMITTED: 0

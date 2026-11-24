@@ -1971,10 +1971,119 @@ declaration that shows it" does not say in so many words; this point goes to the
 that a further revision can settle both. The reading of part K does not move: it is read NOT MET for the
 message-string hits either way.
 
+*(Noted 2026-11-24, later.)* The reading above reads "**Part K: read NOT MET on the retained runs**, under the revision
+of 2026-11-24, for those message-string hits", and the note above says of `Combine` "this point goes to the owner
+beside the message strings, so that a further revision can settle both". The owner's answer 16 of 2026-11-24 filed that
+revision, [`decision-rule-revised-2026-11-24-k.md`](decision-rule-revised-2026-11-24-k.md), and part K is read a third
+time under it in "W2's after commit, records part 3, recorded on 2026-11-24" below. This reading and the note above
+stay as written.
+
 ### Awaiting the owner
 
 Part K's message-string hits, read above, go to the owner; no rule change and no fix is made for them here.
 Part I is pending on the owner's lane `win-x64-r7-5800x`, as the section above says.
+
+*(Noted 2026-11-24, later.)* The paragraph above reads "Part K's message-string hits, read above, go to the owner; no
+rule change and no fix is made for them here." The owner answered (answer 16 of 2026-11-24), and the rule change it
+orders is recorded in "W2's after commit, records part 3, recorded on 2026-11-24" below; no fix is made. The paragraph
+is left as written.
+
+## W2's after commit, records part 3, recorded on 2026-11-24
+
+**Written:** 2026-11-24, on branch `sjl-14-after`, with the default branch's head read as
+`83a9bd82a5d258d3001468095ebf43f9efc3e9a7` by `git ls-remote` before each of this record's commits (each read, with
+its time, is kept in the session's notes). **What it records:** the owner's answer 16 of 2026-11-24; part K's listing
+aid, extended; the rule's dated revision answer 16 files; and part K read a third time.
+[`decision-rule.md`](decision-rule.md), [`decision-rule-revised-2026-11-23.md`](decision-rule-revised-2026-11-23.md)
+and [`decision-rule-revised-2026-11-24.md`](decision-rule-revised-2026-11-24.md) are not edited, no row is added to
+[`corrections.md`](corrections.md) or its tables, and nothing retained in [`base/`](base/local/README.md) or in the
+after runs' folders changes but [`after/part-k/hashes.txt`](after/part-k/hashes.txt), which names the two files added
+there; [`after/second-reading/`](after/second-reading/README.md) is not changed. The first and second readings of part
+K stay on record, each with a dated note beside it that points here. Nothing is judged beyond the reading, and nothing
+is accepted (EX-30).
+
+### The owner's answer 16 of 2026-11-24
+
+The owner's own, not one taken under the owner's direction of 2026-10-18, quoted verbatim:
+- Answer 16. Asked (2026-11-24): "SJL-14 part K still reads NOT MET after today's revision. Seven of its hits are
+  words inside the bridge's error messages, not code: "Function", "Class", "Import" and "Decorators" in
+  BridgeMessages.cs lines 90, 100, 113 and 120–123 (for example "Class constructor may not be an accessor, a
+  generator or an async method"). Answer 15 admitted only changelog, comment and record lines and other types'
+  members, so these hits are not covered. A second point would go in the same revision: one hit, `Combine`, belongs to
+  .NET's System.HashCode, so the listing names that .NET type instead of a file and line. How should part K be
+  settled?" Chosen: "Revise for msg text (Recommended)" — "One more dated revision, also weaker evidence because the
+  runs were already seen. It admits words inside string literals, each listed with the message table that holds it,
+  and lets a member of a .NET library type be shown by naming that type. Part K is then read again, likely MET. It
+  goes on the same records branch before the PR." Not taken: "Leave K NOT MET" — "Change no rule. Part K stays NOT
+  MET on record. I open the records PR as the branch stands; nothing is accepted either way (EX-30)."
+
+### Part K's listing aid, extended
+
+[`after/part-k/listing-2.tsv`](after/part-k/listing-2.tsv), by [`list_k2.py`](after/part-k/list_k2.py), beside
+[`listing.tsv`](after/part-k/listing.tsv), which is not changed. `listing.tsv` already gave each message-string hit the
+member whose table holds it, `BridgeMessages.Text`, with its declaration's file and line; the extension lists each such
+hit again with the message identifier of its arm and its literal, and lists the hit `Combine` with its type and that
+type's assembly, which `listing.tsv` did not name: `System.HashCode`, in the reference assembly `System.Runtime`. It
+holds a row only when every check its header names held. **How the literals were checked to be message texts only**,
+each from the after commit's git objects: every such hit line is one arm of the switch that `Text` is, a message
+identifier mapped to a text, and the hit's word stands in the text's literal alone, never in the identifier the
+switch looks up; `Text` is private, named outside comments only at its declaration and at one call, whose value is
+the template `Render` fills and returns; `BridgeMessages.cs` names no reflection or lookup API (the script lists those
+it looked for); outside that file, in part K's scope, `BridgeMessages` is named only in a documentation comment and in
+the call of `BridgeMessages.Render` in `SharedSyntaxBridge.cs`; and each literal's text is found elsewhere in that
+scope only on a test's assertion of a rendered message (`ImportAttributeEnforcementTests.cs`, for the import
+attribute's text). **How the library hit was checked:** the line calls `HashCode.Combine` in a file that imports
+`System`, no file of the tree declares a type `HashCode` or an alias of it, the project targets the framework of the
+reference pack read, and that pack's `System.Runtime.xml` documents `System.HashCode` and a `Combine` taking as many
+arguments as the call passes (the pack's version is in the table's header). The name's resolution is read from the
+source and the reference pack; no compiled assembly was read. A reading aid with no run, taken after part K's second
+reading and before the revision; it regenerates byte for byte (`python3 -I list_k2.py listing.tsv <repository>
+<reference pack folder> listing-2.tsv`, run from `after/part-k/`). `after/part-k/hashes.txt` names both new files.
+
+### The rule's revision of 2026-11-24-k
+
+[`decision-rule-revised-2026-11-24-k.md`](decision-rule-revised-2026-11-24-k.md), SHA-256
+`fc835b99b42ede25354afe369ce2b1c26f0dd6b716eaf8dd5cbab4dbb8693f98`, committed once, written after part K's after run,
+its first and second readings, the revision of 2026-11-24 and part K's reading aids, the extension above among them,
+had been seen (it names the branch's commit it was written at), and therefore weaker evidence, as the rule's section
+"Revisions" reads: "A rule revised after any run it judges has been seen is a new dated file in this directory. It
+quotes this one whole and says it was written afterwards, and its decision is then weaker evidence." It quotes answer
+16 and the rule whole, and the lines of the revision of 2026-11-24 it changes, and changes part K alone: its MET line
+also admits words inside a string literal that is a message text, listed with the message table that holds the
+literal (the member and its declaration, its file and line at the after commit), where the string is no member name
+used by reflection or lookup; and a member of a type outside the repository, of a .NET library, is shown by naming
+that type and its assembly in place of a file and line. It says how the literals were checked, by the extension above,
+and that the revision of 2026-11-24's entry on part K's message strings stays true of that file's words.
+
+### Part K, read a third time
+
+Under the rule and its three revisions, on the same retained search and its tables
+([`after/third-reading/reading.txt`](after/third-reading/reading.txt), by
+[`read_3.py`](after/third-reading/read_3.py), from `hits.tsv`, `listing.tsv` and `listing-2.tsv`, each checked by its
+SHA-256, and the control's record):
+- **No listed implementation is found**, as the first reading reads it, and **the control is reported**
+  (`after/local/delsearch/control.txt`: the deleted member declared again is found, and the revert equals the commit's
+  blob).
+- **The scopes:** the search's narrowed scopes are taken as the configuration's scope, as `scope.txt` reads them (its
+  SHA-256 the one the revision of 2026-11-24 names).
+- **Every hit** is a facade member (the hits `hits.tsv` sorts so, and those of `FastScanner`'s `State` the listing
+  sorts as the facade's own), a line of a changelog, a code comment or a record, a hit listed with the declaration
+  that shows it another type's member of the same name, **the hit `Combine`** in `FastParserOptions.cs`, shown by its
+  .NET library type `System.HashCode` and its assembly `System.Runtime` in place of a file and line, or **the words of
+  the bridge's message strings** in `BridgeMessages.cs` (lines 90, 100, 113 and 120 to 123), each listed with its
+  message table `BridgeMessages.Text` and its declaration, each literal a message text and no member name used by
+  reflection or lookup. `read_3.py` reads no hit as admitted by none of these.
+- **Part K: read MET on the retained runs**, under the revision of 2026-11-24-k with the revisions of 2026-11-23 and
+  2026-11-24 (weaker evidence: written after the runs and the first and second readings were seen; the files above,
+  [`after/part-k/hashes.txt`](after/part-k/hashes.txt) and
+  [`after/third-reading/hashes.txt`](after/third-reading/hashes.txt)). The first reading (NOT MET as the rule is
+  written) and the second (NOT MET under the revision of 2026-11-24, for the message-string hits) stay on record. Not
+  judged beyond that (EX-30).
+
+### Awaiting the owner
+
+Part I is pending on the owner's lane `win-x64-r7-5800x`, as the section "W2's after commit, recorded on 2026-11-24"
+says.
 
 ## What it does not claim
 
