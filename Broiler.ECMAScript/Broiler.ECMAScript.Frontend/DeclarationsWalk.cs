@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   86
-// Annotated:        86/86
-// Exempt:           42
-// Human-reviewed:   0/86
+// Relevant units:   97
+// Annotated:        97/97
+// Exempt:           53
+// Human-reviewed:   0/97
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       86
+// Unverified:       97
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -38,6 +38,13 @@ namespace Broiler.ECMAScript.Semantics;
 /// <b>No recursion over the tree</b>: the walk keeps its own stack, so that a tree as deep as the tree-depth constant is
 /// walked on any stack the parse ran on. The static-semantic helpers recurse over statements only, whose nesting the
 /// request's nesting bound limits.
+/// </para>
+/// <para>
+/// <b>The semantic model is built by this walk</b> (milestone SJL-15.2: "it does not start a second one"), when the request
+/// sets <see cref="ParseRequest.BuildSemanticModel"/>: the same visit, in the same order, also records each node's scope,
+/// each model scope's parent, the model's own scopes and its own facts, numbering them by a counter of its own, so that the
+/// walk's sequence, which orders the diagnostics and the tables, is the same on or off. Only <see cref="Run"/> builds it;
+/// a partial walk before a grammar refusal never does.
 /// </para>
 /// <para>
 /// <b>No <c>request</c>, <c>engine</c> or <c>semantics</c> row is reported</b>: every refusal is one of <see cref="Rows"/>.
@@ -90,13 +97,49 @@ internal sealed class DeclarationsWalk
     private readonly List<SyntaxNode> children = new();
     private int sequence;
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=BFF3D1
+    // The semantic model's state, made only when the request asks for the model (SJL-15.2): its scopes and facts with the
+    // model's own sequence, the scope of every node, every model scope's parent, and the facts by node.
+    private readonly bool model;
+    private readonly List<(int Start, int Sequence, Scope Scope)>? modelScopes;
+    private readonly List<(int Start, int Sequence, FunctionFacts Facts)>? modelFunctions;
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=7631C9
     // Hairs-Human:        PENDING
-    private DeclarationsWalk(ParseRequest request)
+    private readonly Dictionary<SyntaxNode, Scope>? scopeOf;
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=B50831
+    // Hairs-Human:        PENDING
+    private readonly Dictionary<Scope, Scope?>? parentOf;
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=2E3C8C
+    // Hairs-Human:        PENDING
+    private readonly Dictionary<SyntaxNode, FunctionFacts>? factsOf;
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=04701C
+    // Hairs-Human:        PENDING
+    private readonly Dictionary<SyntaxNode, Scope>? ifClauseScopes;
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=8237C1
+    // Hairs-Human:        PENDING
+    private readonly HashSet<SyntaxNode>? declaredClasses;
+    private int modelSequence;
+
+    // Each class constructor's kind, on every request (the functions' facts are the same with the model on or off).
+    private Dictionary<FunctionNode, FunctionKind>? constructorKinds;
+
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=099C8B
+    // Hairs-Human:        PENDING
+    private DeclarationsWalk(ParseRequest request, bool buildModel)
     {
         this.request = request;
         annexB = request.Switches.AnnexB;
         isModule = request.Goal == ParseGoal.Module;
+        model = buildModel;
+        if (buildModel)
+        {
+            modelScopes = new();
+            modelFunctions = new();
+            scopeOf = new(ReferenceEqualityComparer.Instance);
+            parentOf = new(ReferenceEqualityComparer.Instance);
+            factsOf = new(ReferenceEqualityComparer.Instance);
+            ifClauseScopes = new(ReferenceEqualityComparer.Instance);
+            declaredClasses = new(ReferenceEqualityComparer.Instance);
+        }
     }
 
     /// <summary>The shape of a function, which decides the catalogue row each of its rules is reported by.</summary>
@@ -140,11 +183,11 @@ internal sealed class DeclarationsWalk
     }
 
     /// <summary>Walks a tree the grammar admitted.</summary>
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=CF7D4C
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=A9C222
     // Hairs-Human:        PENDING
     internal static Result Run(ParseRequest request, ProgramNode program)
     {
-        var walk = new DeclarationsWalk(request);
+        var walk = new DeclarationsWalk(request, request.BuildSemanticModel);
         walk.WalkProgram(program, program.Body, closed: true);
         return new Result(walk.Ordered(int.MaxValue), walk.Tables());
     }
@@ -154,11 +197,11 @@ internal sealed class DeclarationsWalk
     /// early errors come before the grammar's refusal (decision D11). The top level's own scope never closed, so its conflicts
     /// are not checked.
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B3D642
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=30333A
     // Hairs-Human:        PENDING
     internal static List<SyntaxDiagnostic> RunPartial(ParseRequest request, List<Statement> completed, int refusedAt)
     {
-        var walk = new DeclarationsWalk(request);
+        var walk = new DeclarationsWalk(request, buildModel: false);
         var span = new SourceSpan(request.Source.BaseOffset, 0, request.Source.BaseLine, request.Source.BaseColumn);
         var program = new ProgramNode(span, request.Goal, completed.ToArray(), Array.Empty<Pattern>(), false, false);
         walk.WalkProgram(program, completed, closed: false);
@@ -182,7 +225,7 @@ internal sealed class DeclarationsWalk
         return list;
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=9E7968
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=8C679D
     // Hairs-Human:        PENDING
     private DeclarationTables Tables()
     {
@@ -194,7 +237,129 @@ internal sealed class DeclarationsWalk
         var functionList = new FunctionFacts[functions.Count];
         for (var i = 0; i < functionList.Length; i++)
             functionList[i] = functions[i].Facts;
-        return new DeclarationTables(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList));
+        return new DeclarationTables(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), model ? Model(scopeList) : null);
+    }
+
+    /// <summary>
+    /// The semantic model: its scopes and facts in the order of their node's start and, for one start, of the model's
+    /// sequence; each declaration by its node, the tables' first, so that a class declaration's name answers its outer
+    /// declaration (the session's decision D-js-declaration-of).
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=91A074
+    // Hairs-Human:        PENDING
+    private SemanticModel Model(Scope[] tableScopes)
+    {
+        modelScopes!.Sort(static (a, b) => a.Start != b.Start ? a.Start.CompareTo(b.Start) : a.Sequence.CompareTo(b.Sequence));
+        modelFunctions!.Sort(static (a, b) => a.Start != b.Start ? a.Start.CompareTo(b.Start) : a.Sequence.CompareTo(b.Sequence));
+        var scopeList = new Scope[modelScopes.Count];
+        for (var i = 0; i < scopeList.Length; i++)
+            scopeList[i] = modelScopes[i].Scope;
+        var functionList = new FunctionFacts[modelFunctions.Count];
+        for (var i = 0; i < functionList.Length; i++)
+            functionList[i] = modelFunctions[i].Facts;
+
+        var declarationOf = new Dictionary<SyntaxNode, Declaration>(ReferenceEqualityComparer.Instance);
+        foreach (var scope in tableScopes)
+        {
+            foreach (var declaration in scope.Declarations)
+                declarationOf.TryAdd(declaration.Node, declaration);
+        }
+
+        foreach (var scope in scopeList)
+        {
+            foreach (var declaration in scope.Declarations)
+                declarationOf.TryAdd(declaration.Node, declaration);
+        }
+
+        return new SemanticModel(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), scopeOf!, parentOf!, declarationOf, factsOf!);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // The tables' and the model's entries.
+
+    /// <summary>A scope of the tables, numbered by the walk's sequence; with the model on, also one of the model's, its parent given.</summary>
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=1BEA9B
+    // Hairs-Human:        PENDING
+    private Scope AddScope(int start, Scope scope, Scope? parent)
+    {
+        scopes.Add((start, sequence++, scope));
+        if (model)
+            AddModelScope(start, scope, parent);
+        return scope;
+    }
+
+    /// <summary>A scope of the model's, numbered by the model's sequence alone.</summary>
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=C4ED77
+    // Hairs-Human:        PENDING
+    private Scope AddModelScope(int start, Scope scope, Scope? parent)
+    {
+        modelScopes!.Add((start, modelSequence++, scope));
+        parentOf![scope] = parent;
+        return scope;
+    }
+
+    /// <summary>A program's or a function's facts in the tables, numbered by the walk's sequence; with the model on, also in the model's.</summary>
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=6B32E8
+    // Hairs-Human:        PENDING
+    private void AddFunction(int start, FunctionFacts facts)
+    {
+        functions.Add((start, sequence++, facts));
+        if (model)
+            AddModelFunction(start, facts);
+    }
+
+    /// <summary>Facts of the model's, numbered by the model's sequence alone.</summary>
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=E1C975
+    // Hairs-Human:        PENDING
+    private void AddModelFunction(int start, FunctionFacts facts)
+    {
+        modelFunctions!.Add((start, modelSequence++, facts));
+        factsOf![facts.Node] = facts;
+    }
+
+    /// <summary>The model's scope of a node the walk handles without visiting it.</summary>
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=070F1C
+    // Hairs-Human:        PENDING
+    private void Record(SyntaxNode node, Scope scope) => scopeOf![node] = scope;
+
+    /// <summary>The model's scope of a node the walk visits nothing of, and of everything below it; iterative.</summary>
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=1BEEC9
+    // Hairs-Human:        PENDING
+    private void RecordSubtree(SyntaxNode node, Scope scope)
+    {
+        var pending = new Stack<SyntaxNode>();
+        var below = new List<SyntaxNode>();
+        pending.Push(node);
+        while (pending.Count > 0)
+        {
+            var next = pending.Pop();
+            scopeOf![next] = scope;
+            below.Clear();
+            next.AddChildren(below);
+            foreach (var child in below)
+                pending.Push(child);
+        }
+    }
+
+    /// <summary>The model's scope of a node's children, which the walk does not visit, and of everything below them.</summary>
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=F59619
+    // Hairs-Human:        PENDING
+    private void RecordChildren(SyntaxNode node, Scope scope)
+    {
+        var below = new List<SyntaxNode>();
+        node.AddChildren(below);
+        foreach (var child in below)
+            RecordSubtree(child, scope);
+    }
+
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model parameters; IP=Low; Security=Medium; Resources=1; Fingerprint=1CA422
+    // Hairs-Human:        PENDING
+    private static IReadOnlyList<Declaration> ParameterDeclarations(List<BindingIdentifier> nodes)
+    {
+        var declarations = new Declaration[nodes.Count];
+        for (var i = 0; i < declarations.Length; i++)
+            declarations[i] = new Declaration(nodes[i].Name, BindingKind.Parameter, nodes[i], false, false, false);
+        return Array.AsReadOnly(declarations);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -229,7 +394,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // The program.
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=075477
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=33FAF8
     // Hairs-Human:        PENDING
     private void WalkProgram(ProgramNode program, IReadOnlyList<Statement> body, bool closed)
     {
@@ -250,7 +415,28 @@ internal sealed class DeclarationsWalk
         var parameterNames = new List<string>();
         foreach (var parameter in program.Parameters)
             BoundNames(parameter, parameterNames, null);
-        functions.Add((program.Span.Offset, sequence++, new FunctionFacts(program, strict, parameterNames.AsReadOnly())));
+        var programKind = goal switch
+        {
+            ParseGoal.Script => FunctionKind.Script,
+            ParseGoal.Module => FunctionKind.Module,
+            ParseGoal.Eval => FunctionKind.EvalCode,
+            _ => FunctionKind.DynamicFunction,
+        };
+        var simpleProgram = IsSimpleParameterList(program.Parameters);
+        AddFunction(program.Span.Offset, new FunctionFacts(program, strict, parameterNames.AsReadOnly(), programKind,
+            isDynamic && kind is DynamicFunctionKind.Async or DynamicFunctionKind.AsyncGenerator,
+            isDynamic && kind is DynamicFunctionKind.Generator or DynamicFunctionKind.AsyncGenerator,
+            simpleProgram, !simpleProgram && ContainsExpression(program.Parameters)));
+
+        // The model's: a dynamic function's parameters have a scope of their own, the model's first, before the program's.
+        Scope? programParameters = null;
+        if (model && isDynamic)
+        {
+            var nodes = new List<BindingIdentifier>();
+            foreach (var parameter in program.Parameters)
+                BoundNames(parameter, null, nodes);
+            programParameters = AddModelScope(program.Span.Offset, new Scope(ScopeKind.Parameters, program, ParameterDeclarations(nodes)), null);
+        }
 
         // The top level's scope: a function's for the dynamic function's goals, whose declarations are its body's.
         var top = !isModule;
@@ -258,7 +444,13 @@ internal sealed class DeclarationsWalk
         var vars = new List<Declaration>();
         CollectList(body, top, isModule, lexical, vars);
         var scopeKind = isModule ? ScopeKind.Module : isDynamic ? ScopeKind.Function : ScopeKind.Script;
-        scopes.Add((program.Span.Offset, sequence++, new Scope(scopeKind, program, Merge(lexical, vars))));
+        var programScope = AddScope(program.Span.Offset, new Scope(scopeKind, program, Merge(lexical, vars)), programParameters);
+        if (model)
+        {
+            Record(program, programParameters ?? programScope);
+            context = context with { ModelScope = programScope };
+        }
+
         if (closed)
         {
             var scopeEnd = End(program);
@@ -293,7 +485,7 @@ internal sealed class DeclarationsWalk
             }
         }
 
-        var parameterContext = context with { ParamsOf = isDynamic ? DynamicShape(kind) : null };
+        var parameterContext = context with { ParamsOf = isDynamic ? DynamicShape(kind) : null, ModelScope = programParameters ?? context.ModelScope };
         Run(program.Parameters, parameterContext);
         Run(body, context);
     }
@@ -308,7 +500,7 @@ internal sealed class DeclarationsWalk
         _ => Shape.Function,
     };
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B88031
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=84DDF8
     // Hairs-Human:        PENDING
     private void Run<T>(IReadOnlyList<T> nodes, Context context)
         where T : SyntaxNode?
@@ -322,6 +514,8 @@ internal sealed class DeclarationsWalk
         while (stack.Count > 0)
         {
             var (node, nodeContext) = stack.Pop();
+            if (model)
+                Record(node, nodeContext.ModelScope!);
             Visit(node, nodeContext);
         }
     }
@@ -360,7 +554,7 @@ internal sealed class DeclarationsWalk
     // The visit: each node's own rules, then its children under their context, pushed in reverse so that they are
     // visited in source order.
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=8F9BE4
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=C46E8B
     // Hairs-Human:        PENDING
     private void Visit(SyntaxNode node, Context context)
     {
@@ -395,7 +589,14 @@ internal sealed class DeclarationsWalk
                 return;
             case FunctionDeclaration declaration:
                 declaredFunctions.Add(declaration.Function);
-                Push(declaration.Function, context);
+
+                // The model's: an if clause's function is in its implicit block (Annex B.3.3).
+                Push(declaration.Function, model && ifClauseScopes!.TryGetValue(declaration, out var clauseScope) ? context with { ModelScope = clauseScope } : context);
+                return;
+            case ClassDeclaration classDeclaration:
+                if (model)
+                    declaredClasses!.Add(classDeclaration.Class);
+                PushChildren(node, context);
                 return;
             case FunctionNode function:
                 VisitFunction(function, context);
@@ -408,6 +609,8 @@ internal sealed class DeclarationsWalk
                 return;
             case MetaProperty meta:
                 CheckMetaProperty(meta, context);
+                if (model)
+                    RecordChildren(meta, context.ModelScope!);
                 return;
             case YieldExpression yield:
                 if (context.ParamsOf is { } yieldShape && YieldInParameters(yieldShape) is { } yieldRow)
@@ -443,8 +646,8 @@ internal sealed class DeclarationsWalk
                 VisitShorthand(shorthand, context);
                 return;
             case BlockStatement block:
-                VisitStatementListScope(block, block.Body, ScopeKind.Block, Rows.EE0040, Rows.EE0041, context.Strict);
-                PushChildren(node, context);
+                var blockScope = VisitStatementListScope(block, block.Body, ScopeKind.Block, Rows.EE0040, Rows.EE0041, context.Strict, context.ModelScope);
+                PushChildren(node, model ? context with { ModelScope = blockScope } : context);
                 return;
             case SwitchStatement @switch:
                 VisitSwitch(@switch, context);
@@ -477,16 +680,31 @@ internal sealed class DeclarationsWalk
                 if (context.Strict)
                     Report(Rows.EE0060, with, "with");
                 CheckLabelledFunctionBody(with.Body, Rows.EE0061);
-                PushChildren(node, context);
+                if (model)
+                {
+                    // The model's: the body in the object environment, the object outside it (clause 14.11.2).
+                    var withScope = AddModelScope(with.Span.Offset, new Scope(ScopeKind.With, with, Array.Empty<Declaration>()), context.ModelScope);
+                    Push(with.Body, context with { ModelScope = withScope });
+                    Push(with.Object, context);
+                }
+                else
+                {
+                    PushChildren(node, context);
+                }
+
                 return;
             case LabelledStatement labelled:
                 VisitLabelled(labelled, context);
                 return;
             case BreakStatement { Label: { } breakLabel }:
                 CheckName(breakLabel.Name, breakLabel.IsEscaped, breakLabel, NameUse.Label, context);
+                if (model)
+                    RecordSubtree(breakLabel, context.ModelScope!);
                 return;
             case ContinueStatement { Label: { } continueLabel }:
                 CheckName(continueLabel.Name, continueLabel.IsEscaped, continueLabel, NameUse.Label, context);
+                if (model)
+                    RecordSubtree(continueLabel, context.ModelScope!);
                 return;
             case CatchClause @catch:
                 VisitCatch(@catch, context);
@@ -645,7 +863,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Functions (clauses 15.1 to 15.9).
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=0FD09D
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B8267A
     // Hairs-Human:        PENDING
     private void VisitFunction(FunctionNode function, Context outer)
     {
@@ -659,7 +877,25 @@ internal sealed class DeclarationsWalk
         var parameterNodes = new List<BindingIdentifier>();
         foreach (var parameter in function.Parameters)
             BoundNames(parameter, parameterNames, parameterNodes);
-        functions.Add((function.Span.Offset, sequence++, new FunctionFacts(function, strict, parameterNames.AsReadOnly())));
+        AddFunction(function.Span.Offset, new FunctionFacts(function, strict, parameterNames.AsReadOnly(), KindOf(function, shape), function.IsAsync,
+            function.IsGenerator, simple, !simple && ContainsExpression(function.Parameters)));
+
+        // The model's: a named function expression's funcEnv, then the parameters' scope, both before the body's; the name
+        // in the funcEnv, or for a declaration in the scope that binds it (clauses 15.2.5, 10.2.11).
+        Scope? parameterScope = null;
+        if (model)
+        {
+            Scope? nameScope = null;
+            if (function.Name is { } ownName && !declaredFunctions.Contains(function))
+            {
+                var own = new Declaration(ownName.Name, BindingKind.FunctionName, ownName, false, false, false);
+                nameScope = AddModelScope(function.Span.Offset, new Scope(ScopeKind.FunctionName, function, Array.AsReadOnly(new[] { own })), outer.ModelScope);
+            }
+
+            if (function.Name is { } recorded)
+                Record(recorded, nameScope ?? outer.ModelScope!);
+            parameterScope = AddModelScope(function.Span.Offset, new Scope(ScopeKind.Parameters, function, ParameterDeclarations(parameterNodes)), nameScope ?? outer.ModelScope);
+        }
 
         // The name: a declaration's binds in the enclosing context, an expression's in its own (clauses 15.2 to 15.8).
         if (function.Name is { } name)
@@ -694,7 +930,7 @@ internal sealed class DeclarationsWalk
         var lexical = new List<Declaration>();
         var vars = new List<Declaration>();
         CollectList(body, top: true, module: false, lexical, vars);
-        scopes.Add((function.Span.Offset, sequence++, new Scope(ScopeKind.Function, function, Merge(lexical, vars))));
+        var bodyScope = AddScope(function.Span.Offset, new Scope(ScopeKind.Function, function, Merge(lexical, vars)), parameterScope);
         var end = End(function);
         CheckConflicts(lexical, vars, end, Rows.EE0078, Rows.EE0079);
         if (ParameterCollisionRow(shape, function) is { } collisionRow)
@@ -721,12 +957,14 @@ internal sealed class DeclarationsWalk
             ParamsOf = shape,
             Labels = null,
             LabelOwner = LabelOwner.Function,
+            ModelScope = parameterScope,
         };
         var bodyContext = parameterContext with
         {
             Yield = !isArrow && function.IsGenerator,
             Await = function.IsAsync,
             ParamsOf = null,
+            ModelScope = model ? bodyScope : null,
         };
 
         Push(function.ExpressionBody, bodyContext);
@@ -749,6 +987,73 @@ internal sealed class DeclarationsWalk
             (true, false) => Shape.AsyncFunction,
             _ => Shape.AsyncGenerator,
         };
+    }
+
+    /// <summary>A function's kind, from its shape and, for a class's constructor, the class visit (the session's decision D-js-function-kind).</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s10.2 function objects ThisMode ConstructorKind, s15.7.14 ClassDefinitionEvaluation, JSD-0080 function kind; IP=Low; Security=Medium; Resources=1; Fingerprint=56CC21
+    // Hairs-Human:        PENDING
+    private FunctionKind KindOf(FunctionNode function, Shape shape)
+    {
+        if (constructorKinds is not null && constructorKinds.TryGetValue(function, out var constructor))
+            return constructor;
+        return shape switch
+        {
+            Shape.Arrow or Shape.AsyncArrow => FunctionKind.Arrow,
+            Shape.Method or Shape.GeneratorMethod or Shape.AsyncMethod or Shape.AsyncGeneratorMethod => FunctionKind.Method,
+            Shape.Getter => FunctionKind.Getter,
+            Shape.Setter => FunctionKind.Setter,
+            _ => FunctionKind.Normal,
+        };
+    }
+
+    /// <summary>
+    /// ContainsExpression of FormalParameters (clause 15.1.2): an initialiser, or a computed property name in a binding
+    /// pattern, anywhere in them; iterative, since a pattern's nesting is the request's to bound.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.1.2 ContainsExpression; IP=Low; Security=Medium; Resources=1; Fingerprint=4FCDDE
+    // Hairs-Human:        PENDING
+    private static bool ContainsExpression(IReadOnlyList<Pattern> parameters)
+    {
+        var pending = new Stack<SyntaxNode>();
+        foreach (var parameter in parameters)
+            pending.Push(parameter);
+        while (pending.Count > 0)
+        {
+            switch (pending.Pop())
+            {
+                case AssignmentPattern:
+                    return true;
+                case RestElement rest:
+                    pending.Push(rest.Argument);
+                    break;
+                case ArrayPattern array:
+                    foreach (var element in array.Elements)
+                    {
+                        if (element is not null)
+                            pending.Push(element);
+                    }
+
+                    break;
+                case ObjectPattern @object:
+                    foreach (var property in @object.Properties)
+                    {
+                        if (property is PatternProperty patternProperty)
+                        {
+                            if (patternProperty.Key is ComputedPropertyName)
+                                return true;
+                            pending.Push(patternProperty.Value);
+                        }
+                        else
+                        {
+                            pending.Push(property);
+                        }
+                    }
+
+                    break;
+            }
+        }
+
+        return false;
     }
 
     // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=8476A8
@@ -910,11 +1215,21 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Classes (clause 15.7) and object literals' methods (clause 13.2.5).
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=2550B2
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=501D3D
     // Hairs-Human:        PENDING
     private void VisitClass(ClassNode @class, Context outer)
     {
-        var context = outer with { Strict = true };
+        // The model's: every class's classEnv, holding its inner name, made at the class (clause 15.7.14).
+        Scope? classScope = null;
+        if (model)
+        {
+            var inner = @class.Name is { } innerName
+                ? Array.AsReadOnly(new[] { new Declaration(innerName.Name, BindingKind.ClassName, innerName, false, false, false) })
+                : (IReadOnlyList<Declaration>)Array.Empty<Declaration>();
+            classScope = AddModelScope(@class.Span.Offset, new Scope(ScopeKind.ClassBody, @class, inner), outer.ModelScope);
+        }
+
+        var context = model ? outer with { Strict = true, ModelScope = classScope } : outer with { Strict = true };
         var constructors = 0;
         var privateNames = new Dictionary<string, (bool IsStatic, MethodKind? Kind)>(StringComparer.Ordinal);
         foreach (var element in @class.Elements)
@@ -932,6 +1247,10 @@ internal sealed class DeclarationsWalk
                             Report(Rows.EE0125, method.Key, name);
                         else if (++constructors > 1)
                             Report(Rows.EE0122, method.Key, name);
+
+                        // Its ConstructorMethod: base, or derived where the class has a heritage (clause 15.7.14).
+                        if (!special)
+                            (constructorKinds ??= new(ReferenceEqualityComparer.Instance))[method.Function] = @class.Heritage is null ? FunctionKind.ClassConstructor : FunctionKind.DerivedConstructor;
                     }
 
                     if (method.IsStatic && name == "prototype")
@@ -948,8 +1267,17 @@ internal sealed class DeclarationsWalk
                     if (field.IsStatic && name is "prototype" or "constructor")
                         Report(Rows.EE0129, field.Key, name);
                     CheckPrivateName(field.Key, field.IsStatic, null, privateNames);
+
+                    // The model's: an initialiser's facts, as a method's of the class (clause 15.7.10).
+                    if (model && field.Value is not null)
+                        AddModelFunction(field.Span.Offset, new FunctionFacts(field, true, Array.Empty<string>(), FunctionKind.FieldInitializer, false, false, true, false));
                     break;
                 }
+
+                case StaticBlock block when model:
+                    // The model's: a static block's facts, as a method's of the class (clause 15.7.11).
+                    AddModelFunction(block.Span.Offset, new FunctionFacts(block, true, Array.Empty<string>(), FunctionKind.StaticBlock, false, false, true, false));
+                    break;
             }
         }
 
@@ -959,6 +1287,14 @@ internal sealed class DeclarationsWalk
             switch (@class.Elements[i])
             {
                 case FieldDefinition field:
+                    if (model)
+                    {
+                        // The model's: the field and a key the walk does not visit are in the class's scope.
+                        Record(field, classScope!);
+                        if (field.Key is not ComputedPropertyName)
+                            RecordSubtree(field.Key, classScope!);
+                    }
+
                     // A field's initialiser is read under [~Yield, ~Await] (design section 9.3), inside a function boundary.
                     Push(field.Value, elementContext with { Yield = false, Await = false, InFunction = true, ParamsOf = null, Labels = null, LabelOwner = LabelOwner.Function });
                     if (field.Key is ComputedPropertyName)
@@ -976,18 +1312,24 @@ internal sealed class DeclarationsWalk
 
         Push(@class.Heritage, context);
         if (@class.Name is { } className)
-            Push(className, context);
+        {
+            // The model's: a declaration's name is in the scope that binds it, an expression's in the class's (clause 15.7.14).
+            Push(className, model && declaredClasses!.Contains(@class) ? context with { ModelScope = outer.ModelScope } : context);
+        }
+
         PushAll(@class.Decorators, outer);
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=194B51
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=ED5971
     // Hairs-Human:        PENDING
     private void VisitStaticBlock(StaticBlock block, Context outer)
     {
         var lexical = new List<Declaration>();
         var vars = new List<Declaration>();
         CollectList(block.Body, top: true, module: false, lexical, vars);
-        scopes.Add((block.Span.Offset, sequence++, new Scope(ScopeKind.StaticBlock, block, Merge(lexical, vars))));
+        var blockScope = AddScope(block.Span.Offset, new Scope(ScopeKind.StaticBlock, block, Merge(lexical, vars)), outer.ModelScope);
+        if (model)
+            Record(block, outer.ModelScope!);
         CheckConflicts(lexical, vars, End(block), Rows.EE0133, Rows.EE0134);
         var context = outer with
         {
@@ -998,6 +1340,7 @@ internal sealed class DeclarationsWalk
             ParamsOf = null,
             Labels = null,
             LabelOwner = LabelOwner.StaticBlock,
+            ModelScope = model ? blockScope : null,
         };
         PushAll(block.Body, context);
     }
@@ -1153,7 +1496,7 @@ internal sealed class DeclarationsWalk
             Report(parenthesized ? Rows.EE0031 : Rows.EE0030, unary, "delete");
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=E8B08A
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=90D27B
     // Hairs-Human:        PENDING
     private void VisitShorthand(PatternProperty shorthand, Context context)
     {
@@ -1161,6 +1504,13 @@ internal sealed class DeclarationsWalk
         var value = shorthand.Value is AssignmentPattern withDefault ? withDefault.Target : shorthand.Value;
         if (value is TargetPattern { Target: Identifier identifier })
         {
+            if (model)
+            {
+                // The model's: the patterns the walk reads through without visiting them.
+                Record(shorthand.Value, context.ModelScope!);
+                Record(value, context.ModelScope!);
+            }
+
             if (TargetTypeOf(identifier, context) != TargetType.Simple)
                 Report(Rows.EE0036, identifier, identifier.Name);
             Push(identifier, context);
@@ -1175,24 +1525,25 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Statements.
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=85A264
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=D8746B
     // Hairs-Human:        PENDING
-    private void VisitStatementListScope(SyntaxNode node, IReadOnlyList<Statement> body, ScopeKind kind, LexicalRefusal duplicateRow, LexicalRefusal collisionRow, bool strict)
+    private Scope VisitStatementListScope(SyntaxNode node, IReadOnlyList<Statement> body, ScopeKind kind, LexicalRefusal duplicateRow, LexicalRefusal collisionRow, bool strict, Scope? parent)
     {
         var lexical = new List<Declaration>();
         foreach (var statement in body)
             CollectLexical(statement, lexical, inBlock: true);
-        scopes.Add((node.Span.Offset, sequence++, new Scope(kind, node, lexical.AsReadOnly())));
+        var scope = AddScope(node.Span.Offset, new Scope(kind, node, lexical.AsReadOnly()), parent);
         if (lexical.Count == 0)
-            return;
+            return scope;
 
         var vars = new List<Declaration>();
         foreach (var statement in body)
             CollectVars(statement, vars);
         CheckConflicts(lexical, vars, End(node), duplicateRow, collisionRow, sloppy: !strict);
+        return scope;
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=435D91
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=F19170
     // Hairs-Human:        PENDING
     private void VisitSwitch(SwitchStatement @switch, Context context)
     {
@@ -1203,8 +1554,18 @@ internal sealed class DeclarationsWalk
             CheckNoUsing(@case.Consequent, @case.Test is null ? Rows.EP0007 : Rows.EP0006);
         }
 
-        VisitStatementListScope(@switch, all, ScopeKind.Switch, Rows.EE0062, Rows.EE0063, context.Strict);
-        PushChildren(@switch, context);
+        var switchScope = VisitStatementListScope(@switch, all, ScopeKind.Switch, Rows.EE0062, Rows.EE0063, context.Strict, context.ModelScope);
+        if (model)
+        {
+            // The model's: the cases in the CaseBlock's scope, the discriminant outside it (clause 14.12.4).
+            var caseContext = context with { ModelScope = switchScope };
+            PushAll(@switch.Cases, caseContext);
+            Push(@switch.Discriminant, context);
+        }
+        else
+        {
+            PushChildren(@switch, context);
+        }
     }
 
     // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=A16920
@@ -1269,25 +1630,26 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=4BD257
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=884771
     // Hairs-Human:        PENDING
     private void VisitFor(ForStatement @for, Context context)
     {
+        Scope? forScope = null;
         if (@for.Init is VariableDeclaration { DeclarationKind: not DeclarationKind.Var } head)
         {
             var lexical = new List<Declaration>();
             CollectLexical(head, lexical, inBlock: true);
-            scopes.Add((@for.Span.Offset, sequence++, new Scope(ScopeKind.For, @for, lexical.AsReadOnly())));
+            forScope = AddScope(@for.Span.Offset, new Scope(ScopeKind.For, @for, lexical.AsReadOnly()), context.ModelScope);
             var vars = new List<Declaration>();
             CollectVars(@for.Body, vars);
             CheckCollisions(lexical, vars, End(@for), Rows.EE0051);
         }
 
         CheckLabelledFunctionBody(@for.Body, Rows.EE0050);
-        PushChildren(@for, context);
+        PushChildren(@for, model && forScope is not null ? context with { ModelScope = forScope } : context);
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=43FF7B
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B0161B
     // Hairs-Human:        PENDING
     private void VisitForInOf(Statement statement, SyntaxNode left, Statement body, Context context)
     {
@@ -1300,18 +1662,28 @@ internal sealed class DeclarationsWalk
             CheckDeclaration(head, inForInOfHead: true);
             var lexical = new List<Declaration>();
             CollectLexical(head, lexical, inBlock: true);
-            scopes.Add((statement.Span.Offset, sequence++, new Scope(ScopeKind.For, statement, lexical.AsReadOnly())));
+            var forScope = AddScope(statement.Span.Offset, new Scope(ScopeKind.For, statement, lexical.AsReadOnly()), context.ModelScope);
             var vars = new List<Declaration>();
             CollectVars(body, vars);
             CheckCollisions(lexical, vars, End(statement), Rows.EE0056);
+
+            // The model's: the head, the expression and the body in the head's scope (clause 14.7.5.6's TDZ environment
+            // holds the same bound names), the head itself recorded, since the walk visits its declarators alone.
+            var inner = context;
+            if (model)
+            {
+                inner = context with { ModelScope = forScope };
+                Record(head, forScope);
+            }
+
             children.Clear();
             statement.AddChildren(children);
             for (var i = children.Count - 1; i >= 0; i--)
             {
                 if (ReferenceEquals(children[i], head))
-                    PushAll(head.Declarations, context);
+                    PushAll(head.Declarations, inner);
                 else
-                    stack.Push((children[i], context));
+                    stack.Push((children[i], inner));
             }
         }
         else
@@ -1322,7 +1694,7 @@ internal sealed class DeclarationsWalk
         CheckLabelledFunctionBody(body, Rows.EE0052);
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=4D1B27
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=9881A8
     // Hairs-Human:        PENDING
     private void VisitIf(IfStatement @if, Context context)
     {
@@ -1344,7 +1716,9 @@ internal sealed class DeclarationsWalk
                 ifClauseFunctions.Add(function);
                 var lexical = new List<Declaration>();
                 CollectLexical(function, lexical, inBlock: true);
-                scopes.Add((function.Span.Offset, sequence++, new Scope(ScopeKind.Block, function, lexical.AsReadOnly())));
+                var clauseScope = AddScope(function.Span.Offset, new Scope(ScopeKind.Block, function, lexical.AsReadOnly()), context.ModelScope);
+                if (model)
+                    ifClauseScopes![function] = clauseScope;
             }
         }
 
@@ -1363,12 +1737,14 @@ internal sealed class DeclarationsWalk
             Report(row, function, "function");
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=0B7ABE
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=A9D147
     // Hairs-Human:        PENDING
     private void VisitLabelled(LabelledStatement labelled, Context context)
     {
         var name = labelled.Label.Name;
         CheckName(name, labelled.Label.IsEscaped, labelled.Label, NameUse.Label, context);
+        if (model)
+            RecordSubtree(labelled.Label, context.ModelScope!);
         for (var set = context.Labels; set is not null; set = set.Next)
         {
             if (set.Name == name)
@@ -1391,7 +1767,7 @@ internal sealed class DeclarationsWalk
         Push(labelled.Body, context with { Labels = new LabelSet(name, context.Labels) });
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=8BC487
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=1C89D0
     // Hairs-Human:        PENDING
     private void VisitCatch(CatchClause @catch, Context context)
     {
@@ -1402,7 +1778,7 @@ internal sealed class DeclarationsWalk
         var declarations = new List<Declaration>();
         foreach (var node in nodes)
             declarations.Add(new Declaration(node.Name, BindingKind.CatchParameter, node, true, false, false));
-        scopes.Add((@catch.Span.Offset, sequence++, new Scope(ScopeKind.Catch, @catch, declarations.AsReadOnly())));
+        var catchScope = AddScope(@catch.Span.Offset, new Scope(ScopeKind.Catch, @catch, declarations.AsReadOnly()), context.ModelScope);
 
         // A name the parameter binds twice (EE0065).
         var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -1442,7 +1818,7 @@ internal sealed class DeclarationsWalk
             }
         }
 
-        PushChildren(@catch, context);
+        PushChildren(@catch, model ? context with { ModelScope = catchScope } : context);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -1916,5 +2292,8 @@ internal sealed class DeclarationsWalk
 
         /// <summary>The owner of those labels' statement list.</summary>
         public LabelOwner LabelOwner { get; init; }
+
+        /// <summary>The semantic model's scope where the node stands; null unless the request asks for the model.</summary>
+        public Scope? ModelScope { get; init; }
     }
 }

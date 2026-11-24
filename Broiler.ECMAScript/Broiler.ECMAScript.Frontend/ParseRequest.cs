@@ -5,7 +5,7 @@
 // --------------------
 // Relevant units:   8
 // Annotated:        8/8
-// Exempt:           12
+// Exempt:           13
 // Human-reviewed:   0/8
 // IP risk:          Low
 // Security risk:    Medium
@@ -211,11 +211,24 @@ public sealed class ParseRequest
     /// <summary>
     /// Whether the result publishes the token stream the parse read, as <see cref="ParseResult.Tokens"/>; false by default.
     /// The parse is the same either way: it reads the same tokens, under the same goals, makes the same tree, side tables
-    /// and diagnostics, and allocates the same objects of the same sizes as at 0.1.0-preview.9, the result holding the
-    /// stream it already kept and a flag beside its outcome; the switch decides only whether the result hands the stream
-    /// out (the owner's decision of 2026-11-04, for Broiler.VM's tokenizers-agreement row; decision D21).
+    /// and diagnostics, and the switch changes no allocation, on or off, the result holding the stream it already kept and a
+    /// flag beside its outcome; the switch decides only whether the result hands the stream out (the owner's decision of
+    /// 2026-11-04, for Broiler.VM's tokenizers-agreement row; decision D21). <i>(Revised 2026-11-24, at SJL-15.2 stage 1,
+    /// when the function facts grew on every request; where it says the switch changes no allocation, it read "and allocates
+    /// the same objects of the same sizes as at 0.1.0-preview.9".)</i>
     /// </summary>
     public bool RetainTokens { get; init; }
+
+    /// <summary>
+    /// Whether the parse also builds the semantic model, as <see cref="ParseResult.Model"/>; false by default (Broiler.VM's
+    /// JSD-0080, "The semantic model's design": computed per compilation unit, after the parse; milestone SJL-15.2: by the
+    /// declarations walk, which "does not start a second one"). With it off the parse is exactly SJL-13's and SJL-14's:
+    /// the same tree, side tables and diagnostics, and no model. With it on the same walk builds the model as it goes, and
+    /// the tree, the side tables and the diagnostics are the same as with it off. It is a parameter of the request, as
+    /// <see cref="RetainTokens"/> is, not a switch of the language (the session's decisions D-js-entry and D-js-default-off
+    /// of 2026-11-24).
+    /// </summary>
+    public bool BuildSemanticModel { get; init; }
 
     /// <summary>
     /// The caller's meter, or null for none (decision D32; convention 4). The parse charges one unit per UTF-16 code unit

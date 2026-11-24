@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `hairs.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 2989 relevant units. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 3008 relevant units. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -49,13 +49,13 @@ did, which is the narrower and the more useful of the two.
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 168 |
-| Code units | 4655 |
-| Relevant | 2989 |
-| Exempt | 1666 |
-| Assessed | 2989 of 2989 (100%) |
-| Human reviewed | 0 of 2989 (0%) |
-| Unverified | 2989 |
+| Files scanned | 169 |
+| Code units | 4719 |
+| Relevant | 3008 |
+| Exempt | 1711 |
+| Assessed | 3008 of 3008 (100%) |
+| Human reviewed | 0 of 3008 (0%) |
+| Unverified | 3008 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 2989 |
+| HUMAN_PENDING | 3008 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1666 |
+| EXEMPT | 1711 |
 
 ## 5. Aliases In The Tree
 
@@ -167,13 +167,13 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Conformance/VectorFile.cs` | 23 | 18 | 5 | 18 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorRun.cs` | 17 | 12 | 5 | 12 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorValidator.cs` | 25 | 21 | 4 | 21 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Frontend/DeclarationTables.cs` | 42 | 6 | 36 | 6 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Frontend/DeclarationsWalk.cs` | 128 | 86 | 42 | 86 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Frontend/DeclarationTables.cs` | 56 | 7 | 49 | 7 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Frontend/DeclarationsWalk.cs` | 150 | 97 | 53 | 97 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/IRegularExpressionValidator.cs` | 17 | 7 | 10 | 7 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/InheritedContext.cs` | 9 | 3 | 6 | 3 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/ParseGoal.cs` | 11 | 2 | 9 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/ParseLimits.cs` | 14 | 9 | 5 | 9 | Low | High | 4/4 |
-| `Broiler.ECMAScript.Frontend/ParseRequest.cs` | 20 | 8 | 12 | 8 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Frontend/ParseRequest.cs` | 21 | 8 | 13 | 8 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/ParseSwitches.cs` | 6 | 2 | 4 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/Parser.Expressions.cs` | 64 | 55 | 9 | 55 | Low | High | 7/7 |
 | `Broiler.ECMAScript.Frontend/Parser.Functions.cs` | 32 | 32 | 0 | 32 | Low | High | 3/3 |
@@ -182,9 +182,10 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Frontend/Parser.cs` | 77 | 42 | 35 | 42 | Low | High | 6/6 |
 | `Broiler.ECMAScript.Frontend/ProposalFlags.cs` | 11 | 2 | 9 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/Rows.cs` | 212 | 212 | 0 | 212 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Frontend/SemanticModel.cs` | 26 | 6 | 20 | 6 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/SourceText.cs` | 7 | 2 | 5 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxDiagnostic.cs` | 20 | 7 | 13 | 7 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Frontend/SyntaxParser.cs` | 17 | 8 | 9 | 8 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Frontend/SyntaxParser.cs` | 18 | 9 | 9 | 9 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Frontend/SyntaxTree.Expressions.cs` | 271 | 128 | 143 | 128 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxTree.Functions.cs` | 42 | 16 | 26 | 16 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxTree.Modules.cs` | 46 | 21 | 25 | 21 | Low | Low | 0/0 |
@@ -755,5 +756,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-1686 of the 2989 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+1705 of the 3008 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.
