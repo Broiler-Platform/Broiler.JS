@@ -3595,6 +3595,26 @@ files are not edited. Nothing is met or accepted; every clause of this engine's,
 taken under the owner's direction of 2026-10-18, with its alternative recorded" and "The items read NOT MET, and part
 K's reading, **await the owner**".)*
 
+*(Noted 2026-11-24, later, on the owner's answers 12 to 15.)* The note above reads "The items read NOT MET, with
+reading K1, **await the owner**; no fix and no rule change is made for them." On 2026-11-24 the owner gave answers 12
+("Revise for 2 rows (Recommended)", part A), 13 ("Revise by list (Recommended)", part D), 14 ("Fix tool + revise V2
+(Recommended)", part J) and 15 ("Revise like E-1 (Recommended)", part K), the owner's own and not ones taken under the
+owner's direction of 2026-10-18, quoted with their questions in bundle [`sjl-14-001`](../evidence/sjl-14-001/README.md)'s
+README, "W2's after commit, records part 2, recorded on 2026-11-24". They file one dated revision,
+[`decision-rule-revised-2026-11-24.md`](../evidence/sjl-14-001/decision-rule-revised-2026-11-24.md), written after the
+after runs were seen and so weaker evidence: part A admits the two rows by name (rev-for-of and rev-minifier), part D
+the pass-tree span differences of the input variants its listed file names (rev-pass), part J a compile past the bound
+of the seed V000002 and of its accepted mutants, and part K, as bundle `sjl-11-001`'s E-1 does, changelog, comment and
+record lines and other types' members of the same name, each listed with its declaration, and the narrowed scopes;
+nothing wider. Part J's mutation session was corrected to compile module seeds with a module record (`53afd382`) and
+taken again with its control at the after commit, recorded as corrected after the findings were seen. Read again,
+with the first readings left on record: **part A read MET on the retained runs**, **part D read MET on the retained
+runs**, **part J read MET on the retained runs** of the corrected session, each under the revision, and **part K read
+NOT MET on the retained runs** under the revision, for the hits that are the words of the bridge's message strings,
+which answer 15 does not name; they go to the owner. **Part I is pending**
+on the owner's lane `win-x64-r7-5800x`. The rule's files are not edited. Nothing is met or accepted; every clause of
+this engine's, 1 to 6, is unmet.
+
 ## Shared static semantics (SJL-15)
 
 SJL-15 makes the frontend's semantic model the single source of the static-semantics facts, and moves this engine's
