@@ -1,0 +1,2 @@
+the control's copy after its own revert, against the clean tree the search read:
+diff exit 0

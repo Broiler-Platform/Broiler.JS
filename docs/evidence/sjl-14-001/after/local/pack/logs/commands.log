@@ -1,0 +1,4 @@
+2026-11-23T21:50:39Z pack-engine: /home/user/js-w2after-build/tools/pwsh/pwsh -NoProfile -File eng/pack.ps1 -Configuration Release -ProjectSet Engine -Version 0.1.0-preview.1402 -Output /home/user/js-w2after-build/83a9bd82/feed/engine
+2026-11-23T21:53:40Z pack-shared: /home/user/js-w2after-build/tools/pwsh/pwsh -NoProfile -File eng/pack.ps1 -Configuration Release -ProjectSet Shared -Output /home/user/js-w2after-build/83a9bd82/feed/shared
+2026-11-23T21:53:58Z verify-feed-engine: /home/user/js-w2after-build/tools/pwsh/pwsh -NoProfile -File eng/verify-feed.ps1 /home/user/js-w2after-build/83a9bd82/feed/engine
+2026-11-23T21:54:01Z verify-feed-shared: /home/user/js-w2after-build/tools/pwsh/pwsh -NoProfile -File eng/verify-feed.ps1 /home/user/js-w2after-build/83a9bd82/feed/shared

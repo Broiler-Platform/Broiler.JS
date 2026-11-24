@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# adrive.sh <full-sha> <group> <step>...: the after commit's steps of astep.sh, each through run.sh (the flock'd lock and
+# the hard idle gate), one hold of the lock per step, so other stages' runs interleave. Adapted on 2026-11-23 from the
+# base's drive.sh and bdrive.sh (SCRATCH/sjl-rest/js-w2base/scripts/), keeping their conventions: the 8 GiB free-disk
+# wait before each step; the default branch's head read by git ls-remote before each step and logged (it is recorded,
+# not a stop: the after commit is fixed and main may move after W2's merge); a step whose marker is in <group>/done/ is
+# skipped, so a restarted driver resumes after the last finished step and takes an interrupted one again from its start.
+# Two adaptations, each recorded in the notes' README: (1) a step is done when it ended, whatever its exit: its marker
+# holds its exit, a non-zero exit is logged and written to <group>/FAILED, and the driver goes on to the next step (the
+# base's drivers stopped at the first non-zero exit, and chain2.sh and chain3.sh were needed by hand); a step is taken
+# again only by removing its marker; (2) the folder of a step begun and not done (an interruption) is moved to
+# <group>/interrupted/<step>-<time>/ before the step is taken again, so nothing of the interrupted attempt is lost.
+set -u
+SHA=$1; GRP=$2; shift 2
+SP=/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad
+SCR=$SP/sjl-rest/js-w2after; OUT=$SCR/$GRP; RUNSH=$SP/sjl-rest/s2/ev2/scripts/run.sh
+mkdir -p $OUT/done $OUT/logs
+log() { echo "$(date -u +%FT%TZ) $*" >> $OUT/driver.log; }
+mainref() { local d r; for d in 0 2 4 8 16; do sleep $d; r=$(git -C /home/user/broiler.js ls-remote origin refs/heads/main 2>/dev/null | cut -f1) && [ -n "$r" ] && { echo $r; return 0; }; done; echo unreadable; }
+for step in "$@"; do
+  mark=$OUT/done/a-$step
+  [ -f $mark ] && { log "skip $step (done: $(cat $mark))"; continue; }
+  if [ -e $OUT/$step ]; then ts=$(date -u +%Y%m%dT%H%M%SZ); mkdir -p $OUT/interrupted; mv $OUT/$step $OUT/interrupted/$step-$ts; log "moved the interrupted attempt's folder of $step to interrupted/$step-$ts"; fi
+  free=$(df -B1 / | awk 'NR==2{print $4}')
+  while [ "$free" -lt 8589934592 ]; do log "wait: $free bytes free, under 8 GiB"; sleep 60; free=$(df -B1 / | awk 'NR==2{print $4}'); done
+  m=$(mainref); log "main=$m before $step"
+  [ "$m" = "$SHA" ] || log "note: main is not the after commit $SHA (recorded; the after commit is fixed)"
+  bash $RUNSH w2a-$GRP-$step $OUT/logs /tmp -- bash $SCR/scripts/astep.sh $SHA $GRP $step
+  rc=$?; log "$step rc=$rc"
+  [ $rc = 0 ] || echo "$step rc=$rc $(date -u +%FT%TZ)" >> $OUT/FAILED
+  echo "$(date -u +%FT%TZ) rc=$rc" > $mark
+done
+log "all given steps done"

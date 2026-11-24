@@ -1,0 +1,1 @@
+75a9dcd14145f1841dec2edeb07e089c70a5281c8b98016abdac3e2c612f7db3  dtextbase/parse-corpus-d-text.tsv.gz

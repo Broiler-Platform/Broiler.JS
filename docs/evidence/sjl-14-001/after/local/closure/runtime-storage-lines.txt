@@ -1,0 +1,9 @@
+# a reading aid, not a reading: lines naming Broiler.JavaScript.Runtime or Broiler.JavaScript.Storage
+== assets-closure.tsv
+(grep exit 1)
+== dotnet-list-reference.txt
+(grep exit 1)
+== dotnet-list-package-transitive.txt
+(grep exit 1)
+== publish-files.sha256.txt
+(grep exit 1)

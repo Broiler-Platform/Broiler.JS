@@ -1,0 +1,7 @@
+# part D's reports against part C's side-by-side report at the base commit, row by row
+base P (outcome, type, message) against the side-by-side report's P: 106963 rows, equal 106963 (all)
+base K (outcome, type, message) against the side-by-side report's K: 106963 rows, equal 106963 (all)
+after P (outcome, type, message) against the side-by-side report's B: 106963 rows, equal 106963 (all)
+after K (outcome, type, message) against the side-by-side report's K-on: 106963 rows, equal 106963 (all)
+base parser-sha256 against the side-by-side report's P dump hash: 101440 dumps, equal 101440 (all)
+after parser-sha256 against the side-by-side report's B dump hash: 98214 dumps, equal 98214 (all)

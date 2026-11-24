@@ -1,0 +1,48 @@
+# read_2.py: parts A, D and K read again under decision-rule-revised-2026-11-24.md, from their retained tables
+
+## part A (after/part-a/comparison/comparison.json; the rule's comparison, retained)
+rev-minifier	test/language/expressions/dynamic-import/syntax/valid/new-covered-expression-is-valid.js [terser]	passed -> skipped	the script's verdict: regression	listed with: the after run's record: skipKind=minifier-invalid-output (named-rows.log: found)
+rev-for-of	test/language/statements/for-of/head-await-using-bound-names-in-stmt.js [original]	failed -> passed	the script's verdict: unclassified	listed with: K7 and its row D35 ("Lexical redeclarations Broiler.JS misses"); the library's row table reads in EE0056's notes that the using heads are EP rows, while the library refuses this input with EE0056's code, JSE1417; finding S14-F2
+# changed rows 690; admitted by the classification file (C1) 688; rev-for-of 1; rev-minifier 1
+# the classification file's rows by class: C1 688; the script's counts: admitted 688, unclassified 1, regressions 1
+
+## part D (after/part-d/parser/ and pass/; pass/unclassified.tsv, the list rev-pass names)
+# pass/unclassified.tsv SHA-256 15ad36bfc52150b64e410c0b441c36a86503570bdb27a470856c7d61b82d1a05: the revision's
+# pass/unclassified-lines.txt: differing lines of the listed variants' pass-tree dumps that are not span lines: 0
+6833	parser trees, outcome, message and dump rows	K/K-on	message	M
+1214	parser trees, outcome, message and dump rows	K/K-on	outcome	C1
+6	parser trees, outcome, message and dump rows	K/K-on	outcome	C3
+10	parser trees, outcome, message and dump rows	P/B	dump	C1
+81967	parser trees, outcome, message and dump rows	P/B	dump	S
+6	parser trees, outcome, message and dump rows	P/B	dump	rev-bracket
+3625	parser trees, outcome, message and dump rows	P/B	dump	rev-eof
+5415	parser trees, outcome, message and dump rows	P/B	message	M
+1223	parser trees, outcome, message and dump rows	P/B	outcome	C1
+6	parser trees, outcome, message and dump rows	P/B	outcome	C3
+1985	parser trees, outcome, message and dump rows	P/B	outcome	E
+22	parser trees, outcome, message and dump rows	P/B	outcome	rev-code
+10	pass trees, dump rows	P/B	dump	C1
+77428	pass trees, dump rows	P/B	dump	S
+6	pass trees, dump rows	P/B	dump	rev-bracket
+3604	pass trees, dump rows	P/B	dump	rev-eof
+4364	pass trees, dump rows	P/B	dump	rev-pass
+4343	rev-pass, by the variant's parser-tree class	P/B	dump	S
+21	rev-pass, by the variant's parser-tree class	P/B	dump	rev-eof
+# listed variants 4364; rows read NOT ADMITTED: 0
+
+## part K (after/part-k/hits.tsv, with after/part-k/listing.tsv for every hit but a facade member)
+7	NOT ADMITTED: text: words of a message string (not a comment, changelog or record line)
+40	a code comment
+28	a facade member (hits.tsv's sort)
+5	a facade member: the facade's own: FastScanner's State and its members, which dispositions.md keeps
+7	a line of a changelog
+13	a line of a record
+210	another type's member of the same name, listed with its declaration
+# hits read NOT ADMITTED by the revision's kinds: 7
+NOT ADMITTED	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:100	Class	text: words of a message string (not a comment, changelog or record line)	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:34 :: private static string? Text(string messageId) => messageId switch	a message text of the bridge's BridgeMessages.Text
+NOT ADMITTED	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:123	Decorators	text: words of a message string (not a comment, changelog or record line)	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:34 :: private static string? Text(string messageId) => messageId switch	a message text of the bridge's BridgeMessages.Text
+NOT ADMITTED	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:120	Function	text: words of a message string (not a comment, changelog or record line)	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:34 :: private static string? Text(string messageId) => messageId switch	a message text of the bridge's BridgeMessages.Text
+NOT ADMITTED	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:121	Function	text: words of a message string (not a comment, changelog or record line)	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:34 :: private static string? Text(string messageId) => messageId switch	a message text of the bridge's BridgeMessages.Text
+NOT ADMITTED	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:122	Function	text: words of a message string (not a comment, changelog or record line)	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:34 :: private static string? Text(string messageId) => messageId switch	a message text of the bridge's BridgeMessages.Text
+NOT ADMITTED	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:90	Function	text: words of a message string (not a comment, changelog or record line)	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:34 :: private static string? Text(string messageId) => messageId switch	a message text of the bridge's BridgeMessages.Text
+NOT ADMITTED	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:113	Import	text: words of a message string (not a comment, changelog or record line)	Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs:34 :: private static string? Text(string messageId) => messageId switch	a message text of the bridge's BridgeMessages.Text

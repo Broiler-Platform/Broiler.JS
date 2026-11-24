@@ -1,0 +1,14 @@
+commit: 83a9bd82a5d258d3001468095ebf43f9efc3e9a7 (the after commit, W2's merge, Broiler-Platform/Broiler.JS#1129)
+tree: 4d564686cf9bcde01af07ef3ff3cae2b07ffe135
+first-parent: 69a8a13bc446a1714d3c8be9be3cfd742aebee6e (the base commit)
+second-parent: a2d554a9a0b2062ecd354a64e04f0fbe163c1c4f
+files: 11559
+archived: 2026-11-23T21:21:59Z by git -C /home/user/broiler.js archive --format=tar 83a9bd82a5d258d3001468095ebf43f9efc3e9a7 | tar -x -C <dir>, on disk, read-only git
+suite: /home/user/js-w2after-build/suite/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e, content digest c283c3bf431618075c35fec0a8143401399d30b161fca231b05f1ed8eeb093d6 (sha256 of the sorted sha256sum listing of every file)
+suite source: /home/user/js-w2base-build/suite/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e (the base runs' copy), content digest c283c3bf431618075c35fec0a8143401399d30b161fca231b05f1ed8eeb093d6
+pwsh: /home/user/js-w2after-build/tools/pwsh/pwsh (7.6.10), copied from /home/user/js-w2base-build/tools/pwsh
+candidate version: 0.1.0-preview.1402 (Engine set; the base's was 0.1.0-preview.1401)
+sdk: 10.0.404
+node: v22.23.4
+python: Python 3.13.18
+machine: Linux 6.18.44-fc-v726 x86_64, 4 processors, Ubuntu 24.04.5 LTS

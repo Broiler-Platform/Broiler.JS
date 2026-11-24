@@ -1,0 +1,11 @@
+2026-11-24T03:36:40Z main=83a9bd82a5d258d3001468095ebf43f9efc3e9a7 before dtextbase
+2026-11-24T03:39:21Z dtextbase rc=0
+2026-11-24T03:39:21Z main=83a9bd82a5d258d3001468095ebf43f9efc3e9a7 before jsealbase
+2026-11-24T03:40:13Z jsealbase rc=3
+2026-11-24T03:40:13Z main=83a9bd82a5d258d3001468095ebf43f9efc3e9a7 before jsingle
+2026-11-24T03:47:51Z jsingle rc=0
+2026-11-24T03:47:51Z chain done
+2026-11-24T03:48:48Z jsealbase taken again: its first attempt stopped at the stage's own feed check (rc=3), which listed only the .nupkg files and so missed the feed's .snupkg files; rstep.sh corrected to list every file (moved over the old text); the first attempt's folder and run.sh files kept in runs/jsealbase-attempt-1/
+2026-11-24T03:48:48Z main=83a9bd82a5d258d3001468095ebf43f9efc3e9a7 before jsealbase
+2026-11-24T03:49:57Z jsealbase rc=0
+2026-11-24T03:49:57Z chain done

@@ -1,0 +1,2 @@
+2026-11-24T06:03:43Z w2j-fuzz: cd /tmp && bash /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2read2/scripts/jstep.sh fuzz
+2026-11-24T06:15:41Z w2j-fcontrol: cd /tmp && bash /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2read2/scripts/jstep.sh fcontrol

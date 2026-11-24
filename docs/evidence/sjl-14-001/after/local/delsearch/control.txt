@@ -1,0 +1,5 @@
+# Part K's control at 83a9bd82a5d258d3001468095ebf43f9efc3e9a7, in the scratch copy /home/user/js-w2after-build/83a9bd82/delsearch-control: ContainsStrictReservedWordUsage declared again in Broiler.JS/Broiler.JavaScript.Compiler/DirectEvalSupport.cs, searched, reverted from the commit's blob, searched again.
+-- with the declaration: 1 hit(s)
+   Broiler.JS/Broiler.JavaScript.Compiler/DirectEvalSupport.cs:838:    private static bool ContainsStrictReservedWordUsage(string text) => false;
+-- reverted (the file equal to the commit's blob: True): 0 hit(s)
+-- the control is reported: True

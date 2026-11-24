@@ -1,0 +1,37 @@
+# the input variants whose pass-tree dump difference part C's classifier leaves unclassified: 4364
+# their class at the parser trees (parser/differences.tsv.gz): S 4343; rev-eof 21
+# their differing lines that are not span lines (spancheck.py's not-span): 0
+# their span lines, by node kind, verdict, both checks and reading:
+8834	Identifier	unclassified	P-agrees=true	B-agrees=false	
+7550	Block	S	P-agrees=false	B-agrees=true	
+4103	ArrayPattern	S	P-agrees=false	B-agrees=true	
+3986	NewExpression	S	P-agrees=false	B-agrees=true	
+1533	VariableDeclaration	both-agree	P-agrees=true	B-agrees=true	S-head
+1512	VariableDeclaration	both-agree	P-agrees=true	B-agrees=true	B-short-semicolon
+1212	ObjectPattern	S	P-agrees=false	B-agrees=true	
+1034	Identifier	unclassified	P-agrees=false	B-agrees=false	
+866	ExpressionStatement	S	P-agrees=false	B-agrees=true	
+354	ClassProperty	S	P-agrees=false	B-agrees=true	
+322	ReturnStatement	S	P-agrees=false	B-agrees=true	
+294	Block	unclassified	P-agrees=false	B-agrees=false	
+292	BinaryExpression	both-agree	P-agrees=true	B-agrees=true	S-start
+238	BinaryExpression	unclassified	P-agrees=true	B-agrees=false	
+238	ExpressionStatement	unclassified	P-agrees=true	B-agrees=false	
+178	BreakStatement	both-agree	P-agrees=true	B-agrees=true	S-semi
+80	Block	both-agree	P-agrees=true	B-agrees=true	undecided
+50	BinaryExpression	unclassified	P-agrees=false	B-agrees=false	
+50	ExpressionStatement	unclassified	P-agrees=false	B-agrees=false	
+32	ContinueStatement	both-agree	P-agrees=true	B-agrees=true	S-semi
+31	TryStatement	both-agree	P-agrees=true	B-agrees=true	undecided
+19	ExpressionStatement	both-agree	P-agrees=true	B-agrees=true	P-eof-same-text
+14	IfStatement	S	P-agrees=false	B-agrees=true	
+12	SequenceExpression	both-agree	P-agrees=true	B-agrees=true	S-punct
+4	IfStatement	both-agree	P-agrees=true	B-agrees=true	undecided
+4	UnaryExpression	unclassified	P-agrees=false	B-agrees=false	
+4	VariableDeclaration	S	P-agrees=false	B-agrees=true	
+2	BreakStatement	both-agree	P-agrees=true	B-agrees=true	undecided
+2	CallExpression	S	P-agrees=false	B-agrees=true	
+2	ExpressionStatement	both-agree	P-agrees=true	B-agrees=true	undecided
+2	ForInStatement	both-agree	P-agrees=true	B-agrees=true	P-eof-same-text
+2	ForStatement	S	P-agrees=false	B-agrees=true	
+2	UnaryExpression	both-agree	P-agrees=true	B-agrees=true	undecided

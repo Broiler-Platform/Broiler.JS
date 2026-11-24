@@ -1,0 +1,10 @@
+--- a/Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs
++++ b/Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Expressions.cs
+@@ -362,6 +362,7 @@
+     // the pieces and the substitutions in turn, every piece a TemplatePart literal over its own token.
+     private AstTemplateExpression Template(TemplateLiteral template)
+     {
++        if (template is not null) throw new System.InvalidOperationException("part J control: the bridge throws on a template literal");
+         var parts = TemplateParts(template);
+         return new AstTemplateExpression(parts[0].Start, parts[parts.Count - 1].End, parts);
+     }

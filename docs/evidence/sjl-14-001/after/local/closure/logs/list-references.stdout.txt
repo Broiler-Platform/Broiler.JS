@@ -1,0 +1,5 @@
+Project reference(s)
+--------------------
+../../Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj
+../Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj
+../Broiler.JavaScript.Portable/Broiler.JavaScript.Portable.csproj

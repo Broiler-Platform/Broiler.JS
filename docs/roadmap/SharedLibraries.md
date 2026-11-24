@@ -3569,6 +3569,68 @@ NOT MET on the retained runs, for `regress-610026.js` alone.** The bundle record
 correspondence for `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js`, as part A's C1 line
 asks. The rule's file is not edited. Nothing is met or accepted; every clause of this engine's, 1 to 6, is unmet.
 
+*(Noted 2026-11-24, after W2's merge.)* The note above reads "during W2's hold, before W2 merges" and "W2 fixes it
+inside W2 ... on branch `sjl-14-w2`". **W2 merged** on 2026-11-23 as `83a9bd82a5d258d3001468095ebf43f9efc3e9a7`, the
+merge of Broiler-Platform/Broiler.JS#1129, its first parent the base commit `69a8a13b`: it is the rule's after commit,
+and **the hold of the owner's answer 9 ended** with it. Part A's after run, `test262-evidence.yml` run 45264304825 at
+the after commit, and the after commit's local runs of parts D, E, F, G, H, J and K are retained in bundle
+[`sjl-14-001`](../evidence/sjl-14-001/README.md)'s `after/`, with the runs the readings owed, and its README's "W2's
+after commit, recorded on 2026-11-24" reads each part in the rule's words, under the revision where it changes the
+part: **part A read NOT MET on the retained runs** (the `await using` for-of path of finding S14-F2, which part A's C1
+line reads as a regression, and a Terser variant the runner skips as minifier-invalid output; `regress-610026.js`
+passes at both commits); **part D read NOT MET on the retained runs** (span lines of the trees after the compiler's
+for-loop pass, which part C never compared and no class admits; every outcome, message and parser-tree difference is
+in a class); **parts E, F, G and H read MET on the retained runs** (part G with Broiler.JSeal's base side per test
+taken after the after runs, under the base's harness); **part J read NOT MET on the retained runs** (the compiler's
+documented `import.meta` refusal for module code without a module record, which the session's harness compiles, and
+timeouts of one generated seed that reproduce unloaded; the session that compiles those module seeds is W2's own
+tool); **part K read NOT MET on the retained runs** as the rule is written (lines of the changelogs, comments and
+records, and other types' members of the same name, are hits that are neither facade members nor relocations, and the
+search took common-word names in narrower scopes than the rule's, where bundle `sjl-11-001`'s E-1, the model part K
+names, had explicit exceptions for such hits), with reading K1, under which it would read MET, put to the owner.
+**Part I is pending** on the owner's lane `win-x64-r7-5800x`, its runs to be retained in the bundle's `measurement/`.
+The items read NOT MET, with reading K1, **await the owner**; no fix and no rule change is made for them. The rule's
+files are not edited. Nothing is met or accepted; every clause of this engine's, 1 to 6, is unmet. *(Revised
+2026-11-24, in review of this note before it merged: it read "**part K read MET on the retained runs** on a reading
+taken under the owner's direction of 2026-10-18, with its alternative recorded" and "The items read NOT MET, and part
+K's reading, **await the owner**".)*
+
+*(Noted 2026-11-24, later, on the owner's answers 12 to 15.)* The note above reads "The items read NOT MET, with
+reading K1, **await the owner**; no fix and no rule change is made for them." On 2026-11-24 the owner gave answers 12
+("Revise for 2 rows (Recommended)", part A), 13 ("Revise by list (Recommended)", part D), 14 ("Fix tool + revise V2
+(Recommended)", part J) and 15 ("Revise like E-1 (Recommended)", part K), the owner's own and not ones taken under the
+owner's direction of 2026-10-18, quoted with their questions in bundle [`sjl-14-001`](../evidence/sjl-14-001/README.md)'s
+README, "W2's after commit, records part 2, recorded on 2026-11-24". They file one dated revision,
+[`decision-rule-revised-2026-11-24.md`](../evidence/sjl-14-001/decision-rule-revised-2026-11-24.md), written after the
+after runs were seen and so weaker evidence: part A admits the two rows by name (rev-for-of and rev-minifier), part D
+the pass-tree span differences of the input variants its listed file names (rev-pass), part J a compile past the bound
+of the seed V000002 and of its accepted mutants, and part K, as bundle `sjl-11-001`'s E-1 does, changelog, comment and
+record lines and other types' members of the same name, each listed with its declaration, and the narrowed scopes;
+nothing wider. Part J's mutation session was corrected to compile module seeds with a module record (`53afd382`) and
+taken again with its control at the after commit, recorded as corrected after the findings were seen. Read again,
+with the first readings left on record: **part A read MET on the retained runs**, **part D read MET on the retained
+runs**, **part J read MET on the retained runs** of the corrected session, each under the revision, and **part K read
+NOT MET on the retained runs** under the revision, for the hits that are the words of the bridge's message strings,
+which answer 15 does not name; they go to the owner. **Part I is pending**
+on the owner's lane `win-x64-r7-5800x`. The rule's files are not edited. Nothing is met or accepted; every clause of
+this engine's, 1 to 6, is unmet.
+
+*(Noted 2026-11-24, later, on the owner's answer 16.)* The note above reads "**part K read NOT MET on the retained
+runs** under the revision, for the hits that are the words of the bridge's message strings, which answer 15 does not
+name; they go to the owner." On 2026-11-24 the owner gave answer 16 ("Revise for msg text (Recommended)"), the owner's
+own and not one taken under the owner's direction of 2026-10-18, quoted with its question in bundle
+[`sjl-14-001`](../evidence/sjl-14-001/README.md)'s README, "W2's after commit, records part 3, recorded on
+2026-11-24". It files one more dated revision,
+[`decision-rule-revised-2026-11-24-k.md`](../evidence/sjl-14-001/decision-rule-revised-2026-11-24-k.md), written after
+the runs and part K's first and second readings were seen and so weaker evidence, which changes part K alone: its MET
+line also admits words inside a string literal that is a message text, listed with the message table that holds it
+and checked to be no member name used by reflection or lookup, and lets a member of a .NET library type be shown by
+naming that type and its assembly in place of a file and line; nothing wider. Part K's listing aid was extended to
+list those hits so. Read a third time on the retained search, the first and second readings left on record, **part K
+read MET on the retained runs** under the rule and its three revisions. **Part I is pending** on the owner's lane
+`win-x64-r7-5800x`. The rule's earlier files are not edited. Nothing is met or accepted; every clause of this
+engine's, 1 to 6, is unmet.
+
 ## Shared static semantics (SJL-15)
 
 SJL-15 makes the frontend's semantic model the single source of the static-semantics facts, and moves this engine's

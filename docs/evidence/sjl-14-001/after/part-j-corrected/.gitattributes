@@ -1,0 +1,4 @@
+# Bundle sjl-14-001's after/part-j-corrected/: part J's corrected session of 2026-11-24 at the after commit, retained as
+# written and each named by its SHA-256 in hashes.txt, so they are checked out exactly as committed, and git's
+# whitespace checks skip them.
+* -text -whitespace

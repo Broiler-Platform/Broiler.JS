@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Bundle sjl-14-001, part J: a single-case reading aid of the after records (2026-11-24), built inside a clean archive
+    of a commit at docs/evidence/sjl-14-001/tools/single-case/, so that it references that commit's product by the same
+    relative path as the session's tools/fuzz/fuzz.csproj. Program.cs says what it does.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>single-case</AssemblyName>
+    <RootNamespace>Sjl14SingleCase</RootNamespace>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj" />
+  </ItemGroup>
+</Project>

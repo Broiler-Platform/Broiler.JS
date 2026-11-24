@@ -1,0 +1,10 @@
+kind	name	version	path
+project	Broiler.ECMAScript.Algorithms	0.1.0-preview.12	../../Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj
+project	Broiler.ECMAScript.Frontend	0.1.0-preview.12	../../Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj
+project	Broiler.JavaScript.Expressions	0.1.0-preview.1	../Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj
+project	Broiler.JavaScript.Portable	0.1.0-preview.1	../Broiler.JavaScript.Portable/Broiler.JavaScript.Portable.csproj
+package	Broiler.Regex	0.1.0-preview.6	broiler.regex/0.1.0-preview.6
+package	Broiler.Unicode.Algorithms	0.1.0-preview.6	broiler.unicode.algorithms/0.1.0-preview.6
+package	Microsoft.CodeAnalysis.BannedApiAnalyzers	5.6.0	microsoft.codeanalysis.bannedapianalyzers/5.6.0
+package	Microsoft.Net.Compilers.Toolset	5.12.0	microsoft.net.compilers.toolset/5.12.0
+# target net10.0: 8 entries

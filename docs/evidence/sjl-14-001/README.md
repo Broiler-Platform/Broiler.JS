@@ -32,6 +32,10 @@ Broiler.JS `33d3093b` and Broiler.VM `c5bde2b`, each repository's default branch
 | [`side-by-side/w1/tests-and-test262/`](side-by-side/w1/tests-and-test262/README.md) | Part C's other runs at W1, the test projects and test262 with the switch off and on, taken during W2's base phase, with their logs, machine records, scripts and `hashes.txt` (the files over 2 MB by digest), and a reading of them that classifies nothing; read, not judged *(added 2026-11-22, during W2's base runs)* |
 | [`base/local/`](base/local/README.md) | The base commit's local runs at `69a8a13b`: part C's side-by-side tool, test projects and test262 with the switch off and on; part D's tool; part E's collector; part G's base candidate feed with Broiler.JSeal's and Broiler.HtmlBridge's suites against it; part H's API lister; with the chain's logs, machine records, scripts and `hashes.txt` (the files over 2 MB by digest) *(added 2026-11-23, during W2's hold)* *(Noted 2026-11-23, records part 4: the three of those files the after comparisons read, part C's side-by-side report, part D's dump report and Broiler.HtmlBridge's TRX, are now kept whole there; "the files over 2 MB by digest" is left as written)* |
 | [`base/part-c/`](base/part-c/README.md) | Part C at the base commit: every difference of those runs with its class, or unclassified with its reading, the generated message tables of class M, and the scripts that wrote them; part C read NOT MET on the retained runs *(added 2026-11-23, during W2's hold)* *(Noted 2026-11-23, records part 5: the cell before reads "part C read NOT MET on the retained runs"; part C is read again there under the rule's revision of 2026-11-23, read NOT MET on the retained runs for `test/staging/sm/regress/regress-610026.js` alone, which the revision does not admit; "W2's base, records part 5" below)* |
+| [`after/part-a/`](after/part-a/imported.txt) | Part A's after run, `.github/workflows/test262-evidence.yml` run 45264304825 at the after commit `83a9bd82`, retained as `base/part-a/` retains the base run, with the rule's comparison of it with the base in `comparison/` *(added 2026-11-24)* |
+| [`after/local/`](after/local/README.md) | The after commit's local runs of parts D, E, F, G, H, J and K, retained by `base/local/`'s convention, with the driver's scripts, logs and machine records *(added 2026-11-24)* |
+| [`after/owed-runs/`](after/owed-runs/README.md) | The runs the after readings owed, taken 2026-11-24 after the after runs: the base commit's dump text (part D), Broiler.JSeal's base side per test (part G), single-case compiles (part J) *(added 2026-11-24)* |
+| [`after/part-d/`](after/part-d/README.md), [`after/part-f/`](after/part-f/reading.txt), [`after/part-g/`](after/part-g/per-test.txt), [`after/part-h/`](after/part-h/reading.txt), [`after/part-j/`](after/part-j/findings.txt), [`after/part-k/`](after/part-k/hits.tsv) | The after comparisons and reading aids of parts D, F, G, H, J and K, each with its script; the parts are read in "W2's after commit, recorded on 2026-11-24" below *(added 2026-11-24)* |
 
 ## W2's code, written on 2026-11-19 (on branch `sjl-14-w2`, not merged)
 
@@ -200,7 +204,9 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
   `base/part-a/`, "Part A's base run, retained" below; this line's other runs are not yet in `base/`.)* *(Noted
   2026-11-23: the note before this one reads "this line's other runs are not yet in `base/`". The base runs of parts
   D, E, G and H are taken and retained in [`base/local/`](base/local/README.md); parts F and K have no base run, as
-  each is taken at the after commit alone. Nothing is in `after/`.)*
+  each is taken at the after commit alone. Nothing is in `after/`.)* *(Noted 2026-11-24: the note before this one reads "Nothing is in `after/`." Part A's after run
+  and the after commit's local runs of parts D, E, F, G, H, J and K are retained in `after/`, with the comparisons; see
+  "W2's after commit, recorded on 2026-11-24" below.)*
 - `measurement/` - part I's runs, void on a lane that is not controlled (decision D48); *(Noted 2026-11-18: this
   line reads "`measurement/` - part I's runs, void on a lane that is not controlled". Part I is to be taken as written
   on the controlled lane [`win-x64-r7-5800x`](../lanes/win-x64-r7-5800x/README.md), by the owner's choice of
@@ -324,7 +330,10 @@ Each named by the rule, retained when its run is taken, with the commit it ran a
     question's words; the chosen answer reads "The hold then starts at the first base run".)* *(Noted 2026-11-22,
     during W2's base runs: the note above reads "that hold has not started". It started on 2026-11-19 with the first
     base run, and the default branch's head has been `69a8a13bc446a1714d3c8be9be3cfd742aebee6e` since; see "The hold's
-    start" in "W2's base, recorded on 2026-11-22" below. W2 does not exist yet.)*
+    start" in "W2's base, recorded on 2026-11-22" below. W2 does not exist yet.)* *(Noted 2026-11-24: the note before this one reads "W2 does not exist yet." W2 merged on
+    2026-11-23 as `83a9bd82a5d258d3001468095ebf43f9efc3e9a7`, the merge of Broiler-Platform/Broiler.JS#1129, whose first
+    parent is `69a8a13b`; it is the after commit, and the hold ended with it. See "W2's after commit, recorded on
+    2026-11-24" below.)*
 
 ## Part B, judged on 2026-11-15
 
@@ -1327,6 +1336,770 @@ this section, not in [`corrections.md`](corrections.md). That folder's [`hashes.
 reads SHA-256 `52b87e74d8fc5d921378fc3833eac6508dfd1eb72f7b9102bf59f0591765964c`; the paragraph "Part C, read again"
 above names its digest of before this change, and is left as written. Part C's reading under the revision is
 unchanged.
+
+## W2's after commit, recorded on 2026-11-24
+
+**Written:** 2026-11-24, on branch `sjl-14-after` from the after commit, with the default branch's head read as
+`83a9bd82a5d258d3001468095ebf43f9efc3e9a7` by `git ls-remote` before each of this record's commits.
+[`decision-rule.md`](decision-rule.md) and [`decision-rule-revised-2026-11-23.md`](decision-rule-revised-2026-11-23.md)
+are not edited, no row is added to [`corrections.md`](corrections.md) or its tables, and nothing retained in
+[`base/`](base/local/README.md) changes. Each part is read in the rule's words, under the revision where the revision
+changes the part (parts C and D), on the files named with it; nothing is judged beyond the reading, and nothing is
+accepted (EX-30).
+
+### The after commit and the end of the hold
+
+- **W2 merged** as `83a9bd82a5d258d3001468095ebf43f9efc3e9a7`, the merge of Broiler-Platform/Broiler.JS#1129
+  (2026-11-23T20:54:36Z), its first parent the base commit `69a8a13bc446a1714d3c8be9be3cfd742aebee6e` and its second
+  `a2d554a9a0b2062ecd354a64e04f0fbe163c1c4f`, the head of `sjl-14-w2`. It is **the after commit** the rule names ("the
+  default-branch merge that lands SJL-14.3 to SJL-14.5, one merge"), and `69a8a13b`, at which every base run was taken,
+  is its first parent, as the rule's "The base commit is its first parent" asks.
+- **The hold of the owner's answer 9 ended** with that merge ("nothing merges to Broiler.JS main until W2 merges"). The
+  default branch's head has been the after commit since, through this record's commits.
+
+### Part A's after run, retained
+
+- **The run.** `.github/workflows/test262-evidence.yml` at the after commit, blob
+  `fc38229782ee1b2e93ecca9e990d182f5e44dbf2`, the blob the base commit carries and the base run ran: workflow run
+  [45264304825](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/45264304825) (attempt 1), dispatched on
+  2026-11-23 at 20:55:16Z on `main` with the base run's inputs but for the commit, conclusion success, and success for
+  every job at `83a9bd82`. Its head commit, its `run.txt`'s dispatched ref and tested commit all read the after commit,
+  and `run.txt`'s inputs line reads the inputs part A fixes (time_zone empty is not echoed there). Between the two
+  commits `scripts/compliance/run_test262.py` changes in two comments only, and the comparison and merge scripts not at
+  all.
+- **Retained** in [`after/part-a/`](after/part-a/imported.txt) as [`base/part-a/`](base/part-a/imported.txt) retains
+  the base run: every entry of the evidence artifact unchanged, but `test262-results.json.gz`, over 2 MB, by its digest
+  only, as the base's; every artifact of the run downloaded and its zip's SHA-256 equal to the digest GitHub records
+  ([`part-a-artifacts.txt`](after/part-a/part-a-artifacts.txt)); the evidence artifact is
+  `sha256:84f74d007d7376eccd96c14a9831c430095cf54bf3406b07544d94ddd3ab8c8e`. The base run's evidence zip was downloaded
+  again for the comparison and matches the digest the base records give it,
+  `sha256:12163b9df6e680ddfbd50b3f9356d9bae2f2e2c1cb417ace2045ca7223c647c1`. The folder's
+  [`hashes.txt`](after/part-a/hashes.txt) names every file by its SHA-256.
+
+### Part A, read
+
+The comparison is the rule's, `scripts/compliance/compare_test262_paths.py` as committed at SJL-0.9 (unchanged at the
+after commit), with each run's re-run of its timed-out path, and its classification file
+([`after/part-a/comparison/`](after/part-a/comparison/comparison.log): `classifications.json`, `comparison.json`,
+`comparison.log`, `compare-checks.log`, `completeness.log`, `zone-records.log` and `named-rows.log`).
+- **Complete and comparable:** every expected shard reported in both runs, no configuration failure, one suite revision,
+  one shell in each run (and in each re-run), every shard in the zone, `includeNegative` true in both
+  ([`completeness.log`](after/part-a/comparison/completeness.log)); the two runs' host-zone records read alike, and are
+  one file byte for byte ([`zone-records.log`](after/part-a/comparison/zone-records.log)); the script finds the runs
+  comparable (it exits 1, for rows it does not admit, not 2). The same RID, linux-x64; the runner image versions
+  differ, which the rule does not fix ([`imported.txt`](after/part-a/imported.txt)). The script's two checks pass: the
+  after run against itself changes nothing, and a copy with one row flipped reports that row
+  ([`compare-checks.log`](after/part-a/comparison/compare-checks.log)).
+- **Every changed row but two** fails at the base and passes after on a path `corrections/k-paths.tsv` lists for a row
+  of K1 to K10, and is C1, listed in `classifications.json` with its path, its variant and its correction (part C's
+  reading of a test262 case, `base/part-c/scripts/classify_local.py`); and each such path is listed by name, in
+  backquotes, in `Broiler.JS/CHANGELOG.md`'s section "The cut-over to the shared syntax library", which names K1 to K10
+  by row (checked path by path at the after commit, 2026-11-24, in review of this record), as C1's "and in the
+  changelog" asks. No row is C3 or T. *(Revised 2026-11-24, in review: this sentence first read "the changelog's
+  section "The cut-over to the shared syntax library" names K1 to K10 by row".)*
+- **The two others:**
+  - `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js`, original variant, fails at the base and
+    passes after, and no row of K1 to K10 explains it: part A's C1 line reads "a C1 row that none explains is recorded
+    as a finding against the correspondence and is a regression". It is finding S14-F2, recorded in "W2's base,
+    records part 5" above; the revision's rev-for-of admits it at part C alone ("Part A is not changed"). Read here as
+    part A's C1 line reads it: a regression.
+  - `test/language/expressions/dynamic-import/syntax/valid/new-covered-expression-is-valid.js`, Terser variant, passes
+    at the base and is skipped after, the runner's record giving `minifier-invalid-output` (node refuses the minified
+    text, which the after commit's frontend refuses too, where the base's parser accepted it). Part A's last class line
+    reads "every other difference is a regression, including a row that passes at the base and fails, times out or is
+    skipped after outside C3"; it is not C3. A regression. The revision's rev-minifier admits it at part C alone.
+- **`test/staging/sm/regress/regress-610026.js`** (decision B8, group 6), both variants, passes at the base and passes
+  after, within the per-test timeout in each, so it is no changed row
+  ([`named-rows.log`](after/part-a/comparison/named-rows.log)); B8's fix in W2 holds in part A's runs.
+- **Part A: read NOT MET on the retained runs**, for those two rows (the files above;
+  [`after/part-a/hashes.txt`](after/part-a/hashes.txt) names each by digest). Not judged beyond that (EX-30). *(Noted
+  2026-11-24, later: the owner's answer 12 of 2026-11-24 filed the revision
+  [`decision-rule-revised-2026-11-24.md`](decision-rule-revised-2026-11-24.md); part A is read again under it in
+  "W2's after commit, records part 2, recorded on 2026-11-24" below. This reading stays as taken.)*
+
+### The after commit's local runs, retained
+
+The after driver's runs at the after commit, taken 2026-11-23 from 21:21Z to 22:59Z behind the machine's lock and idle
+gate with the default branch's head read as the after commit before every step, are retained in
+[`after/local/`](after/local/README.md) by [`base/local/`](base/local/README.md)'s convention: every file unchanged at
+its path, the one over 2 MB the comparisons do not read whole by digest, the two they read whole kept whole
+(`partd/parse-corpus-d1.tsv.gz`, `html/htmlbridge/trx/htmlbridge.trx`), the scripts as they ran and as they were
+started, and the machine records; [`after/local/retained.txt`](after/local/retained.txt) names every step, its
+command, its outputs, its exit (every step exited 0) and every departure from the base's harness. The runs owed to the
+readings, taken 2026-11-24 after every after run, are in [`after/owed-runs/`](after/owed-runs/README.md): the base
+commit's dump text for part D, Broiler.JSeal's base side per test for part G, and single-case compiles for part J.
+
+### Part D, read
+
+[`after/part-d/`](after/part-d/README.md) classifies every difference of the comparison the rule names ("per input,
+variant and entry point: outcome, exception type and message; per input, the dump hashes") with part C's own
+classifier, unchanged, the base commit's P read against the after commit's P (the adapter's `FastParser` facade) and
+the base's K against the after's K, under the revision's part D classes; its
+[`cross-check.txt`](after/part-d/cross-check.txt) finds the classifier's rows and `compare_parse_corpus.py
+acceptance`'s list to be one set, and the dump rows to be every input variant whose dump hash differs.
+- **Complete:** every input and variant at both entry points at both commits, the manifest's digest equal
+  (`acceptance.log`). **The control is reported:** the copy of the base report with one outcome flipped and one message
+  changed is reported as exactly those two differences ([`control.log`](after/part-d/control.log), from
+  `after/local/dcontrol/`).
+- **Outcomes and messages:** every difference is in C1, C3, E, M or rev-code ([`parser/classes.txt`](after/part-d/parser/classes.txt));
+  class E and rev-code are read by the after commit's codes (`after/local/dcodes/bridge-codes.tsv`), rev-code's inputs
+  each with the code the revision names.
+- **The parser trees' dumps:** every difference is in C1, S, rev-eof or rev-bracket, each listed with its lines
+  ([`parser/`](after/part-d/parser/unclassified.tsv) lists none unclassified). These are the base's part C classes of
+  the same input variants: the base commit's P and K rows and parser dump hashes are, field for field, the base
+  side-by-side run's P and K, and the after commit's its B and K-on
+  ([`identity-with-part-c.txt`](after/part-d/identity-with-part-c.txt)).
+- **The dumps after the compiler's for-loop pass:** the dump report hashes each accepted variant's tree twice, as the
+  parser built it (`parser-sha256`) and after the compiler's for-loop pass (`pass-sha256`), the "--dump mode (before and
+  after the compiler's for-loop pass)" part B's configuration names and part D's configuration takes. Part C compared
+  parser trees only, so these differences were never read before. Most are in S, rev-eof, rev-bracket or C1, but a set
+  of input variants ([`pass/unclassified.tsv`](after/part-d/pass/unclassified.tsv)) differ in span lines no class
+  admits ([`pass/unclassified-lines.txt`](after/part-d/pass/unclassified-lines.txt)): spans of nodes the pass builds or
+  copies from the parser tree, such as a `for` head's declaration moved into the loop's body (read there as a
+  declaration in statement position, whose after span leaves out a `;` the base's takes), a temporary's identifier that
+  takes its span from a destructuring pattern's edge, and the blocks and expressions the pass synthesises, whose spans
+  in both trees agree with no source text. Every such input variant's parser-tree difference is S or rev-eof, and none
+  of their differing lines is outside spans; the rule has no class for a pass-tree span that follows an admitted
+  parser-tree span.
+- **Part D: read NOT MET on the retained runs**, for those pass-tree differences (the files above;
+  [`after/part-d/hashes.txt`](after/part-d/hashes.txt)). The base commit's pass text, which the reading needs, was not
+  in the base records (part C's base text holds parser trees only); it was taken at the base commit after the after
+  runs by the rule's own tool, its report identical line by line to the base's retained dump report
+  ([`after/owed-runs/dtextbase/`](after/owed-runs/dtextbase/identity-with-base-d1.txt)), so it describes the base run's
+  trees and weakens nothing. Not judged beyond that (EX-30). *(Noted 2026-11-24, later: the owner's answer 13 of
+  2026-11-24 filed the revision [`decision-rule-revised-2026-11-24.md`](decision-rule-revised-2026-11-24.md); part D
+  is read again under it in "W2's after commit, records part 2, recorded on 2026-11-24" below. This reading stays as
+  taken.)*
+- *(Noted 2026-11-24, after the comparison, in review of this record.)* The paragraphs above and
+  [`after/part-d/README.md`](after/part-d/README.md) name the two commits' dump texts as "kept outside the repository,
+  by digest" ([`after/part-d/texts.sha256.txt`](after/part-d/texts.sha256.txt)). On 2026-11-24, once the comparison was
+  done, both texts (`/home/user/js-w2read-build/69a8a13b/text/dumps-p.txt.gz` and
+  `/home/user/js-w2after-build/83a9bd82/text/dumps-p.txt.gz`), `read_d.sh`'s work files
+  ([`after/part-d/work.sha256.txt`](after/part-d/work.sha256.txt)) and the after commit's candidate feed were removed
+  with the build folders that held them; they remain named by digest only. So `parser/`'s and `pass/`'s tables
+  regenerate only after the after driver's `dtext` step and the owed `dtextbase` step are taken again (through
+  `run.sh`, a build at each commit) and `read_d.sh` is run on their texts; the parts that need no text
+  (`acceptance.log`, `acceptance.json.gz`) regenerate from the retained reports. And the texts' own bytes were not
+  shown reproducible: `identity-with-partd.txt` and `identity-with-base-d1.txt` compare the dump reports' rows, with
+  the `#` lines (among them each assembly's identifier) left out, not the texts. *(Noted 2026-11-24, later: the
+  review's re-take of both texts, retained in [`after/owed-runs/verifier-retake/`](after/owed-runs/verifier-retake/runs/logs/runs.tsv),
+  reproduced their digests; "W2's after commit, records part 2, recorded on 2026-11-24" below records it. This sentence is left as written.)*
+
+### Part E, read
+
+- **The tests** of `Broiler.JS/Broiler.JavaScript.Portable.Tests` in Release at the after commit all pass
+  ([`after/local/ptests/`](after/local/ptests/trx/Broiler.JavaScript.Portable.Tests.trx)).
+- **The collector**, `scripts/performance/collect_phase5.py --rid linux-x64` at the after commit: the regenerated
+  program is identical to the checked-in `FibonacciProgram.g.cs` (`matchesCheckedInProgram` true, the two digests
+  equal, [`after/local/phase5/`](after/local/phase5/phase5-report.json)), the sample publishes with Native AOT, runs and
+  answers as the collector requires (no validation error), with no dynamic code (`dynamicCodeSupported` and
+  `dynamicCodeCompiled` false). At the base the program differed in the form of its constants
+  ([`base/local/README.md`](base/local/README.md)); W2's `8133ea0c` regenerates the checked-in copy, and the rule
+  judges the after commit alone.
+- **The closure** of `Broiler.JavaScript.Portable.Compiler` at the after commit (its project and package references,
+  transitive, and its publish output) names no `Broiler.JavaScript.Runtime` and no `Broiler.JavaScript.Storage`
+  ([`after/local/closure/`](after/local/closure/runtime-storage-lines.txt)).
+- **Part E: read MET on the retained runs** (the files above; [`after/local/hashes.txt`](after/local/hashes.txt)).
+
+### Part F, read
+
+- **Packing and feed verification pass** for both sets at the after commit ([`after/local/pack/`](after/local/pack/logs/runs.tsv));
+  the Shared set packs at the source's own `0.1.0-preview.12` (decision B5).
+- **The pristine consumer passes** against that feed (`after/local/pristine/`), and **its control fails as stated**:
+  with `Broiler.ECMAScript.Frontend` removed, the restore fails `NU1101` naming that package (`after/local/pcontrol/`).
+- **The marks.** [`after/part-f/reading.txt`](after/part-f/reading.txt) reads the metadata reader's every row
+  (`after/local/obsolete/obsolete-marks.tsv`, the after packages of `Ast` and `Parser`) against `dispositions.tsv`'s
+  type lines: every type `dispositions.md` marks obsolete (`obsolete`, `facade-obsolete`) carries `[Obsolete]` with
+  `BJS0002` and a message naming `1.0.0`, the removal version decision D50 names, and none is missing; the non-tree
+  types are forwarded to `Broiler.JavaScript.Expressions`. **The one row not marked** is
+  `Broiler.JavaScript.Ast.Misc.FastParseException`: `dispositions.md` gives it `moved-forwarded`, which asks no mark
+  ("not marked obsolete (SJL-D-25 (a))"), so part F's line ("every public type dispositions.md marks obsolete carries
+  the mark") asks nothing of it. That it stays in `Ast` and is not forwarded is W2's recorded departure ("Where W2's code
+  departs" above; `docs/public-api.md`'s row for it), read at part H.
+- **Part F: read MET on the retained runs** (the files above).
+
+### Part G, read
+
+- **Broiler.HtmlBridge**, per test, against the base candidate (`base/local/part-g/htmlbridge/trx/`) and the after
+  candidate (`after/local/html/htmlbridge/trx/`): the same tests on both sides, and every test that passes against the
+  base candidate passes against the after candidate ([`after/part-g/per-test.txt`](after/part-g/per-test.txt)).
+- **Broiler.JSeal**, per test. The base run of 2026-11-23 kept summaries and skipped names but no passed test by name
+  (`base/local/retained.txt`, "Owed"), and part G's comparison is "per test, its result against the base candidate and
+  against the after candidate", with "every test's result retained". The base side is therefore taken again here, after
+  the after runs: the base's own harness (`base/local/scripts/bstep.sh`'s `jseal` step as its attempt 3 ran it) against
+  the kept base candidate feed, whose every file matches the base's digests, with the candidate directory the base
+  run's byte for byte, and the after run's one addition, a TRX of each test project
+  ([`after/owed-runs/jsealbase/`](after/owed-runs/jsealbase/jseal-trx.tsv)). Its report equals the base run's in every
+  leaf but times, paths and the digests of Broiler.JSeal's own projects, which the consumer builds again in a fresh
+  folder ([`report-against-base-run.txt`](after/owed-runs/jsealbase/report-against-base-run.txt)). Against it, in both
+  configurations, the same tests on both sides, and every test that passes against the base candidate passes against
+  the after candidate ([`after/part-g/per-test.txt`](after/part-g/per-test.txt)). **What it weakens:** JSeal's base
+  side is a second run of the base's harness on the base's bytes, taken after the after runs were seen, not the run of
+  2026-11-23 itself; the inputs it ran on are those of that run, checked by digest, and it ran no choice of this
+  stage's.
+- **Part G: read MET on the retained runs** (the files above; [`after/owed-runs/hashes.txt`](after/owed-runs/hashes.txt)).
+
+### Part H, read
+
+[`after/part-h/read_h.py`](after/part-h/read_h.py) compares the API lister's listings at the base commit
+(`base/local/part-h/api/`) and at the after commit (`after/local/api/api/`), every assembly of both pack sets, per
+member, and reads every member removed, changed or newly obsolete against `docs/public-api.md`'s rows at the after
+commit (its section "Public API changes, 2026-11-19 (window W2 ...)"), row by row, and against `dispositions.tsv`
+([`after/part-h/members.tsv`](after/part-h/members.tsv), [`after/part-h/reading.txt`](after/part-h/reading.txt)):
+- **Only `Ast`, `Compiler`, `Expressions` and `Parser` differ**; every other listing is the same at both commits.
+- **`Parser`:** every member newly obsolete, by its type's mark, which names `BJS0002` and `1.0.0`: public-api.md's row
+  "Every public type of `Broiler.JavaScript.Parser` ... and every member of each", (b) obsolete, removal `1.0.0`;
+  `dispositions.tsv` gives each `facade-obsolete`. `FastTokenStream.UndoMark()` keeps its own mark of SJL-12.5
+  unchanged, as its row (`kept-obsolete-no-version`) says. No member is removed.
+- **`Ast`:** every member of the tree's types newly obsolete, with `BJS0002` and `1.0.0`: the row "Every public type of
+  `Broiler.JavaScript.Ast` but the non-tree types below and `FastParseException`", (b) obsolete, removal `1.0.0`;
+  `dispositions.tsv` gives each `obsolete`. The non-tree types' members leave `Ast` and arrive in `Expressions` with the
+  same namespace, signature and attributes, and `Ast` forwards each type (the after commit's metadata reader): the row
+  for them, (a) forwarder; `dispositions.tsv` gives each `moved-forwarded`. `FastParseException` is unchanged.
+- **`Compiler`:** one member added, `DirectEvalSupport.Execute`'s overload with `inDerivedConstructor`, which has its row
+  ("added"); an added member is not one part H's line asks a disposition of.
+- No member is removed, changed or newly obsolete without a row, and `dispositions.tsv` agrees with every row that
+  covers one.
+- **Part H: read MET on the retained runs** (the files above).
+
+### Part I
+
+Not taken: part I is the owner's run on the controlled lane `win-x64-r7-5800x`, arm B built from the base commit and
+arms A and A-again from the after commit, under reading B10's protocol, by the collector committed at the after
+commit, [`collect-part-i.py`](collect-part-i.py); its brief is with the owner. Its outputs are to be retained in
+`measurement/win-x64-r7-5800x/` (and a confirmation run in a folder of its own beside it), as the note of 2026-11-18
+under "What it will hold" and [`inputs/workloads/README.md`](inputs/workloads/README.md) require: "No figure produced
+from them is retained anywhere in this repository except in the bundle's `measurement/` sub-bundle." **Pending on the
+owner's lane.**
+
+### Part J, read
+
+[`after/part-j/findings.txt`](after/part-j/findings.txt) lists the session's findings and the control's by seed, type
+and message, from the after run's sessions (`after/local/fuzz/session/`, `after/local/fcontrol/session/`):
+- **The control is reported:** in the scratch copy whose bridge throws on a template literal, the session reports
+  `System.InvalidOperationException` findings for the seeds that hold template literals; the revert is checked by
+  digest and against a clean archive (`after/local/fcontrol/revert-check.txt`).
+- **The session reports findings**, of two seeds alone, every one also in the control:
+  - **T037823** (`test/language/expressions/import.meta/distinct-for-each-module.js`, goal module): mutants that compile
+    throw `Broiler.JavaScript.Runtime.JSException` "import.meta is not available: this module has no module record".
+    The seed itself throws it, alone and unloaded ([`after/owed-runs/jsingle/cases.tsv`](after/owed-runs/jsingle/cases.tsv)).
+    It is the compiler's ReferenceError for `import.meta` in module code compiled without a module record
+    (`Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitMeta.cs`, unchanged since `68f9a87a`, before
+    W1), which its documentation calls deliberate ("a deterministic ReferenceError naming that rather than a silent
+    `undefined`"), and the session compiles every module seed through `CoreScript.Compile(..., isModule: true)` with no
+    module record. Read: the engine's throw site is not W2's change (no commit from `68f9a87a` to the after commit
+    touches that file); the input defect, a module seed compiled where no module record exists, is the session's, and
+    the session is W2's own tool, committed to the bundle with the after commit's change (`8a0928f4`, "SJL-14: W2, part
+    J's mutation session and part K's deletion search, committed with the after commit's change", and W2's review fixes
+    `a352fd1c`; neither is in the base commit), whose `tools/fuzz/Program.cs` calls `CoreScript.Compile(...,
+    isModule: module)` with no module record. By the rule's reading ("a finding is any other exception type") each is a
+    finding. *(Revised 2026-11-24, in review of this record before it merged: this sentence first read "Read: a
+    fuzz-harness input defect (a module seed compiled where no module record exists), not W2's".)*
+  - **V000002** (`inputs/broiler-vm/generated/refuse-more-locals-than-the-frame-admits.js`, goal script, a generated
+    program of very many declarations): mutants that the frontend accepts compile past the session's bound per compile.
+    The seed itself, and each of its timed-out mutants, compiled alone with nothing else running, takes longer than the
+    bound ([`cases.tsv`](after/owed-runs/jsingle/cases.tsv), each `within-bound` "no"): the timeouts reproduce unloaded;
+    they are the seed's compile cost against the header's bound, not the machine's load. Part J's rule asks no base-side
+    run, so whether the base compiles it within the bound is not read.
+- **Part J: read NOT MET on the retained runs**, for those findings (the files above). Not judged beyond that (EX-30).
+  *(Noted 2026-11-24, later: the owner's answer 14 of 2026-11-24 ordered a corrected session and filed the revision
+  [`decision-rule-revised-2026-11-24.md`](decision-rule-revised-2026-11-24.md); part J is read again on the corrected
+  session in "W2's after commit, records part 2, recorded on 2026-11-24" below. This reading stays as taken.)*
+
+### Part K, read
+
+[`after/part-k/hits.tsv`](after/part-k/hits.tsv) reads every hit of the after run's search
+(`after/local/delsearch/search.txt`) again from the after commit's tree and sorts it as the search's README says the
+reading does: facade members, the compiler's own `ContainsLegacyOctalLiteral` (and its helper) that `dispositions.md`
+keeps until SJL-15.5, other types' members of the same name (the bridge's, the library's, a token's), and text (code
+comments, and lines of changelogs, assurance records and manifests). **The sort is by file and by the line's own
+text** ([`read_k.py`](after/part-k/read_k.py)'s docstring): a code line of a facade file is sorted a facade member, a
+code line under the bridge's folder the bridge's own member, and a code line under `Broiler.ECMAScript/` the library's
+own; only the lines it names one by one are read singly. It does not read each hit's declaration: the bridge's and the
+library's hits are not listed with the declaration that shows them another type's member, and a facade file's hit is
+not checked against `dispositions.tsv`'s member lines.
+- **No listed implementation is found, as far as that sort reads:** the old parser's partial files are absent; the
+  scanning code's distinctive names, the division fallback, the re-scans, the direct-eval prefix and the
+  parenthesis-balance marker have no hit but text, lines sorted to other types' members and the compiler's own kept
+  `ContainsLegacyOctalLiteral`; every code hit in the facade files is a line of a facade file `dispositions.md` keeps
+  over the bridge, or, read singly, a name of another type used there.
+- **The search's narrowed scopes.** The rule's configuration searches "over Broiler.JS/ and Broiler.ECMAScript/ outside
+  docs/". The committed search ([`tools/deletion-search/search.py`](tools/deletion-search/search.py): a name that is a
+  common word of the engine's code "is searched in the file that declared it at 33d3093b") took these items in
+  narrower scopes, each printed in `search.txt`'s section header: the members FastParser's partial files declared, in
+  the parser's folder `Broiler.JS/Broiler.JavaScript.Parser`; FastScanner's common names, in its `FastScanner.cs`;
+  FastTokenStream's scanning code, in its `FastTokenStream.cs`; FastKeywordMap's table, in its `FastKeywordMap.cs`;
+  CharExtensions' scanner members, in the parser's folder; the parser's half of FastScope, in its `FastScope*.cs`; and
+  the direct-eval prefix's text, in `Broiler.JS/Broiler.JavaScript.Compiler`. That is a departure from the rule's
+  configuration. [`after/part-k/scope.txt`](after/part-k/scope.txt), by [`scope_k.py`](after/part-k/scope_k.py) at the
+  after commit, reads it against the rule's scope: every file of the rule's scope that declares one of the listed
+  types, at `33d3093b` and at the after commit, lies inside the narrowed scope that type's names were searched in, and
+  the parser's project compiles no file from outside its folder, so the narrowing hides no declaration of a listed
+  type's own member, and a reference to one could only name a member declared there. What it leaves out are the same
+  words outside those scopes, which `scope.txt` counts name by name and does not list (other types' members and text),
+  and the prefix's text in two files of `Broiler.ECMAScript/` (the library's own strict prologue, in its determinism
+  tests and its probe, not `DirectEvalSupport`'s). Read as the rule is written, those are further hits that are neither
+  facade members nor relocations; under reading K1 below they are not hits of a listed member.
+- **The changelogs' lines** are inside part K's scope ("over Broiler.JS/ and Broiler.ECMAScript/ outside docs/"; both
+  changelogs are under those folders, and the rule's list of product paths, which leaves them out, is not part K's
+  scope). `Broiler.JS/CHANGELOG.md:951` (`--parse-through-bridge`, `BroilerParseThroughBridge`; with `:949`,
+  `JSCompilationOptions.ParseThroughBridge`) is the changelog's entry of 2026-11-03 for W1, prose naming the test-only
+  switch as W1 added it; the switch, which `dispositions.md` lists as "added at W1, removed at W2", has no declaration
+  or reference left in code (its section's other names have no hit). The changelog's lines `:79` (W2's own entry,
+  correction K6's row T26, "at the base, DecodeBracedUnicodeEscapes rewrites the pattern text"), `:216` and `:217`
+  (SJL-11.5's entry) name `DecodeBracedUnicodeEscapes` and `RegExpValidator` in the same way, as removed; and
+  `Broiler.ECMAScript/CHANGELOG.md:1002`, the library's own changelog, names its `UriCodec`'s `HexDigitValue`, the
+  library's member of the same name as FastScanner's deleted one.
+- **The control is reported:** a deleted member declared again in a scratch copy is found, and after the revert the copy
+  equals the clean tree (`after/local/delsearch/control.txt`, `revert-check.txt`).
+- **Part K: read NOT MET on the retained runs**, as the rule is written. Its MET line asks that "every hit is a facade
+  member dispositions.md lists as an obsolete forwarder over the bridge or a relocation decision D51 allows", and the
+  changelogs' lines above, the code comments, the manifests' and assurance records' lines and the other types' members
+  of the same name (`hits.tsv`'s sorts other than the facade members and the compiler's kept member) are neither; and
+  the narrowed scopes depart from its configuration. The model the rule names, "as bundle sjl-11-001's part E runs its
+  E-1 search", needed explicit words for exactly these hits: E-1 searches "over Broiler.JS/ but CHANGELOG.md" and
+  excepts "a hit the bundle lists with the declaration that shows it is another type's member of the same name"
+  ([`../sjl-11-001/decision-rule.md`](../sjl-11-001/decision-rule.md), part E). Part K restates the scope with neither
+  carve-out. The files: `after/local/delsearch/` ([`after/local/hashes.txt`](after/local/hashes.txt)) and
+  `after/part-k/` ([`after/part-k/hashes.txt`](after/part-k/hashes.txt)). Not judged beyond that (EX-30). *(Noted
+  2026-11-24, later: the owner's answer 15 of 2026-11-24 filed the revision
+  [`decision-rule-revised-2026-11-24.md`](decision-rule-revised-2026-11-24.md), worded on E-1's exceptions, and
+  reading K1 was not taken; part K is read again under the revision in "W2's after commit, records part 2, recorded on 2026-11-24" below. This reading stays as
+  taken.)*
+- **Reading K1, put to the owner and not taken here:** the rule's hits are "each listed member's declarations and
+  references" (its configuration's words), so a line of prose or a comment that names a member, or another type's
+  member of the same name, is none, and the narrowed scopes hide no declaration of a listed type's member
+  (`scope.txt`); under it every hit of a listed member is a line of a facade file `dispositions.md` keeps, and part K
+  would read MET. It is the session's, under the owner's direction of 2026-10-18; the owner may confirm it, take it as a
+  dated revision worded on E-1's exceptions (weaker evidence, written after the run was seen; such a revision would
+  also want the bridge's and the library's hits listed with their declarations, which `hits.tsv` does not give), or
+  leave part K read NOT MET. *(Revised 2026-11-24, in review of this record before it merged: the reading bullet first
+  read "Part K: read MET on the retained runs, by the session's reading K1", with reading every word hit as a hit "Not
+  taken: ... part K reads NOT MET"; and the second bullet read "No listed implementation is found:" and "every hit in
+  the facade files is a facade member `dispositions.md` keeps over the bridge, a comment, or a name of another type
+  used there".)*
+
+### Awaiting the owner
+
+Parts A, D, J and K read NOT MET (part K with reading K1 put to the owner); each, with its cause as read, the rule's
+options and a recommendation, is in the session's decision summary for the owner, sent to the owner with this
+record's report on 2026-11-24 and not retained in this repository; the owner's choices are recorded here by dated
+notes when made. Part I is pending on the owner's lane. No fix and no rule change is made here. *(Revised 2026-11-24,
+in review of this record before it merged: this paragraph first read "Parts A, D and J read NOT MET, and part K rests
+on reading K1; each, with its cause as read, the rule's options and a recommendation, is in the session's decision
+summary for the owner.")*
+
+## W2's after commit, records part 2, recorded on 2026-11-24
+
+**Written:** 2026-11-24, on branch `sjl-14-after`, with the default branch's head read as
+`83a9bd82a5d258d3001468095ebf43f9efc3e9a7` by `git ls-remote` before each of this record's commits (each read, with
+its time, is kept in the session's notes). **What it records:** the owner's answers 12 to 15 of 2026-11-24; the rule's
+dated revision they file; part J's corrected session at the after commit, which answer 14 orders; part K's listing
+aid, which answer 15 asks for first; reading aids taken by others after the after runs, retained; quotes of the
+section above corrected; and parts A, D, J and K read again. [`decision-rule.md`](decision-rule.md) and
+[`decision-rule-revised-2026-11-23.md`](decision-rule-revised-2026-11-23.md) are not edited, no row is added to
+[`corrections.md`](corrections.md) or its tables, and nothing retained in [`base/`](base/local/README.md) or in the
+after runs' folders changes but [`after/owed-runs/README.md`](after/owed-runs/README.md), by a dated note, and the
+`hashes.txt` of `after/owed-runs/` and of `after/part-k/`, which name the files added there; the first readings of the
+section above stay on record, each with a dated note beside it that points here. Nothing is judged beyond the readings, and nothing is accepted (EX-30).
+
+*(Noted 2026-11-24.)* The paragraph above says "the `hashes.txt` of `after/owed-runs/` and of `after/part-k/`, which
+name the files added there"; `after/owed-runs/hashes.txt` also replaces its line for that folder's `README.md`, whose
+digest the dated note there changes.
+
+### The owner's answers 12 to 15 of 2026-11-24
+
+The owner's own, not ones taken under the owner's direction of 2026-10-18, quoted verbatim:
+- Answer 12. Asked (2026-11-24): "SJL-14 part A (test262 at W2's merge 83a9bd82) reads NOT MET on two rows, both correct
+  behaviour after W2: (1) for-of/head-await-using-bound-names-in-stmt.js [original] fails at the base and passes after,
+  with no K row explaining it; (2) the Terser variant of dynamic-import/.../new-covered-expression-is-valid.js passes at
+  the base and is skipped after, because Terser's output is invalid JS that the new frontend correctly refuses. Your
+  2026-11-23 revision admitted both for parts C and D only. No code fix applies. What should be done for part A?"
+  Chosen: "Revise for 2 rows (Recommended)" — "Dated revision extending rev-for-of and rev-minifier to part A for
+  exactly these two path-variant rows. Weaker evidence, since written after the run was seen." Not taken: "Leave NOT
+  MET" — "Keep part A read NOT MET on record and move on (nothing is accepted under EX-30 anyway)."
+- Answer 13. Asked (2026-11-24): "SJL-14 part D (parse corpus) reads NOT MET only because of the second dump: the tree
+  after the compiler's for-loop pass, which part C never compared. For 4,364 input variants that tree differs only in
+  span lines of nodes the pass builds or copies. Their parser-tree differences are all in admitted classes, and nothing
+  differs outside spans. The pass is ForLoopPreparation.cs (SJL-12.5's, not W2's), so a fix there cannot change the
+  reading at 83a9bd82. What should be done for part D?" Chosen: "Revise by list (Recommended)" — "Dated revision
+  admitting a pass-tree dump difference for exactly the variants in after/part-d/pass/unclassified.tsv (by blob), whose
+  parser-tree difference is admitted and whose differing lines are all spans. Weaker evidence." Not taken: "Leave NOT
+  MET" — "Keep part D read NOT MET on record and move on."
+- Answer 14. Asked (2026-11-24): "SJL-14 part J (fuzz session) reads NOT MET on two seeds. T037823 (56 findings): module
+  seeds are compiled without a module record, so the compiler throws its documented import.meta ReferenceError; this is
+  a defect in the session tool W2 added, not in the engine. V000002 (22 timeouts): I compiled the seed and mutants at
+  the base commit as a reading aid. The seed takes about 15.5 s on both sides, past the 10 s bound, and 21 of 22 mutants
+  are equally slow at the base. The 22nd is refused by the old parser at the base and accepted after. So the slowness is
+  not W2's. What should be done for part J?" Chosen: "Fix tool + revise V2 (Recommended)" — "Commit a corrected session
+  that gives module seeds a module record, run it at 83a9bd82 (no rule change; recorded as corrected after the findings
+  were seen), and write a dated revision for V000002's compile-past-bound by name." Not taken: "Revise both seeds" —
+  "One dated revision reading both seeds' findings, by name, as not findings; no re-run."; "Leave NOT MET" — "Keep part
+  J read NOT MET on record and move on."
+- Answer 15. Asked (2026-11-24): "SJL-14 part K (deletion search) reads NOT MET as written. Most of its 310 hits are
+  changelog lines (e.g. CHANGELOG.md:949/951 naming W1's removed switch), comments, records, and other types' members
+  that share a name. The rule's own model, sjl-11-001's E-1 search, needed explicit carve-outs for exactly these (it
+  excludes CHANGELOG.md and other types' same-named members); part K has neither. Nothing listed is still implemented.
+  What should be done for part K?" Chosen: "Revise like E-1 (Recommended)" — "Dated revision admitting changelog,
+  comment and record lines and other types' same-named members, each listed with its declaration, plus the narrowed
+  scopes as read in scope.txt. A listing aid runs first; nothing is re-run. Weaker evidence." Not taken: "Confirm
+  reading K1" — "Accept the session's reading (prose, comments and other types' members aren't 'declarations and
+  references' of a listed member), so part K reads MET with no revision."; "Leave NOT MET" — "Keep part K read NOT MET
+  on record and move on."
+
+### The rule's revision of 2026-11-24
+
+[`decision-rule-revised-2026-11-24.md`](decision-rule-revised-2026-11-24.md), SHA-256 `d706070cda19ee77e80e21667625c831614008c1ee84e608b017b6159bb05936`, written after every
+after run and its first reading were seen, and after the reading aids below and part J's corrected session, and
+therefore weaker evidence, as the rule's section "Revisions" reads: "A rule revised after any run it judges has been
+seen is a new dated file in this directory. It quotes this one whole and says it was written afterwards, and its
+decision is then weaker evidence." It quotes the answers and the rule whole and the lines it changes, and changes only
+these: part A admits `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js` [original] by
+rev-for-of and `test/language/expressions/dynamic-import/syntax/valid/new-covered-expression-is-valid.js` [terser] by
+rev-minifier, each for that one path and variant, and its MET line reads with them (answer 12); part D admits, by
+rev-pass, a difference of the dump after the compiler's for-loop pass of an input variant
+[`after/part-d/pass/unclassified.tsv`](after/part-d/pass/unclassified.tsv) lists (blob
+`c7339ab407b3c7a8aecb92b8faa221103f8bcf5a`), whose parser-tree difference is in an admitted class and whose every
+differing pass-tree line is a span line, and its MET line and "How it is read" read with it (answer 13); part J's
+reading takes a compile past the bound of the seed V000002
+(`conformance/parse/inputs/broiler-vm/generated/refuse-more-locals-than-the-frame-admits.js`, blob
+`12412cacaebf9c23753e3f2045227abf30a793c4`), or of a mutant of it the frontend accepts, as no finding (answer 14, its
+second half); part K's MET line admits, as bundle `sjl-11-001`'s E-1 does, lines of the changelogs, code comments and
+records, and hits listed with the declaration that shows them another type's member of the same name, and its
+configuration takes the narrowed scopes as [`after/part-k/scope.txt`](after/part-k/scope.txt) reads them (blob
+`61cb2509849e28829225ce077f50790c954408a4`) (answer 15). Answer 14's first half, the corrected session, needs no rule
+change: the revision records in one sentence that it runs under the rule's unchanged words, corrected after the
+findings were seen. **What it does not admit**, among others, as it says: the first session's T037823 findings, which
+stay findings of that session; and the hits of part K that are the words of the bridge's message strings, which
+answer 15's kinds do not name.
+
+*(Noted 2026-11-24.)* Three points of this record and of the revision's account of itself are not exact. Each is left
+as written and made exact here; the revision is not edited.
+- **The revision has two versions.** It was committed first by `eb017a7fd9af67844bc48bfc4a2cabd6ba2f02a8` as blob
+  `01a2ca527a7668811dfc81d1388e5fd8e711337d`. `a07031092ed4beef8937739eb60f2eb7f45d032e` ("SJL-14: the revision of
+  2026-11-24 names part K's message-string hits by their lines alone") then replaced its entry "Part K's message
+  strings", which read: "**Part K's message strings.** Seven hits that
+  [`after/part-k/listing.tsv`](after/part-k/listing.tsv) lists are words of message strings of the bridge's
+  `BridgeMessages.Text` (its lines 90, 100, 113 and 120 to 123); a message string is not a line of a changelog, a code
+  comment or a record, and the word names no member of another type. Answer 15 names no such kind, and this file
+  admits none: they are read as part K's MET line, as revised, reads them." The result is blob
+  `13aa6dadcbfe34057be15e6b69b3027ee032c53c`, whose SHA-256 is the one named above; nothing else of the file changed.
+  That commit's message says "Made before any reading under the revision is recorded"; that is not so. Between the
+  two commits, `eda2e899dd6a47366a21a97981f178090389e448` retained
+  [`after/part-j-corrected/findings.txt`](after/part-j-corrected/findings.txt) and its script `read_jc.py`, which
+  read the corrected session under the revision's part J, as blob `01a2ca52` had it. That reading stands: the two
+  blobs differ in that entry alone, and every line of part J (item 6 of "What changed" and the entry "Part J's first
+  session's T037823 findings") is the same in both. The second readings below were written against blob `13aa6dad`.
+- **The revision names part J's corrected session in four places, not one.** Its entry "Part J's first session's
+  T037823 findings" says "This file names it only in this sentence."; and this section says above that "the revision
+  records in one sentence that it runs under the rule's unchanged words". The revision also names the session in its
+  "Written" paragraph ("and part J's corrected session at the after commit, which answer 14 orders and which this file
+  does not change"), in "How it reads" ("Part J is read on its corrected session, as answer 14 orders.") and in "What
+  it decides, and what it does not" ("and part J's corrected session had been seen"). Each of those three says what
+  was seen before the file was written or which session part J is read on; none changes a line of the rule, and the
+  revision's part J admits only the compiles past the bound of V000002 and of its accepted mutants.
+- **When it was written, against the corrected session's runs.** The revision's first commit (06:23:17Z) came after
+  the corrected session's step ended (06:14:59Z) and while its control was still running (06:15:41Z to 06:27:16Z,
+  [`after/part-j-corrected/logs/runs.tsv`](after/part-j-corrected/logs/runs.tsv)); its one later change (06:28:24Z)
+  came after the control ended. So the revision's "It is written **after every after run was seen and read**" and
+  "and part J's corrected session had been seen", this section's "written after every after run and its first reading
+  were seen, and after the reading aids below and part J's corrected session", and "Part J, read again"'s "the
+  revision was written after both were seen" hold for the corrected session and not for its control. A run seen later
+  takes nothing from the revision's evidence, and the revision leaves the control's template-literal findings as
+  findings.
+
+### Part J's corrected session, retained
+
+The bundle's mutation session, [`tools/fuzz/`](tools/fuzz/README.md), is corrected by
+`53afd382f2559d8c27cc42cbaf496af5d4ed161d` ("SJL-14: part J's session compiles module seeds with a module record
+(answer 14)"), committed on its own: a seed whose goal is `module` now compiles with the parameters the engine's module
+host compiles a module's body with, `import` and `#module` (`JSModuleContext`'s `ModuleParameters` at the after
+commit), `#module` being the module record the compiler's module prologue and `import.meta` read; nothing else changes
+(the tool's README, by a dated note). The session and its control were then taken at the after commit exactly as the
+after driver's `fuzz` and `fcontrol` steps took the first, from a clean archive of `83a9bd82` with the corrected tool's
+files written over their paths from their blobs, and are retained in
+[`after/part-j-corrected/`](after/part-j-corrected/README.md), which names each blob, the one departure of order (the
+control's clean comparison archive taken after the session, for the disk rule) and every file by its SHA-256
+([`hashes.txt`](after/part-j-corrected/hashes.txt)). **Recorded as corrected after the findings were seen**, and so
+weaker evidence: the tool was changed knowing what its first session found. The first session's records in
+`after/local/fuzz/` and `after/local/fcontrol/`, and part J's first reading above, stay as they are.
+[`after/part-j-corrected/findings.txt`](after/part-j-corrected/findings.txt), by
+[`read_jc.py`](after/part-j-corrected/read_jc.py), reads both sessions:
+- **The corrected session** compiles the same mutants as the first (the same seeds, indices, operators and mutant
+  SHA-256s), and every process exits 0. The mutants of T037823 that were findings of the first session now compile,
+  accepted; no other mutant's outcome moves. Its findings are V000002's alone, each a compile past the bound per
+  compile, of the same mutants as the first session's, each of which
+  [`after/owed-runs/jsingle/cases.tsv`](after/owed-runs/jsingle/cases.tsv) shows the frontend accepts when it is
+  compiled alone.
+- **Its control** compiles the same mutants. In the scratch copy whose bridge throws on a template literal it reports
+  `System.InvalidOperationException` findings ("part J control: the bridge throws on a template literal") for the seeds
+  that hold template literals, as the first control did, besides V000002's compiles past the bound; the revert is
+  checked by digest and against a clean archive ([`revert-check.txt`](after/part-j-corrected/fcontrol/revert-check.txt)).
+  Its T037823 mutants move as the session's do.
+
+### Part K's listing aid
+
+[`after/part-k/listing.tsv`](after/part-k/listing.tsv), by [`list_k.py`](after/part-k/list_k.py), lists every hit of
+[`after/part-k/hits.tsv`](after/part-k/hits.tsv) that `hits.tsv` does not sort a facade member, each with the line at
+the after commit that shows what it is: for a code line, the declaration of each occurrence of the hit's name (the
+bridge's own methods, the library's syntax tree's types and members, the old tree's and the engine's members, the
+library's own methods, the compiler's `FastCompiler` members `dispositions.md` keeps until SJL-15.5, and
+`System.HashCode.Combine`, of the .NET base class library), every declaration checked against the tree; for a changelog
+line, its entry's heading; for a record line, the member it names; for a comment, the line itself. A reading aid with
+no run, taken after part K's first reading and before the revision; it reads git objects alone, and regenerates byte
+for byte. It sorts the hits `hits.tsv` sorted OTHER in `FastScanner.cs` as the facade's own, `State` and its members,
+which `dispositions.md`'s row for `FastScanner` keeps ("the public `FastScanner` keeps its facade members (...,
+`State` and its members)"); and it finds hits that are no declaration or reference of any member: the words
+"Class", "Decorators", "Function" and "Import" in message strings of the bridge's `BridgeMessages.Text`
+(`Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeMessages.cs`, lines 90, 100, 113 and 120 to 123), which
+`hits.tsv` had sorted, by their folder, as the bridge's own members. [`after/part-k/hashes.txt`](after/part-k/hashes.txt)
+names both new files.
+
+### Reading aids taken after the after runs, retained
+
+In [`after/owed-runs/`](after/owed-runs/README.md), by its dated note of 2026-11-24, each copied unchanged from the
+session's notes:
+- [`after/owed-runs/verifier-retake/`](after/owed-runs/verifier-retake/runs/logs/runs.tsv): the review of the section
+  above took both commits' dump texts again from clean archives through the same `run.sh` and found their SHA-256
+  `7343c06232cd45b2efa4b91d601fb3e512016c0344fd2992a357eefa3127c50d` (the base commit's) and
+  `0db1abaf25b28b9224a2187aae79d87f3f40b7f4023acb4781ed5ba88afb65f4` (the after commit's), the digests part D's tables
+  were read from; and it took `jsingle` again, with the same outcomes.
+- [`after/owed-runs/jbase/`](after/owed-runs/jbase/README.md): the seed V000002 and its findings compiled one per
+  process at the **base** commit with the single-case aid, bound and cap of `jsingle`, taken for the owner's question
+  14: the seed and every mutant but one accepted and past the bound at the base as after; `V000002-47.js` refused at the base by
+  the old parser ("Unexpected token Identifier: var at 40284, 1") and accepted after.
+
+*(Noted 2026-11-24.)* The section above, part D, reads: "And the texts' own bytes were not shown reproducible:
+`identity-with-partd.txt` and `identity-with-base-d1.txt` compare the dump reports' rows, with the `#` lines (among
+them each assembly's identifier) left out, not the texts." The verifier's re-take shows them reproducible: a fresh build
+and run at each commit gave texts with the digests part D's tables were read from. The sentence is left as written.
+
+### Quotes of the section above, corrected
+
+*(Noted 2026-11-24.)* These quotes of the section "W2's after commit, recorded on 2026-11-24" are not exact; each is
+left as written and corrected here.
+- "The after commit and the end of the hold" quotes the rule as "The base commit is its first parent"; the rule
+  reads "**The base commit** is its first parent" (across two lines of its section "The commits, named before they
+  exist"), which the quote gives without the bold markup.
+- "Part D, read" quotes `after/part-d/README.md` as naming the dump texts "kept outside the repository, by digest";
+  that README reads "kept outside the repository by digest", with no comma.
+- "Part J, read" quotes `FastCompiler.VisitMeta.cs`'s documentation as "a deterministic ReferenceError naming that
+  rather than a silent `undefined`"; the file reads "a deterministic ReferenceError naming that rather than a silent
+  <c>undefined</c>" (across two lines of its `<remarks>`).
+
+### Part A, read again
+
+Under the rule and both revisions, on the same retained runs and comparison, with nothing re-run
+([`after/second-reading/reading.txt`](after/second-reading/reading.txt), by
+[`read_2.py`](after/second-reading/read_2.py), from `after/part-a/comparison/comparison.json` and
+`classifications.json`):
+- **Complete and comparable**, as the first reading reads them: every shard reported in both runs, one suite revision,
+  one shell, every shard in the zone, `includeNegative` true in both; the host-zone records alike; the script finds the
+  runs comparable.
+- **Every changed row** but two is C1 by the classification file, with its path, its variant and its correction, and
+  each such path is named in the changelog's section "The cut-over to the shared syntax library", as the first reading
+  checked. **The two others** are the rows the revision names: `test/language/statements/for-of/head-await-using-bound-names-in-stmt.js`
+  [original], failing at the base and passing after, in rev-for-of, listed with K7 and its row D35, the library's row
+  table's note on EE0056, `JSE1417`, and finding S14-F2; and
+  `test/language/expressions/dynamic-import/syntax/valid/new-covered-expression-is-valid.js` [terser], passing at the
+  base and skipped after with `skipKind=minifier-invalid-output` ([`named-rows.log`](after/part-a/comparison/named-rows.log)),
+  in rev-minifier. No row is C3 or T, and no other row is changed.
+- **Part A: read MET on the retained runs**, under the revision of 2026-11-24 (weaker evidence; the files above and
+  [`after/part-a/hashes.txt`](after/part-a/hashes.txt)). The first reading, "read NOT MET on the retained runs", stays
+  on record. Not judged beyond that (EX-30).
+
+### Part D, read again
+
+Under the rule and both revisions, on the same retained tables ([`after/second-reading/reading.txt`](after/second-reading/reading.txt)):
+- **Complete, and the control is reported**, as the first reading reads them.
+- **Outcomes, messages and the parser trees' dumps:** every difference is in C1, C3, E, M, S, rev-code, rev-eof or
+  rev-bracket and is listed, as the first reading found.
+- **The dumps after the compiler's for-loop pass:** every difference is in C1, S, rev-eof or rev-bracket, or is one of
+  the input variants [`after/part-d/pass/unclassified.tsv`](after/part-d/pass/unclassified.tsv) lists (its SHA-256 the
+  one the revision names), each of which has a parser-tree difference in S or rev-eof and no outcome or message row
+  outside part D's classes, and whose differing pass-tree lines are all span lines
+  ([`pass/unclassified-lines.txt`](after/part-d/pass/unclassified-lines.txt): none is not a span line): rev-pass,
+  listed there with its lines. That count was taken from `read_d.sh`'s work file `pass-spans.tsv`, kept by digest
+  ([`after/part-d/work.sha256.txt`](after/part-d/work.sha256.txt)), written from the two dump texts whose bytes the
+  verifier's re-take above reproduced.
+- **Part D: read MET on the retained runs**, under the revision of 2026-11-24 (weaker evidence; the files above and
+  [`after/part-d/hashes.txt`](after/part-d/hashes.txt)). The first reading stays on record. Not judged beyond that
+  (EX-30).
+
+### Part J, read again
+
+On the corrected session ([`after/part-j-corrected/`](after/part-j-corrected/README.md)), under the rule's unchanged
+configuration and the revision's part J:
+- **The control is reported:** the control's session reports findings, `System.InvalidOperationException` for the
+  seeds that hold template literals, which the revision leaves findings
+  ([`findings.txt`](after/part-j-corrected/findings.txt)).
+- **No finding is reported:** the corrected session's findings are compiles past the bound of mutants of the seed
+  V000002 (`conformance/parse/inputs/broiler-vm/generated/refuse-more-locals-than-the-frame-admits.js`, blob
+  `12412cacaebf9c23753e3f2045227abf30a793c4`), each a mutant the frontend accepts, which the revision's part J reads as
+  no finding; there is no other exception type, no lost process and no compile past the bound of another seed.
+- **Part J: read MET on the retained runs** of the corrected session, under the revision of 2026-11-24. It is weaker
+  evidence twice over: the session was corrected after the first session's findings were seen, and the revision was
+  written after both were seen (the files above; [`after/part-j-corrected/hashes.txt`](after/part-j-corrected/hashes.txt)).
+  The first reading, on the first session, stays on record. Not judged beyond that (EX-30).
+
+### Part K, read again
+
+Under the rule and both revisions, on the same retained search and its tables ([`after/second-reading/reading.txt`](after/second-reading/reading.txt),
+from `hits.tsv` and `listing.tsv`):
+- **No listed implementation is found**, as the first reading reads it, and **the control is reported**.
+- **The scopes:** the search's narrowed scopes are taken as the configuration's scope, as `scope.txt` reads them.
+- **Every hit** is a facade member (the hits `hits.tsv` sorts so, and those of `FastScanner`'s `State` the listing
+  sorts as the facade's own), a line of a changelog, a code comment or a record, or a hit listed with the declaration
+  that shows it another type's member of the same name, **but the words** of the bridge's message strings in
+  `BridgeMessages.cs` (lines 90, 100, 113 and 120 to 123: "Function declarations are not allowed as the body of a loop
+  or with statement", "Class constructor may not be an accessor, a generator or an async method", "Import attribute has
+  duplicate key '{0}'", "Unexpected token in the Function constructor's source", "... parameters", "... body", and
+  "Decorators are not supported here"), each a hit of a listed member's name (`Function`, `Class`, `Import` and
+  `Decorators`, members FastParser's partial files declared) that is neither a facade member, a relocation, a line of a
+  changelog, comment or record, nor another type's member of the same name.
+- **Part K: read NOT MET on the retained runs**, under the revision of 2026-11-24, for those message-string hits (the files
+  above; [`after/part-k/hashes.txt`](after/part-k/hashes.txt)). The revision admits only the kinds answer 15 names,
+  and the owner's question did not name message strings; they go to the owner. The first reading stays on record. Not
+  judged beyond that (EX-30).
+
+*(Noted 2026-11-24.)* The reading above counts among the hits "listed with the declaration that shows it another
+type's member of the same name" one hit that has no declaration in the repository: `listing.tsv`'s row for `Combine`
+at `Broiler.JS/Broiler.JavaScript.Parser/FastParserOptions.cs:112`, whose declaration column reads "- :: -" and whose
+note reads "System.HashCode, of the .NET base class library: no declaration in the repository". It did not name that
+hit. It is read as admitted with the .NET type named in place of a file and line, which the revision's "listed with the
+declaration that shows it" does not say in so many words; this point goes to the owner beside the message strings, so
+that a further revision can settle both. The reading of part K does not move: it is read NOT MET for the
+message-string hits either way.
+
+*(Noted 2026-11-24, later.)* The reading above reads "**Part K: read NOT MET on the retained runs**, under the revision
+of 2026-11-24, for those message-string hits", and the note above says of `Combine` "this point goes to the owner
+beside the message strings, so that a further revision can settle both". The owner's answer 16 of 2026-11-24 filed that
+revision, [`decision-rule-revised-2026-11-24-k.md`](decision-rule-revised-2026-11-24-k.md), and part K is read a third
+time under it in "W2's after commit, records part 3, recorded on 2026-11-24" below. This reading and the note above
+stay as written.
+
+### Awaiting the owner
+
+Part K's message-string hits, read above, go to the owner; no rule change and no fix is made for them here.
+Part I is pending on the owner's lane `win-x64-r7-5800x`, as the section above says.
+
+*(Noted 2026-11-24, later.)* The paragraph above reads "Part K's message-string hits, read above, go to the owner; no
+rule change and no fix is made for them here." The owner answered (answer 16 of 2026-11-24), and the rule change it
+orders is recorded in "W2's after commit, records part 3, recorded on 2026-11-24" below; no fix is made. The paragraph
+is left as written.
+
+## W2's after commit, records part 3, recorded on 2026-11-24
+
+**Written:** 2026-11-24, on branch `sjl-14-after`, with the default branch's head read as
+`83a9bd82a5d258d3001468095ebf43f9efc3e9a7` by `git ls-remote` before each of this record's commits (each read, with
+its time, is kept in the session's notes). **What it records:** the owner's answer 16 of 2026-11-24; part K's listing
+aid, extended; the rule's dated revision answer 16 files; and part K read a third time.
+[`decision-rule.md`](decision-rule.md), [`decision-rule-revised-2026-11-23.md`](decision-rule-revised-2026-11-23.md)
+and [`decision-rule-revised-2026-11-24.md`](decision-rule-revised-2026-11-24.md) are not edited, no row is added to
+[`corrections.md`](corrections.md) or its tables, and nothing retained in [`base/`](base/local/README.md) or in the
+after runs' folders changes but [`after/part-k/hashes.txt`](after/part-k/hashes.txt), which names the two files added
+there; [`after/second-reading/`](after/second-reading/README.md) is not changed. The first and second readings of part
+K stay on record, each with a dated note beside it that points here. Nothing is judged beyond the reading, and nothing
+is accepted (EX-30).
+
+### The owner's answer 16 of 2026-11-24
+
+The owner's own, not one taken under the owner's direction of 2026-10-18, quoted verbatim:
+- Answer 16. Asked (2026-11-24): "SJL-14 part K still reads NOT MET after today's revision. Seven of its hits are
+  words inside the bridge's error messages, not code: "Function", "Class", "Import" and "Decorators" in
+  BridgeMessages.cs lines 90, 100, 113 and 120–123 (for example "Class constructor may not be an accessor, a
+  generator or an async method"). Answer 15 admitted only changelog, comment and record lines and other types'
+  members, so these hits are not covered. A second point would go in the same revision: one hit, `Combine`, belongs to
+  .NET's System.HashCode, so the listing names that .NET type instead of a file and line. How should part K be
+  settled?" Chosen: "Revise for msg text (Recommended)" — "One more dated revision, also weaker evidence because the
+  runs were already seen. It admits words inside string literals, each listed with the message table that holds it,
+  and lets a member of a .NET library type be shown by naming that type. Part K is then read again, likely MET. It
+  goes on the same records branch before the PR." Not taken: "Leave K NOT MET" — "Change no rule. Part K stays NOT
+  MET on record. I open the records PR as the branch stands; nothing is accepted either way (EX-30)."
+
+### Part K's listing aid, extended
+
+[`after/part-k/listing-2.tsv`](after/part-k/listing-2.tsv), by [`list_k2.py`](after/part-k/list_k2.py), beside
+[`listing.tsv`](after/part-k/listing.tsv), which is not changed. `listing.tsv` already gave each message-string hit the
+member whose table holds it, `BridgeMessages.Text`, with its declaration's file and line; the extension lists each such
+hit again with the message identifier of its arm and its literal, and lists the hit `Combine` with its type and that
+type's assembly, which `listing.tsv` did not name: `System.HashCode`, in the reference assembly `System.Runtime`. It
+holds a row only when every check its header names held. **How the literals were checked to be message texts only**,
+each from the after commit's git objects: every such hit line is one arm of the switch that `Text` is, a message
+identifier mapped to a text, and the hit's word stands in the text's literal alone, never in the identifier the
+switch looks up; `Text` is private, named outside comments only at its declaration and at one call, whose value is
+the template `Render` fills and returns; `BridgeMessages.cs` names no reflection or lookup API (the script lists those
+it looked for); outside that file, in part K's scope, `BridgeMessages` is named only in a documentation comment and in
+the call of `BridgeMessages.Render` in `SharedSyntaxBridge.cs`; and each literal's text is found elsewhere in that
+scope only on a test's assertion of a rendered message (`ImportAttributeEnforcementTests.cs`, for the import
+attribute's text). **How the library hit was checked:** the line calls `HashCode.Combine` in a file that imports
+`System`, no file of the tree declares a type `HashCode` or an alias of it, the project targets the framework of the
+reference pack read, and that pack's `System.Runtime.xml` documents `System.HashCode` and a `Combine` taking as many
+arguments as the call passes (the pack's version is in the table's header). The name's resolution is read from the
+source and the reference pack; no compiled assembly was read. A reading aid with no run, taken after part K's second
+reading and before the revision; it regenerates byte for byte (`python3 -I list_k2.py listing.tsv <repository>
+<reference pack folder> listing-2.tsv`, run from `after/part-k/`). `after/part-k/hashes.txt` names both new files.
+
+### The rule's revision of 2026-11-24-k
+
+[`decision-rule-revised-2026-11-24-k.md`](decision-rule-revised-2026-11-24-k.md), SHA-256
+`fc835b99b42ede25354afe369ce2b1c26f0dd6b716eaf8dd5cbab4dbb8693f98`, committed once, written after part K's after run,
+its first and second readings, the revision of 2026-11-24 and part K's reading aids, the extension above among them,
+had been seen (it names the branch's commit it was written at), and therefore weaker evidence, as the rule's section
+"Revisions" reads: "A rule revised after any run it judges has been seen is a new dated file in this directory. It
+quotes this one whole and says it was written afterwards, and its decision is then weaker evidence." It quotes answer
+16 and the rule whole, and the lines of the revision of 2026-11-24 it changes, and changes part K alone: its MET line
+also admits words inside a string literal that is a message text, listed with the message table that holds the
+literal (the member and its declaration, its file and line at the after commit), where the string is no member name
+used by reflection or lookup; and a member of a type outside the repository, of a .NET library, is shown by naming
+that type and its assembly in place of a file and line. It says how the literals were checked, by the extension above,
+and that the revision of 2026-11-24's entry on part K's message strings stays true of that file's words.
+
+*(Noted 2026-11-24, after review.)* The revision's account of what was seen, and its quote of answer 16, are made
+exact here; the revision is not edited.
+- **Its statement of what was seen is its "Written" paragraph.** That paragraph says it was written "after every run,
+  reading aid and reading that branch holds up to that commit was seen", and the list after its colon names part K's
+  items only: the branch at that commit also held, and the session had seen, the after runs of the other parts and
+  their readings, among them part J's corrected session and the second readings of parts A, D and J. The revision
+  changes nothing of those parts and, outside its quote of the rule, names none of them. Two later passages restate
+  parts of that paragraph and add nothing to it: "Why it is written" quotes this README's second reading of part K and
+  its dated note on the hit `Combine`, and "What it decides, and what it does not" says it "was written after part K's
+  after run, its first and second readings and the reading aids named at the top of this file had been seen", a
+  shorter list than the paragraph's.
+- **Answer 16's quote follows its rendered text.** The session's copy of the answer writes the quotation marks inside
+  the question as escaped marks (`\"`); the revision, and this README's section "The owner's answer 16 of
+  2026-11-24", write them as plain ones, which is how the copy renders. Apart from that and the line breaks, the
+  quotes are the copy's text.
+
+### Part K, read a third time
+
+Under the rule and its three revisions, on the same retained search and its tables
+([`after/third-reading/reading.txt`](after/third-reading/reading.txt), by
+[`read_3.py`](after/third-reading/read_3.py), from `hits.tsv`, `listing.tsv` and `listing-2.tsv`, each checked by its
+SHA-256, and the control's record):
+- **No listed implementation is found**, as the first reading reads it, and **the control is reported**
+  (`after/local/delsearch/control.txt`: the deleted member declared again is found, and the revert equals the commit's
+  blob).
+- **The scopes:** the search's narrowed scopes are taken as the configuration's scope, as `scope.txt` reads them (its
+  SHA-256 the one the revision of 2026-11-24 names).
+- **Every hit** is a facade member (the hits `hits.tsv` sorts so, and those of `FastScanner`'s `State` the listing
+  sorts as the facade's own), a line of a changelog, a code comment or a record, a hit listed with the declaration
+  that shows it another type's member of the same name, **the hit `Combine`** in `FastParserOptions.cs`, shown by its
+  .NET library type `System.HashCode` and its assembly `System.Runtime` in place of a file and line, or **the words of
+  the bridge's message strings** in `BridgeMessages.cs` (lines 90, 100, 113 and 120 to 123), each listed with its
+  message table `BridgeMessages.Text` and its declaration, each literal a message text and no member name used by
+  reflection or lookup. `read_3.py` reads no hit as admitted by none of these.
+- **Part K: read MET on the retained runs**, under the revision of 2026-11-24-k with the revisions of 2026-11-23 and
+  2026-11-24 (weaker evidence: written after the runs and the first and second readings were seen; the files above,
+  [`after/part-k/hashes.txt`](after/part-k/hashes.txt) and
+  [`after/third-reading/hashes.txt`](after/third-reading/hashes.txt)). The first reading (NOT MET as the rule is
+  written) and the second (NOT MET under the revision of 2026-11-24, for the message-string hits) stay on record. Not
+  judged beyond that (EX-30).
+
+### Awaiting the owner
+
+Part I is pending on the owner's lane `win-x64-r7-5800x`, as the section "W2's after commit, recorded on 2026-11-24"
+says.
 
 ## What it does not claim
 

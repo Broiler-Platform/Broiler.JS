@@ -1,0 +1,7 @@
+$ python3 -I scripts/compliance/compare_parse_corpus.py acceptance --base docs/evidence/sjl-14-001/base/local/part-d/parse-corpus-c.tsv.gz --after docs/evidence/sjl-14-001/after/local/partd/parse-corpus-c.tsv.gz --manifest conformance/parse/corpus.manifest --output acceptance.json
+# exit 1 (1: differences no classification file admits; this rule's classes are read in parser/ and pass/)
+unclassified           V000065 sloppy P: refused Broiler.JavaScript.Ast.Misc.FastParseException -> refused Broiler.JavaScript.Ast.Misc.FastParseException
+unclassified           V000065 strict K: refused Broiler.JavaScript.Runtime.JSException:SyntaxError -> refused Broiler.JavaScript.Runtime.JSException:SyntaxError
+unclassified           V000065 strict P: refused Broiler.JavaScript.Ast.Misc.FastParseException -> refused Broiler.JavaScript.Ast.Misc.FastParseException
+manifest 1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc (conformance/parse/corpus.manifest)
+rows 213926; differences 16704; admitted 0; not admitted 16704

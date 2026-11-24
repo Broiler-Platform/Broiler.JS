@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# achain.sh: bundle sjl-14-001's local runs at the after commit 83a9bd82 (W2's merge), every step of astep.sh by
+# adrive.sh. Written 2026-11-23. Started detached (setsid nohup) and resumable: after a container restart it is started
+# again by the same command, and adrive.sh skips every step whose marker is in after/done/ (README.md, "Restart").
+set -u
+SCR=/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2after
+bash $SCR/scripts/adrive.sh 83a9bd82a5d258d3001468095ebf43f9efc3e9a7 after archive partd dcontrol ptests phase5 closure pack pristine pcontrol obsolete api jseal html fuzz fcontrol delsearch || exit $?
+f=; [ -s $SCR/after/FAILED ] && f=" (non-zero exits, in after/FAILED: $(tr '\n' ';' < $SCR/after/FAILED))"
+echo "$(date -u +%FT%TZ) chain done$f" >> $SCR/chain.log

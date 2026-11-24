@@ -57,6 +57,10 @@ internal static class Session
         " eval(", " import(", " export ", " continue ", " 0m ", " 08 ", " /a/v ", " \\u0061 ",
     ];
 
+    // The parameters the engine's module host compiles a module's body with (Broiler.JavaScript.Modules'
+    // JSModuleContext.ModuleParameters at the after commit): the dynamic import function and the module record.
+    internal static readonly string[] ModuleParameters = ["import", "#module"];
+
     internal static int RunAll(Arguments arguments)
     {
         var (header, lines) = ReadSeeds(arguments.Seeds);
@@ -152,8 +156,12 @@ internal static class Session
                 // A compile builds its SyntaxError in a context, made on the thread that uses it, as the parse-corpus
                 // tool's K makes one.
                 using var context = new JSContext(experimentalFeatures: JavaScriptFeatureFlags.AllExperimentalEs2026);
-                CoreScript.Compile(new StringSpan(text), location: "mutant.js", args: null, codeCache: PassThrough.Instance,
-                    compilationOptions: null, isModule: module);
+                // A module compiles with a module record, as the engine's module host compiles one (corrected
+                // 2026-11-24, answer 14): JSModuleContext compiles a module's body with its parameters "import" and
+                // "#module", the module record the compiler's module prologue and import.meta read; without them the
+                // compiler throws its ReferenceError for module code with no module record.
+                CoreScript.Compile(new StringSpan(text), location: "mutant.js", args: module ? ModuleParameters : null,
+                    codeCache: PassThrough.Instance, compilationOptions: null, isModule: module);
                 result = ("accepted", "", "");
             }
             catch (JSException exception) when (ErrorName(exception) == "SyntaxError")

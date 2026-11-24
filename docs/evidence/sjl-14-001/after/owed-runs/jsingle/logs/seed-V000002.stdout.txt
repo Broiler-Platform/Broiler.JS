@@ -1,0 +1,1 @@
+refuse-more-locals-than-the-frame-admits.js	875ff95ce7bf8af754d637c19327bb231574c898c21deba0a731963783cfd28f	script	accepted			15482	no

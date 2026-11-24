@@ -1,0 +1,55 @@
+  Determining projects to restore...
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 376 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj (in 376 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj (in 377 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.Portable/Broiler.JavaScript.Portable.csproj (in 2 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj (in 4 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.Portable.Compiler/Broiler.JavaScript.Portable.Compiler.csproj (in 4 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/apilister/api-lister.csproj (in 379 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.Globals/Broiler.JavaScript.Globals.csproj (in 8 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.Extensions/Broiler.JavaScript.Extensions.csproj (in 7 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj (in 7 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj (in 2 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj (in 3 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.ECMAScript/Broiler.ECMAScript.Generation/Broiler.ECMAScript.Generation.csproj (in 2 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj (in 2 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.LinqExpressions/Broiler.JavaScript.LinqExpressions.csproj (in 6 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.ModuleExtensions/Broiler.JavaScript.ModuleExtensions.csproj (in 9 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.Modules/Broiler.JavaScript.Modules.csproj (in 8 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj (in 2 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj (in 3 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj (in 5 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.JSClassGenerator/Broiler.JavaScript.JSClassGenerator.csproj (in 67 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj (in 7 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.Debugger/Broiler.JavaScript.Debugger.csproj (in 8 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/api/Broiler.JS/Broiler.JavaScript.Clr/Broiler.JavaScript.Clr.csproj (in 7 ms).
+  Broiler.JavaScript.Portable -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.Portable.dll
+  Broiler.ECMAScript.Algorithms -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Generation -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.ECMAScript.Generation.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.ECMAScript.Intl.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.Expressions.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Portable.Compiler -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.Portable.Compiler.dll
+  Broiler.JavaScript.Ast -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Storage -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.Parser -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.Compiler -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.BuiltIns -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Modules -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Globals -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.Debugger -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.Debugger.dll
+  Broiler.JavaScript.Clr -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.ModuleExtensions -> /home/user/js-w2after-build/83a9bd82/apilister/out/Broiler.JavaScript.ModuleExtensions.dll
+  api-lister -> /home/user/js-w2after-build/83a9bd82/apilister/out/api-lister.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:01:23.48

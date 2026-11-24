@@ -1,0 +1,3 @@
+2026-11-23T21:47:41Z publish-portable-compiler: dotnet publish Broiler.JS/Broiler.JavaScript.Portable.Compiler/Broiler.JavaScript.Portable.Compiler.csproj -c Release -nologo --disable-build-servers -nodeReuse:false -p:UseSharedCompilation=false -o /home/user/js-w2after-build/83a9bd82/closure-publish
+2026-11-23T21:48:04Z list-references: dotnet list Broiler.JS/Broiler.JavaScript.Portable.Compiler/Broiler.JavaScript.Portable.Compiler.csproj reference
+2026-11-23T21:48:04Z list-packages: dotnet list Broiler.JS/Broiler.JavaScript.Portable.Compiler/Broiler.JavaScript.Portable.Compiler.csproj package --include-transitive

@@ -1,0 +1,2340 @@
+{
+  "schemaVersion": 2,
+  "lane": "candidate",
+  "capturedUtc": "2026-11-24T03:48:56.8153764Z",
+  "os": "Ubuntu 24.04.5 LTS",
+  "powerShell": "7.6.10",
+  "workspace": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc",
+  "workspaceRetained": false,
+  "completed": true,
+  "inputs": [
+    {
+      "path": "eng/test-package-consumer.ps1",
+      "sha256": "f543776b8a7f301b0b4f26272255f81a871d87e77bd8e800b2a8a75ba10eba57"
+    },
+    {
+      "path": "eng/pack.ps1",
+      "sha256": "34e075e81f79879ae0f6cff848b62fd4601bb06ad7e66850c4ac145f1c8e080c"
+    },
+    {
+      "path": "eng/package-gate.mjs",
+      "sha256": "b3ef2821ee2d26149241094de1150585ec55b8f2fcb6f8fdf1033f276d9c08c1"
+    },
+    {
+      "path": "eng/package-consumer/Consumer.csproj",
+      "sha256": "c0dda5f9766d4acf34483813894d74f90be25ddd7163023e6f50bca76c5c8f59"
+    },
+    {
+      "path": "eng/package-consumer/Program.cs",
+      "sha256": "8924b62eabb66de05be1c7b7e3f9f6f0ec2bb07a7c8e000d55cfcd269ec4610e"
+    }
+  ],
+  "commands": [
+    {
+      "name": "revision",
+      "executable": "git",
+      "arguments": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "workingDirectory": "/home/user/js-w2read-build/69a8a13b/jsealbase",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 10,
+      "expectFailure": false,
+      "stdout": "a1216a80034e185d69d0d76d9ef855105698c00b\n",
+      "stderr": ""
+    },
+    {
+      "name": "working-tree",
+      "executable": "git",
+      "arguments": [
+        "status",
+        "--porcelain=v1"
+      ],
+      "workingDirectory": "/home/user/js-w2read-build/69a8a13b/jsealbase",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 10,
+      "expectFailure": false,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "sdk",
+      "executable": "dotnet",
+      "arguments": [
+        "--version"
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 10,
+      "expectFailure": false,
+      "stdout": "10.0.404\n",
+      "stderr": ""
+    },
+    {
+      "name": "node",
+      "executable": "node",
+      "arguments": [
+        "--version"
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 10,
+      "expectFailure": false,
+      "stdout": "v22.23.4\n",
+      "stderr": ""
+    },
+    {
+      "name": "candidate-source-files",
+      "executable": "git",
+      "arguments": [
+        "ls-files",
+        "-z",
+        "--cached",
+        "--others",
+        "--exclude-standard"
+      ],
+      "workingDirectory": "/home/user/js-w2read-build/69a8a13b/jsealbase",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 30,
+      "expectFailure": false,
+      "stdout": ".gitattributes\u0000.github/workflows/ci.yml\u0000.github/workflows/publish.yml\u0000.gitignore\u0000Broiler.JSeal.BroilerJs/Broiler.JSeal.BroilerJs.csproj\u0000Broiler.JSeal.BroilerJs/BroilerJsEngineProvider.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsExoticObject.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsMarshal.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsModuleAnalysis.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsModuleMap.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Calls.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Clone.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Execution.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Jobs.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Members.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Modules.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Source.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.Values.cs\u0000Broiler.JSeal.BroilerJs/BroilerJsRealm.cs\u0000Broiler.JSeal.Tests/Broiler.JSeal.Tests.csproj\u0000Broiler.JSeal.Tests/BroilerJsLifetimeTests.cs\u0000Broiler.JSeal.Tests/BroilerJsModuleAdapterTests.cs\u0000Broiler.JSeal.Tests/Jseal/VmProviderRegistration.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.BigInt.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.CallableProxies.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.CallbackArguments.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.Capabilities.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.CoercionAndJobs.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.DynamicImport.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.ExoticIndexedSet.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.ExoticIndices.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.ExoticObjects.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.ExoticPrecedence.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.GuestEvalRoutes.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.Lifetime.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.MemberExceptions.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.Members.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.MissingValues.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.Modules.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.Realms.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.ScriptGoal.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.Source.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.SourceAuthorization.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.SourceIdentity.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.StructuredClone.cs\u0000Broiler.JSeal.Tests/JsealConformanceTests.cs\u0000Broiler.JSeal.Tests/JsealRegistryTests.cs\u0000Broiler.JSeal.Tests/VmModuleAdapterTests.cs\u0000Broiler.JSeal.Vm/Broiler.JSeal.Vm.csproj\u0000Broiler.JSeal.Vm/VmEngineProvider.cs\u0000Broiler.JSeal.Vm/VmExoticObject.cs\u0000Broiler.JSeal.Vm/VmHostBridge.cs\u0000Broiler.JSeal.Vm/VmMarshal.cs\u0000Broiler.JSeal.Vm/VmModuleMap.cs\u0000Broiler.JSeal.Vm/VmRealm.Calls.cs\u0000Broiler.JSeal.Vm/VmRealm.Clone.cs\u0000Broiler.JSeal.Vm/VmRealm.Jobs.cs\u0000Broiler.JSeal.Vm/VmRealm.Members.cs\u0000Broiler.JSeal.Vm/VmRealm.Modules.cs\u0000Broiler.JSeal.Vm/VmRealm.Source.cs\u0000Broiler.JSeal.Vm/VmRealm.Values.cs\u0000Broiler.JSeal.Vm/VmRealm.cs\u0000Broiler.JSeal.Vm/VmSourceProvider.cs\u0000Broiler.JSeal.slnx\u0000Broiler.JSeal/Broiler.JSeal.csproj\u0000Broiler.JSeal/Hosting/IJsEngineProvider.cs\u0000Broiler.JSeal/Hosting/IJsRealmAdoption.cs\u0000Broiler.JSeal/Hosting/JsCapabilities.cs\u0000Broiler.JSeal/Hosting/JsEngineRegistry.cs\u0000Broiler.JSeal/Hosting/JsEngineRegistryState.cs\u0000Broiler.JSeal/Hosting/JsErrors.cs\u0000Broiler.JSeal/Modules/IJsModules.cs\u0000Broiler.JSeal/Modules/JsModuleTypes.cs\u0000Broiler.JSeal/Realm/IJsClone.cs\u0000Broiler.JSeal/Realm/IJsExotic.cs\u0000Broiler.JSeal/Realm/IJsRealm.cs\u0000Broiler.JSeal/Realm/IJsRealmCapabilities.cs\u0000Broiler.JSeal/Values/JsCall.cs\u0000Broiler.JSeal/Values/JsPropertyFlags.cs\u0000Broiler.JSeal/Values/JsProviderClone.cs\u0000Broiler.JSeal/Values/JsProviderValue.cs\u0000Broiler.JSeal/Values/JsValue.cs\u0000Broiler.JSeal/Values/JsValueKind.cs\u0000Directory.Build.props\u0000Directory.Packages.props\u0000HUMAN_REVIEW.md\u0000LICENSE\u0000NuGet.config\u0000README.md\u0000diagnostics/I02-I04/BufferTransfer/BufferTransfer.csproj\u0000diagnostics/I02-I04/BufferTransfer/Program.cs\u0000diagnostics/I02-I04/README.md\u0000diagnostics/I02-I04/before.json\u0000diagnostics/J00/ProviderProbes/Program.cs\u0000diagnostics/J00/ProviderProbes/ProviderProbes.csproj\u0000diagnostics/J00/README.md\u0000diagnostics/J00/baseline-2026-09-19.json\u0000diagnostics/J00/language.js\u0000diagnostics/J00/run.ps1\u0000diagnostics/J12/CallbackAllocations/CallbackAllocations.csproj\u0000diagnostics/J12/CallbackAllocations/Program.cs\u0000diagnostics/J12/README.md\u0000diagnostics/J12/after.json\u0000diagnostics/J12/before.json\u0000diagnostics/J14/README.md\u0000diagnostics/J14/check_docs.py\u0000diagnostics/J15/PublicApi/Program.cs\u0000diagnostics/J15/PublicApi/PublicApi.csproj\u0000diagnostics/J15/README.md\u0000diagnostics/J15/api-after-b06.txt\u0000diagnostics/J15/api-after.txt\u0000diagnostics/J15/api-before-b06.txt\u0000diagnostics/J15/api-before.txt\u0000docs/jseal.md\u0000docs/jseal.modules.md\u0000docs/roadmap.integration.md\u0000docs/roadmap.jseal.md\u0000docs/roadmap.md\u0000docs/roadmap.vm-features.md\u0000docs/roadmap.vm-semantics.md\u0000eng/Broiler.ConfigurationNames.targets\u0000eng/Broiler.Configurations.props\u0000eng/Broiler.Packaging.props\u0000eng/icon.png\u0000eng/nuget/README.md\u0000eng/pack.ps1\u0000eng/package-consumer/Consumer.csproj\u0000eng/package-consumer/Program.cs\u0000eng/package-consumer/README.md\u0000eng/package-gate.mjs\u0000eng/package-gate.test.mjs\u0000eng/resolve-preview-version.mjs\u0000eng/resolve-preview-version.test.mjs\u0000eng/run-tests.ps1\u0000eng/run-tests.sh\u0000eng/test-package-consumer.ps1\u0000eng/verify-feed.ps1\u0000",
+      "stderr": ""
+    },
+    {
+      "name": "candidate-pins",
+      "executable": "node",
+      "arguments": [
+        "/home/user/js-w2read-build/69a8a13b/jsealbase/eng/package-gate.mjs",
+        "candidate-props",
+        "/home/user/js-w2read-build/69a8a13b/jsealbase/Directory.Packages.props",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Directory.Packages.props",
+        "Broiler.JavaScript=0.1.0-preview.1401"
+      ],
+      "workingDirectory": "/home/user/js-w2read-build/69a8a13b/jsealbase",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 30,
+      "expectFailure": false,
+      "stdout": "{\"candidates\":{\"Broiler.JavaScript\":\"0.1.0-preview.1401\"},\"patterns\":[\"Broiler.JavaScript.*\"]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "pack",
+      "executable": "/home/user/js-w2base-build/tools/pwsh/.store/powershell/7.6.10/powershell/7.6.10/tools/net10.0/any/unix/pwsh",
+      "arguments": [
+        "-NoProfile",
+        "-File",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/eng/pack.ps1",
+        "-Output",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/feed"
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 300,
+      "expectFailure": false,
+      "stdout": "  Determining projects to restore...\n  Restored /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal/Broiler.JSeal.csproj (in 64 ms).\n  Broiler.JSeal -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal/bin/Release/net10.0/Broiler.JSeal.dll\n  Successfully created package '/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/feed/Broiler.JSeal.0.1.0-preview.1.nupkg'.\n  Successfully created package '/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/feed/Broiler.JSeal.0.1.0-preview.1.snupkg'.\n  Determining projects to restore...\n  Restored /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal.BroilerJs/Broiler.JSeal.BroilerJs.csproj (in 1.06 sec).\n  1 of 2 projects are up-to-date for restore.\n  Broiler.JSeal -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal/bin/Release/net10.0/Broiler.JSeal.dll\n  Broiler.JSeal.BroilerJs -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal.BroilerJs/bin/Release/net10.0/Broiler.JSeal.BroilerJs.dll\n  Successfully created package '/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/feed/Broiler.JSeal.BroilerJs.0.1.0-preview.1.nupkg'.\n  Successfully created package '/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/feed/Broiler.JSeal.BroilerJs.0.1.0-preview.1.snupkg'.\n  Determining projects to restore...\n  Restored /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal.Vm/Broiler.JSeal.Vm.csproj (in 405 ms).\n  1 of 2 projects are up-to-date for restore.\n  Broiler.JSeal -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal/bin/Release/net10.0/Broiler.JSeal.dll\n  Broiler.JSeal.Vm -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal.Vm/bin/Release/net10.0/Broiler.JSeal.Vm.dll\n  Successfully created package '/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/feed/Broiler.JSeal.Vm.0.1.0-preview.1.nupkg'.\n  Successfully created package '/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/feed/Broiler.JSeal.Vm.0.1.0-preview.1.snupkg'.\nVerified 3 packages at 0.1.0-preview.1.\n",
+      "stderr": ""
+    },
+    {
+      "name": "gate-source",
+      "executable": "node",
+      "arguments": [
+        "/home/user/js-w2read-build/69a8a13b/jsealbase/eng/package-gate.mjs",
+        "check",
+        "/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2read/runs/jsealbase/jseal/gate-source.request.json",
+        "/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2read/runs/jsealbase/jseal/gate-source.json"
+      ],
+      "workingDirectory": "/home/user/js-w2read-build/69a8a13b/jsealbase",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 60,
+      "expectFailure": false,
+      "stdout": "J19 gate: 2 graphs, 27 staged packages, 0 errors.\n",
+      "stderr": ""
+    },
+    {
+      "name": "BroilerJs-restore",
+      "executable": "dotnet",
+      "arguments": [
+        "restore",
+        "Consumer.csproj",
+        "--configfile",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs/NuGet.config",
+        "--packages",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs/packages",
+        "--no-http-cache",
+        "-p:Provider=BroilerJs",
+        "-p:ConsumerPackageVersion=0.1.0-preview.1",
+        "-p:NuGetAudit=false",
+        "-p:RestoreFallbackFolders="
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 300,
+      "expectFailure": false,
+      "stdout": "  Determining projects to restore...\n  Restored /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs/Consumer.csproj (in 445 ms).\n",
+      "stderr": ""
+    },
+    {
+      "name": "BroilerJs-build",
+      "executable": "dotnet",
+      "arguments": [
+        "build",
+        "Consumer.csproj",
+        "-c",
+        "Release",
+        "--no-restore",
+        "--nologo",
+        "-p:Provider=BroilerJs",
+        "-p:ConsumerPackageVersion=0.1.0-preview.1",
+        "-p:NuGetAudit=false",
+        "-p:RestoreFallbackFolders="
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 300,
+      "expectFailure": false,
+      "stdout": "  Consumer -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs/bin/Release/net10.0/Consumer.dll\n\nBuild succeeded.\n    0 Warning(s)\n    0 Error(s)\n\nTime Elapsed 00:00:00.75\n",
+      "stderr": ""
+    },
+    {
+      "name": "BroilerJs-run",
+      "executable": "dotnet",
+      "arguments": [
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs/bin/Release/net10.0/Consumer.dll"
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs/bin/Release/net10.0",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 30,
+      "expectFailure": false,
+      "stdout": "J02\t{\"provider\":\"broiler-js\",\"checks\":[\"broiler-js: realm creation\",\"broiler-js: primitive evaluation\",\"broiler-js: UTF-8 string\",\"broiler-js: ordinary arguments\",\"broiler-js: zero-argument function\",\"broiler-js: strict arguments\",\"broiler-js: direct eval with arguments\",\"broiler-js: module capabilities require host opt-in\",\"broiler-js: module contract types present, no module realm before I13\",\"broiler-js: same-realm structured clone and transfer\",\"broiler-js: second-thread structured clone transport\",\"broiler-js: host callback\",\"broiler-js: disposal and idempotent teardown\",\"package assembly isolation\"],\"requiredAssemblies\":[\"Broiler.JSeal\",\"Broiler.JSeal.BroilerJs\",\"Broiler.JavaScript.Runtime\",\"Broiler.JavaScript.BuiltIns\",\"Broiler.JavaScript.Globals\",\"Broiler.JavaScript.Modules\",\"Broiler.JavaScript.Storage\"],\"shippedAssemblies\":[\"Broiler.ECMAScript.Algorithms\",\"Broiler.ECMAScript.Intl\",\"Broiler.JavaScript.Ast\",\"Broiler.JavaScript.BuiltIns\",\"Broiler.JavaScript.Compiler\",\"Broiler.JavaScript.Engine\",\"Broiler.JavaScript.ExpressionCompiler\",\"Broiler.JavaScript.Expressions\",\"Broiler.JavaScript.Extensions\",\"Broiler.JavaScript.Globals\",\"Broiler.JavaScript.LinqExpressions\",\"Broiler.JavaScript.Modules\",\"Broiler.JavaScript.Parser\",\"Broiler.JavaScript.Runtime\",\"Broiler.JavaScript.Storage\",\"Broiler.JSeal\",\"Broiler.JSeal.BroilerJs\",\"Broiler.Regex\",\"Broiler.Unicode.Algorithms\",\"Broiler.Unicode.Segmentation\",\"Consumer\"],\"loadedAssemblies\":[{\"name\":\"Broiler.ECMAScript.Algorithms\",\"version\":\"0.1.0-preview.8\",\"file\":\"Broiler.ECMAScript.Algorithms.dll\"},{\"name\":\"Broiler.JavaScript.Ast\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Ast.dll\"},{\"name\":\"Broiler.JavaScript.BuiltIns\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.BuiltIns.dll\"},{\"name\":\"Broiler.JavaScript.Compiler\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Compiler.dll\"},{\"name\":\"Broiler.JavaScript.Engine\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Engine.dll\"},{\"name\":\"Broiler.JavaScript.ExpressionCompiler\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.ExpressionCompiler.dll\"},{\"name\":\"Broiler.JavaScript.Expressions\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Expressions.dll\"},{\"name\":\"Broiler.JavaScript.Extensions\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Extensions.dll\"},{\"name\":\"Broiler.JavaScript.Globals\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Globals.dll\"},{\"name\":\"Broiler.JavaScript.LinqExpressions\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.LinqExpressions.dll\"},{\"name\":\"Broiler.JavaScript.Modules\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Modules.dll\"},{\"name\":\"Broiler.JavaScript.Parser\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Parser.dll\"},{\"name\":\"Broiler.JavaScript.Runtime\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Runtime.dll\"},{\"name\":\"Broiler.JavaScript.Storage\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Storage.dll\"},{\"name\":\"Broiler.JSeal\",\"version\":\"0.1.0-preview.1\",\"file\":\"Broiler.JSeal.dll\"},{\"name\":\"Broiler.JSeal.BroilerJs\",\"version\":\"0.1.0-preview.1\",\"file\":\"Broiler.JSeal.BroilerJs.dll\"},{\"name\":\"Broiler.Regex\",\"version\":\"0.1.0-preview.6\\u002Bdf5cfc2cc7d71cf0824aa8963dcdb956ac7fca9e\",\"file\":\"Broiler.Regex.dll\"},{\"name\":\"Broiler.Unicode.Algorithms\",\"version\":\"0.1.0-preview.6\\u002Bccef653c8aa903f7eecf25faafb8bc5d458e6cc4\",\"file\":\"Broiler.Unicode.Algorithms.dll\"}]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "BroilerJs-empty-feed",
+      "executable": "dotnet",
+      "arguments": [
+        "restore",
+        "Consumer.csproj",
+        "--configfile",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs/empty.config",
+        "--packages",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs/negative-packages",
+        "--no-http-cache",
+        "--force",
+        "-p:BaseIntermediateOutputPath=/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs/negative-obj/",
+        "-p:Provider=BroilerJs",
+        "-p:ConsumerPackageVersion=0.1.0-preview.1",
+        "-p:NuGetAudit=false",
+        "-p:RestoreFallbackFolders="
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs",
+      "exitCode": 1,
+      "timedOut": false,
+      "timeoutSeconds": 300,
+      "expectFailure": true,
+      "stdout": "  Determining projects to restore...\n/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs/Consumer.csproj : error NU1101: Unable to find package Broiler.JSeal.BroilerJs. No packages exist with this id in source(s): isolated\n  Failed to restore /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs/Consumer.csproj (in 100 ms).\n",
+      "stderr": ""
+    },
+    {
+      "name": "BroilerJs-missing-contracts",
+      "executable": "dotnet",
+      "arguments": [
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs/incomplete-runtime/Consumer.dll"
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/BroilerJs/incomplete-runtime",
+      "exitCode": 134,
+      "timedOut": false,
+      "timeoutSeconds": 30,
+      "expectFailure": true,
+      "stdout": "",
+      "stderr": "Unhandled exception. System.IO.FileNotFoundException: Could not load file or assembly 'Broiler.JSeal, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null'. The system cannot find the file specified.\n\nFile name: 'Broiler.JSeal, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null'\n   at Program.<Main>$(String[] args)\n"
+    },
+    {
+      "name": "Vm-restore",
+      "executable": "dotnet",
+      "arguments": [
+        "restore",
+        "Consumer.csproj",
+        "--configfile",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm/NuGet.config",
+        "--packages",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm/packages",
+        "--no-http-cache",
+        "-p:Provider=Vm",
+        "-p:ConsumerPackageVersion=0.1.0-preview.1",
+        "-p:NuGetAudit=false",
+        "-p:RestoreFallbackFolders="
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 300,
+      "expectFailure": false,
+      "stdout": "  Determining projects to restore...\n  Restored /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm/Consumer.csproj (in 377 ms).\n",
+      "stderr": ""
+    },
+    {
+      "name": "Vm-build",
+      "executable": "dotnet",
+      "arguments": [
+        "build",
+        "Consumer.csproj",
+        "-c",
+        "Release",
+        "--no-restore",
+        "--nologo",
+        "-p:Provider=Vm",
+        "-p:ConsumerPackageVersion=0.1.0-preview.1",
+        "-p:NuGetAudit=false",
+        "-p:RestoreFallbackFolders="
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 300,
+      "expectFailure": false,
+      "stdout": "  Consumer -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm/bin/Release/net10.0/Consumer.dll\n\nBuild succeeded.\n    0 Warning(s)\n    0 Error(s)\n\nTime Elapsed 00:00:00.76\n",
+      "stderr": ""
+    },
+    {
+      "name": "Vm-run",
+      "executable": "dotnet",
+      "arguments": [
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm/bin/Release/net10.0/Consumer.dll"
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm/bin/Release/net10.0",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 30,
+      "expectFailure": false,
+      "stdout": "J02\t{\"provider\":\"broiler-vm\",\"checks\":[\"broiler-vm: realm creation\",\"broiler-vm: primitive evaluation\",\"broiler-vm: UTF-8 string\",\"broiler-vm: ordinary arguments\",\"broiler-vm: zero-argument function\",\"broiler-vm: strict arguments\",\"broiler-vm: module contract types present, no module realm before I13\",\"broiler-vm: same-realm structured clone and transfer\",\"broiler-vm: second-thread transport refused explicitly\",\"broiler-vm: host callback\",\"broiler-vm: disposal and idempotent teardown\",\"package assembly isolation\"],\"requiredAssemblies\":[\"Broiler.JSeal\",\"Broiler.JSeal.Vm\",\"Broiler.VM.Runtime\",\"Broiler.VM.Profile.JavaScript\",\"Broiler.VM.Profile.JavaScript.Compiler\"],\"shippedAssemblies\":[\"Broiler.JSeal\",\"Broiler.JSeal.Vm\",\"Broiler.VM.Abstractions\",\"Broiler.VM.Binary\",\"Broiler.VM.Profile.JavaScript\",\"Broiler.VM.Profile.JavaScript.Compiler\",\"Broiler.VM.Profile.JavaScript.Format\",\"Broiler.VM.Runtime\",\"Consumer\"],\"loadedAssemblies\":[{\"name\":\"Broiler.JSeal\",\"version\":\"0.1.0-preview.1\",\"file\":\"Broiler.JSeal.dll\"},{\"name\":\"Broiler.JSeal.Vm\",\"version\":\"0.1.0-preview.1\",\"file\":\"Broiler.JSeal.Vm.dll\"},{\"name\":\"Broiler.VM.Abstractions\",\"version\":\"0.1.0-preview.6\\u002B8e06db150ebe6f4e32d30256847457ef8defb78c\",\"file\":\"Broiler.VM.Abstractions.dll\"},{\"name\":\"Broiler.VM.Binary\",\"version\":\"0.1.0-preview.6\\u002B8e06db150ebe6f4e32d30256847457ef8defb78c\",\"file\":\"Broiler.VM.Binary.dll\"},{\"name\":\"Broiler.VM.Profile.JavaScript\",\"version\":\"0.1.0-preview.6\\u002B8e06db150ebe6f4e32d30256847457ef8defb78c\",\"file\":\"Broiler.VM.Profile.JavaScript.dll\"},{\"name\":\"Broiler.VM.Profile.JavaScript.Compiler\",\"version\":\"0.1.0-preview.6\\u002B8e06db150ebe6f4e32d30256847457ef8defb78c\",\"file\":\"Broiler.VM.Profile.JavaScript.Compiler.dll\"},{\"name\":\"Broiler.VM.Profile.JavaScript.Format\",\"version\":\"0.1.0-preview.6\\u002B8e06db150ebe6f4e32d30256847457ef8defb78c\",\"file\":\"Broiler.VM.Profile.JavaScript.Format.dll\"},{\"name\":\"Broiler.VM.Runtime\",\"version\":\"0.1.0-preview.6\\u002B8e06db150ebe6f4e32d30256847457ef8defb78c\",\"file\":\"Broiler.VM.Runtime.dll\"}]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "Vm-empty-feed",
+      "executable": "dotnet",
+      "arguments": [
+        "restore",
+        "Consumer.csproj",
+        "--configfile",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm/empty.config",
+        "--packages",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm/negative-packages",
+        "--no-http-cache",
+        "--force",
+        "-p:BaseIntermediateOutputPath=/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm/negative-obj/",
+        "-p:Provider=Vm",
+        "-p:ConsumerPackageVersion=0.1.0-preview.1",
+        "-p:NuGetAudit=false",
+        "-p:RestoreFallbackFolders="
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm",
+      "exitCode": 1,
+      "timedOut": false,
+      "timeoutSeconds": 300,
+      "expectFailure": true,
+      "stdout": "  Determining projects to restore...\n/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm/Consumer.csproj : error NU1101: Unable to find package Broiler.JSeal.Vm. No packages exist with this id in source(s): isolated\n  Failed to restore /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm/Consumer.csproj (in 116 ms).\n",
+      "stderr": ""
+    },
+    {
+      "name": "Vm-missing-contracts",
+      "executable": "dotnet",
+      "arguments": [
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm/incomplete-runtime/Consumer.dll"
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Vm/incomplete-runtime",
+      "exitCode": 134,
+      "timedOut": false,
+      "timeoutSeconds": 30,
+      "expectFailure": true,
+      "stdout": "",
+      "stderr": "Unhandled exception. System.IO.FileNotFoundException: Could not load file or assembly 'Broiler.JSeal, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null'. The system cannot find the file specified.\n\nFile name: 'Broiler.JSeal, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null'\n   at Program.<Main>$(String[] args)\n"
+    },
+    {
+      "name": "Both-restore",
+      "executable": "dotnet",
+      "arguments": [
+        "restore",
+        "Consumer.csproj",
+        "--configfile",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both/NuGet.config",
+        "--packages",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both/packages",
+        "--no-http-cache",
+        "-p:Provider=Both",
+        "-p:ConsumerPackageVersion=0.1.0-preview.1",
+        "-p:NuGetAudit=false",
+        "-p:RestoreFallbackFolders="
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 300,
+      "expectFailure": false,
+      "stdout": "  Determining projects to restore...\n  Restored /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both/Consumer.csproj (in 441 ms).\n",
+      "stderr": ""
+    },
+    {
+      "name": "Both-build",
+      "executable": "dotnet",
+      "arguments": [
+        "build",
+        "Consumer.csproj",
+        "-c",
+        "Release",
+        "--no-restore",
+        "--nologo",
+        "-p:Provider=Both",
+        "-p:ConsumerPackageVersion=0.1.0-preview.1",
+        "-p:NuGetAudit=false",
+        "-p:RestoreFallbackFolders="
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 300,
+      "expectFailure": false,
+      "stdout": "  Consumer -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both/bin/Release/net10.0/Consumer.dll\n\nBuild succeeded.\n    0 Warning(s)\n    0 Error(s)\n\nTime Elapsed 00:00:00.71\n",
+      "stderr": ""
+    },
+    {
+      "name": "Both-run",
+      "executable": "dotnet",
+      "arguments": [
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both/bin/Release/net10.0/Consumer.dll"
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both/bin/Release/net10.0",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 30,
+      "expectFailure": false,
+      "stdout": "J02\t{\"provider\":\"broiler-js\\u002Bbroiler-vm\",\"checks\":[\"broiler-js: realm creation\",\"broiler-js: primitive evaluation\",\"broiler-js: UTF-8 string\",\"broiler-js: ordinary arguments\",\"broiler-js: zero-argument function\",\"broiler-js: strict arguments\",\"broiler-js: direct eval with arguments\",\"broiler-js: module capabilities require host opt-in\",\"broiler-js: module contract types present, no module realm before I13\",\"broiler-js: same-realm structured clone and transfer\",\"broiler-js: second-thread structured clone transport\",\"broiler-js: host callback\",\"broiler-js: disposal and idempotent teardown\",\"broiler-vm: realm creation\",\"broiler-vm: primitive evaluation\",\"broiler-vm: UTF-8 string\",\"broiler-vm: ordinary arguments\",\"broiler-vm: zero-argument function\",\"broiler-vm: strict arguments\",\"broiler-vm: module contract types present, no module realm before I13\",\"broiler-vm: same-realm structured clone and transfer\",\"broiler-vm: second-thread transport refused explicitly\",\"broiler-vm: host callback\",\"broiler-vm: disposal and idempotent teardown\",\"both providers: concurrent isolated realms\",\"package assembly isolation\"],\"requiredAssemblies\":[\"Broiler.JSeal\",\"Broiler.JSeal.BroilerJs\",\"Broiler.JavaScript.Runtime\",\"Broiler.JavaScript.BuiltIns\",\"Broiler.JavaScript.Globals\",\"Broiler.JavaScript.Modules\",\"Broiler.JavaScript.Storage\",\"Broiler.JSeal.Vm\",\"Broiler.VM.Runtime\",\"Broiler.VM.Profile.JavaScript\",\"Broiler.VM.Profile.JavaScript.Compiler\"],\"shippedAssemblies\":[\"Broiler.ECMAScript.Algorithms\",\"Broiler.ECMAScript.Intl\",\"Broiler.JavaScript.Ast\",\"Broiler.JavaScript.BuiltIns\",\"Broiler.JavaScript.Compiler\",\"Broiler.JavaScript.Engine\",\"Broiler.JavaScript.ExpressionCompiler\",\"Broiler.JavaScript.Expressions\",\"Broiler.JavaScript.Extensions\",\"Broiler.JavaScript.Globals\",\"Broiler.JavaScript.LinqExpressions\",\"Broiler.JavaScript.Modules\",\"Broiler.JavaScript.Parser\",\"Broiler.JavaScript.Runtime\",\"Broiler.JavaScript.Storage\",\"Broiler.JSeal\",\"Broiler.JSeal.BroilerJs\",\"Broiler.JSeal.Vm\",\"Broiler.Regex\",\"Broiler.Unicode.Algorithms\",\"Broiler.Unicode.Segmentation\",\"Broiler.VM.Abstractions\",\"Broiler.VM.Binary\",\"Broiler.VM.Profile.JavaScript\",\"Broiler.VM.Profile.JavaScript.Compiler\",\"Broiler.VM.Profile.JavaScript.Format\",\"Broiler.VM.Runtime\",\"Consumer\"],\"loadedAssemblies\":[{\"name\":\"Broiler.ECMAScript.Algorithms\",\"version\":\"0.1.0-preview.8\",\"file\":\"Broiler.ECMAScript.Algorithms.dll\"},{\"name\":\"Broiler.JavaScript.Ast\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Ast.dll\"},{\"name\":\"Broiler.JavaScript.BuiltIns\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.BuiltIns.dll\"},{\"name\":\"Broiler.JavaScript.Compiler\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Compiler.dll\"},{\"name\":\"Broiler.JavaScript.Engine\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Engine.dll\"},{\"name\":\"Broiler.JavaScript.ExpressionCompiler\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.ExpressionCompiler.dll\"},{\"name\":\"Broiler.JavaScript.Expressions\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Expressions.dll\"},{\"name\":\"Broiler.JavaScript.Extensions\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Extensions.dll\"},{\"name\":\"Broiler.JavaScript.Globals\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Globals.dll\"},{\"name\":\"Broiler.JavaScript.LinqExpressions\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.LinqExpressions.dll\"},{\"name\":\"Broiler.JavaScript.Modules\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Modules.dll\"},{\"name\":\"Broiler.JavaScript.Parser\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Parser.dll\"},{\"name\":\"Broiler.JavaScript.Runtime\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Runtime.dll\"},{\"name\":\"Broiler.JavaScript.Storage\",\"version\":\"0.1.0-preview.1401\",\"file\":\"Broiler.JavaScript.Storage.dll\"},{\"name\":\"Broiler.JSeal\",\"version\":\"0.1.0-preview.1\",\"file\":\"Broiler.JSeal.dll\"},{\"name\":\"Broiler.JSeal.BroilerJs\",\"version\":\"0.1.0-preview.1\",\"file\":\"Broiler.JSeal.BroilerJs.dll\"},{\"name\":\"Broiler.JSeal.Vm\",\"version\":\"0.1.0-preview.1\",\"file\":\"Broiler.JSeal.Vm.dll\"},{\"name\":\"Broiler.Regex\",\"version\":\"0.1.0-preview.6\\u002Bdf5cfc2cc7d71cf0824aa8963dcdb956ac7fca9e\",\"file\":\"Broiler.Regex.dll\"},{\"name\":\"Broiler.Unicode.Algorithms\",\"version\":\"0.1.0-preview.6\\u002Bccef653c8aa903f7eecf25faafb8bc5d458e6cc4\",\"file\":\"Broiler.Unicode.Algorithms.dll\"},{\"name\":\"Broiler.VM.Abstractions\",\"version\":\"0.1.0-preview.6\\u002B8e06db150ebe6f4e32d30256847457ef8defb78c\",\"file\":\"Broiler.VM.Abstractions.dll\"},{\"name\":\"Broiler.VM.Binary\",\"version\":\"0.1.0-preview.6\\u002B8e06db150ebe6f4e32d30256847457ef8defb78c\",\"file\":\"Broiler.VM.Binary.dll\"},{\"name\":\"Broiler.VM.Profile.JavaScript\",\"version\":\"0.1.0-preview.6\\u002B8e06db150ebe6f4e32d30256847457ef8defb78c\",\"file\":\"Broiler.VM.Profile.JavaScript.dll\"},{\"name\":\"Broiler.VM.Profile.JavaScript.Compiler\",\"version\":\"0.1.0-preview.6\\u002B8e06db150ebe6f4e32d30256847457ef8defb78c\",\"file\":\"Broiler.VM.Profile.JavaScript.Compiler.dll\"},{\"name\":\"Broiler.VM.Profile.JavaScript.Format\",\"version\":\"0.1.0-preview.6\\u002B8e06db150ebe6f4e32d30256847457ef8defb78c\",\"file\":\"Broiler.VM.Profile.JavaScript.Format.dll\"},{\"name\":\"Broiler.VM.Runtime\",\"version\":\"0.1.0-preview.6\\u002B8e06db150ebe6f4e32d30256847457ef8defb78c\",\"file\":\"Broiler.VM.Runtime.dll\"}]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "Both-empty-feed",
+      "executable": "dotnet",
+      "arguments": [
+        "restore",
+        "Consumer.csproj",
+        "--configfile",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both/empty.config",
+        "--packages",
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both/negative-packages",
+        "--no-http-cache",
+        "--force",
+        "-p:BaseIntermediateOutputPath=/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both/negative-obj/",
+        "-p:Provider=Both",
+        "-p:ConsumerPackageVersion=0.1.0-preview.1",
+        "-p:NuGetAudit=false",
+        "-p:RestoreFallbackFolders="
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both",
+      "exitCode": 1,
+      "timedOut": false,
+      "timeoutSeconds": 300,
+      "expectFailure": true,
+      "stdout": "  Determining projects to restore...\n/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both/Consumer.csproj : error NU1101: Unable to find package Broiler.JSeal.BroilerJs. No packages exist with this id in source(s): isolated\n/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both/Consumer.csproj : error NU1101: Unable to find package Broiler.JSeal.Vm. No packages exist with this id in source(s): isolated\n  Failed to restore /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both/Consumer.csproj (in 117 ms).\n",
+      "stderr": ""
+    },
+    {
+      "name": "Both-missing-contracts",
+      "executable": "dotnet",
+      "arguments": [
+        "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both/incomplete-runtime/Consumer.dll"
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/Both/incomplete-runtime",
+      "exitCode": 134,
+      "timedOut": false,
+      "timeoutSeconds": 30,
+      "expectFailure": true,
+      "stdout": "",
+      "stderr": "Unhandled exception. System.IO.FileNotFoundException: Could not load file or assembly 'Broiler.JSeal, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null'. The system cannot find the file specified.\n\nFile name: 'Broiler.JSeal, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null'\n   at Program.<Main>$(String[] args)\n"
+    },
+    {
+      "name": "gate",
+      "executable": "node",
+      "arguments": [
+        "/home/user/js-w2read-build/69a8a13b/jsealbase/eng/package-gate.mjs",
+        "check",
+        "/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2read/runs/jsealbase/jseal/gate.request.json",
+        "/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2read/runs/jsealbase/jseal/gate.json"
+      ],
+      "workingDirectory": "/home/user/js-w2read-build/69a8a13b/jsealbase",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 60,
+      "expectFailure": false,
+      "stdout": "J19 gate: 5 graphs, 27 staged packages, 0 errors.\n",
+      "stderr": ""
+    },
+    {
+      "name": "candidate-test-Release",
+      "executable": "dotnet",
+      "arguments": [
+        "test",
+        "Broiler.JSeal.slnx",
+        "-c",
+        "Release",
+        "--nologo"
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 1800,
+      "expectFailure": false,
+      "stdout": "  Determining projects to restore...\n  Restored /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal.Tests/Broiler.JSeal.Tests.csproj (in 1.99 sec).\n  3 of 4 projects are up-to-date for restore.\n  Broiler.JSeal -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal/bin/Release/net10.0/Broiler.JSeal.dll\n  Broiler.JSeal.BroilerJs -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal.BroilerJs/bin/Release/net10.0/Broiler.JSeal.BroilerJs.dll\n  Broiler.JSeal.Tests -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal.Tests/bin/Release/net10.0/Broiler.JSeal.Tests.dll\nTest run for /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal.Tests/bin/Release/net10.0/Broiler.JSeal.Tests.dll (.NETCoreApp,Version=v10.0)\nA total of 1 test files matched the specified pattern.\n[xUnit.net 00:00:02.05]     Broiler.JSeal.Tests.JsealConformanceTests.TheModulesWitnessIsNotExercisedUntilI13 [SKIP]\n  Skipped Broiler.JSeal.Tests.JsealConformanceTests.TheModulesWitnessIsNotExercisedUntilI13 [1 ms]\n[xUnit.net 00:00:02.65]     Broiler.JSeal.Tests.JsealConformanceTests.TheDynamicImportWitnessIsNotExercisedUntilI13 [SKIP]\n  Skipped Broiler.JSeal.Tests.JsealConformanceTests.TheDynamicImportWitnessIsNotExercisedUntilI13 [1 ms]\nResults File: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2read/runs/jsealbase/jseal-trx/_vm_2026-11-24_03_49_32_net10.0.trx\n\nPassed!  - Failed:     0, Passed:   355, Skipped:     2, Total:   357, Duration: 7 s - Broiler.JSeal.Tests.dll (net10.0)\nVSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.\n",
+      "stderr": ""
+    },
+    {
+      "name": "candidate-test-Release-VM",
+      "executable": "dotnet",
+      "arguments": [
+        "test",
+        "Broiler.JSeal.slnx",
+        "-c",
+        "Release-VM",
+        "--nologo"
+      ],
+      "workingDirectory": "/tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source",
+      "exitCode": 0,
+      "timedOut": false,
+      "timeoutSeconds": 1800,
+      "expectFailure": false,
+      "stdout": "  Determining projects to restore...\n  Restored /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal.Tests/Broiler.JSeal.Tests.csproj (in 279 ms).\n  3 of 4 projects are up-to-date for restore.\n  Broiler.JSeal -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal/bin/Release-VM/net10.0/Broiler.JSeal.dll\n  Broiler.JSeal.BroilerJs -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal.BroilerJs/bin/Release-VM/net10.0/Broiler.JSeal.BroilerJs.dll\n  Broiler.JSeal.Vm -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal.Vm/bin/Release-VM/net10.0/Broiler.JSeal.Vm.dll\n  Broiler.JSeal.Tests -> /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal.Tests/bin/Release-VM/net10.0/Broiler.JSeal.Tests.dll\nTest run for /tmp/jseal-package-consumer-6946a8dd0240447cab555c1a3fdb42cc/source/Broiler.JSeal.Tests/bin/Release-VM/net10.0/Broiler.JSeal.Tests.dll (.NETCoreApp,Version=v10.0)\nA total of 1 test files matched the specified pattern.\n[xUnit.net 00:00:01.77]     Broiler.JSeal.Tests.JsealConformanceTests.TheModulesWitnessIsNotExercisedUntilI13 [SKIP]\n  Skipped Broiler.JSeal.Tests.JsealConformanceTests.TheModulesWitnessIsNotExercisedUntilI13 [1 ms]\n[xUnit.net 00:00:08.36]     Broiler.JSeal.Tests.JsealConformanceTests.TheDynamicImportWitnessIsNotExercisedUntilI13 [SKIP]\n  Skipped Broiler.JSeal.Tests.JsealConformanceTests.TheDynamicImportWitnessIsNotExercisedUntilI13 [1 ms]\nResults File: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-w2read/runs/jsealbase/jseal-trx/_vm_2026-11-24_03_49_45_net10.0.trx\n\nPassed!  - Failed:     0, Passed:   640, Skipped:     2, Total:   642, Duration: 9 s - Broiler.JSeal.Tests.dll (net10.0)\nVSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.\n",
+      "stderr": ""
+    }
+  ],
+  "packages": [
+    {
+      "identity": "Broiler.ECMAScript.Algorithms/0.1.0-preview.8",
+      "id": "Broiler.ECMAScript.Algorithms",
+      "version": "0.1.0-preview.8",
+      "archive": "broiler.ecmascript.algorithms.0.1.0-preview.8.nupkg",
+      "sha512": "PdVUgci8R2znPPzOrC77pdn6GuOJuVW4Dq+oBcf1mO/fnarC9vhpUgSlPa1BWyQnhugnYSlY1Db/jKeDlULrOw==",
+      "dependencies": [],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.ECMAScript.Intl/0.1.0-preview.8",
+      "id": "Broiler.ECMAScript.Intl",
+      "version": "0.1.0-preview.8",
+      "archive": "broiler.ecmascript.intl.0.1.0-preview.8.nupkg",
+      "sha512": "KIccIvqErbqjKuFkqcDWErqIQ5KhdhX0OzQxEi107z80zhGy4JXu9OZv4wgHmUJCfPmzZ0lQWo6KhAm7zkehVA==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.Unicode.Algorithms",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Ast/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Ast",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.ast.0.1.0-preview.1401.nupkg",
+      "sha512": "OeJsOBV6IQ6XxIMwAy6qFiybxdCO+jt8upx+6zqFoDUv6Gxb2wuQNTsH6j+sHuTiwmVwmBxj/5VI2f6gK4vDXA==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.Regex",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.Unicode.Algorithms",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.BuiltIns/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.BuiltIns",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.builtins.0.1.0-preview.1401.nupkg",
+      "sha512": "E9vfHKyHkUIctRM1Ir3wIVIu7KUJPQl77PtWBSFNqK2x3r0GZ0xc/8727cqO+dBhhYQkXkLTPJVhnA2iWWcXiQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.ECMAScript.Intl",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Extensions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.LinqExpressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.Regex",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.Unicode.Segmentation",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Compiler/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Compiler",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.compiler.0.1.0-preview.1401.nupkg",
+      "sha512": "H98OIF32vnhJA1hwhyFNWkDaFj27COPUcZZLrShUKuWOcYjW3l0JJhhDUiJzQ9eIUXdNDz42dNu1eXaO9JDjaA==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.LinqExpressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Engine/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Engine",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.engine.0.1.0-preview.1401.nupkg",
+      "sha512": "pFRFBapueXUqWu+L+xkKKtEgk7ka7lYw3OrEInI0kH9ehSYiWyG9wuFccjRvvTBq9wNqQ86+h2EERxhCw3gnTQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Parser",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Runtime",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Storage",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.ExpressionCompiler/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.ExpressionCompiler",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.expressioncompiler.0.1.0-preview.1401.nupkg",
+      "sha512": "BoAQ0EaWVOT/SvENLasu8tUx0N9J6uMUpAEmHm588MCVqW8rHPGlsup8OYVmkpj3qnzvY2ILlykt0Z9EPiBO9A==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Expressions/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Expressions",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.expressions.0.1.0-preview.1401.nupkg",
+      "sha512": "7NfEVysxC84jPZCJsncWhP2L3FEO2EIv4IPU80oGAWTLbD4GEP/hZy/pLCzS8oPT2S6xVhPXbksuP30u2Gxcww==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Extensions/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Extensions",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.extensions.0.1.0-preview.1401.nupkg",
+      "sha512": "HJIAB06pfj3FDSItKUir3RXMHYwaDp/svRqeso2iAos+G/v1TE3zYoUNB0eiQa0Ki67klBNpHvTQQJ0IPc8XWw==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.LinqExpressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Globals/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Globals",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.globals.0.1.0-preview.1401.nupkg",
+      "sha512": "tmlJ5ozpzDj48xXI9ajfNEMN0WTV3eVoOzstz5FokFpm09iKqPd7uIstTfTV7Lj+0H94Er/eAe7M0SqSTS8SRA==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.BuiltIns",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Compiler",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Extensions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.LinqExpressions/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.LinqExpressions",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.linqexpressions.0.1.0-preview.1401.nupkg",
+      "sha512": "x77nxscoWWbpyR+KmGRGIJc8QiHiPYw0VDGIbh5iGjDnIOPfix1nQK0jbHi1dSD10JztBWzzvW6Lt8JRzCtEUg==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.ExpressionCompiler",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Runtime",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Storage",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Modules/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Modules",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.modules.0.1.0-preview.1401.nupkg",
+      "sha512": "OMyXiQEWWNK36EwPJZ67rwEOQqbYrhzoDnH04DBNK/Hq2JrkbNHmIc6Um3nXqXJ/lugz4xiZPoBqVi67FT5lHw==",
+      "dependencies": [
+        {
+          "id": "Broiler.JavaScript.BuiltIns",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Engine",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.LinqExpressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Parser/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Parser",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.parser.0.1.0-preview.1401.nupkg",
+      "sha512": "+5PR3wckIl7iKfJoNDwIgSdciFIUzWGF8tMm939iVlkY9UheShh0hF4YUp7qN/6Ha1oTsu+s1CruTOJRYGRphQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.Regex",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Runtime/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Runtime",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.runtime.0.1.0-preview.1401.nupkg",
+      "sha512": "9anmHwXNhcMaU33QXUAkhz4uQxhmSFsKwt4ophMk01Dfo2ICPmDuxjFFzfXDdhKaFUM73KXLYXgsmbtWVH0Vuw==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Storage",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JavaScript.Storage/0.1.0-preview.1401",
+      "id": "Broiler.JavaScript.Storage",
+      "version": "0.1.0-preview.1401",
+      "archive": "broiler.javascript.storage.0.1.0-preview.1401.nupkg",
+      "sha512": "ioOH+z67WMnLpX45PCbm9Nk+OYbj07W4AEiTN39pRJ9fw2v4chPbPipQB9CDcbcZjm1MehpkprjGpuKg4pjVXA==",
+      "dependencies": [
+        {
+          "id": "Broiler.ECMAScript.Algorithms",
+          "range": "0.1.0-preview.8"
+        },
+        {
+          "id": "Broiler.JavaScript.Ast",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Expressions",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.JSeal/0.1.0-preview.1",
+      "id": "Broiler.JSeal",
+      "version": "0.1.0-preview.1",
+      "archive": "Broiler.JSeal.0.1.0-preview.1.nupkg",
+      "sha512": "j/YDk9jvY4H1N/eyZ4TZ8Dgilqvu91w7E5FUJ/Po7CtP25FAueXdBMr/SbE3OVOOWRSd0iZbpXLJUp+me+LdDg==",
+      "dependencies": [],
+      "origin": "local pack"
+    },
+    {
+      "identity": "Broiler.JSeal.BroilerJs/0.1.0-preview.1",
+      "id": "Broiler.JSeal.BroilerJs",
+      "version": "0.1.0-preview.1",
+      "archive": "Broiler.JSeal.BroilerJs.0.1.0-preview.1.nupkg",
+      "sha512": "jsTwCDxf1OIZ/VuFUH8Zh64sJKynMxM0WBZJmHH1+pTpKsGRprg8byJRT8CJg4VoqcxGzBOfccRySXOsGMb+EQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.JSeal",
+          "range": "0.1.0-preview.1"
+        },
+        {
+          "id": "Broiler.JavaScript.BuiltIns",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Globals",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Modules",
+          "range": "0.1.0-preview.1401"
+        },
+        {
+          "id": "Broiler.JavaScript.Storage",
+          "range": "0.1.0-preview.1401"
+        }
+      ],
+      "origin": "local pack"
+    },
+    {
+      "identity": "Broiler.JSeal.Vm/0.1.0-preview.1",
+      "id": "Broiler.JSeal.Vm",
+      "version": "0.1.0-preview.1",
+      "archive": "Broiler.JSeal.Vm.0.1.0-preview.1.nupkg",
+      "sha512": "MBQ/oQXy426nHs3w6sP8y0kDvfvCCoUmadLkytaoGaNcOrCyJBgYd39TOpW+9q0Nz2mNVaHNAP2OeywHs8jywQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.JSeal",
+          "range": "0.1.0-preview.1"
+        },
+        {
+          "id": "Broiler.VM.Profile.JavaScript",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.VM.Profile.JavaScript.Compiler",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.VM.Runtime",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "local pack"
+    },
+    {
+      "identity": "Broiler.Regex/0.1.0-preview.6",
+      "id": "Broiler.Regex",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.regex.0.1.0-preview.6.nupkg",
+      "sha512": "L305/2UnpKJ2Z5etheRYfKhQ33bA9ZfXSVhOuIbbfGF9WcoFPgF9pWiUJu9Qj+7/yjofcPjz+RwykU8mgsbn1A==",
+      "dependencies": [
+        {
+          "id": "Broiler.Unicode.Algorithms",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.Unicode.Algorithms/0.1.0-preview.6",
+      "id": "Broiler.Unicode.Algorithms",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.unicode.algorithms.0.1.0-preview.6.nupkg",
+      "sha512": "uSv5c1Rd8z2WLI0VlkBe3JcwrRBMu2fQCKXsPh+NMGlv+zGa98xUk/ZXaG9WRMZ0L+kdEXcn2mlaOGix/iEkNg==",
+      "dependencies": [],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.Unicode.Segmentation/0.1.0-preview.6",
+      "id": "Broiler.Unicode.Segmentation",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.unicode.segmentation.0.1.0-preview.6.nupkg",
+      "sha512": "/jF/PZuCxj2RANnCWEazB+nmfnRDChoQonbhJmnC6v5/TKXXoolnqaAmVfuLsOGPG6nmpw9kZR4rXX6hBmQkvg==",
+      "dependencies": [
+        {
+          "id": "Broiler.Unicode.Algorithms",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.VM.Abstractions/0.1.0-preview.6",
+      "id": "Broiler.VM.Abstractions",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.vm.abstractions.0.1.0-preview.6.nupkg",
+      "sha512": "Y1grKpny85T/3XMQwtWVZc6P+oRYF9olel4XQvIdfK5rNDJj0A8x8u5yTbu8qpCNq4yKok5Q1GUNOhM9YZyvNg==",
+      "dependencies": [],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.VM.Binary/0.1.0-preview.6",
+      "id": "Broiler.VM.Binary",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.vm.binary.0.1.0-preview.6.nupkg",
+      "sha512": "d57bLagffYLbakKgMnoksN3sYr9kG8pSV3OnkXEVOobpX8rhjNa12H8a3JVMwghOLiS2lAiXFk/9ZnpSRHxNtg==",
+      "dependencies": [],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.VM.Profile.JavaScript/0.1.0-preview.6",
+      "id": "Broiler.VM.Profile.JavaScript",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.vm.profile.javascript.0.1.0-preview.6.nupkg",
+      "sha512": "5MTa6HhP/0uNVOrTuDHnSkdQoQni9nfa29TIM0fUeevg8XOrOpjtGzhc2BaA9ru4t4V4t/OCLdnV8X7Q+u3Agw==",
+      "dependencies": [
+        {
+          "id": "Broiler.VM.Abstractions",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.VM.Binary",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.VM.Profile.JavaScript.Format",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.VM.Profile.JavaScript.Compiler/0.1.0-preview.6",
+      "id": "Broiler.VM.Profile.JavaScript.Compiler",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.vm.profile.javascript.compiler.0.1.0-preview.6.nupkg",
+      "sha512": "yCE4rXTVL+XEQkC6y/gXFqXkD0EOgDnbNpYvogMHug1cQzY+inplbLh9sSHfvhXaMps8O3qiCwioshyL1CitDA==",
+      "dependencies": [
+        {
+          "id": "Broiler.VM.Abstractions",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.VM.Profile.JavaScript.Format",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.VM.Profile.JavaScript.Format/0.1.0-preview.6",
+      "id": "Broiler.VM.Profile.JavaScript.Format",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.vm.profile.javascript.format.0.1.0-preview.6.nupkg",
+      "sha512": "m24atuVxcJ9SgYIM6buxahJJax5SaKHd/iYO+dBtj20XeYinDnRJqUSpD1M5zA6+srw//+eBhhRMIWnttUngXQ==",
+      "dependencies": [],
+      "origin": "resolved NuGet archive"
+    },
+    {
+      "identity": "Broiler.VM.Runtime/0.1.0-preview.6",
+      "id": "Broiler.VM.Runtime",
+      "version": "0.1.0-preview.6",
+      "archive": "broiler.vm.runtime.0.1.0-preview.6.nupkg",
+      "sha512": "PeWE8BWTxBds5mSsNVIhezdSSpdYzdiolFu7HSlNgn+uO8jWs6tdSs48KoiILFEI60WGtZTpEIi7nDx95IGSWQ==",
+      "dependencies": [
+        {
+          "id": "Broiler.VM.Abstractions",
+          "range": "0.1.0-preview.6"
+        },
+        {
+          "id": "Broiler.VM.Binary",
+          "range": "0.1.0-preview.6"
+        }
+      ],
+      "origin": "resolved NuGet archive"
+    }
+  ],
+  "consumers": [
+    {
+      "provider": "BroilerJs",
+      "packages": [
+        "Broiler.ECMAScript.Algorithms/0.1.0-preview.8",
+        "Broiler.ECMAScript.Intl/0.1.0-preview.8",
+        "Broiler.JavaScript.Ast/0.1.0-preview.1401",
+        "Broiler.JavaScript.BuiltIns/0.1.0-preview.1401",
+        "Broiler.JavaScript.Compiler/0.1.0-preview.1401",
+        "Broiler.JavaScript.Engine/0.1.0-preview.1401",
+        "Broiler.JavaScript.ExpressionCompiler/0.1.0-preview.1401",
+        "Broiler.JavaScript.Expressions/0.1.0-preview.1401",
+        "Broiler.JavaScript.Extensions/0.1.0-preview.1401",
+        "Broiler.JavaScript.Globals/0.1.0-preview.1401",
+        "Broiler.JavaScript.LinqExpressions/0.1.0-preview.1401",
+        "Broiler.JavaScript.Modules/0.1.0-preview.1401",
+        "Broiler.JavaScript.Parser/0.1.0-preview.1401",
+        "Broiler.JavaScript.Runtime/0.1.0-preview.1401",
+        "Broiler.JavaScript.Storage/0.1.0-preview.1401",
+        "Broiler.JSeal.BroilerJs/0.1.0-preview.1",
+        "Broiler.JSeal/0.1.0-preview.1",
+        "Broiler.Regex/0.1.0-preview.6",
+        "Broiler.Unicode.Algorithms/0.1.0-preview.6",
+        "Broiler.Unicode.Segmentation/0.1.0-preview.6"
+      ],
+      "observation": {
+        "provider": "broiler-js",
+        "checks": [
+          "broiler-js: realm creation",
+          "broiler-js: primitive evaluation",
+          "broiler-js: UTF-8 string",
+          "broiler-js: ordinary arguments",
+          "broiler-js: zero-argument function",
+          "broiler-js: strict arguments",
+          "broiler-js: direct eval with arguments",
+          "broiler-js: module capabilities require host opt-in",
+          "broiler-js: module contract types present, no module realm before I13",
+          "broiler-js: same-realm structured clone and transfer",
+          "broiler-js: second-thread structured clone transport",
+          "broiler-js: host callback",
+          "broiler-js: disposal and idempotent teardown",
+          "package assembly isolation"
+        ],
+        "requiredAssemblies": [
+          "Broiler.JSeal",
+          "Broiler.JSeal.BroilerJs",
+          "Broiler.JavaScript.Runtime",
+          "Broiler.JavaScript.BuiltIns",
+          "Broiler.JavaScript.Globals",
+          "Broiler.JavaScript.Modules",
+          "Broiler.JavaScript.Storage"
+        ],
+        "shippedAssemblies": [
+          "Broiler.ECMAScript.Algorithms",
+          "Broiler.ECMAScript.Intl",
+          "Broiler.JavaScript.Ast",
+          "Broiler.JavaScript.BuiltIns",
+          "Broiler.JavaScript.Compiler",
+          "Broiler.JavaScript.Engine",
+          "Broiler.JavaScript.ExpressionCompiler",
+          "Broiler.JavaScript.Expressions",
+          "Broiler.JavaScript.Extensions",
+          "Broiler.JavaScript.Globals",
+          "Broiler.JavaScript.LinqExpressions",
+          "Broiler.JavaScript.Modules",
+          "Broiler.JavaScript.Parser",
+          "Broiler.JavaScript.Runtime",
+          "Broiler.JavaScript.Storage",
+          "Broiler.JSeal",
+          "Broiler.JSeal.BroilerJs",
+          "Broiler.Regex",
+          "Broiler.Unicode.Algorithms",
+          "Broiler.Unicode.Segmentation",
+          "Consumer"
+        ],
+        "loadedAssemblies": [
+          {
+            "name": "Broiler.ECMAScript.Algorithms",
+            "version": "0.1.0-preview.8",
+            "file": "Broiler.ECMAScript.Algorithms.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Ast",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Ast.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.BuiltIns",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.BuiltIns.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Compiler",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Compiler.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Engine",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Engine.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.ExpressionCompiler",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.ExpressionCompiler.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Expressions",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Expressions.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Extensions",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Extensions.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Globals",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Globals.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.LinqExpressions",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.LinqExpressions.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Modules",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Modules.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Parser",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Parser.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Runtime",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Runtime.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Storage",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Storage.dll"
+          },
+          {
+            "name": "Broiler.JSeal",
+            "version": "0.1.0-preview.1",
+            "file": "Broiler.JSeal.dll"
+          },
+          {
+            "name": "Broiler.JSeal.BroilerJs",
+            "version": "0.1.0-preview.1",
+            "file": "Broiler.JSeal.BroilerJs.dll"
+          },
+          {
+            "name": "Broiler.Regex",
+            "version": "0.1.0-preview.6+df5cfc2cc7d71cf0824aa8963dcdb956ac7fca9e",
+            "file": "Broiler.Regex.dll"
+          },
+          {
+            "name": "Broiler.Unicode.Algorithms",
+            "version": "0.1.0-preview.6+ccef653c8aa903f7eecf25faafb8bc5d458e6cc4",
+            "file": "Broiler.Unicode.Algorithms.dll"
+          }
+        ]
+      },
+      "assemblies": [
+        {
+          "name": "Broiler.ECMAScript.Algorithms.dll",
+          "sha256": "ddb271ccee7be346d53b7421d1287ed8efc81bdf458e2781cf3713951883c019"
+        },
+        {
+          "name": "Broiler.ECMAScript.Intl.dll",
+          "sha256": "02d0f3d0c27cf3a4e04dbd938832d6c7dc2ab1c0c7ecfa6c5a30b38b141b9fb5"
+        },
+        {
+          "name": "Broiler.JavaScript.Ast.dll",
+          "sha256": "e95d20b4d7c8a302030876e57f053d83e8d4d8283f0f243099e333862975a407"
+        },
+        {
+          "name": "Broiler.JavaScript.BuiltIns.dll",
+          "sha256": "b97a7835e2149bf573d73835576031f1e362dc72caddf2abbdd8a6fac3582427"
+        },
+        {
+          "name": "Broiler.JavaScript.Compiler.dll",
+          "sha256": "81480414cdc2a98a41cc6c85caa32002f5c2e306389c28db8cd4b2bfbcf85814"
+        },
+        {
+          "name": "Broiler.JavaScript.Engine.dll",
+          "sha256": "76a561b826043f2c7d901953e34c46842139c0ea38bc027a1a1d32d76e8073eb"
+        },
+        {
+          "name": "Broiler.JavaScript.ExpressionCompiler.dll",
+          "sha256": "f1a453f0dec78e7f379d108b8efc8f9a29501369529e5dd21917e1cce2e0dcaa"
+        },
+        {
+          "name": "Broiler.JavaScript.Expressions.dll",
+          "sha256": "0972ce11187b73147bcd6f233afe2238853a0834fecb75b5edfd1329845be853"
+        },
+        {
+          "name": "Broiler.JavaScript.Extensions.dll",
+          "sha256": "f7e2a5aa38d4ad8075196b436fcf7a869fb380bb5127beae66208958e5cd7a7a"
+        },
+        {
+          "name": "Broiler.JavaScript.Globals.dll",
+          "sha256": "ef94e388cd134bc7f16fb8e16a17d99397acfc0f25c2e5a7dbaf52388e3522c4"
+        },
+        {
+          "name": "Broiler.JavaScript.LinqExpressions.dll",
+          "sha256": "7a17097784bfca8ee3493164fd035f613c294326e1e793e51c454cd41ae6b990"
+        },
+        {
+          "name": "Broiler.JavaScript.Modules.dll",
+          "sha256": "8b75e0f2b049afddbef5b122f39860510c422c353549e520594b8161e8a59fe0"
+        },
+        {
+          "name": "Broiler.JavaScript.Parser.dll",
+          "sha256": "4921247e8a0854fa529cf23858f0094f91a78ade1c5dbc9a8590042daef6b314"
+        },
+        {
+          "name": "Broiler.JavaScript.Runtime.dll",
+          "sha256": "3d5c9fde1ca0cb57f8fc60c8668cd24eb02d24b436207fd09777d4076766d39c"
+        },
+        {
+          "name": "Broiler.JavaScript.Storage.dll",
+          "sha256": "ac5c6482dbd1e5b11422bbc460161d0c4269c3f4859dcf1e8382e2aacbc096bf"
+        },
+        {
+          "name": "Broiler.JSeal.BroilerJs.dll",
+          "sha256": "98dd2e3a480cf58b3d04264639efc378e71bea1f13abd3b8c3078652e093db49"
+        },
+        {
+          "name": "Broiler.JSeal.dll",
+          "sha256": "e5a484597af1ff24a4e7b8fab925f6e7abfd547d8fa971d35201afb3c75c4cba"
+        },
+        {
+          "name": "Broiler.Regex.dll",
+          "sha256": "dbc27afef07fe8ed44d8f926fc6937ebaaf59cdbaa0aa384fbeae01de9803947"
+        },
+        {
+          "name": "Broiler.Unicode.Algorithms.dll",
+          "sha256": "17905af02db9e6cef5b4cea98d01717eaaddc74ddbcf2c927a94cdbab3edf2bc"
+        },
+        {
+          "name": "Broiler.Unicode.Segmentation.dll",
+          "sha256": "623bc48bf03526d315f3dbd6c75ca1c189c769ae997d1aedf068be558b82e82f"
+        },
+        {
+          "name": "Consumer.dll",
+          "sha256": "d9b036c1d682d1303ac90dca9fb034ed575631f96f38486841d03a6bef6eb7bc"
+        }
+      ]
+    },
+    {
+      "provider": "Vm",
+      "packages": [
+        "Broiler.JSeal.Vm/0.1.0-preview.1",
+        "Broiler.JSeal/0.1.0-preview.1",
+        "Broiler.VM.Abstractions/0.1.0-preview.6",
+        "Broiler.VM.Binary/0.1.0-preview.6",
+        "Broiler.VM.Profile.JavaScript.Compiler/0.1.0-preview.6",
+        "Broiler.VM.Profile.JavaScript.Format/0.1.0-preview.6",
+        "Broiler.VM.Profile.JavaScript/0.1.0-preview.6",
+        "Broiler.VM.Runtime/0.1.0-preview.6"
+      ],
+      "observation": {
+        "provider": "broiler-vm",
+        "checks": [
+          "broiler-vm: realm creation",
+          "broiler-vm: primitive evaluation",
+          "broiler-vm: UTF-8 string",
+          "broiler-vm: ordinary arguments",
+          "broiler-vm: zero-argument function",
+          "broiler-vm: strict arguments",
+          "broiler-vm: module contract types present, no module realm before I13",
+          "broiler-vm: same-realm structured clone and transfer",
+          "broiler-vm: second-thread transport refused explicitly",
+          "broiler-vm: host callback",
+          "broiler-vm: disposal and idempotent teardown",
+          "package assembly isolation"
+        ],
+        "requiredAssemblies": [
+          "Broiler.JSeal",
+          "Broiler.JSeal.Vm",
+          "Broiler.VM.Runtime",
+          "Broiler.VM.Profile.JavaScript",
+          "Broiler.VM.Profile.JavaScript.Compiler"
+        ],
+        "shippedAssemblies": [
+          "Broiler.JSeal",
+          "Broiler.JSeal.Vm",
+          "Broiler.VM.Abstractions",
+          "Broiler.VM.Binary",
+          "Broiler.VM.Profile.JavaScript",
+          "Broiler.VM.Profile.JavaScript.Compiler",
+          "Broiler.VM.Profile.JavaScript.Format",
+          "Broiler.VM.Runtime",
+          "Consumer"
+        ],
+        "loadedAssemblies": [
+          {
+            "name": "Broiler.JSeal",
+            "version": "0.1.0-preview.1",
+            "file": "Broiler.JSeal.dll"
+          },
+          {
+            "name": "Broiler.JSeal.Vm",
+            "version": "0.1.0-preview.1",
+            "file": "Broiler.JSeal.Vm.dll"
+          },
+          {
+            "name": "Broiler.VM.Abstractions",
+            "version": "0.1.0-preview.6+8e06db150ebe6f4e32d30256847457ef8defb78c",
+            "file": "Broiler.VM.Abstractions.dll"
+          },
+          {
+            "name": "Broiler.VM.Binary",
+            "version": "0.1.0-preview.6+8e06db150ebe6f4e32d30256847457ef8defb78c",
+            "file": "Broiler.VM.Binary.dll"
+          },
+          {
+            "name": "Broiler.VM.Profile.JavaScript",
+            "version": "0.1.0-preview.6+8e06db150ebe6f4e32d30256847457ef8defb78c",
+            "file": "Broiler.VM.Profile.JavaScript.dll"
+          },
+          {
+            "name": "Broiler.VM.Profile.JavaScript.Compiler",
+            "version": "0.1.0-preview.6+8e06db150ebe6f4e32d30256847457ef8defb78c",
+            "file": "Broiler.VM.Profile.JavaScript.Compiler.dll"
+          },
+          {
+            "name": "Broiler.VM.Profile.JavaScript.Format",
+            "version": "0.1.0-preview.6+8e06db150ebe6f4e32d30256847457ef8defb78c",
+            "file": "Broiler.VM.Profile.JavaScript.Format.dll"
+          },
+          {
+            "name": "Broiler.VM.Runtime",
+            "version": "0.1.0-preview.6+8e06db150ebe6f4e32d30256847457ef8defb78c",
+            "file": "Broiler.VM.Runtime.dll"
+          }
+        ]
+      },
+      "assemblies": [
+        {
+          "name": "Broiler.JSeal.dll",
+          "sha256": "e5a484597af1ff24a4e7b8fab925f6e7abfd547d8fa971d35201afb3c75c4cba"
+        },
+        {
+          "name": "Broiler.JSeal.Vm.dll",
+          "sha256": "8fa1f713528282a71ac399e7802e6d47dc13c2d60677cbd37261286c920fed8f"
+        },
+        {
+          "name": "Broiler.VM.Abstractions.dll",
+          "sha256": "0aaf7ab65ed8492ca8ea3aa4f1bc5d1552c460663ec16c7adfe486f95cf82d31"
+        },
+        {
+          "name": "Broiler.VM.Binary.dll",
+          "sha256": "4d450c81cd6e120f99d8ced8a95071f0b4f813d3eff4d09f9bbee97291ff5777"
+        },
+        {
+          "name": "Broiler.VM.Profile.JavaScript.Compiler.dll",
+          "sha256": "474837778abd4c992a898c46f8ff25751a09ed0d984f52752a04b9edf0dd2602"
+        },
+        {
+          "name": "Broiler.VM.Profile.JavaScript.dll",
+          "sha256": "9c511288a30fe7684a440e254188db81764f0e1a2fed87fe68c4bd571c94c00c"
+        },
+        {
+          "name": "Broiler.VM.Profile.JavaScript.Format.dll",
+          "sha256": "6dcc255628b2ada131fbb8dfddc383d6015b1f5a8a3b080602cfde6561c0d08a"
+        },
+        {
+          "name": "Broiler.VM.Runtime.dll",
+          "sha256": "6919a184e88b8284427359c761cbe31b2ae7d743da6538ea4451765bf40e4498"
+        },
+        {
+          "name": "Consumer.dll",
+          "sha256": "f3d77de84636819d3ebc852547d13b7863b85097b96f7003601b5ba60a341c74"
+        }
+      ]
+    },
+    {
+      "provider": "Both",
+      "packages": [
+        "Broiler.ECMAScript.Algorithms/0.1.0-preview.8",
+        "Broiler.ECMAScript.Intl/0.1.0-preview.8",
+        "Broiler.JavaScript.Ast/0.1.0-preview.1401",
+        "Broiler.JavaScript.BuiltIns/0.1.0-preview.1401",
+        "Broiler.JavaScript.Compiler/0.1.0-preview.1401",
+        "Broiler.JavaScript.Engine/0.1.0-preview.1401",
+        "Broiler.JavaScript.ExpressionCompiler/0.1.0-preview.1401",
+        "Broiler.JavaScript.Expressions/0.1.0-preview.1401",
+        "Broiler.JavaScript.Extensions/0.1.0-preview.1401",
+        "Broiler.JavaScript.Globals/0.1.0-preview.1401",
+        "Broiler.JavaScript.LinqExpressions/0.1.0-preview.1401",
+        "Broiler.JavaScript.Modules/0.1.0-preview.1401",
+        "Broiler.JavaScript.Parser/0.1.0-preview.1401",
+        "Broiler.JavaScript.Runtime/0.1.0-preview.1401",
+        "Broiler.JavaScript.Storage/0.1.0-preview.1401",
+        "Broiler.JSeal.BroilerJs/0.1.0-preview.1",
+        "Broiler.JSeal.Vm/0.1.0-preview.1",
+        "Broiler.JSeal/0.1.0-preview.1",
+        "Broiler.Regex/0.1.0-preview.6",
+        "Broiler.Unicode.Algorithms/0.1.0-preview.6",
+        "Broiler.Unicode.Segmentation/0.1.0-preview.6",
+        "Broiler.VM.Abstractions/0.1.0-preview.6",
+        "Broiler.VM.Binary/0.1.0-preview.6",
+        "Broiler.VM.Profile.JavaScript.Compiler/0.1.0-preview.6",
+        "Broiler.VM.Profile.JavaScript.Format/0.1.0-preview.6",
+        "Broiler.VM.Profile.JavaScript/0.1.0-preview.6",
+        "Broiler.VM.Runtime/0.1.0-preview.6"
+      ],
+      "observation": {
+        "provider": "broiler-js+broiler-vm",
+        "checks": [
+          "broiler-js: realm creation",
+          "broiler-js: primitive evaluation",
+          "broiler-js: UTF-8 string",
+          "broiler-js: ordinary arguments",
+          "broiler-js: zero-argument function",
+          "broiler-js: strict arguments",
+          "broiler-js: direct eval with arguments",
+          "broiler-js: module capabilities require host opt-in",
+          "broiler-js: module contract types present, no module realm before I13",
+          "broiler-js: same-realm structured clone and transfer",
+          "broiler-js: second-thread structured clone transport",
+          "broiler-js: host callback",
+          "broiler-js: disposal and idempotent teardown",
+          "broiler-vm: realm creation",
+          "broiler-vm: primitive evaluation",
+          "broiler-vm: UTF-8 string",
+          "broiler-vm: ordinary arguments",
+          "broiler-vm: zero-argument function",
+          "broiler-vm: strict arguments",
+          "broiler-vm: module contract types present, no module realm before I13",
+          "broiler-vm: same-realm structured clone and transfer",
+          "broiler-vm: second-thread transport refused explicitly",
+          "broiler-vm: host callback",
+          "broiler-vm: disposal and idempotent teardown",
+          "both providers: concurrent isolated realms",
+          "package assembly isolation"
+        ],
+        "requiredAssemblies": [
+          "Broiler.JSeal",
+          "Broiler.JSeal.BroilerJs",
+          "Broiler.JavaScript.Runtime",
+          "Broiler.JavaScript.BuiltIns",
+          "Broiler.JavaScript.Globals",
+          "Broiler.JavaScript.Modules",
+          "Broiler.JavaScript.Storage",
+          "Broiler.JSeal.Vm",
+          "Broiler.VM.Runtime",
+          "Broiler.VM.Profile.JavaScript",
+          "Broiler.VM.Profile.JavaScript.Compiler"
+        ],
+        "shippedAssemblies": [
+          "Broiler.ECMAScript.Algorithms",
+          "Broiler.ECMAScript.Intl",
+          "Broiler.JavaScript.Ast",
+          "Broiler.JavaScript.BuiltIns",
+          "Broiler.JavaScript.Compiler",
+          "Broiler.JavaScript.Engine",
+          "Broiler.JavaScript.ExpressionCompiler",
+          "Broiler.JavaScript.Expressions",
+          "Broiler.JavaScript.Extensions",
+          "Broiler.JavaScript.Globals",
+          "Broiler.JavaScript.LinqExpressions",
+          "Broiler.JavaScript.Modules",
+          "Broiler.JavaScript.Parser",
+          "Broiler.JavaScript.Runtime",
+          "Broiler.JavaScript.Storage",
+          "Broiler.JSeal",
+          "Broiler.JSeal.BroilerJs",
+          "Broiler.JSeal.Vm",
+          "Broiler.Regex",
+          "Broiler.Unicode.Algorithms",
+          "Broiler.Unicode.Segmentation",
+          "Broiler.VM.Abstractions",
+          "Broiler.VM.Binary",
+          "Broiler.VM.Profile.JavaScript",
+          "Broiler.VM.Profile.JavaScript.Compiler",
+          "Broiler.VM.Profile.JavaScript.Format",
+          "Broiler.VM.Runtime",
+          "Consumer"
+        ],
+        "loadedAssemblies": [
+          {
+            "name": "Broiler.ECMAScript.Algorithms",
+            "version": "0.1.0-preview.8",
+            "file": "Broiler.ECMAScript.Algorithms.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Ast",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Ast.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.BuiltIns",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.BuiltIns.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Compiler",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Compiler.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Engine",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Engine.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.ExpressionCompiler",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.ExpressionCompiler.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Expressions",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Expressions.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Extensions",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Extensions.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Globals",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Globals.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.LinqExpressions",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.LinqExpressions.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Modules",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Modules.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Parser",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Parser.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Runtime",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Runtime.dll"
+          },
+          {
+            "name": "Broiler.JavaScript.Storage",
+            "version": "0.1.0-preview.1401",
+            "file": "Broiler.JavaScript.Storage.dll"
+          },
+          {
+            "name": "Broiler.JSeal",
+            "version": "0.1.0-preview.1",
+            "file": "Broiler.JSeal.dll"
+          },
+          {
+            "name": "Broiler.JSeal.BroilerJs",
+            "version": "0.1.0-preview.1",
+            "file": "Broiler.JSeal.BroilerJs.dll"
+          },
+          {
+            "name": "Broiler.JSeal.Vm",
+            "version": "0.1.0-preview.1",
+            "file": "Broiler.JSeal.Vm.dll"
+          },
+          {
+            "name": "Broiler.Regex",
+            "version": "0.1.0-preview.6+df5cfc2cc7d71cf0824aa8963dcdb956ac7fca9e",
+            "file": "Broiler.Regex.dll"
+          },
+          {
+            "name": "Broiler.Unicode.Algorithms",
+            "version": "0.1.0-preview.6+ccef653c8aa903f7eecf25faafb8bc5d458e6cc4",
+            "file": "Broiler.Unicode.Algorithms.dll"
+          },
+          {
+            "name": "Broiler.VM.Abstractions",
+            "version": "0.1.0-preview.6+8e06db150ebe6f4e32d30256847457ef8defb78c",
+            "file": "Broiler.VM.Abstractions.dll"
+          },
+          {
+            "name": "Broiler.VM.Binary",
+            "version": "0.1.0-preview.6+8e06db150ebe6f4e32d30256847457ef8defb78c",
+            "file": "Broiler.VM.Binary.dll"
+          },
+          {
+            "name": "Broiler.VM.Profile.JavaScript",
+            "version": "0.1.0-preview.6+8e06db150ebe6f4e32d30256847457ef8defb78c",
+            "file": "Broiler.VM.Profile.JavaScript.dll"
+          },
+          {
+            "name": "Broiler.VM.Profile.JavaScript.Compiler",
+            "version": "0.1.0-preview.6+8e06db150ebe6f4e32d30256847457ef8defb78c",
+            "file": "Broiler.VM.Profile.JavaScript.Compiler.dll"
+          },
+          {
+            "name": "Broiler.VM.Profile.JavaScript.Format",
+            "version": "0.1.0-preview.6+8e06db150ebe6f4e32d30256847457ef8defb78c",
+            "file": "Broiler.VM.Profile.JavaScript.Format.dll"
+          },
+          {
+            "name": "Broiler.VM.Runtime",
+            "version": "0.1.0-preview.6+8e06db150ebe6f4e32d30256847457ef8defb78c",
+            "file": "Broiler.VM.Runtime.dll"
+          }
+        ]
+      },
+      "assemblies": [
+        {
+          "name": "Broiler.ECMAScript.Algorithms.dll",
+          "sha256": "ddb271ccee7be346d53b7421d1287ed8efc81bdf458e2781cf3713951883c019"
+        },
+        {
+          "name": "Broiler.ECMAScript.Intl.dll",
+          "sha256": "02d0f3d0c27cf3a4e04dbd938832d6c7dc2ab1c0c7ecfa6c5a30b38b141b9fb5"
+        },
+        {
+          "name": "Broiler.JavaScript.Ast.dll",
+          "sha256": "e95d20b4d7c8a302030876e57f053d83e8d4d8283f0f243099e333862975a407"
+        },
+        {
+          "name": "Broiler.JavaScript.BuiltIns.dll",
+          "sha256": "b97a7835e2149bf573d73835576031f1e362dc72caddf2abbdd8a6fac3582427"
+        },
+        {
+          "name": "Broiler.JavaScript.Compiler.dll",
+          "sha256": "81480414cdc2a98a41cc6c85caa32002f5c2e306389c28db8cd4b2bfbcf85814"
+        },
+        {
+          "name": "Broiler.JavaScript.Engine.dll",
+          "sha256": "76a561b826043f2c7d901953e34c46842139c0ea38bc027a1a1d32d76e8073eb"
+        },
+        {
+          "name": "Broiler.JavaScript.ExpressionCompiler.dll",
+          "sha256": "f1a453f0dec78e7f379d108b8efc8f9a29501369529e5dd21917e1cce2e0dcaa"
+        },
+        {
+          "name": "Broiler.JavaScript.Expressions.dll",
+          "sha256": "0972ce11187b73147bcd6f233afe2238853a0834fecb75b5edfd1329845be853"
+        },
+        {
+          "name": "Broiler.JavaScript.Extensions.dll",
+          "sha256": "f7e2a5aa38d4ad8075196b436fcf7a869fb380bb5127beae66208958e5cd7a7a"
+        },
+        {
+          "name": "Broiler.JavaScript.Globals.dll",
+          "sha256": "ef94e388cd134bc7f16fb8e16a17d99397acfc0f25c2e5a7dbaf52388e3522c4"
+        },
+        {
+          "name": "Broiler.JavaScript.LinqExpressions.dll",
+          "sha256": "7a17097784bfca8ee3493164fd035f613c294326e1e793e51c454cd41ae6b990"
+        },
+        {
+          "name": "Broiler.JavaScript.Modules.dll",
+          "sha256": "8b75e0f2b049afddbef5b122f39860510c422c353549e520594b8161e8a59fe0"
+        },
+        {
+          "name": "Broiler.JavaScript.Parser.dll",
+          "sha256": "4921247e8a0854fa529cf23858f0094f91a78ade1c5dbc9a8590042daef6b314"
+        },
+        {
+          "name": "Broiler.JavaScript.Runtime.dll",
+          "sha256": "3d5c9fde1ca0cb57f8fc60c8668cd24eb02d24b436207fd09777d4076766d39c"
+        },
+        {
+          "name": "Broiler.JavaScript.Storage.dll",
+          "sha256": "ac5c6482dbd1e5b11422bbc460161d0c4269c3f4859dcf1e8382e2aacbc096bf"
+        },
+        {
+          "name": "Broiler.JSeal.BroilerJs.dll",
+          "sha256": "98dd2e3a480cf58b3d04264639efc378e71bea1f13abd3b8c3078652e093db49"
+        },
+        {
+          "name": "Broiler.JSeal.dll",
+          "sha256": "e5a484597af1ff24a4e7b8fab925f6e7abfd547d8fa971d35201afb3c75c4cba"
+        },
+        {
+          "name": "Broiler.JSeal.Vm.dll",
+          "sha256": "8fa1f713528282a71ac399e7802e6d47dc13c2d60677cbd37261286c920fed8f"
+        },
+        {
+          "name": "Broiler.Regex.dll",
+          "sha256": "dbc27afef07fe8ed44d8f926fc6937ebaaf59cdbaa0aa384fbeae01de9803947"
+        },
+        {
+          "name": "Broiler.Unicode.Algorithms.dll",
+          "sha256": "17905af02db9e6cef5b4cea98d01717eaaddc74ddbcf2c927a94cdbab3edf2bc"
+        },
+        {
+          "name": "Broiler.Unicode.Segmentation.dll",
+          "sha256": "623bc48bf03526d315f3dbd6c75ca1c189c769ae997d1aedf068be558b82e82f"
+        },
+        {
+          "name": "Broiler.VM.Abstractions.dll",
+          "sha256": "0aaf7ab65ed8492ca8ea3aa4f1bc5d1552c460663ec16c7adfe486f95cf82d31"
+        },
+        {
+          "name": "Broiler.VM.Binary.dll",
+          "sha256": "4d450c81cd6e120f99d8ced8a95071f0b4f813d3eff4d09f9bbee97291ff5777"
+        },
+        {
+          "name": "Broiler.VM.Profile.JavaScript.Compiler.dll",
+          "sha256": "474837778abd4c992a898c46f8ff25751a09ed0d984f52752a04b9edf0dd2602"
+        },
+        {
+          "name": "Broiler.VM.Profile.JavaScript.dll",
+          "sha256": "9c511288a30fe7684a440e254188db81764f0e1a2fed87fe68c4bd571c94c00c"
+        },
+        {
+          "name": "Broiler.VM.Profile.JavaScript.Format.dll",
+          "sha256": "6dcc255628b2ada131fbb8dfddc383d6015b1f5a8a3b080602cfde6561c0d08a"
+        },
+        {
+          "name": "Broiler.VM.Runtime.dll",
+          "sha256": "6919a184e88b8284427359c761cbe31b2ae7d743da6538ea4451765bf40e4498"
+        },
+        {
+          "name": "Consumer.dll",
+          "sha256": "a31710afa81f060dc5b26acf6717fdbac038a0d68ae0fdf2333b0a13a4f63d25"
+        }
+      ]
+    }
+  ],
+  "revision": "a1216a80034e185d69d0d76d9ef855105698c00b",
+  "workingTree": "",
+  "dotnetSdk": "10.0.404",
+  "node": "v22.23.4",
+  "candidate": {
+    "feed": "/home/user/js-w2read-build/69a8a13b/jseal-candidate",
+    "versions": {
+      "Broiler.JavaScript": "0.1.0-preview.1401"
+    },
+    "archives": [
+      {
+        "id": "Broiler.ECMAScript.Algorithms",
+        "version": "0.1.0-preview.8",
+        "sha512": "PdVUgci8R2znPPzOrC77pdn6GuOJuVW4Dq+oBcf1mO/fnarC9vhpUgSlPa1BWyQnhugnYSlY1Db/jKeDlULrOw==",
+        "dependencies": [],
+        "archive": "Broiler.ECMAScript.Algorithms.0.1.0-preview.8.nupkg"
+      },
+      {
+        "id": "Broiler.ECMAScript.Frontend",
+        "version": "0.1.0-preview.8",
+        "sha512": "8sBJVpWF7Md1Mk/BVw2HE3R2NWDhdLHMhN9Lv8AVrdCuZludsTF6nGI6ap0wi7QxqMh3S1pplGVZp9IX+i+isA==",
+        "dependencies": [
+          {
+            "id": "Broiler.ECMAScript.Algorithms",
+            "range": "0.1.0-preview.8"
+          },
+          {
+            "id": "Broiler.Unicode.Algorithms",
+            "range": "0.1.0-preview.6"
+          }
+        ],
+        "archive": "Broiler.ECMAScript.Frontend.0.1.0-preview.8.nupkg"
+      },
+      {
+        "id": "Broiler.ECMAScript.Generation",
+        "version": "0.1.0-preview.8",
+        "sha512": "yuk3+4DXSqm542sQU3a5qPPSz72/G0LYP75TESYoMtboBWcsEOa34h5FF8VUztmLJCAbv9eempmB/4jHug8xSw==",
+        "dependencies": [],
+        "archive": "Broiler.ECMAScript.Generation.0.1.0-preview.8.nupkg"
+      },
+      {
+        "id": "Broiler.ECMAScript.Intl",
+        "version": "0.1.0-preview.8",
+        "sha512": "KIccIvqErbqjKuFkqcDWErqIQ5KhdhX0OzQxEi107z80zhGy4JXu9OZv4wgHmUJCfPmzZ0lQWo6KhAm7zkehVA==",
+        "dependencies": [
+          {
+            "id": "Broiler.ECMAScript.Algorithms",
+            "range": "0.1.0-preview.8"
+          },
+          {
+            "id": "Broiler.Unicode.Algorithms",
+            "range": "0.1.0-preview.6"
+          }
+        ],
+        "archive": "Broiler.ECMAScript.Intl.0.1.0-preview.8.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.All",
+        "version": "0.1.0-preview.1401",
+        "sha512": "aNQRFEjL5Ntph1Earw4V1/9re4MRaf76S+PNVGI4OA+Gk/HA4MirwId/w18rJzOPAe1tdZdqRun4ZbLBsebwJQ==",
+        "dependencies": [
+          {
+            "id": "Broiler.JavaScript.BuiltIns",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Clr",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Compiler",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Debugger",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Engine",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Extensions",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Globals",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.LinqExpressions",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.ModuleExtensions",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Modules",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.All.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Ast",
+        "version": "0.1.0-preview.1401",
+        "sha512": "OeJsOBV6IQ6XxIMwAy6qFiybxdCO+jt8upx+6zqFoDUv6Gxb2wuQNTsH6j+sHuTiwmVwmBxj/5VI2f6gK4vDXA==",
+        "dependencies": [
+          {
+            "id": "Broiler.ECMAScript.Algorithms",
+            "range": "0.1.0-preview.8"
+          },
+          {
+            "id": "Broiler.JavaScript.Expressions",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.Regex",
+            "range": "0.1.0-preview.6"
+          },
+          {
+            "id": "Broiler.Unicode.Algorithms",
+            "range": "0.1.0-preview.6"
+          }
+        ],
+        "archive": "Broiler.JavaScript.Ast.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.BuiltIns",
+        "version": "0.1.0-preview.1401",
+        "sha512": "E9vfHKyHkUIctRM1Ir3wIVIu7KUJPQl77PtWBSFNqK2x3r0GZ0xc/8727cqO+dBhhYQkXkLTPJVhnA2iWWcXiQ==",
+        "dependencies": [
+          {
+            "id": "Broiler.ECMAScript.Algorithms",
+            "range": "0.1.0-preview.8"
+          },
+          {
+            "id": "Broiler.ECMAScript.Intl",
+            "range": "0.1.0-preview.8"
+          },
+          {
+            "id": "Broiler.JavaScript.Engine",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Extensions",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.LinqExpressions",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.Regex",
+            "range": "0.1.0-preview.6"
+          },
+          {
+            "id": "Broiler.Unicode.Segmentation",
+            "range": "0.1.0-preview.6"
+          }
+        ],
+        "archive": "Broiler.JavaScript.BuiltIns.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Clr",
+        "version": "0.1.0-preview.1401",
+        "sha512": "RhZm+XFDqcKv8DqWcL6kvmsaInAQTtGVhRu68VnMsPxp+8zR1u/8gIv336Uo+MsW2tmRadPwYXEOj0mycvO+6Q==",
+        "dependencies": [
+          {
+            "id": "Broiler.JavaScript.BuiltIns",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Engine",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Extensions",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.LinqExpressions",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.Clr.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Compiler",
+        "version": "0.1.0-preview.1401",
+        "sha512": "H98OIF32vnhJA1hwhyFNWkDaFj27COPUcZZLrShUKuWOcYjW3l0JJhhDUiJzQ9eIUXdNDz42dNu1eXaO9JDjaA==",
+        "dependencies": [
+          {
+            "id": "Broiler.JavaScript.Engine",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.LinqExpressions",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.Compiler.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Debugger",
+        "version": "0.1.0-preview.1401",
+        "sha512": "ISCiI3Ik2k3bPVhqrCAXRXiOIuEJPAKrBIphJaSZPfVk/p3/32cD9AGbV79NDlLc7jzS3GfEcD4Wau2J3yYdqQ==",
+        "dependencies": [
+          {
+            "id": "Broiler.JavaScript.BuiltIns",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Engine",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.Debugger.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Engine",
+        "version": "0.1.0-preview.1401",
+        "sha512": "pFRFBapueXUqWu+L+xkKKtEgk7ka7lYw3OrEInI0kH9ehSYiWyG9wuFccjRvvTBq9wNqQ86+h2EERxhCw3gnTQ==",
+        "dependencies": [
+          {
+            "id": "Broiler.JavaScript.Ast",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Expressions",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Parser",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Runtime",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Storage",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.Engine.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.ExpressionCompiler",
+        "version": "0.1.0-preview.1401",
+        "sha512": "BoAQ0EaWVOT/SvENLasu8tUx0N9J6uMUpAEmHm588MCVqW8rHPGlsup8OYVmkpj3qnzvY2ILlykt0Z9EPiBO9A==",
+        "dependencies": [
+          {
+            "id": "Broiler.JavaScript.Expressions",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.ExpressionCompiler.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Expressions",
+        "version": "0.1.0-preview.1401",
+        "sha512": "7NfEVysxC84jPZCJsncWhP2L3FEO2EIv4IPU80oGAWTLbD4GEP/hZy/pLCzS8oPT2S6xVhPXbksuP30u2Gxcww==",
+        "dependencies": [
+          {
+            "id": "Broiler.ECMAScript.Algorithms",
+            "range": "0.1.0-preview.8"
+          }
+        ],
+        "archive": "Broiler.JavaScript.Expressions.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Extensions",
+        "version": "0.1.0-preview.1401",
+        "sha512": "HJIAB06pfj3FDSItKUir3RXMHYwaDp/svRqeso2iAos+G/v1TE3zYoUNB0eiQa0Ki67klBNpHvTQQJ0IPc8XWw==",
+        "dependencies": [
+          {
+            "id": "Broiler.JavaScript.Engine",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.LinqExpressions",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.Extensions.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Globals",
+        "version": "0.1.0-preview.1401",
+        "sha512": "tmlJ5ozpzDj48xXI9ajfNEMN0WTV3eVoOzstz5FokFpm09iKqPd7uIstTfTV7Lj+0H94Er/eAe7M0SqSTS8SRA==",
+        "dependencies": [
+          {
+            "id": "Broiler.JavaScript.BuiltIns",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Compiler",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Engine",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Extensions",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.Globals.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.LinqExpressions",
+        "version": "0.1.0-preview.1401",
+        "sha512": "x77nxscoWWbpyR+KmGRGIJc8QiHiPYw0VDGIbh5iGjDnIOPfix1nQK0jbHi1dSD10JztBWzzvW6Lt8JRzCtEUg==",
+        "dependencies": [
+          {
+            "id": "Broiler.JavaScript.Ast",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Engine",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.ExpressionCompiler",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Expressions",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Runtime",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Storage",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.LinqExpressions.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Minimal",
+        "version": "0.1.0-preview.1401",
+        "sha512": "dKVV4PbGfOmaCs/uLNtuvYU8vVvgDY4V4bo8Rl2Ra1JckxPxeLKgLSJz9ewCuYlG3/zSvCGLBH3y+lCp2w/Rpw==",
+        "dependencies": [
+          {
+            "id": "Broiler.JavaScript.BuiltIns",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Compiler",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Engine",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Extensions",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Globals",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.Minimal.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.ModuleExtensions",
+        "version": "0.1.0-preview.1401",
+        "sha512": "CHKnaeiCvooJ1qYrFRgyGQIY0nwoimV1kKO3GxPFDj7UoSJqljM0DLPE0+UJDge904Ybn6AkYudjzi4YvwL85g==",
+        "dependencies": [
+          {
+            "id": "Broiler.JavaScript.Clr",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Engine",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.ExpressionCompiler",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Extensions",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Modules",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.ModuleExtensions.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Modules",
+        "version": "0.1.0-preview.1401",
+        "sha512": "OMyXiQEWWNK36EwPJZ67rwEOQqbYrhzoDnH04DBNK/Hq2JrkbNHmIc6Um3nXqXJ/lugz4xiZPoBqVi67FT5lHw==",
+        "dependencies": [
+          {
+            "id": "Broiler.JavaScript.BuiltIns",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Engine",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.LinqExpressions",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.Modules.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Parser",
+        "version": "0.1.0-preview.1401",
+        "sha512": "+5PR3wckIl7iKfJoNDwIgSdciFIUzWGF8tMm939iVlkY9UheShh0hF4YUp7qN/6Ha1oTsu+s1CruTOJRYGRphQ==",
+        "dependencies": [
+          {
+            "id": "Broiler.ECMAScript.Algorithms",
+            "range": "0.1.0-preview.8"
+          },
+          {
+            "id": "Broiler.JavaScript.Ast",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Expressions",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.Regex",
+            "range": "0.1.0-preview.6"
+          }
+        ],
+        "archive": "Broiler.JavaScript.Parser.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Portable",
+        "version": "0.1.0-preview.1401",
+        "sha512": "urXriRGkvFZe5rltwE4jm1dXvLW1DpNWxg/q9jFPP1aDxcgZkqSL3OEgx3NVrmoUXcP+gZ6DRCVFZhCLvZPKBw==",
+        "dependencies": [],
+        "archive": "Broiler.JavaScript.Portable.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Portable.Compiler",
+        "version": "0.1.0-preview.1401",
+        "sha512": "s3GbeSnF0ao5UjyhCj6WXwD5Zc4Gala5S54gNoBfK71N3QmRn6XZV3xsGL22DBBlRWXCnsX9wpjYhpTKRsACdw==",
+        "dependencies": [
+          {
+            "id": "Broiler.JavaScript.Ast",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Parser",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Portable",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.Portable.Compiler.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Runtime",
+        "version": "0.1.0-preview.1401",
+        "sha512": "9anmHwXNhcMaU33QXUAkhz4uQxhmSFsKwt4ophMk01Dfo2ICPmDuxjFFzfXDdhKaFUM73KXLYXgsmbtWVH0Vuw==",
+        "dependencies": [
+          {
+            "id": "Broiler.ECMAScript.Algorithms",
+            "range": "0.1.0-preview.8"
+          },
+          {
+            "id": "Broiler.JavaScript.Ast",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Expressions",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Storage",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.Runtime.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.JavaScript.Storage",
+        "version": "0.1.0-preview.1401",
+        "sha512": "ioOH+z67WMnLpX45PCbm9Nk+OYbj07W4AEiTN39pRJ9fw2v4chPbPipQB9CDcbcZjm1MehpkprjGpuKg4pjVXA==",
+        "dependencies": [
+          {
+            "id": "Broiler.ECMAScript.Algorithms",
+            "range": "0.1.0-preview.8"
+          },
+          {
+            "id": "Broiler.JavaScript.Ast",
+            "range": "0.1.0-preview.1401"
+          },
+          {
+            "id": "Broiler.JavaScript.Expressions",
+            "range": "0.1.0-preview.1401"
+          }
+        ],
+        "archive": "Broiler.JavaScript.Storage.0.1.0-preview.1401.nupkg"
+      },
+      {
+        "id": "Broiler.Regex",
+        "version": "0.1.0-preview.6",
+        "sha512": "L305/2UnpKJ2Z5etheRYfKhQ33bA9ZfXSVhOuIbbfGF9WcoFPgF9pWiUJu9Qj+7/yjofcPjz+RwykU8mgsbn1A==",
+        "dependencies": [
+          {
+            "id": "Broiler.Unicode.Algorithms",
+            "range": "0.1.0-preview.6"
+          }
+        ],
+        "archive": "broiler.regex.0.1.0-preview.6.nupkg"
+      },
+      {
+        "id": "Broiler.Unicode.Algorithms",
+        "version": "0.1.0-preview.6",
+        "sha512": "uSv5c1Rd8z2WLI0VlkBe3JcwrRBMu2fQCKXsPh+NMGlv+zGa98xUk/ZXaG9WRMZ0L+kdEXcn2mlaOGix/iEkNg==",
+        "dependencies": [],
+        "archive": "broiler.unicode.algorithms.0.1.0-preview.6.nupkg"
+      },
+      {
+        "id": "Broiler.Unicode.Segmentation",
+        "version": "0.1.0-preview.6",
+        "sha512": "/jF/PZuCxj2RANnCWEazB+nmfnRDChoQonbhJmnC6v5/TKXXoolnqaAmVfuLsOGPG6nmpw9kZR4rXX6hBmQkvg==",
+        "dependencies": [
+          {
+            "id": "Broiler.Unicode.Algorithms",
+            "range": "0.1.0-preview.6"
+          }
+        ],
+        "archive": "broiler.unicode.segmentation.0.1.0-preview.6.nupkg"
+      }
+    ],
+    "pinnedArchives": [
+      "Broiler.Unicode.Cldr.LocaleData/0.1.0-preview.6",
+      "Broiler.VM.Abstractions/0.1.0-preview.6",
+      "Broiler.VM.Binary/0.1.0-preview.6",
+      "Broiler.VM.Profile.JavaScript.Compiler/0.1.0-preview.6",
+      "Broiler.VM.Profile.JavaScript.Format/0.1.0-preview.6",
+      "Broiler.VM.Profile.JavaScript/0.1.0-preview.6",
+      "Broiler.VM.Runtime/0.1.0-preview.6"
+    ]
+  },
+  "packageVersion": "0.1.0-preview.1",
+  "gate-source": "gate-source.json",
+  "gate": "gate.json"
+}

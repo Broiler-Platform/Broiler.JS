@@ -1,0 +1,10 @@
+  Determining projects to restore...
+/home/user/js-w2after-build/83a9bd82/html/src/Broiler.HtmlBridge.Scripting.Vm/Broiler.HtmlBridge.Scripting.Vm.csproj : warning NU1603: Broiler.JSeal.BroilerJs 0.1.0-preview.8 depends on Broiler.JavaScript.Globals (>= 0.1.0-preview.10) but Broiler.JavaScript.Globals 0.1.0-preview.10 was not found. Broiler.JavaScript.Globals 0.1.0-preview.1402 was resolved instead. [/home/user/js-w2after-build/83a9bd82/html/Broiler.HtmlBridge.slnx]
+/home/user/js-w2after-build/83a9bd82/html/tests/Broiler.HtmlBridge.Tests/Broiler.HtmlBridge.Tests.csproj : warning NU1603: Broiler.JSeal.BroilerJs 0.1.0-preview.8 depends on Broiler.JavaScript.Globals (>= 0.1.0-preview.10) but Broiler.JavaScript.Globals 0.1.0-preview.10 was not found. Broiler.JavaScript.Globals 0.1.0-preview.1402 was resolved instead. [/home/user/js-w2after-build/83a9bd82/html/Broiler.HtmlBridge.slnx]
+  Restored /home/user/js-w2after-build/83a9bd82/html/src/Broiler.HtmlBridge.Dom/Broiler.HtmlBridge.Dom.csproj (in 2.53 sec).
+  Restored /home/user/js-w2after-build/83a9bd82/html/src/Broiler.HtmlBridge.DomBridgeUtils/Broiler.HtmlBridge.DomBridgeUtils.csproj (in 2.53 sec).
+/home/user/js-w2after-build/83a9bd82/html/src/Broiler.HtmlBridge.Scripting/Broiler.HtmlBridge.Scripting.csproj : warning NU1603: Broiler.JSeal.BroilerJs 0.1.0-preview.8 depends on Broiler.JavaScript.Globals (>= 0.1.0-preview.10) but Broiler.JavaScript.Globals 0.1.0-preview.10 was not found. Broiler.JavaScript.Globals 0.1.0-preview.1402 was resolved instead. [/home/user/js-w2after-build/83a9bd82/html/Broiler.HtmlBridge.slnx]
+  Restored /home/user/js-w2after-build/83a9bd82/html/src/Broiler.HtmlBridge.Core/Broiler.HtmlBridge.Core.csproj (in 6 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/html/src/Broiler.HtmlBridge.Scripting/Broiler.HtmlBridge.Scripting.csproj (in 7 ms).
+  Restored /home/user/js-w2after-build/83a9bd82/html/src/Broiler.HtmlBridge.Scripting.Vm/Broiler.HtmlBridge.Scripting.Vm.csproj (in 2.53 sec).
+  Restored /home/user/js-w2after-build/83a9bd82/html/tests/Broiler.HtmlBridge.Tests/Broiler.HtmlBridge.Tests.csproj (in 2.54 sec).

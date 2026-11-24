@@ -1,0 +1,2 @@
+build-portable-tests	rc=0	wall=29.0s maxrss=248MB	started=2026-11-23T21:29:08Z	ended=2026-11-23T21:29:37Z
+test-portable	rc=0	wall=2.9s maxrss=109MB	started=2026-11-23T21:29:37Z	ended=2026-11-23T21:29:40Z

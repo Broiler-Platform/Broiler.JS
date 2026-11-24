@@ -1,0 +1,267 @@
+namespace Broiler.JavaScript.ExpressionCompiler.Core
+{
+    public class ILTryBlock : Broiler.JavaScript.ExpressionCompiler.Core.LinkedStackItem<Broiler.JavaScript.ExpressionCompiler.Core.ILTryBlock>
+    {
+        public ILTryBlock(Broiler.JavaScript.ExpressionCompiler.Core.ILWriter iLWriter, System.Reflection.Emit.Label label, bool hasOuterGuard = false) { }
+        public void BeginCatch(System.Type type) { }
+        public void BeginFinally() { }
+        public override void Dispose() { }
+    }
+    public class ILWriter
+    {
+        public ILWriter(System.Reflection.Emit.ILGenerator il, System.IO.TextWriter? writer = null) { }
+        public int ILOffset { get; }
+        public bool IsTryBlock { get; }
+        public Broiler.JavaScript.ExpressionCompiler.Core.ILTryBlock Top { get; }
+        public void Branch(Broiler.JavaScript.ExpressionCompiler.Core.ILWriterLabel label, int index = -1) { }
+        public void Comment(string comment) { }
+        public Broiler.JavaScript.ExpressionCompiler.Core.ILWriter.TempVariable NewTemp(System.Type type) { }
+        public override string ToString() { }
+        public class TempVariable : System.IDisposable
+        {
+            public readonly System.Reflection.Emit.LocalBuilder Local;
+            public readonly int LocalIndex;
+            public void Dispose() { }
+            public static Broiler.JavaScript.ExpressionCompiler.Core.ILWriter.TempVariable New(Broiler.JavaScript.ExpressionCompiler.Core.ILWriter writer, System.Type type) { }
+        }
+    }
+    public class ILWriterLabel
+    {
+        public readonly string ID;
+        public int Offset;
+        public readonly Broiler.JavaScript.ExpressionCompiler.Core.ILTryBlock TryBlock;
+        public readonly System.Reflection.Emit.Label Value;
+        public ILWriterLabel(System.Reflection.Emit.Label value, string label, Broiler.JavaScript.ExpressionCompiler.Core.ILTryBlock tryBlock) { }
+        public override string ToString() { }
+    }
+}
+namespace Broiler.JavaScript.ExpressionCompiler
+{
+    public static class ExpressionCompiler
+    {
+        public static T CompileInAssembly<T>(this Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression<T> exp) { }
+        [return: System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "method",
+                "il",
+                "exp"})]
+        public static System.ValueTuple<System.Reflection.MethodInfo, string, string> CompileToInstnaceMethod(this Broiler.JavaScript.ExpressionCompiler.Expressions.BLambdaExpression lambdaExpression, System.Reflection.Emit.TypeBuilder type, bool rewriteNestedLambda = true) { }
+        public static System.Reflection.MethodInfo CompileToStaticMethod(this Broiler.JavaScript.ExpressionCompiler.Expressions.BLambdaExpression lambdaExpression, System.Reflection.Emit.TypeBuilder type, bool debug = false) { }
+        public static System.Reflection.MethodInfo CompileToStaticMethod(this Broiler.JavaScript.ExpressionCompiler.Expressions.BLambdaExpression lambdaExpression, System.Reflection.Emit.TypeBuilder type, System.Reflection.Emit.MethodBuilder method, bool debug = false) { }
+    }
+    public class LambdaMethodBuilder : Broiler.JavaScript.ExpressionCompiler.IMethodBuilder
+    {
+        public LambdaMethodBuilder(System.Reflection.Emit.MethodBuilder builder) { }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression Relay(Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression @this, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> closures, Broiler.JavaScript.ExpressionCompiler.Expressions.BLambdaExpression innerLambda) { }
+    }
+    public static class LinqExtensions
+    {
+        public static T CompileInAssembly<T>(this System.Linq.Expressions.Expression<T> expression) { }
+        public static T FastCompile<T>(this System.Linq.Expressions.Expression<T> expression) { }
+        public static T FastCompileWithoutNested<T>(this System.Linq.Expressions.Expression<T> expression) { }
+    }
+}
+namespace Broiler.JavaScript.ExpressionCompiler.Generator
+{
+    public class ActionList : System.IDisposable
+    {
+        public ActionList() { }
+        public void Add(System.Action action) { }
+        public void Dispose() { }
+    }
+    public struct CodeInfo
+    {
+        public readonly bool Success;
+        public CodeInfo(bool success) { }
+        public static bool op_Implicit(Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo ci) { }
+        public static Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo op_Implicit(bool success) { }
+    }
+    public readonly struct DataSource
+    {
+        public readonly Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression? Expression;
+        public readonly int Index;
+        public DataSource(Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression? exp, int index = -1) { }
+        public static Broiler.JavaScript.ExpressionCompiler.Generator.DataSource op_Implicit(Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression exp) { }
+        public static Broiler.JavaScript.ExpressionCompiler.Generator.DataSource op_Implicit(int index) { }
+    }
+    public class ILCodeGenerator : Broiler.JavaScript.ExpressionCompiler.Expressions.BExpressionVisitor<Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo>
+    {
+        public static bool GenerateLogs;
+        public ILCodeGenerator(System.Reflection.Emit.ILGenerator il, Broiler.JavaScript.ExpressionCompiler.IMethodBuilder methodBuilder, System.IO.TextWriter? writer = null, System.IO.TextWriter? expressionWriter = null, bool captureDiagnostics = false, bool enableJavaScriptTailCalls = false) { }
+        public Broiler.JavaScript.ExpressionCompiler.Core.Sequence<Broiler.JavaScript.ExpressionCompiler.Generator.ILDebugInfo> SequencePoints { get; }
+        public override string ToString() { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitAddressOf(Broiler.JavaScript.ExpressionCompiler.Expressions.BAddressOfExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitArrayIndex(Broiler.JavaScript.ExpressionCompiler.Expressions.BArrayIndexExpression yArrayIndexExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitArrayLength(Broiler.JavaScript.ExpressionCompiler.Expressions.BArrayLengthExpression arrayLengthExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitAssign(Broiler.JavaScript.ExpressionCompiler.Expressions.BAssignExpression yAssignExpression) { }
+        protected Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitAssign(Broiler.JavaScript.ExpressionCompiler.Expressions.BAssignExpression exp, int savedIndex) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitBinary(Broiler.JavaScript.ExpressionCompiler.Expressions.BBinaryExpression yBinaryExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitBlock(Broiler.JavaScript.ExpressionCompiler.Expressions.BBlockExpression yBlockExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitBooleanConstant(Broiler.JavaScript.ExpressionCompiler.Expressions.BBooleanConstantExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitBox(Broiler.JavaScript.ExpressionCompiler.Expressions.BBoxExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitByteConstant(Broiler.JavaScript.ExpressionCompiler.Expressions.BByteConstantExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitCall(Broiler.JavaScript.ExpressionCompiler.Expressions.BCallExpression yCallExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitCoalesce(Broiler.JavaScript.ExpressionCompiler.Expressions.BCoalesceExpression yCoalesceExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitCoalesceCall(Broiler.JavaScript.ExpressionCompiler.Expressions.BCoalesceCallExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitConditional(Broiler.JavaScript.ExpressionCompiler.Expressions.BConditionalExpression yConditionalExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitConstant(Broiler.JavaScript.ExpressionCompiler.Expressions.BConstantExpression yConstantExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitConvert(Broiler.JavaScript.ExpressionCompiler.Expressions.BConvertExpression convertExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitDebugInfo(Broiler.JavaScript.ExpressionCompiler.Expressions.BDebugInfoExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitDelegate(Broiler.JavaScript.ExpressionCompiler.Expressions.BDelegateExpression delegateExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitDoubleConstant(Broiler.JavaScript.ExpressionCompiler.Expressions.BDoubleConstantExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitEmpty(Broiler.JavaScript.ExpressionCompiler.Expressions.BEmptyExpression exp) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitField(Broiler.JavaScript.ExpressionCompiler.Expressions.BFieldExpression yFieldExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitFloatConstant(Broiler.JavaScript.ExpressionCompiler.Expressions.BFloatConstantExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitGoto(Broiler.JavaScript.ExpressionCompiler.Expressions.BGoToExpression yGoToExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitILOffset(Broiler.JavaScript.ExpressionCompiler.Expressions.BILOffsetExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitIndex(Broiler.JavaScript.ExpressionCompiler.Expressions.BIndexExpression yIndexExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitInt32Constant(Broiler.JavaScript.ExpressionCompiler.Expressions.BInt32ConstantExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitInt64Constant(Broiler.JavaScript.ExpressionCompiler.Expressions.BInt64ConstantExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitInvoke(Broiler.JavaScript.ExpressionCompiler.Expressions.BInvokeExpression invokeExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitJumpSwitch(Broiler.JavaScript.ExpressionCompiler.Expressions.BJumpSwitchExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitLabel(Broiler.JavaScript.ExpressionCompiler.Expressions.BLabelExpression yLabelExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitLambda(Broiler.JavaScript.ExpressionCompiler.Expressions.BLambdaExpression yLambdaExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitListInit(Broiler.JavaScript.ExpressionCompiler.Expressions.BListInitExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitLoop(Broiler.JavaScript.ExpressionCompiler.Expressions.BLoopExpression yLoopExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitMemberInit(Broiler.JavaScript.ExpressionCompiler.Expressions.BMemberInitExpression memberInitExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitMethodConstant(Broiler.JavaScript.ExpressionCompiler.Expressions.BMethodConstantExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitNew(Broiler.JavaScript.ExpressionCompiler.Expressions.BNewExpression newExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitNewArray(Broiler.JavaScript.ExpressionCompiler.Expressions.BNewArrayExpression yNewArrayExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitNewArrayBounds(Broiler.JavaScript.ExpressionCompiler.Expressions.BNewArrayBoundsExpression yNewArrayBoundsExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitParameter(Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression yParameterExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitProperty(Broiler.JavaScript.ExpressionCompiler.Expressions.BPropertyExpression yPropertyExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitReturn(Broiler.JavaScript.ExpressionCompiler.Expressions.BReturnExpression yReturnExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitStringConstant(Broiler.JavaScript.ExpressionCompiler.Expressions.BStringConstantExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitSwitch(Broiler.JavaScript.ExpressionCompiler.Expressions.BSwitchExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitThrow(Broiler.JavaScript.ExpressionCompiler.Expressions.BThrowExpression throwExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitTryCatchFinally(Broiler.JavaScript.ExpressionCompiler.Expressions.BTryCatchFinallyExpression tryCatchFinallyExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitTypeAs(Broiler.JavaScript.ExpressionCompiler.Expressions.BTypeAsExpression typeAsExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitTypeConstant(Broiler.JavaScript.ExpressionCompiler.Expressions.BTypeConstantExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitTypeIs(Broiler.JavaScript.ExpressionCompiler.Expressions.BTypeIsExpression yTypeIsExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitUInt32Constant(Broiler.JavaScript.ExpressionCompiler.Expressions.BUInt32ConstantExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitUInt64Constant(Broiler.JavaScript.ExpressionCompiler.Expressions.BUInt64ConstantExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitUnary(Broiler.JavaScript.ExpressionCompiler.Expressions.BUnaryExpression yUnaryExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitUnbox(Broiler.JavaScript.ExpressionCompiler.Expressions.BUnboxExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Generator.CodeInfo VisitYield(Broiler.JavaScript.ExpressionCompiler.Expressions.BYieldExpression node) { }
+    }
+    public readonly struct ILDebugInfo
+    {
+        public readonly Broiler.JavaScript.ExpressionCompiler.Expressions.Position End;
+        public readonly int ILOffset;
+        public readonly Broiler.JavaScript.ExpressionCompiler.Expressions.Position Start;
+        public ILDebugInfo(int ilOffset, in Broiler.JavaScript.ExpressionCompiler.Expressions.Position start, in Broiler.JavaScript.ExpressionCompiler.Expressions.Position end) { }
+    }
+    public static class ILGeneratorExtensions
+    {
+        public static void EmitCall(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, System.Reflection.MethodInfo method) { }
+        public static void EmitConstant(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, System.DateTime d) { }
+        public static void EmitConstant(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, System.Reflection.MethodInfo method) { }
+        public static void EmitConstant(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, System.Type type) { }
+        public static void EmitConstant(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, bool value) { }
+        public static void EmitConstant(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, decimal value) { }
+        public static void EmitConstant(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, double value) { }
+        public static void EmitConstant(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, float value) { }
+        public static void EmitConstant(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, int i) { }
+        public static void EmitConstant(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, long i) { }
+        public static void EmitConstant(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, string @string) { }
+        public static void EmitConstant(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, uint i) { }
+        public static void EmitConstant(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, ulong i) { }
+        public static void EmitConstant(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, object value, System.Type valueType = null) { }
+        public static void EmitLoadArg(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, int index) { }
+        public static void EmitLoadArgAddress(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, int index) { }
+        public static void EmitLoadLocal(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, int index) { }
+        public static void EmitLoadLocalAddress(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, int index) { }
+        public static void EmitNew(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, System.Reflection.ConstructorInfo c) { }
+        public static void EmitSaveArg(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, int index) { }
+        public static void EmitSaveLocal(this Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il, int index) { }
+    }
+    public class LabelInfo
+    {
+        public LabelInfo(Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il) { }
+        public Broiler.JavaScript.ExpressionCompiler.Core.ILWriterLabel this[Broiler.JavaScript.ExpressionCompiler.Expressions.BLabelTarget target] { get; }
+        public Broiler.JavaScript.ExpressionCompiler.Core.ILWriterLabel Create(Broiler.JavaScript.ExpressionCompiler.Expressions.BLabelTarget target, Broiler.JavaScript.ExpressionCompiler.Core.ILTryBlock tryBlock, bool throwIfFail = true) { }
+    }
+    public class TempVariables : Broiler.JavaScript.ExpressionCompiler.Core.LinkedStack<Broiler.JavaScript.ExpressionCompiler.Generator.TempVariables.TempVariableItem>
+    {
+        public TempVariables(Broiler.JavaScript.ExpressionCompiler.Core.ILWriter il) { }
+        public System.Reflection.Emit.LocalBuilder this[System.Type type] { get; }
+        public Broiler.JavaScript.ExpressionCompiler.Generator.TempVariables.TempVariableItem Push() { }
+        public class TempVariableItem : Broiler.JavaScript.ExpressionCompiler.Core.LinkedStackItem<Broiler.JavaScript.ExpressionCompiler.Generator.TempVariables.TempVariableItem>
+        {
+            public TempVariableItem(Broiler.JavaScript.ExpressionCompiler.Core.ILWriter writer) { }
+            public override void Dispose() { }
+            public System.Reflection.Emit.LocalBuilder Get(System.Type type) { }
+        }
+    }
+    public class TryCatchLabelMarker : Broiler.JavaScript.ExpressionCompiler.Expressions.BExpressionMapVisitor
+    {
+        public TryCatchLabelMarker(Broiler.JavaScript.ExpressionCompiler.Core.ILTryBlock tryBlock, Broiler.JavaScript.ExpressionCompiler.Generator.LabelInfo labels) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitLabel(Broiler.JavaScript.ExpressionCompiler.Expressions.BLabelExpression yLabelExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitLambda(Broiler.JavaScript.ExpressionCompiler.Expressions.BLambdaExpression yLambdaExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitLoop(Broiler.JavaScript.ExpressionCompiler.Expressions.BLoopExpression yLoopExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitTryCatchFinally(Broiler.JavaScript.ExpressionCompiler.Expressions.BTryCatchFinallyExpression tryCatchFinallyExpression) { }
+        public static void Collect(Broiler.JavaScript.ExpressionCompiler.Expressions.BTryCatchFinallyExpression body, Broiler.JavaScript.ExpressionCompiler.Core.ILTryBlock tryBlock, Broiler.JavaScript.ExpressionCompiler.Generator.LabelInfo labels) { }
+    }
+    public class Variable
+    {
+        public readonly short Index;
+        public readonly bool IsArgument;
+        public readonly bool IsReference;
+        public readonly System.Reflection.Emit.LocalBuilder LocalBuilder;
+        public readonly string Name;
+        public Variable(System.Reflection.Emit.LocalBuilder builder, bool isArg, short index, bool isReference, string name) { }
+    }
+    public class VariableInfo
+    {
+        public VariableInfo(System.Reflection.Emit.ILGenerator il) { }
+        public Broiler.JavaScript.ExpressionCompiler.Generator.Variable this[Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression exp] { get; }
+        public System.Collections.Generic.IEnumerable<Broiler.JavaScript.ExpressionCompiler.Generator.Variable> Values { get; }
+        public Broiler.JavaScript.ExpressionCompiler.Generator.Variable Create(Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression exp, Broiler.JavaScript.ExpressionCompiler.Generator.TempVariables.TempVariableItem tvs) { }
+        public Broiler.JavaScript.ExpressionCompiler.Generator.Variable Create(Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression exp, bool isArgument = false, short index = -1) { }
+        public bool TryFindByName(string name, out Broiler.JavaScript.ExpressionCompiler.Generator.Variable value) { }
+        public bool TryGetValue(Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression exp, out Broiler.JavaScript.ExpressionCompiler.Generator.Variable value) { }
+    }
+}
+namespace Broiler.JavaScript.ExpressionCompiler.Runtime
+{
+    public static class DeferredMethodCompilation
+    {
+        public const string EnvironmentVariable = "BROILER_JS_DEFER_IL";
+        public static bool Enabled { get; set; }
+    }
+    public static class DeferredMethodDiagnostics
+    {
+        public static long ForcedSites { get; }
+        public static long RegisteredSites { get; }
+        public static void Reset() { }
+    }
+    public class MethodRepository : Broiler.JavaScript.ExpressionCompiler.IMethodRepository
+    {
+        public string Exp;
+        public string IL;
+        public static System.Reflection.ConstructorInfo constructor;
+        public MethodRepository() { }
+        public object Create(Broiler.JavaScript.ExpressionCompiler.ClosureSeparator.Box[] boxes, ulong id) { }
+        public ulong RegisterNew(System.Reflection.MethodInfo d, string il, string exp, System.Type type) { }
+        public class RuntimeMethod
+        {
+            public string Exp;
+            public string IL;
+            public System.Reflection.MethodInfo Method;
+            public System.Type Type;
+            public RuntimeMethod() { }
+        }
+    }
+    public static class RuntimeAssembly
+    {
+        public static object Compile(this Broiler.JavaScript.ExpressionCompiler.Expressions.BLambdaExpression exp) { }
+        public static T Compile<T>(this Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression<T> exp) { }
+        public static T CompileWithNestedLambdas<T>(this Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression<T> expression) { }
+        public static T CompileWithNestedLambdas<T>(this Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression<T> expression, Broiler.JavaScript.ExpressionCompiler.Runtime.ExpressionCompilationBackend backend) { }
+        public static Broiler.JavaScript.ExpressionCompiler.Runtime.ExpressionCompilationResult<T> CompileWithNestedLambdas<T>(this Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression<T> expression, Broiler.JavaScript.ExpressionCompiler.Runtime.ExpressionCompilationOptions options) { }
+    }
+    public class RuntimeMethodBuilder : Broiler.JavaScript.ExpressionCompiler.IMethodBuilder
+    {
+        public RuntimeMethodBuilder(Broiler.JavaScript.ExpressionCompiler.IMethodRepository methods, bool captureDiagnostics = false, bool enableJavaScriptTailCalls = false) { }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression Relay(Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression @this, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> closures, Broiler.JavaScript.ExpressionCompiler.Expressions.BLambdaExpression innerLambda) { }
+    }
+}

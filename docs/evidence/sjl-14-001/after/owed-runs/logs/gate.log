@@ -1,0 +1,21 @@
+2026-11-24T03:36:40Z lock w2r-dtextbase WAIT
+2026-11-24T03:36:40Z lock w2r-dtextbase HELD
+2026-11-24T03:36:41Z gate w2r-dtextbase PASS load1=0.08 procs=none checks=0
+2026-11-24T03:39:20Z stop-servers: done, remaining:
+2026-11-24T03:39:21Z lock w2r-jsealbase WAIT
+2026-11-24T03:39:21Z lock w2r-jsealbase HELD
+2026-11-24T03:39:21Z gate w2r-jsealbase WAIT load1=2.01 procs=none
+2026-11-24T03:40:12Z gate w2r-jsealbase PASS load1=0.91 procs=none checks=5
+2026-11-24T03:40:13Z stop-servers: done, remaining:
+2026-11-24T03:40:14Z lock w2r-jsingle WAIT
+2026-11-24T03:40:14Z lock w2r-jsingle HELD
+2026-11-24T03:40:14Z gate w2r-jsingle PASS load1=0.91 procs=none checks=0
+2026-11-24T03:47:50Z stop-servers: done, remaining:
+2026-11-24T03:48:49Z lock w2r-jsealbase WAIT
+2026-11-24T03:48:49Z lock w2r-jsealbase HELD
+2026-11-24T03:48:49Z gate w2r-jsealbase PASS load1=0.64 procs=none checks=0
+2026-11-24T03:49:56Z stop-servers: NOT this run's, left alone pid=8295 args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]
+2026-11-24T03:49:57Z stop-servers: NOT this run's, left alone pid=8296 args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]
+2026-11-24T03:49:57Z stop-servers: NOT this run's, left alone pid=8297 args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]
+2026-11-24T03:49:57Z stop-servers: NOT this run's, left alone pid=8548 args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ]
+2026-11-24T03:49:57Z stop-servers: done, remaining: pid=8295 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=8296 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=8297 exe=/root/.dotnet/dotnet args=[/root/.dotnet/dotnet /root/.dotnet/sdk/10.0.404/MSBuild.dll /noautoresponse /nologo /nodemode:1 /nodeReuse:true /low:false ]; pid=8548 exe=/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler args=[/root/.dotnet/sdk/10.0.404/Roslyn/bincore/VBCSCompiler -pipename:AV3SE3OoqwGMr4bGdpna3_JBIPeCxy2Rnd08SKIp2dU ];

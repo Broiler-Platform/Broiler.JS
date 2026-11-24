@@ -1,0 +1,19 @@
+# read_jc.py: part J's corrected session and its control, against the first session's, and read under the revision
+
+## the corrected session (after/part-j-corrected/fuzz/session/): mutants 18048 (accepted 10244, finding 22, refused 7782); findings.tsv rows 22; processes 282, exits 0 282
+# against the first session's (after/local/fuzz/session/mutants.tsv): the same seeds, indices, operators and mutant SHA-256s: yes
+outcome moved	56	T037823	finding -> accepted
+22	V000002	timeout	past the bound of 10000 ms	not a finding under the revision: a compile past the bound of a mutant of V000002 the frontend accepts
+# findings read as findings under the revision: 0
+
+## its control (after/part-j-corrected/fcontrol/session/): mutants 18048 (accepted 10106, finding 160, refused 7782); findings.tsv rows 160; processes 282, exits 0 282
+# against the first session's (after/local/fcontrol/session/mutants.tsv): the same seeds, indices, operators and mutant SHA-256s: yes
+outcome moved	56	T037823	finding -> accepted
+57	T000740	System.InvalidOperationException	part J control: the bridge throws on a template literal	a finding
+40	T039978	System.InvalidOperationException	part J control: the bridge throws on a template literal	a finding
+22	V000002	timeout	past the bound of 10000 ms	not a finding under the revision: a compile past the bound of a mutant of V000002 the frontend accepts
+41	seeds/tagged-templates.js	System.InvalidOperationException	part J control: the bridge throws on a template literal	a finding
+# findings read as findings under the revision: 138
+
+## the seed: V000002, script	corpus	64	home:broiler-vm
+# its manifest row: broiler-vm	inputs/broiler-vm/generated/refuse-more-locals-than-the-frame-admits.js	875ff95ce7bf8af754d637c19327bb231574c898c21deba0a731963783cfd28f; SHA-256 the revision's

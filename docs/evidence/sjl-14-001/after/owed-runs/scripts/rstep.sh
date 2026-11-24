@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+# rstep.sh <step>: the reading stage's owed runs of bundle sjl-14-001 after W2 (2026-11-24), each run through run.sh's
+# lock and idle gate (run.sh <label> <logdir> /tmp -- bash rstep.sh <step>), from a clean `git archive` on disk under
+# /home/user/js-w2read-build/<c8>/<step>, removed when the step ends. Release, no build server. Every engine, tool and
+# test run under the base and after drivers' RUNENV (env -i, TZ=UTC, no LANG, LC_* or BROILER_*).
+#   dtextbase  part D, the base side of the dump text: bundle sjl-12-001's parse-corpus tool at the base commit
+#              69a8a13b, built as the base `tools` step built it, run with --dump --order manifest --text, as the after
+#              driver's `dtext` step ran it at the after commit; the text kept outside the notes (by digest), the run's
+#              report checked line by line against the base's retained parse-corpus-d1.tsv.gz. A reading aid owed by
+#              the after driver (js-w2after/README.md section 4), taken after the after runs.
+#   jsealbase  part G, the base side of Broiler.JSeal per test: the base harness (base/local/scripts/bstep.sh's jseal
+#              step, attempt 3: Broiler.JSeal a1216a80 in a scratch clone, restored in Release-VM, a candidate directory
+#              of the base feed's packages and the published Broiler.Regex, Broiler.Unicode.Algorithms and
+#              Broiler.Unicode.Segmentation 0.1.0-preview.6 archives, each checked against its SHA-512, and
+#              eng/test-package-consumer.ps1 -CandidateVersion Broiler.JavaScript=0.1.0-preview.1401) against the kept
+#              base candidate feed, with the after run's one addition: VSTestLogger=trx and VSTestResultsDirectory in
+#              the consumer's environment, so each test project keeps a TRX. The candidate directory is made in this
+#              stage's build folder, not in the base feed's folder, and compared with the base run's by digest.
+#   jsingle    part J, single-case reading aids at the after commit 83a9bd82: scripts/single-case built inside the
+#              archive (docs/evidence/sjl-14-001/tools/single-case/) against that commit's product, and run once per
+#              file, each in a process of its own: the seed T037823 and one of its findings (module goal); the seed
+#              V000002 and each of its 22 findings (script goal); bound 10000 ms, cap 120000 ms.
+set -u
+STEP=$1
+SP=/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad
+R=$SP/sjl-rest/js-w2read; AFT=$SP/sjl-rest/js-w2after/after; REPO=/home/user/broiler.js; BLD=/home/user/js-w2read-build
+BASE=69a8a13bc446a1714d3c8be9be3cfd742aebee6e; AFTER=83a9bd82a5d258d3001468095ebf43f9efc3e9a7
+SUITE=/home/user/js-w2base-build/suite/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+PWSH=/home/user/js-w2base-build/tools/pwsh/pwsh
+BFEED=/home/user/js-w2base-build/69a8a13b/feed
+BASEANS=$R/base/docs/evidence/sjl-14-001/base/local
+JSEAL=a1216a80034e185d69d0d76d9ef855105698c00b
+export PATH=/opt/node22/bin:/root/.dotnet:$PATH DOTNET_ROOT=/root/.dotnet DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 MSBUILDDISABLENODEREUSE=1 DOTNET_CLI_USE_MSBUILD_SERVER=0 UseSharedCompilation=false
+RUNENV=(env -i PATH=/opt/node22/bin:/root/.dotnet:/usr/bin:/bin HOME=/root DOTNET_ROOT=/root/.dotnet DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 TZ=UTC)
+BUILD=(dotnet build -c Release -nologo --disable-build-servers -nodeReuse:false -p:UseSharedCompilation=false)
+S=$R/runs/$STEP; L=$S/logs; mkdir -p $L
+T() { local label=$1; shift; local s=$(date -u +%FT%TZ); printf '%s %s: %s\n' "$s" "$label" "$*" | cut -c1-3000 >> $L/commands.log
+      python3 -I $SP/sjl-rest/s2/ev2/scripts/timed.py $L/$label.time.txt "$@" > $L/$label.stdout.txt 2> $L/$label.stderr.txt; local rc=$?
+      printf '%s\trc=%s\t%s\tstarted=%s\tended=%s\n' "$label" "$rc" "$(cat $L/$label.time.txt)" "$s" "$(date -u +%FT%TZ)" >> $L/runs.tsv; return $rc; }
+archive() { local sha=$1 d=$2; rm -rf $d; mkdir -p $d; git -C $REPO archive --format=tar $sha | tar -xf - -C $d || exit 3
+  { echo "commit: $(git -C $REPO rev-parse $sha)"; echo "tree: $(git -C $REPO rev-parse $sha^{tree})"; echo "path: $d"; echo "files: $(find $d -type f | wc -l)"; echo "archived: $(date -u +%FT%TZ)"; } >> $L/archive.txt; }
+avail() { df -BG --output=avail / | tail -1 | tr -dc 0-9; }
+[ "$(avail)" -ge 8 ] || { echo "less than 8 GiB free: $(avail)G" >&2; exit 9; }
+echo "free before: $(avail)G" >> $L/archive.txt
+rc=0
+case "$STEP" in
+dtextbase)
+  W=$BLD/69a8a13b/dtextbase; ART=$BLD/69a8a13b/art-dtextbase; TX=$BLD/69a8a13b/text
+  rm -rf $ART; archive $BASE $W; cd $W; M=conformance/parse/corpus.manifest
+  T build-parse-corpus "${BUILD[@]}" --artifacts-path $ART/pc docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj || { cd /; rm -rf $W $ART; exit 4; }
+  PC=$ART/pc/bin/parse-corpus/release/parse-corpus.dll
+  rm -rf $TX; mkdir -p $TX
+  T parse-corpus-d-text "${RUNENV[@]}" dotnet $PC --dump --order manifest --text $TX/dumps-p.txt.gz --manifest $M --test262 $SUITE --out $S/parse-corpus-d-text.tsv.gz || rc=6
+  ( find $ART -name '*.dll' -path '*release*' | sort | xargs -r sha256sum ) > $L/binaries.sha256.txt
+  { echo "# the base commit's dump text, kept outside the notes (by digest here)"; ls -l $TX/dumps-p.txt.gz; sha256sum $TX/dumps-p.txt.gz; } > $S/text.sha256.txt 2>&1
+  python3 -I - $S/parse-corpus-d-text.tsv.gz $BASEANS/part-d/parse-corpus-d1.tsv.gz > $S/identity-with-base-d1.txt <<'PY'
+import gzip, sys
+def rows(path):
+    with gzip.open(path, "rt", encoding="utf-8") as f:
+        return [line for line in f if not line.startswith("#")]
+a, b = rows(sys.argv[1]), rows(sys.argv[2])
+same = sum(1 for x, y in zip(a, b) if x == y)
+print("rows (header line included, '#' lines left out): this run " + str(len(a)) + ", the base's retained part-d/parse-corpus-d1.tsv.gz " + str(len(b)))
+print("identical, line by line: " + str(same) + (" (all)" if same == len(a) == len(b) else " (NOT all)"))
+PY
+  cd /; rm -rf $W $ART; exit $rc ;;
+jsealbase)
+  W=$BLD/69a8a13b/jsealbase; G=$S/jseal; CD=$BLD/69a8a13b/jseal-candidate
+  [ -d $G ] && { echo "output exists: $G" >&2; exit 14; }
+  ( cd $BFEED && find ./all ./engine ./shared -type f | LC_ALL=C sort | xargs sha256sum ) > $S/base-feed-now.sha256.txt
+  python3 -I - $BASEANS/part-g/candidate-feed.sha256.txt $S/base-feed-now.sha256.txt > $S/base-feed-check.txt <<'PY' || exit 3
+import sys
+want = {l.split(None, 1)[1].strip(): l.split()[0] for l in open(sys.argv[1]) if l.strip() and not l.startswith("#")}
+have = {l.split(None, 1)[1].strip(): l.split()[0] for l in open(sys.argv[2]) if l.strip()}
+bad = [p for p in want if have.get(p) != want[p]]
+print("the base candidate feed's packages, against base/local/part-g/candidate-feed.sha256.txt: %d recorded, %d equal, %d differ or missing" % (len(want), len(want) - len(bad), len(bad)))
+for p in bad: print("differs or missing: " + p)
+sys.exit(1 if bad else 0)
+PY
+  rm -rf $W; git clone -q --no-hardlinks /home/user/broiler-platform/broiler.jseal $W && git -C $W checkout -q --detach $JSEAL || exit 3
+  echo "jseal: $(git -C $W rev-parse HEAD) (scratch clone of the read-only clone)" >> $L/archive.txt
+  cd $W
+  T jseal-restore "${RUNENV[@]}" dotnet restore Broiler.JSeal.slnx -p:Configuration=Release-VM || { rc=15; cd /; rm -rf $W; exit $rc; }
+  rm -rf $CD; mkdir -p $CD; cp $BFEED/all/*.nupkg $CD/
+  : > $S/jseal-candidate-external.txt
+  for p in broiler.regex broiler.unicode.algorithms broiler.unicode.segmentation; do d=/root/.nuget/packages/$p/0.1.0-preview.6; f=$d/$p.0.1.0-preview.6.nupkg
+    [ "$(openssl dgst -sha512 -binary $f | base64 -w0)" = "$(cat $f.sha512)" ] || { echo "sha512 mismatch: $f" >&2; exit 16; }
+    cp $f $CD/; printf '%s\tsha512=%s\tsha256=%s\tfrom=NuGet global packages folder (restored from nuget.org)\n' "$(basename $f)" "$(cat $f.sha512)" "$(sha256sum $f | cut -d" " -f1)" >> $S/jseal-candidate-external.txt; done
+  ( cd $CD && sha256sum *.nupkg ) > $S/jseal-candidate-dir.sha256.txt
+  ( cd $BFEED/jseal-candidate && sha256sum *.nupkg ) > $S/base-run-candidate-dir.sha256.txt
+  cmp -s $S/jseal-candidate-dir.sha256.txt $S/base-run-candidate-dir.sha256.txt && echo "the candidate directory's packages are the base run's, byte for byte (same names and SHA-256)" > $S/candidate-dir-check.txt || echo "the candidate directory differs from the base run's" > $S/candidate-dir-check.txt
+  ls -d /tmp/jseal-package-consumer-* 2>/dev/null | LC_ALL=C sort > $BLD/69a8a13b/tmp-before.txt
+  T jseal-candidate "${RUNENV[@]}" VSTestLogger=trx VSTestResultsDirectory=$S/jseal-trx $PWSH -NoProfile -File eng/test-package-consumer.ps1 -OutputDirectory $G -CandidateFeed $CD -CandidateVersion "Broiler.JavaScript=0.1.0-preview.1401"
+  rc=$?
+  LC_ALL=C comm -13 $BLD/69a8a13b/tmp-before.txt <(ls -d /tmp/jseal-package-consumer-* 2>/dev/null | LC_ALL=C sort) | while read -r d; do echo "removed after the run: $d" >> $L/tmp-folders.txt; rm -rf "$d"; done
+  rm -f $BLD/69a8a13b/tmp-before.txt
+  python3 -I - $S/jseal-trx > $S/jseal-trx.tsv <<'PY'
+import collections, hashlib, pathlib, sys
+import xml.etree.ElementTree as ET
+root = pathlib.Path(sys.argv[1]); n = bad = 0
+print("file\tsha256\tresults\toutcomes\tconfiguration\tcode-bases")
+for p in (sorted(root.rglob("*.trx")) if root.is_dir() else []):
+    n += 1
+    try:
+        t = ET.parse(p).getroot()
+    except ET.ParseError as e:
+        bad += 1; print(str(p.relative_to(root)) + "\t" + hashlib.sha256(p.read_bytes()).hexdigest() + "\tunreadable: " + str(e)); continue
+    named = lambda tag: [e for e in t.iter() if e.tag.rsplit("}", 1)[-1] == tag]
+    results = named("UnitTestResult")
+    outcomes = collections.Counter(e.get("outcome", "?") for e in results)
+    bases = sorted({e.get("codeBase", "") for e in named("TestMethod")})
+    conf = sorted({c for b in bases for c in ("Release", "Release-VM") if "/" + c + "/" in b.replace("\\", "/")})
+    print("\t".join([str(p.relative_to(root)), hashlib.sha256(p.read_bytes()).hexdigest(), str(len(results)),
+                     ",".join(k + "=" + str(v) for k, v in sorted(outcomes.items())), ",".join(conf) or "?", ",".join(bases)]))
+sys.exit(0 if n and not bad else 1)
+PY
+  cd /; rm -rf $W $CD; exit $rc ;;
+jsingle)
+  W=$BLD/83a9bd82/jsingle; ART=$BLD/83a9bd82/art-jsingle
+  rm -rf $ART; archive $AFTER $W; cd $W
+  mkdir -p docs/evidence/sjl-14-001/tools/single-case; cp $R/scripts/single-case/Program.cs $R/scripts/single-case/single-case.csproj docs/evidence/sjl-14-001/tools/single-case/
+  sha256sum $R/scripts/single-case/Program.cs $R/scripts/single-case/single-case.csproj | sed "s#$R/##" > $S/aid.sha256.txt
+  T build-single-case "${BUILD[@]}" --artifacts-path $ART docs/evidence/sjl-14-001/tools/single-case/single-case.csproj || { cd /; rm -rf $W $ART; exit 4; }
+  ( find $ART -name '*.dll' -path '*release*' | sort | xargs -r sha256sum ) > $L/binaries.sha256.txt
+  X=$ART/bin/single-case/release/single-case.dll
+  printf 'file\tsha256\tgoal\toutcome\ttype\tmessage\telapsed-ms\twithin-bound\n' > $S/cases.tsv
+  one() { local label=$1 file=$2 goal=$3; T $label "${RUNENV[@]}" dotnet $X $file $goal 10000 120000 && cat $L/$label.stdout.txt >> $S/cases.tsv || { echo "$label rc!=0" >> $S/cases.tsv; rc=7; }; }
+  one seed-T037823 $SUITE/test/language/expressions/import.meta/distinct-for-each-module.js module
+  one finding-T037823-0 $AFT/fuzz/session/findings/T037823-0.js module
+  one seed-V000002 $W/conformance/parse/inputs/broiler-vm/generated/refuse-more-locals-than-the-frame-admits.js script
+  for f in $(ls $AFT/fuzz/session/findings/ | grep '^V000002-' | sort -t- -k2 -n); do one finding-${f%.js} $AFT/fuzz/session/findings/$f script; done
+  cd /; rm -rf $W $ART; exit $rc ;;
+*) echo "unknown step $STEP" >&2; exit 2 ;;
+esac

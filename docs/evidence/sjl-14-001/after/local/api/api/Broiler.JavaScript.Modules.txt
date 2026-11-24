@@ -1,0 +1,150 @@
+namespace Broiler.JavaScript.Modules
+{
+    public class JSArguments : Broiler.JavaScript.Runtime.JSObject, Broiler.JavaScript.Runtime.IJSArguments
+    {
+        public static Broiler.JavaScript.Runtime.JSValue[] Empty;
+        public JSArguments(in Broiler.JavaScript.Runtime.Arguments args) { }
+        public JSArguments(in Broiler.JavaScript.Runtime.Arguments args, Broiler.JavaScript.Runtime.JSVariable[] mappedParametersByIndex) { }
+        public override bool BooleanValue { get; }
+        public override Broiler.JavaScript.Runtime.JSValue DefineProperty(uint key, Broiler.JavaScript.Runtime.JSObject pd) { }
+        public override Broiler.JavaScript.Runtime.JSValue Delete(uint key) { }
+        public override Broiler.JavaScript.Runtime.JSValue GetOwnProperty(uint name) { }
+        public override Broiler.JavaScript.Runtime.JSValue GetOwnPropertyDescriptor(Broiler.JavaScript.Runtime.JSValue name) { }
+        public override Broiler.JavaScript.Runtime.JSValue GetValue(uint key, Broiler.JavaScript.Runtime.JSValue receiver, bool throwError = true) { }
+        public override bool SetValue(uint name, Broiler.JavaScript.Runtime.JSValue value, Broiler.JavaScript.Runtime.JSValue receiver, bool throwError = true) { }
+        public override string ToString() { }
+        public override Broiler.JavaScript.Runtime.JSValue TypeOf() { }
+        public Broiler.JavaScript.Runtime.JSValue Values(in Broiler.JavaScript.Runtime.Arguments a) { }
+        public static Broiler.JavaScript.Runtime.JSValue Callee(in Broiler.JavaScript.Runtime.Arguments a) { }
+    }
+    [Broiler.JavaScript.ExpressionCompiler.JSBaseClass("Function")]
+    [Broiler.JavaScript.ExpressionCompiler.JSFunctionGenerator("Assert", "KeyStrings")]
+    public class JSAssert : Broiler.JavaScript.BuiltIns.Function.JSFunction
+    {
+        protected JSAssert(Broiler.JavaScript.Runtime.JSObject prototype = null) { }
+        protected override Broiler.JavaScript.Runtime.JSValue GetCurrentPrototype() { }
+        [Broiler.JavaScript.Runtime.JSExport(null, IsConstructor=true)]
+        public static Broiler.JavaScript.Runtime.JSValue Assert(in Broiler.JavaScript.Runtime.Arguments args) { }
+        public new static Broiler.JavaScript.BuiltIns.Function.JSFunction CreateClass(Broiler.JavaScript.Runtime.JSObject context, bool register = true) { }
+        [Broiler.JavaScript.Runtime.JSExport("doubleEqual")]
+        public static Broiler.JavaScript.Runtime.JSValue DoubleEqual(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("equal")]
+        public static Broiler.JavaScript.Runtime.JSValue Equal(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("fail")]
+        public static Broiler.JavaScript.Runtime.JSValue Fail(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("match")]
+        public static Broiler.JavaScript.Runtime.JSValue Match(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("notEqual")]
+        public static Broiler.JavaScript.Runtime.JSValue NotEqual(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("notStrictEqual")]
+        public static Broiler.JavaScript.Runtime.JSValue NotStrictEqual(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("strictEqual")]
+        public static Broiler.JavaScript.Runtime.JSValue StrictEqual(in Broiler.JavaScript.Runtime.Arguments a) { }
+        [Broiler.JavaScript.Runtime.JSExport("throws")]
+        public static Broiler.JavaScript.Runtime.JSValue Throws(in Broiler.JavaScript.Runtime.Arguments a) { }
+    }
+    [Broiler.JavaScript.ExpressionCompiler.JSBaseClass("Object")]
+    [Broiler.JavaScript.ExpressionCompiler.JSFunctionGenerator("Module", "KeyStrings", Register=false)]
+    public class JSModule : Broiler.JavaScript.Runtime.JSObject, Broiler.JavaScript.Runtime.IJSModuleEnvironment
+    {
+        public readonly string filePath;
+        protected JSModule(Broiler.JavaScript.Runtime.JSObject prototype = null) { }
+        public JSModule(in Broiler.JavaScript.Runtime.Arguments a) { }
+        public JSModule(Broiler.JavaScript.Modules.JSModuleContext context, Broiler.JavaScript.Runtime.JSObject exports, string name, bool isMain = false) { }
+        [Broiler.JavaScript.ExpressionCompiler.JSPrototypeMethod]
+        [Broiler.JavaScript.Runtime.JSExport("code")]
+        public string Code { get; set; }
+        [Broiler.JavaScript.ExpressionCompiler.JSPrototypeMethod]
+        [Broiler.JavaScript.Runtime.JSExport("compile")]
+        public Broiler.JavaScript.Runtime.JSValue Compile { get; set; }
+        [Broiler.JavaScript.ExpressionCompiler.JSPrototypeMethod]
+        [Broiler.JavaScript.Runtime.JSExport("exports")]
+        public Broiler.JavaScript.Runtime.JSValue Exports { get; set; }
+        [Broiler.JavaScript.ExpressionCompiler.JSPrototypeMethod]
+        [Broiler.JavaScript.Runtime.JSExport("id")]
+        public Broiler.JavaScript.Runtime.JSValue Id { get; }
+        [Broiler.JavaScript.ExpressionCompiler.JSPrototypeMethod]
+        [Broiler.JavaScript.Runtime.JSExport("import")]
+        public Broiler.JavaScript.Runtime.JSValue Import { get; set; }
+        public Broiler.JavaScript.Modules.ModuleKind Kind { get; }
+        [Broiler.JavaScript.ExpressionCompiler.JSPrototypeMethod]
+        [Broiler.JavaScript.Runtime.JSExport("meta")]
+        public Broiler.JavaScript.Runtime.JSValue Meta { get; }
+        [Broiler.JavaScript.ExpressionCompiler.JSPrototypeMethod]
+        [Broiler.JavaScript.Runtime.JSExport("require")]
+        public Broiler.JavaScript.Runtime.JSValue Require { get; set; }
+        public Broiler.JavaScript.Modules.ModuleStatus Status { get; }
+        protected override Broiler.JavaScript.Runtime.JSValue GetCurrentPrototype() { }
+        public Broiler.JavaScript.Modules.JSModuleNamespace GetNamespace() { }
+        public System.Threading.Tasks.Task<Broiler.JavaScript.Runtime.JSValue> ImportAsync(string name) { }
+        public static Broiler.JavaScript.BuiltIns.Function.JSFunction CreateClass(Broiler.JavaScript.Runtime.JSObject context, bool register = true) { }
+    }
+    public class JSModuleContext : Broiler.JavaScript.Engine.JSContext
+    {
+        protected string[] extensions;
+        public JSModuleContext(System.Threading.SynchronizationContext ctx = null, bool enableClrIntegration = true) { }
+        public JSModuleContext(System.Threading.SynchronizationContext ctx, bool enableClrIntegration, bool registerBuiltInModules) { }
+        [System.ComponentModel.Browsable(false)]
+        public System.Collections.Generic.IEnumerable<Broiler.JavaScript.Modules.JSModule> All { get; }
+        public string CurrentPath { get; set; }
+        public Broiler.JavaScript.Modules.JSModule Main { get; set; }
+        protected virtual System.Threading.Tasks.Task CompileModuleAsync(Broiler.JavaScript.Modules.JSModule module) { }
+        protected virtual string GetModuleDirectory(string fullPath) { }
+        protected virtual string GetModuleUrl(string moduleKey) { }
+        protected virtual bool IsCommonJsModule(string moduleKey) { }
+        protected virtual System.Threading.Tasks.Task<Broiler.JavaScript.Runtime.JSValue> LoadModuleAsync(string currentPath, string name, bool esModule = true, string requiredType = null) { }
+        protected virtual System.Threading.Tasks.Task<string> ReadModuleSourceAsync(Broiler.JavaScript.Modules.JSModule module) { }
+        public void RegisterModule(in Broiler.JavaScript.Storage.KeyString name, Broiler.JavaScript.Runtime.JSObject exports) { }
+        protected virtual string Resolve(string dirPath, string relativePath) { }
+        public System.Threading.Tasks.Task<Broiler.JavaScript.Runtime.JSValue> RunAsync(string folder, string relativeFile, string[] paths = null) { }
+        public System.Threading.Tasks.Task<Broiler.JavaScript.Runtime.JSValue> RunScriptAsync(string script, string moduleFolder, string[] paths = null, string uniqueModuleID = null) { }
+        public static System.Threading.Tasks.Task<Broiler.JavaScript.Runtime.JSValue> RunExportsAsync(string folder, string relativeFile, string exportedFunctionName, Broiler.JavaScript.Runtime.Arguments a, string[] paths = null) { }
+    }
+    public delegate System.Threading.Tasks.Task JSModuleDelegate(Broiler.JavaScript.Modules.JSModule module);
+    public sealed class JSModuleNamespace : Broiler.JavaScript.Runtime.JSObject
+    {
+        public System.Collections.Generic.IReadOnlyList<string> ExportNames { get; }
+        public override void CreateDataProperty(Broiler.JavaScript.Runtime.JSValue key, Broiler.JavaScript.Runtime.JSValue value) { }
+        public override void CreateDataProperty(Broiler.JavaScript.Storage.KeyString key, Broiler.JavaScript.Runtime.JSValue value) { }
+        public override void CreateDataProperty(uint index, Broiler.JavaScript.Runtime.JSValue value) { }
+        public override Broiler.JavaScript.Runtime.JSValue DefineProperty(Broiler.JavaScript.Runtime.JSValue key, Broiler.JavaScript.Runtime.JSObject propertyDescription) { }
+        public override Broiler.JavaScript.Runtime.JSValue DefineProperty(in Broiler.JavaScript.Storage.KeyString name, Broiler.JavaScript.Runtime.JSObject pd) { }
+        public override Broiler.JavaScript.Runtime.JSValue DefineProperty(uint key, Broiler.JavaScript.Runtime.JSObject pd) { }
+        public override Broiler.JavaScript.Runtime.JSValue Delete(Broiler.JavaScript.Runtime.IJSSymbol symbol) { }
+        public override Broiler.JavaScript.Runtime.JSValue Delete(Broiler.JavaScript.Runtime.JSValue index) { }
+        public override Broiler.JavaScript.Runtime.JSValue Delete(in Broiler.JavaScript.Storage.KeyString key) { }
+        public override Broiler.JavaScript.Runtime.JSValue Delete(uint key) { }
+        public override Broiler.JavaScript.Runtime.IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true) { }
+        public override Broiler.JavaScript.Runtime.JSValue GetOwnPropertyDescriptor(Broiler.JavaScript.Runtime.JSValue name) { }
+        public override Broiler.JavaScript.Runtime.JSValue GetPrototypeOf() { }
+        protected override Broiler.JavaScript.Runtime.JSValue GetValue(Broiler.JavaScript.Storage.KeyString key, Broiler.JavaScript.Runtime.JSValue receiver, bool throwError = true) { }
+        public override Broiler.JavaScript.Runtime.JSValue GetValue(uint key, Broiler.JavaScript.Runtime.JSValue receiver, bool throwError = true) { }
+        protected override bool HasOwnProperty(in Broiler.JavaScript.Runtime.PropertyKey key) { }
+        public override Broiler.JavaScript.Runtime.JSValue HasProperty(Broiler.JavaScript.Runtime.JSValue propertyKey) { }
+        public override bool IsExtensible() { }
+        public override bool PreventExtensions() { }
+        public override void SetPrototypeOf(Broiler.JavaScript.Runtime.JSValue proto) { }
+        protected override bool SetValue(Broiler.JavaScript.Runtime.IJSSymbol name, Broiler.JavaScript.Runtime.JSValue value, Broiler.JavaScript.Runtime.JSValue receiver, bool throwError = true) { }
+        protected override bool SetValue(Broiler.JavaScript.Storage.KeyString name, Broiler.JavaScript.Runtime.JSValue value, Broiler.JavaScript.Runtime.JSValue receiver, bool throwError = true) { }
+        public override bool SetValue(uint name, Broiler.JavaScript.Runtime.JSValue value, Broiler.JavaScript.Runtime.JSValue receiver, bool throwError = true) { }
+        public override bool TrySetPrototypeOf(Broiler.JavaScript.Runtime.JSValue proto, out string error) { }
+    }
+    public enum ModuleKind
+    {
+        Unknown = 0,
+        SourceText = 1,
+        CommonJs = 2,
+        Json = 3,
+        Host = 4,
+    }
+    public enum ModuleStatus
+    {
+        New = 0,
+        Unlinked = 1,
+        Linking = 2,
+        Linked = 3,
+        Evaluating = 4,
+        EvaluatingAsync = 5,
+        Evaluated = 6,
+    }
+}
