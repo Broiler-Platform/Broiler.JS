@@ -44,7 +44,7 @@ dda7cf9502f56adc5407894341e28d7eff47278cc6d7880d0bf10779900e86f5  ./engine/broil
 34b38f736552dbcfb324ca5a7bdc04d5f7c43f542d856fd0adfd59443ce4273e  ./engine/broiler-vm-run-revision-44-drafted.tsv.gz
 02af0a6f3ed30308cad4ebd89156235a0bc486024ec4bd32e0b3f72665016b4d  ./engine/broiler-vm-run-revision-44.log
 197b3f1b8166fca6e2f620658324a6bfab8ec0ae2ca3b941a1e874aa980a0d77  ./engine/broiler-vm-run-revision-44.tsv.gz
-df59c1bdf6f0cc4c9dffcd2a3d56aff1325023741e29265e892155a1521fe7a1  ./engine/commands.txt
+3671432c94f4ad29a3a1fd01cd887e3085d84d482e991275264d88ee5c602c8d  ./engine/commands.txt
 0cdf481584e470e279216a2d6a2f68f6ef81896cacc7ab124155c5646cf37c2c  ./inputs/closure-suites.txt
 50977424d8929ca30f6b7d01a93fe000f57207a09356e3f3a47d595de9a9a746  ./probes/README.md
 94405bfeca8e34713a8bbe99ff47cb0f87ce7459de106bbdf72117afcad01b40  ./probes/answers.tsv

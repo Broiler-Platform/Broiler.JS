@@ -88,7 +88,11 @@ commit, as above. Where the paragraphs above name 6fda6ca4's product paths and B
 runs of revision 44 have the product paths of Broiler.JS's default branch at 4f697339d2b360b422d4c0e32898cefca3423d95
 (Broiler-Platform/Broiler.JS#1130, after SJL-14's W2, Broiler-Platform/Broiler.JS#1129), which revision 44's commits
 leave unchanged, and Broiler.VM's origin/main 90e4cd24ba182bbfc1f45e2db128d650c1dbc9ba
-(Broiler-Platform/Broiler.VM#223). The host is the one named above.
+(Broiler-Platform/Broiler.VM#223), which descends from Broiler.VM's earlier origin/main
+258e8596022b787c3e54d97fe65d541c3f8f9651 and differs from it only in files under docs/, so the engine built from it is
+258e8596's. The host is the one named above. Besides the runs the first paragraph lists, this folder now holds both
+engines' runs on revision 44 as drafted and both engines' runs on revision 44 with their negative controls; that
+paragraph is left as written.
 
 == Revision 44 as drafted, before it was committed
 
