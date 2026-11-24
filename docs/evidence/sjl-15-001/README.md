@@ -2,6 +2,12 @@
 
 **Rules, records, probes and the `semantics` vectors' runs only. Nothing here is a verdict, and no run of the rule has been taken.**
 
+*(Noted 2026-11-24, after part B's runs at the first model commit.)* The line above reads "Nothing here is a verdict, and
+no run of the rule has been taken." The rule's first runs are now here: part B's at the first model commit `be6c4a5c` and
+its first parent, in [`part-b-be6c4a5c/`](part-b-be6c4a5c/README.md), with a per-part reading limited to the model
+commits taken so far (the note of 2026-11-24 on part B's runs, below); nothing here is a verdict of the milestone. The
+line is left as written.
+
 **Written:** 2026-11-17, at milestone SJL-15 (work packages SJL-15.0 and SJL-15.1, Broiler.JS's half) of the shared
 JavaScript libraries programme, Broiler.VM's `docs/javascript-shared-libraries/milestones/sjl-15-static-semantics.md`.
 This repository's records are `docs/roadmap/SharedLibraries.md`, sections "Static semantics (SJL-15.1)" in "Area
@@ -24,6 +30,7 @@ default branch on 2026-11-17.
 | [`probes/`](probes/README.md) | The probes that settle the rows a reading cannot, run on both engines' default branches, every answer recorded beside the specification's |
 | [`corrections.md`](corrections.md) and [`corrections/`](corrections/class-t.tsv) | The classes E and T and the corrections C1, each by row, before any run, written by [`tools/write_lists.py`](tools/write_lists.py) from the stage table and the probes |
 | [`engine/`](engine/commands.txt) | The `semantics` vectors' runs: each engine's first run on corpus revision 42, with its negative control; both engines' runs on revision 43 as drafted, for the vectors it adds; and both engines' runs on revision 43, with their negative controls. Not runs of the rule *(noted 2026-11-24, at corpus revision 44: the folder also holds both engines' runs on revision 44 as drafted, for the vectors it adds, and both engines' runs on revision 44, with their negative controls; the cell is left as written)* |
+| [`part-b-be6c4a5c/`](part-b-be6c4a5c/README.md) | Part B's runs at the first model commit `be6c4a5c` and at its first parent `8b1fa311`, with their comparison and the push runs at `be6c4a5c` of both workflows that run the test projects of `Broiler.JS.slnx`; runs of the rule *(row added 2026-11-24, after those runs)* |
 | [`hashes.txt`](hashes.txt) | The SHA-256 of every other file of the bundle |
 
 ## What it will hold
@@ -139,3 +146,69 @@ stage 8, with part G's control K2 planting a hash-ordered model side table; part
 of part F, with part H's two controls; and parts F, G and E taken at stage 8's commit after its merge, each read as at
 the library commit if no model commit lands before the base commit, and taken again at the actual library commit if one
 does. No rule file is added or edited. This note names a merge to come and judges nothing.
+
+*(Noted 2026-11-24, after SJL-15.2 stage 1's merge.)* **The first model commit is
+`be6c4a5c3e389c7eb2aff71c34e31bdae5efe276`**, the merge of Broiler-Platform/Broiler.JS#1132 (head `f0418c36`), whose
+first parent is `8b1fa311da6af71baac6378e8b4f8597a99c1312` (Broiler-Platform/Broiler.JS#1131, corpus revision 44). It
+changes `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/` and `Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/`,
+among others the canonical dump in `Broiler.ECMAScript/runners/SyntaxDump.cs` and, moved to run alone,
+`Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue966InertEvalTests.cs`'s timing test, and descends from W2
+(`83a9bd82`). The note above reads that the merge landing stage 1 "will be the first model commit
+after W2 by the rule's "The commits, named before they exist", and is named here once it exists"; this names it. The
+section's second item, which says of the model commits, the library commit, the base commit and the after commit
+"named here when each exists", is left as written: the library commit, the base commit and the after commit do not
+exist yet.
+
+*(Noted 2026-11-24, after part B's runs at `be6c4a5c`.)* **Part B at the first model commit.** The note of 2026-11-24 at
+SJL-15.2 stage 1 reads "Part B is taken after that merge, against its first parent". It is taken, in
+[`part-b-be6c4a5c/`](part-b-be6c4a5c/README.md): bundle `sjl-12-001`'s tool, the same tree (`5ede6114`) at both commits,
+built and run as the rule says from a clean `git archive` of `be6c4a5c` and of `8b1fa311`, entry points P and K and the
+`--dump` mode over every input and variant of `conformance/parse/corpus.manifest`, the suite's archive checked by its
+SHA-256 before each run; compared by `scripts/compliance/compare_parse_corpus.py acceptance` with no classification
+file and by the dumps' hashes row for row; and both workflows' push runs at `be6c4a5c` imported as bundle `sjl-14-001`'s
+`bridge/w1-ci/` imported W1's. Nothing merged to the default branch from before the first run until both push runs had
+concluded. What the runs say:
+- **Both runs are complete and identical in every field**: each report holds every input and variant of the manifest,
+  at P and K and once for the dumps, with its end line; the comparison finds no difference and every row line of both
+  modes is the same. The reports' headers differ only in each engine assembly's module version id, which is a build's
+  name, not an answer: two builds of `8b1fa311` in two build trees differ the same way with every row the same, and two
+  builds of each commit in one build tree gave byte-identical reports.
+- **Shared libraries' push run concluded `success`** in its first attempt, every job green; its Build and SL rules
+  jobs carry the six `Broiler.ECMAScript.*` test projects, each passed on both systems.
+- **ci.yml's push run concluded `success` in its second attempt.** Its first attempt concluded `failure`: in
+  windows-latest / Release's Test step, the test host of `Broiler.ECMAScript.Algorithms.Tests`, a project that step's
+  filter selects no test of, died before any test ran ("testhost process failed to connect to datacollector process
+  after 90 seconds", "Test Run Aborted."); every `Broiler.JavaScript.*` project in that job wrote "Passed!" with no
+  test failed, two of them after the host's crash; the isolated CompilerScaling step was then skipped. The failed jobs were re-run once, under the session's rule that
+  allows one re-run of a job that died before any test body ran; the re-run windows-latest / Release job and the CI
+  result job concluded `success`, every other job carried from the first attempt green. ci.yml's jobs carry the
+  fifteen `Broiler.JavaScript.*` test projects, each passed on Linux and, in the second attempt, on Windows, and the
+  engine corpus in its two vectors jobs, passed. Both attempts are retained.
+
+**The reading**, taken as recommended under the owner's direction ("Please do all recommended decisions and skip
+waiting for review.") and flagged for the owner: **part B read MET on the retained runs at the model commits taken so
+far (`be6c4a5c3e389c7eb2aff71c34e31bdae5efe276`), limited to them; the part's verdict waits for the last model commit
+before the base.** Its basis, plainly: the identity half rests on the runs above; the rule's "the commit's CI run of
+every test project passed" is read on ci.yml's push run at `be6c4a5c` as it concluded, in its second attempt, whose
+first attempt failed in a test host before any test ran and is retained beside it, and on Shared libraries' push run.
+**The alternatives, not taken, for the owner:** to read part B NOT MET at `be6c4a5c` because that run's first attempt
+concluded `failure`, as bundle `sjl-13-001`'s third revision of 2026-11-03
+([`decision-rule-revised-2026-11-03-third.md`](../sjl-13-001/decision-rule-revised-2026-11-03-third.md)) reads its own
+part D on a push run's first attempt ("its first attempt decides, and every attempt is retained"), a precedent this
+reading does not follow; or a dated revision of the clause saying which attempt of a run it reads, which would be the
+owner's, since the runs have been seen. A NOT MET at any later model commit makes part B NOT MET.
+
+**On ci.yml's Test step** (no part of the reading). The step runs `dotnet test` over `Broiler.JS.slnx` with a filter
+that leaves out every `Broiler.ECMAScript.` test, since Shared libraries runs those projects, but it still starts a test
+host for each of them. Both recent Windows failures of that step were in those hosts: at the first parent `8b1fa311`,
+its push run's windows-latest / Release job failed when `Broiler.ECMAScript.Frontend.Tests`' test process "did not
+respond within 60 seconds"; and at `be6c4a5c`, the first attempt above. **Next, before stage 2:** a separate change
+leaves the `Broiler.ECMAScript` test projects out of that step; it is named here and not made by this change, which is
+records only.
+
+**The method's notes.** A first attempt at `8b1fa311` was stopped at the disk gate before its dump run, the shortfall
+being its own build tree with the suite extracted on disk beside it; it is kept in
+[`part-b-be6c4a5c/8b1fa311-attempt1-disk-gate/`](part-b-be6c4a5c/8b1fa311-attempt1-disk-gate/logs/commit.txt), set
+aside and not compared. From the run that followed, the suite is extracted afresh from its checked archive to
+`/dev/shm` before each run, as bundle `sjl-14-001`'s `bridge/scripts/commit.sh` kept its suite. No rule file is added
+or edited, and no earlier output changes.

@@ -1,0 +1,6 @@
+2026-11-24T18:08:29Z disk ok: 8901009408 bytes free (build)
+2026-11-24T18:09:43Z disk ok: 8665300992 bytes free (parse-corpus-c)
+2026-11-24T18:12:42Z waiting: /dev/vda        252G   31G  7.9G  80% /
+2026-11-24T18:13:12Z waiting: /dev/vda        252G   31G  7.9G  80% /
+2026-11-24T18:13:42Z waiting: /dev/vda        252G   31G  7.9G  80% /
+2026-11-24T18:14:12Z waiting: /dev/vda        252G   31G  7.9G  80% /

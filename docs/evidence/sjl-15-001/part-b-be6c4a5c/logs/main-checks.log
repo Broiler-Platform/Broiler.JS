@@ -1,0 +1,10 @@
+2026-11-24T18:06:36Z start (before worktree): be6c4a5c3e389c7eb2aff71c34e31bdae5efe276	refs/heads/main; push ref f0418c364fdfd4b82d91e90aebfe3a3d86285bc5	refs/heads/claude/busy-lamport-m3yprr
+2026-11-24T18:06:41Z before worktree add: be6c4a5c3e389c7eb2aff71c34e31bdae5efe276	refs/heads/main
+2026-11-24T18:08:22Z before base run 8b1fa311: be6c4a5c3e389c7eb2aff71c34e31bdae5efe276	refs/heads/main
+2026-11-24T18:15:00Z before base run 8b1fa311 (attempt 2): be6c4a5c3e389c7eb2aff71c34e31bdae5efe276	refs/heads/main
+2026-11-24T18:20:16Z before after run be6c4a5c: be6c4a5c3e389c7eb2aff71c34e31bdae5efe276	refs/heads/main
+2026-11-24T18:26:21Z after ci.yml push run 45455636089 concluded (failure): be6c4a5c3e389c7eb2aff71c34e31bdae5efe276	refs/heads/main
+2026-11-24T18:35:30Z note (fixer, review): no entry was logged before step 2 (the comparison, compare/be6c4a5c-8b1fa311/ written 18:25:41-42Z) or before step 3 (the CI read, ci/commands.txt 18:26:14Z); the last check before ci.yml run 45455636089 concluded (updated_at 18:20:32Z) is 18:20:16Z, a 16 s gap not logged. main is still be6c4a5c now (next line), so it never moved and the merge condition held. On resuming, a check is logged before every step, the comparison and the CI import included.
+2026-11-24T18:35:30Z check (fixer): be6c4a5c3e389c7eb2aff71c34e31bdae5efe276	refs/heads/main
+2026-11-24T20:29:13Z before step 3 (resume, CI import): be6c4a5c3e389c7eb2aff71c34e31bdae5efe276	refs/heads/main
+2026-11-24T20:35:26Z before step 4 (retain): be6c4a5c3e389c7eb2aff71c34e31bdae5efe276	refs/heads/main
