@@ -1,0 +1,51 @@
+  Determining projects to restore...
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj (in 360 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.JSClassGenerator/Broiler.JavaScript.JSClassGenerator.csproj (in 360 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj (in 361 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.Globals/Broiler.JavaScript.Globals.csproj (in 361 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj (in 4 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj (in 6 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.Extensions/Broiler.JavaScript.Extensions.csproj (in 10 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj (in 5 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj (in 5 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj (in 16 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.Modules/Broiler.JavaScript.Modules.csproj (in 12 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.LinqExpressions/Broiler.JavaScript.LinqExpressions.csproj (in 9 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.ModuleExtensions/Broiler.JavaScript.ModuleExtensions.csproj (in 13 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj (in 7 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj (in 3 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.Debugger/Broiler.JavaScript.Debugger.csproj (in 12 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj (in 11 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.Clr/Broiler.JavaScript.Clr.csproj (in 11 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj (in 2 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 1 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj (in 2 ms).
+  Restored /home/user/js-s154-pb-build/56272150/src/Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj (in 14 ms).
+  Broiler.ECMAScript.Algorithms -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.ECMAScript.Algorithms/release/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.Expressions/release/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.ExpressionCompiler -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.ExpressionCompiler/release/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.ECMAScript.Intl/release/Broiler.ECMAScript.Intl.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.ECMAScript.Frontend/release/Broiler.ECMAScript.Frontend.dll
+  Broiler.JavaScript.Ast -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.Ast/release/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Storage -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.Storage/release/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.JSClassGenerator -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.JSClassGenerator/release/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Parser -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.Parser/release/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Runtime -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.Runtime/release/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Engine -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.Engine/release/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.LinqExpressions/release/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.Extensions/release/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.Compiler -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.Compiler/release/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.BuiltIns -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.BuiltIns/release/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Clr -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.Clr/release/Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.Modules -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.Modules/release/Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Debugger -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.Debugger/release/Broiler.JavaScript.Debugger.dll
+  Broiler.JavaScript.Globals -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.Globals/release/Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.ModuleExtensions -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.ModuleExtensions/release/Broiler.JavaScript.ModuleExtensions.dll
+  Broiler.JavaScript.All -> /home/user/js-s154-pb-build/56272150/art/pc/bin/Broiler.JavaScript.All/release/Broiler.JavaScript.All.dll
+  parse-corpus -> /home/user/js-s154-pb-build/56272150/art/pc/bin/parse-corpus/release/parse-corpus.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:01:13.15

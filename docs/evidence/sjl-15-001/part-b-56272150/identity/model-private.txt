@@ -1,0 +1,81 @@
+# Why stage 4's model-private lines cannot reach part B's --dump output; read 2026-11-25 by read-only git in the stage's
+# worktree, each command with its output below it. Stage 4 (56272150) adds 'model-private-environment',
+# 'model-private-name' and 'model-private' lines to the model section of the shared library's canonical dump,
+# Broiler.ECMAScript/runners/SyntaxDump.cs, written only when ParseResult.Model is present, which
+# ParseRequest.BuildSemanticModel asks for (default false). Part B's tool, docs/evidence/sjl-12-001/tools/parse-corpus,
+# writes its own canonical dump (CanonicalDump.cs) of Broiler.JS's tree and reaches the Frontend only through
+# Broiler.JS's parser, whose request never sets the member. Stage 4 also has the declarations walk read a request's
+# visible private names (InheritedContext.VisiblePrivateNames), which Broiler.JS's bridge passes; the walk reads them
+# only with the member on.
+
+$ git diff --stat 9ae6aee0 56272150 -- Broiler.JS docs/evidence/sjl-12-001
+(exit 0)
+
+$ git grep -n model-private 56272150 -- Broiler.ECMAScript/runners
+56272150:Broiler.ECMAScript/runners/SyntaxDump.cs:214:            text.Append("model-private-environment ").Append(Reference(order, @class)).Append(' ')
+56272150:Broiler.ECMAScript/runners/SyntaxDump.cs:218:                text.Append("model-private-name ");
+56272150:Broiler.ECMAScript/runners/SyntaxDump.cs:231:            text.Append("model-private ").Append(Reference(order, name)).Append(' ')
+(exit 0)
+
+$ git grep -n 'BuildSemanticModel { get; init; }' 56272150 -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs:236:    public bool BuildSemanticModel { get; init; }
+(exit 0)
+
+$ git grep -n BuildSemanticModel 56272150 -- Broiler.JS docs/evidence/sjl-12-001
+(exit 1)
+
+$ git grep -n SyntaxDump 56272150 -- Broiler.JS docs/evidence/sjl-12-001/tools
+(exit 1)
+
+$ git grep -n 'ProjectReference' 56272150 -- docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj
+56272150:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:24:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj" />
+56272150:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:25:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj" />
+56272150:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:26:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj" />
+56272150:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:27:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj" />
+56272150:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:28:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj" />
+56272150:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:29:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj" />
+56272150:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:30:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj" />
+56272150:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:31:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj" />
+(exit 0)
+
+$ git grep -n 'new ParseRequest(' 56272150 -- Broiler.JS
+56272150:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs:168:        return new ParseRequest(source, goal, request.UnicodeTables ?? JSUnicodeTables.Instance, BridgeRegularExpressions.Instance)
+56272150:Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs:84:        var request = new ParseRequest(new SourceText(source, string.Empty, 0), ParseGoal.Script, JSUnicode.Tables, RegularExpressions.Instance)
+(exit 0)
+
+$ git grep -n VisiblePrivateNames 56272150 -- Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:197:                ParseGoal.Eval => request.Context!.VisiblePrivateNames is null ? null : SemanticRows.EA0009,
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:600:                    Privates = caller.VisiblePrivateNames is { } visible ? new PrivateScope(visible, null, null) : null,
+56272150:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs:178:                    VisiblePrivateNames = request.VisiblePrivateNames,
+(exit 0)
+
+$ git grep -n -e 'this.semantics = semantics;' -e 'if (semantics)' 56272150 -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:184:        this.semantics = semantics;
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:185:        if (semantics)
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:883:                if (semantics)
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:893:                if (semantics)
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1484:                    if (semantics)
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1540:        if (semantics)
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1775:            if (semantics)
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1981:            if (semantics)
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2071:        if (semantics)
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2108:            if (semantics)
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2203:        if (semantics)
+(exit 0)
+
+$ git grep -n -e 'new DeclarationsWalk(request' -e 'Semantic = semantics ? ProgramSemantic(' 56272150 -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:265:        var walk = new DeclarationsWalk(request, request.BuildSemanticModel, request.BuildSemanticModel);
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:280:        var walk = new DeclarationsWalk(request, buildModel: false, semantics: request.BuildSemanticModel);
+56272150:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:489:            Semantic = semantics ? ProgramSemantic(isDynamic ? FunctionRows(DynamicShape(kind), inBody: true) : null) : null,
+(exit 0)
+
+# Notes: the first command's empty output says that no file of Broiler.JS/ or of bundle sjl-12-001 (the tool
+# included) differs between the two commits; the fourth's and fifth's (exit 1, no match) that nothing in them sets
+# BuildSemanticModel or uses the library's SyntaxDump; the tool references only Broiler.JS projects. The two
+# ParseRequest constructions in Broiler.JS (the bridge's, which the tool's P and K reach, and the portable compiler's)
+# set no BuildSemanticModel, so the member keeps its default, false, and the parse builds no model. The bridge passes
+# the caller's visible private names (SharedSyntaxBridge.cs:178), as it did at 9ae6aee0; the walk reads them at two
+# places, line 197 inside the block that begins "if (semantics)" at line 185, and line 600 in ProgramSemantic, which
+# line 489 calls only when semantics is set; both walks are built with semantics equal to the request's
+# BuildSemanticModel (lines 265 and 280), so with the member off the list is read nowhere. And the dumps' hashes are
+# identical in every row at both commits (rows-d1.txt).

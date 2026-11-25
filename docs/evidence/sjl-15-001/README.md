@@ -33,6 +33,7 @@ default branch on 2026-11-17.
 | [`part-b-be6c4a5c/`](part-b-be6c4a5c/README.md) | Part B's runs at the first model commit `be6c4a5c` and at its first parent `8b1fa311`, with their comparison and the push runs at `be6c4a5c` of both workflows that run the test projects of `Broiler.JS.slnx`; runs of the rule *(row added 2026-11-24, after those runs)* |
 | [`part-b-6c61879b/`](part-b-6c61879b/README.md) | Part B's runs at the second model commit `6c61879b` and at its first parent `2259fd4a`, with their comparison and the push runs at `6c61879b` of both workflows that run the test projects of `Broiler.JS.slnx`; runs of the rule *(row added 2026-11-25, after those runs)* |
 | [`part-b-d87044c9/`](part-b-d87044c9/README.md) | Part B's runs at the third model commit `d87044c9` and at its first parent `77fe27aa`, with their comparison and the push runs at `d87044c9` of both workflows that run the test projects of `Broiler.JS.slnx`; runs of the rule *(row added 2026-11-25, after those runs)* |
+| [`part-b-56272150/`](part-b-56272150/README.md) | Part B's runs at the fourth model commit `56272150` and at its first parent `9ae6aee0`, with their comparison and the push runs at `56272150` of both workflows that run the test projects of `Broiler.JS.slnx`; runs of the rule *(row added 2026-11-25, after those runs)* |
 | [`hashes.txt`](hashes.txt) | The SHA-256 of every other file of the bundle |
 
 ## What it will hold
@@ -398,3 +399,59 @@ decision D-js-adapter-visible-names in `docs/roadmap/SharedLibraries.md`'s secti
 correspondence group `pn1` is not implemented: `pn1/0004` and `pn1/0005` expect a value the Script computes after
 catching the eval code's refusal, which a reading at the parse cannot match. No rule file is added or edited, and no
 earlier output changes. "What it will hold" above is left as written.
+
+*(Noted 2026-11-25, after SJL-15.2 stage 4's merge.)* **The fourth model commit is
+`56272150fe23725a0e70978fb18e3c25f2548548`**, the merge of Broiler-Platform/Broiler.JS#1139 (head `2c502843`), whose
+first parent is `9ae6aee09012d6b7139856f253b43f7701cf7b8b` (Broiler-Platform/Broiler.JS#1138, stage 3's part B
+records). It changes `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/` and
+`Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/`, among others the library-level adapter
+`Broiler.ECMAScript/runners/AlgorithmsLibrary.Semantics.cs` with its tests in
+`Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/` and the library's canonical dump
+`Broiler.ECMAScript/runners/SyntaxDump.cs`, and descends from W2 (`83a9bd82`) and from the first, second and third model
+commits `be6c4a5c`, `6c61879b` and `d87044c9`. Its first parent is no model commit: nothing from `d87044c9` to
+`9ae6aee0` changes a path under `Broiler.ECMAScript/Broiler.ECMAScript.Frontend*`. The note above of 2026-11-25 at
+SJL-15.2 stage 4 reads "This branch's merge will be the fourth model commit: SJL-15.2 stage 4, private-name
+environments, named here once it exists"; this names it. The section "The commits"' second item, "named here when each
+exists", is left as written: the library commit, the base commit and the after commit do not exist yet.
+
+*(Noted 2026-11-25, after part B's runs at `56272150`.)* **Part B at the fourth model commit.** The note of 2026-11-25
+at SJL-15.2 stage 4 reads "Part B is taken after it, against its own first parent (decision D-js-part-b-method), with both
+workflows' push runs imported and decision D-js-part-b-attempt applying" and "The reading at it will be limited to the
+model commits taken so far." It is taken, in [`part-b-56272150/`](part-b-56272150/README.md), as part B at the first,
+second and third model commits was taken and in the same layout: bundle `sjl-12-001`'s tool, the same tree (`5ede6114`)
+at both commits, built and run as the rule says from a clean `git archive` of `56272150` and of `9ae6aee0`, entry points
+P and K and the `--dump` mode over every input and variant of `conformance/parse/corpus.manifest`, the suite's archive
+checked by its SHA-256 before each run; compared by `scripts/compliance/compare_parse_corpus.py acceptance` with no
+classification file and by the dumps' hashes row for row; and both workflows' push runs at `56272150` imported as at the
+third model commit. Nothing merged to the default branch from the merge until both push runs had concluded. What the
+runs say:
+- **Both runs are complete and identical in every field**: each report holds every input and variant of the manifest,
+  at P and K and once for the dumps, with its end line; the comparison finds no difference and every row line of both
+  modes is the same. The reports' headers differ only in each engine assembly's module version id, which is a build's
+  name, not an answer: two builds of `9ae6aee0` in two build trees differ the same way with every row the same, as two
+  builds of `77fe27aa` did at the third model commit.
+- **Stage 4's private-name lines do not reach the tool's dumps.** Stage 4 adds `model-private-environment`,
+  `model-private-name` and `model-private` lines to the model section of the library's canonical dump, as stage 3 added
+  `model-target` lines, written only when a parse builds the model, and has the declarations walk read a request's
+  visible private names, which Broiler.JS's bridge passes, only when it does; this tool writes its own dump of
+  Broiler.JS's tree, reaches the Frontend only through Broiler.JS's parser, and nothing under `Broiler.JS/` or in bundle
+  `sjl-12-001` changes between the two commits or sets `ParseRequest.BuildSemanticModel`
+  ([`part-b-56272150/identity/model-private.txt`](part-b-56272150/identity/model-private.txt)). The `--dump` output is
+  identical at both commits.
+- **Shared libraries' push run concluded `success`** in its first attempt, every job green; its Build and SL rules
+  jobs test `Broiler.ECMAScript.slnf`, so its six `Broiler.ECMAScript.*` test projects, each passed on both systems.
+- **ci.yml's push run concluded `success`** in its first attempt, every job green, with no re-run: its Test step, which
+  since #1134 tests every project of `Broiler.JS.slnx` but those of `Broiler.ECMAScript.slnf`, passed the fifteen
+  `Broiler.JavaScript.*` test projects on Linux and on Windows, the isolated CompilerScaling step ran on both, and the
+  engine corpus passed in its two vectors jobs. So the re-run decision D-js-part-b-attempt allows was not needed.
+
+**The reading**, taken as recommended under the owner's direction ("Please do all recommended decisions and skip
+waiting for review."): **part B read MET on the retained runs at the model commits taken so far
+(`be6c4a5c3e389c7eb2aff71c34e31bdae5efe276`, `6c61879bce81b1a7badf987e16c7b0531030258d`,
+`d87044c9db5fe2a26841782308bd53e2f9294656`, `56272150fe23725a0e70978fb18e3c25f2548548`), limited to them; the part's
+verdict waits for the last model commit before the base.** At `56272150` the rule's "the commit's CI run of every test
+project passed" is read on both workflows' push runs as they concluded, each in its first attempt, so the question of
+which attempt decides, flagged for the owner at the first model commit, does not arise here. The readings at
+`be6c4a5c`, at `6c61879b` and at `d87044c9`, and the first one's flag, in the notes above of 2026-11-24 and 2026-11-25,
+stay as written. A NOT MET at any later model commit makes part B NOT MET. **Next:** SJL-15.2 stage 5a, resolution and
+the function environment facts, the fifth model commit. No rule file is added or edited, and no earlier output changes.

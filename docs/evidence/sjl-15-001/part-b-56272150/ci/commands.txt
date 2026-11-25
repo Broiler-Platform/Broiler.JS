@@ -1,0 +1,31 @@
+# The push runs at the fourth model commit 56272150fe23725a0e70978fb18e3c25f2548548, imported 2026-11-25 as bundle
+# sjl-14-001's bridge/w1-ci/ imported W1's and part-b-be6c4a5c/ci/, part-b-6c61879b/ci/ and part-b-d87044c9/ci/
+# imported the first, second and third model commits': by read-only GitHub API calls (gh api, GET only), each file the
+# API's answer unchanged, but slnx-test-projects.txt, test-projects.tsv and artifact-digests.tsv, written from them.
+# Nothing was dispatched, re-run or cancelled by these reads. The run statuses were also read through the GitHub API
+# before the read: during part B's base run at 9ae6aee0 (21:58:57Z, while its tool was building), CI 45707436823
+# attempt 1 in progress and Shared libraries 45707437312 attempt 1 completed success; and after part B's after run at
+# 56272150 had ended (between 22:09:38Z and 22:09:53Z), CI 45707436823 attempt 1 completed success and Shared libraries
+# 45707437312 attempt 1 completed success.
+#
+# One read, 2026-11-25T22:10:41Z-22:10:48Z, after both runs had concluded, each in its first attempt, and after both of
+# part B's local runs had ended (../logs/runs.tsv):
+R=repos/Broiler-Platform/Broiler.JS/actions/runs
+gh api "$R?head_sha=56272150fe23725a0e70978fb18e3c25f2548548&per_page=50" > runs-at-56272150.json
+#   -> two runs at 56272150, each event push, status completed, conclusion success, run_attempt 1:
+#      45707436823 CI (.github/workflows/ci.yml); 45707437312 Shared libraries (.github/workflows/shared-libraries.yml)
+for r in 45707436823 45707437312; do
+  gh api $R/$r > run-$r.json
+  gh api "$R/$r/jobs?per_page=100&filter=all" > jobs-$r.json
+  gh api "$R/$r/artifacts?per_page=100" > artifacts-$r.json
+  gh api $R/$r/logs > logs-$r.zip
+done
+#
+# The artifacts, every one both runs list, downloaded (2026-11-25T22:11:03Z-22:11:10Z) and checked against the API's
+# digest and size; the zips are not kept here (bridge/w1-ci/ kept none), their check is artifact-digests.tsv (every one
+# "match"):
+for id in 15066188508 15065718396 15065473699 15065623246 15065253573 15065194534; do
+  gh api repos/Broiler-Platform/Broiler.JS/actions/artifacts/$id/zip > $id.zip   # then sha256 and size against the API's
+done
+git show 56272150:Broiler.JS.slnx | grep -o 'Path="[^"]*\.csproj"' | sed 's/Path="//;s/"//' | grep -i test | sort > slnx-test-projects.txt
+python3 -I ../scripts/test_projects.py slnx-test-projects.txt . > test-projects.tsv
