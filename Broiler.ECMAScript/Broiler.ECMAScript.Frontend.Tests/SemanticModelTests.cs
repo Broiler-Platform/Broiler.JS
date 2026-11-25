@@ -1419,4 +1419,28 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         output.WriteLine("private names resolved: references " + references.ToString(CultureInfo.InvariantCulture) + ", keys "
             + keys.ToString(CultureInfo.InvariantCulture) + "; classes " + classes.ToString(CultureInfo.InvariantCulture));
     }
+
+    /// <summary>
+    /// The model section of the canonical dump holds the private-name tables (decision D-js-part-g): one
+    /// <c>model-private-environment</c> line per class, one <c>model-private-name</c> line per binding, one
+    /// <c>model-private</c> line per private name; a dump without the model is the dump with it off.
+    /// </summary>
+    [Fact]
+    public void The_dump_s_model_section_holds_the_private_names()
+    {
+        const string text = "class C { #x; m() { this.#x; } }";
+        var (on, _) = Model(text);
+        var lines = System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(on)).Split('\n');
+        var nodes = Nodes(on.Tree!);
+        var @class = nodes.FindIndex(static n => n is ClassNode).ToString(CultureInfo.InvariantCulture);
+        var field = nodes.FindIndex(static n => n is FieldDefinition).ToString(CultureInfo.InvariantCulture);
+        var names = nodes.Select((n, i) => (n, i)).Where(static p => p.n is PrivateIdentifier).Select(static p => p.i.ToString(CultureInfo.InvariantCulture)).ToList();
+        Assert.Equal(new[] { "model-private-environment " + @class + " -" }, lines.Where(static l => l.StartsWith("model-private-environment ", StringComparison.Ordinal)));
+        Assert.Equal(new[] { "model-private-name \"#x\" 0 0 " + field }, lines.Where(static l => l.StartsWith("model-private-name ", StringComparison.Ordinal)));
+        Assert.Equal(names.Select(n => "model-private " + n + " " + @class), lines.Where(static l => l.StartsWith("model-private ", StringComparison.Ordinal)));
+        Assert.Equal(2, names.Count);
+        var off = Parse(text, model: false);
+        Assert.True(SyntaxDump.Dump(off).AsSpan().SequenceEqual(SyntaxDump.Dump(on, model: false)));
+        Assert.DoesNotContain("model-private", System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(off)), StringComparison.Ordinal);
+    }
 }
