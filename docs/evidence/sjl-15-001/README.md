@@ -226,3 +226,24 @@ being its own build tree with the suite extracted on disk beside it; it is kept 
 aside and not compared. From the run that followed, the suite is extracted afresh from its checked archive to
 `/dev/shm` before each run, as bundle `sjl-14-001`'s `bridge/scripts/commit.sh` kept its suite. No rule file is added
 or edited, and no earlier output changes.
+
+*(Noted 2026-11-25, at SJL-15.2 stage 2, written before part B's run at it.)* **The second model commit.** This
+branch's merge will be the second model commit: SJL-15.2 stage 2, the early-error channel and the function-context rows,
+named here once it exists. Part B is taken after it, against its own first parent (decision D-js-part-b-method), with
+both workflows' push runs imported and decision D-js-part-b-attempt applying. The merge condition: both workflows are
+green on the PR; after the merge, nothing merges to `main` until both push runs at the merge have concluded. For ci.yml's
+run that includes the one re-run D-js-part-b-attempt allows. A later push cancels ci.yml's push run. A later push never
+cancels Shared libraries' push run, because its push group carries the commit. Its conclusion is imported too, as at
+stage 1. The reading at it will be limited to the model commits taken so far.
+
+From this change, part F's library-level run (the rule's part F, "Broiler.ECMAScript.Conformance.Tests' library-level
+run, whose adapter answers a semantics vector's refusal or acceptance where the model decides it") is Conformance.Tests'
+semantics adapter, `runners/AlgorithmsLibrary.Semantics.cs`, which answers the vectors of the rows the model reports,
+by a row list of its own that a test holds equal to the Frontend's table (decisions D-js-adapter and D-js-adapter-form
+in `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)"). Part F's "every vector the adapter
+answers matches" is read at the parse, `error: SyntaxError` as a refusal and any other outcome as an acceptance, as
+bundle `sjl-13-001`'s rule reads its syntax vectors: a reading of the session's, taken before any run of part F and
+flagged for the owner. EP0017 and EP0018 have no site of their own in the library: no goal is ShadowRealm's, and EA0003,
+EA0004 or EE0162 refuses their sources first; whether part F reads that as "a site in the library" is unknown, since
+the rule names only EA0006 to EA0008 as rows without one. No rule file is added or edited. "What it will hold" above is
+left as written.

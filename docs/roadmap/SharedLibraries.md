@@ -3825,6 +3825,52 @@ as mitigations whose effect is not shown: why a test host, its data collector or
 not known, and only the hosted Windows runs can show whether these steps now pass. Then stage 2. None of it is
 accepted.
 
+*(Noted 2026-11-25, at SJL-15.2 stage 2, whose merge is the second model commit.)* The note above ends "Then stage 2."
+The change before this one is Broiler-Platform/Broiler.JS#1134 (`2259fd4a`), which left the `Broiler.ECMAScript` test
+projects out of ci.yml's Test step. This change is stage 2: the early-error channel and the function-context rows. With
+`ParseRequest.BuildSemanticModel` on, the declarations walk also reports the model's rows, a new internal table
+`SemanticRows` beside `Rows`, each a construct's refusal at its construct, through the walk's one report and its one
+sequence, so that decision D11's order merges them with the `syntax` rows; they refuse the parse, so that `Model` is
+null on a refusal; the partial walk before a grammar refusal reports them and builds no model. The rows are the super
+group (HasDirectSuper of methods, and a SuperProperty or a SuperCall in a function's parameters or body, in a field
+initialiser, in a static block, and in a Script's or a Module's own code, EE0172 moved here from stage 6), the
+ContainsArguments rows of field initialisers and static blocks, eval code's rows from the caller's context (PerformEval's
+steps 11.f to 11.h), and three rows of expressions (a duplicate `__proto__` entry, a template's bound, and a for-in or
+for-of head's target); ShadowRealm's two rows are carried with no report of their own. With the member off nothing
+moves. The library-level adapter answers the `semantics` vectors whose row the model reports, and the Native AOT probe
+judges them at the parse on a line of its own. Whether part F at stage 8 reads ShadowRealm's two rows, which have no
+report of their own, as having "a site in the library" is unknown: the rule names only EA0006 to EA0008 as rows without
+one.
+
+**The merge condition.** Both workflows are green on the PR; after the merge, nothing merges to `main` until both push
+runs at the merge have concluded. For ci.yml's run that includes the one re-run D-js-part-b-attempt allows. A later
+push cancels ci.yml's push run. A later push never cancels Shared libraries' push run, because its push group carries
+the commit. Its conclusion is imported too, as at stage 1. Part B is taken after the merge, against the merge's own
+first parent.
+
+**This stage's decisions of 2026-11-25**, each taken as recommended under the owner's direction and recorded as the
+owner's decision of 2026-11-25. Their authority is the direction quoted above, which leaves out only "the start ...;
+decision D-census ...; and each publication of the shared stream (JSD-0083's decision D30)"; none below is one of those.
+Every later stage's decisions are recorded when that stage lands (the note of 2026-11-24 above); these are stage 2's.
+
+| Decision | Taken | Not taken, and why |
+|---|---|---|
+| D-js-channel | **With `BuildSemanticModel` on, the model's `semantics` rows join `ParseResult.Diagnostics` in decision D11's order.** Each is a construct's refusal at its construct, made through the walk's one `Report` and its one sequence. They refuse the parse as the walk's diagnostics do, so `Model` is null on a refusal. First error or all errors stays the existing `ParseLimits` parameter. One member asks for the model and its rows. The partial walk before a grammar refusal reports the rows and builds no model, by a `semantics` flag beside the model's. Each row is placed where Broiler.VM's binder names it (design.md section 3), except EA0005, which takes the library's own place, and ContainsArguments, which reports at every enclosing member. The differences from both engines are listed | (a) A model on a refused source, with an `EarlyErrors` list of its own: two channels and two orders for one fact. (b) A separate request member for reporting the rows: a model without its early errors answers less than JSD-0080's one early-error stage. (c) A counter of the rows' own: it cannot order a `syntax` row against a `semantics` row at one place. (d) Each `arguments` of a field initialiser or a static block reported at the identifier rather than once at the member: it departs from the binder's place (`VMC/JsBinder.EarlyErrors.cs:185-207`, `JsTreeFacts.At(member)`) for no fact. (e) Only the innermost member for ContainsArguments, as Broiler.VM reports: it leaves out a refusal the specification makes and changes the first error |
+| D-js-semantic-rows | **A separate internal `SemanticRows` table beside `Rows`.** Each entry is a `semantics` row of the stage table, with the catalogue's shared code and message identifier, reported only with the member on. Stage 2's rows are the super group with EE0172, EE0130, EE0138, EA0003 to EA0005, EE0018, EE0021 and EE0054. EP0017 and EP0018 are carried with no report of their own: EA0003, EA0004 or EE0162 refuses first, as EA0002 does for EP0015 and EP0016. EE0021 sits at a site no source reaches. One row per construct: a method's shape row before its placement row, EG0008 in place of EE0054 for a non-optional call head, and the EA rows for every eval request. A test holds the table a subset of the stage table's `semantics` rows, to be equal at stage 8 except EA0006 | (a) The rows moved into `Rows`: it revises the Frontend tests that hold `Rows` equal to the stage table's `syntax` rows and that hold that no `semantics` row is reported on the default request. (b) EE0172 left to stage 6: no fact it needs is stage 6's |
+| D-js-adapter-form | **D-js-adapter carried by id.** `AlgorithmsLibrary` answers a `semantics` vector through its record entry when the vector's identifier names a row in the adapter's own list. A test holds that list equal to `SemanticRows`. A `DirectEval` vector's caller context comes from the Script's model. R's part F's "every vector the adapter answers matches" is read at the parse, as bundle `sjl-13-001`'s rule states for its syntax vectors: `error: SyntaxError` as a refusal, and any other outcome as an acceptance. This is a reading of the session's, taken before any run of part F and flagged for the owner | (a) Reading `SemanticRows` from the adapter: the library would decide which vectors it is judged on, and R's part F control would report nothing. (b) A dated revision of part F saying so, before any run of it: this stage adds no rule file. (c) Answering only refusal vectors, so that a match is literal: part F would then not read the model's acceptances |
+| D-js-probe-semantics | **The Native AOT probe judges the answered `semantics` vectors at the parse**, on a summary line of its own; every other one is still not implemented | Recorded, not judged, as stage SJL-13.2a did: the probe would then not check what Conformance.Tests' run checks |
+
+In the table, R is bundle [`sjl-15-001`](../evidence/sjl-15-001/decision-rule.md)'s rule and `VMC/` is Broiler.VM's
+`src/Broiler.VM.Profile.JavaScript.Compiler/`. The places where the library differs from either engine, named for
+SJL-15.3: Broiler.JS refuses a duplicate `__proto__` entry at the second entry only
+(`Broiler.JS/Broiler.JavaScript.Compiler/SyntaxValidation.cs`), where the library refuses every entry after the first;
+Broiler.VM does not search an arrow's parameters for `arguments` (its remark in `VMC/JsBinder.EarlyErrors.cs`), which the
+specification's ContainsArguments does (an inference); Broiler.VM reports only the innermost member when members nest,
+because its search does not enter a class body (`VMC/JsCompiler.Walk.cs`), where the library reports every enclosing
+member once; and the library reports EA0005 at a real place, each `arguments` reference, where the stage table's row reads
+"the binder reports it at 0:0 (N14); from SJL-15 the model's place is real". None of it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in
+both repositories.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

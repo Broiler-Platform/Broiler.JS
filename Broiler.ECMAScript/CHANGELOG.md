@@ -596,6 +596,25 @@ Not yet packed under a version of its own: the stream's next version is set when
   The canonical dump of a parse (`runners/SyntaxDump.cs`) writes a model section when the result has a model, and is the
   same bytes as before when it has none. No observable change: no engine sets the member, and with it off nothing moves.
 
+- `Broiler.ECMAScript.Frontend`: **the semantic model's early errors of the function context** (milestone SJL-15.2,
+  stage 2; the decisions of 2026-11-25, D-js-channel and D-js-semantic-rows, in `docs/roadmap/SharedLibraries.md`'s
+  section "Shared static semantics (SJL-15)"; design [`docs/frontend/design.md`](docs/frontend/design.md), section
+  10.4). With `ParseRequest.BuildSemanticModel` on, the parse also reports the model's `semantics` rows among its
+  diagnostics, in decision D11's order, and refuses on them, so that a refused source has no model; the partial walk
+  before a grammar refusal reports them too. The rows, by group:
+  - the super group: HasDirectSuper of methods (EE0015, EE0093, EE0106, EE0121, EE0124, EE0126, EE0142), a SuperProperty
+    or a SuperCall in a function's parameters or body (EE0074 to EE0077, EE0102 to EE0105, EE0117 to EE0120, EE0150 to
+    EE0153), in a field initialiser (EE0131) or a static block (EE0139), and `super` in a Script's or a Module's own code
+    (EE0162, EE0172); ShadowRealm's EP0017 and EP0018 are carried with no report of their own;
+  - ContainsArguments of a field initialiser (EE0130) and of a static block (EE0138), at the member;
+  - eval code's from the caller's `InheritedContext`, PerformEval's steps 11.f to 11.h (EA0003, EA0004, EA0005);
+  - expressions: a duplicate `__proto__` entry (EE0018), a template's TemplateStrings bound (EE0021), and a for-in or
+    for-of head target that is not a reference (EE0054).
+
+  The Native AOT probe and the conformance runner's library-level adapter (`runners/AlgorithmsLibrary.Semantics.cs`)
+  answer the vectors of those rows, judged at the parse. No public member is added. No observable change: no published
+  version carries the member, and with it off nothing moves.
+
 ### Changed
 
 - `Broiler.ECMAScript.Intl`'s `NumberFormatter`, over data that carries them (the owner's decision of 2026-11-08, "Keep + fix
