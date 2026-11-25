@@ -740,9 +740,14 @@ parameters goal hands the partial walk no statement, its body goal its statement
 
 Each place is the one Broiler.VM's binder names (section 3, "a check taken from Broiler.VM's binder at the node the
 binder names"), but where the library differs from either engine, as `docs/roadmap/SharedLibraries.md` lists for
-SJL-15.3: Broiler.JS refuses a duplicate `__proto__` entry at the second entry only; Broiler.VM does not search an arrow's
-parameters for `arguments`, and reports only the innermost member when members nest; and the library reports EA0005 at
-each reference, a real place.
+SJL-15.3: Broiler.JS refuses a duplicate `__proto__` entry at the second entry only; Broiler.VM does not search an
+arrow's parameters for `arguments`, and reports only the innermost member when members nest; and the library reports
+EA0005 at each reference, a real place. It also differs in what it refuses: Broiler.JS admits a SuperProperty in a
+function expression that is an object literal's property value and not a method, which EE0075 refuses
+(`Broiler.JS/Broiler.JavaScript.Compiler.Tests/PropertyStoreCacheTests.cs`,
+`ASuperAssignmentStillTargetsTheHomeObjectsPrototype`, runs such a program); and Broiler.VM drops EA0005 when the eval
+code itself declares `arguments`, where ContainsArguments reads every reference, which shows only in sources already
+refused (eval code in a field initialiser is strict, and a strict binding of `arguments` is refused).
 
 **The vectors.** The library-level adapter (`runners/AlgorithmsLibrary.Semantics.cs`) answers the `semantics` vectors
 whose identifier names a row in its own list, held equal to `SemanticRows` by a Conformance test, and reads them at the

@@ -3825,7 +3825,7 @@ as mitigations whose effect is not shown: why a test host, its data collector or
 not known, and only the hosted Windows runs can show whether these steps now pass. Then stage 2. None of it is
 accepted.
 
-*(Noted 2026-11-25, at SJL-15.2 stage 2, whose merge is the second model commit.)* The note above ends "Then stage 2."
+*(Noted 2026-11-25, at SJL-15.2 stage 2, whose merge is the second model commit.)* The note above reads "Then stage 2."
 The change before this one is Broiler-Platform/Broiler.JS#1134 (`2259fd4a`), which left the `Broiler.ECMAScript` test
 projects out of ci.yml's Test step. This change is stage 2: the early-error channel and the function-context rows. With
 `ParseRequest.BuildSemanticModel` on, the declarations walk also reports the model's rows, a new internal table
@@ -3835,18 +3835,20 @@ null on a refusal; the partial walk before a grammar refusal reports them and bu
 group (HasDirectSuper of methods, and a SuperProperty or a SuperCall in a function's parameters or body, in a field
 initialiser, in a static block, and in a Script's or a Module's own code, EE0172 moved here from stage 6), the
 ContainsArguments rows of field initialisers and static blocks, eval code's rows from the caller's context (PerformEval's
-steps 11.f to 11.h), and three rows of expressions (a duplicate `__proto__` entry, a template's bound, and a for-in or
-for-of head's target); ShadowRealm's two rows are carried with no report of their own. With the member off nothing
-moves. The library-level adapter answers the `semantics` vectors whose row the model reports, and the Native AOT probe
-judges them at the parse on a line of its own. Whether part F at stage 8 reads ShadowRealm's two rows, which have no
+steps 11.f to 11.h), and rows of expressions (a duplicate `__proto__` entry, a template's bound, and a for-in or for-of
+head's target); ShadowRealm's rows, EP0017 and EP0018, are carried with no report of their own. With the member off
+nothing moves. The library-level adapter answers the `semantics` vectors whose row the model reports, and the Native AOT
+probe judges them at the parse on a line of its own. Whether part F at stage 8 reads EP0017 and EP0018, which have no
 report of their own, as having "a site in the library" is unknown: the rule names only EA0006 to EA0008 as rows without
 one.
 
 **The merge condition.** Both workflows are green on the PR; after the merge, nothing merges to `main` until both push
-runs at the merge have concluded. For ci.yml's run that includes the one re-run D-js-part-b-attempt allows. A later
-push cancels ci.yml's push run. A later push never cancels Shared libraries' push run, because its push group carries
-the commit. Its conclusion is imported too, as at stage 1. Part B is taken after the merge, against the merge's own
-first parent.
+runs at the merge have concluded. For ci.yml's run that includes the one re-run D-js-part-b-attempt allows
+(`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run (`.github/workflows/ci.yml:25-27`,
+:36-39). A later push never cancels Shared libraries' push run, because its push group carries the commit
+(`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1 ("Nothing merged to the
+default branch until both push runs at it had concluded", `docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken
+after the merge, against the merge's own first parent.
 
 **This stage's decisions of 2026-11-25**, each taken as recommended under the owner's direction and recorded as the
 owner's decision of 2026-11-25. Their authority is the direction quoted above, which leaves out only "the start ...;
@@ -3864,12 +3866,22 @@ In the table, R is bundle [`sjl-15-001`](../evidence/sjl-15-001/decision-rule.md
 `src/Broiler.VM.Profile.JavaScript.Compiler/`. The places where the library differs from either engine, named for
 SJL-15.3: Broiler.JS refuses a duplicate `__proto__` entry at the second entry only
 (`Broiler.JS/Broiler.JavaScript.Compiler/SyntaxValidation.cs`), where the library refuses every entry after the first;
-Broiler.VM does not search an arrow's parameters for `arguments` (its remark in `VMC/JsBinder.EarlyErrors.cs`), which the
-specification's ContainsArguments does (an inference); Broiler.VM reports only the innermost member when members nest,
-because its search does not enter a class body (`VMC/JsCompiler.Walk.cs`), where the library reports every enclosing
-member once; and the library reports EA0005 at a real place, each `arguments` reference, where the stage table's row reads
-"the binder reports it at 0:0 (N14); from SJL-15 the model's place is real". None of it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in
-both repositories.
+Broiler.VM does not search an arrow's parameters for `arguments` (its remark in `VMC/JsBinder.EarlyErrors.cs`), which
+the specification's ContainsArguments does (an inference); Broiler.VM reports only the innermost member when members
+nest, because its search does not enter a class body (`VMC/JsCompiler.Walk.cs`), where the library reports every
+enclosing member once; and the library reports EA0005 at a real place, each `arguments` reference, where the stage
+table's row reads "the binder reports it at 0:0 (N14); from SJL-15 the model's place is real". The library also differs
+from either engine in what it refuses, named for SJL-15.3 too. Broiler.JS admits a SuperProperty in a function
+expression that is an object literal's property value and not a method, which EE0075 refuses (the specification's
+FunctionBody Contains SuperProperty): Broiler.JS's
+`Broiler.JS/Broiler.JavaScript.Compiler.Tests/PropertyStoreCacheTests.cs`
+(`ASuperAssignmentStillTargetsTheHomeObjectsPrototype`) runs such a program, the parse corpus
+(`conformance/parse/corpus.manifest`) holds it as an input the library refuses only with the member on, and the
+catalogue's row for EE0075 reads both engines as refusing it, with no note of the part Broiler.JS misses. Broiler.VM
+drops EA0005 when the eval code itself declares `arguments` (`VMC/JsBinder.Walks.cs`, `VMC/JsBinder.EarlyErrors.cs`),
+where ContainsArguments, and so the library, reads every reference; that shows only in sources already refused, since
+eval code in a field initialiser is strict and a strict binding of `arguments` is refused. None of it is accepted: no
+second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
 
 ## Invariants
 
