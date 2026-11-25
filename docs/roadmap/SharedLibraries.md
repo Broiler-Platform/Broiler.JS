@@ -3885,6 +3885,29 @@ where ContainsArguments, and so the library, reads every reference; that shows o
 eval code in a field initialiser is strict and a strict binding of `arguments` is refused. None of it is accepted: no
 second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
 
+*(Noted 2026-11-25, after part B's runs at the second model commit.)* The note of 2026-11-25 at SJL-15.2 stage 2 reads
+"Part B is taken after the merge, against the merge's own first parent", and its merge condition reads "after the merge,
+nothing merges to `main` until both push runs at the merge have concluded". Stage 2 merged as
+Broiler-Platform/Broiler.JS#1135, `6c61879bce81b1a7badf987e16c7b0531030258d`, **the second model commit**, named with its
+first parent `2259fd4a` (Broiler-Platform/Broiler.JS#1134, no model commit) in bundle
+[`sjl-15-001`](../evidence/sjl-15-001/README.md)'s README. Nothing merged to the default branch until both push runs at it
+had concluded. Part B is taken at it and at its first parent and retained in the bundle's
+[`part-b-6c61879b/`](../evidence/sjl-15-001/part-b-6c61879b/README.md), as that README's note of 2026-11-25 records:
+bundle `sjl-12-001`'s tool byte-unchanged, built and run from a clean archive of each commit; both runs complete and
+identical in every field, compared by `scripts/compliance/compare_parse_corpus.py` with no admitted class and by the
+dumps' hashes, the reports' headers differing only in each assembly's module version id, which names a build; Shared
+libraries' push run and ci.yml's push run each green in its first attempt, with no re-run, so the one re-run decision
+D-js-part-b-attempt allows was not needed.
+
+**The reading**, taken as recommended under the owner's direction quoted above and recorded as the owner's decision of
+2026-11-25: **part B read MET on the retained runs at the model commits taken so far
+(`be6c4a5c3e389c7eb2aff71c34e31bdae5efe276`, `6c61879bce81b1a7badf987e16c7b0531030258d`), limited to them; the part's
+verdict waits for the last model commit before the base.** At `6c61879b` the rule's "the commit's CI run of every test
+project passed" is read on both workflows' push runs, each as it concluded in its first attempt. The reading at
+`be6c4a5c` and its flag for the owner, in the note of 2026-11-24 above, stay as written. Next: SJL-15.2 stage 3, jump
+targets and labels, the third model commit, judged by its part B against its own first parent. None of it is accepted:
+no second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
