@@ -54,6 +54,21 @@ Broiler.ECMAScript.Semantics.FunctionKind.value__ field System.Int32
 Broiler.ECMAScript.Semantics.LabelTarget sealed class
 Broiler.ECMAScript.Semantics.LabelTarget.get_LabelSet() method System.Collections.Generic.IReadOnlyList`1<System.String>
 Broiler.ECMAScript.Semantics.LabelTarget.get_Statement() method Broiler.ECMAScript.Syntax.Statement
+Broiler.ECMAScript.Semantics.PrivateEnvironment sealed class
+Broiler.ECMAScript.Semantics.PrivateEnvironment.get_Class() method Broiler.ECMAScript.Syntax.ClassNode
+Broiler.ECMAScript.Semantics.PrivateEnvironment.get_Names() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.PrivateNameBinding>
+Broiler.ECMAScript.Semantics.PrivateEnvironment.get_Outer() method Broiler.ECMAScript.Semantics.PrivateEnvironment
+Broiler.ECMAScript.Semantics.PrivateNameBinding sealed class
+Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Elements() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.SyntaxNode>
+Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Environment() method Broiler.ECMAScript.Semantics.PrivateEnvironment
+Broiler.ECMAScript.Semantics.PrivateNameBinding.get_IsStatic() method System.Boolean
+Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Kind() method Broiler.ECMAScript.Semantics.PrivateNameKind
+Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Name() method System.String
+Broiler.ECMAScript.Semantics.PrivateNameKind enum
+Broiler.ECMAScript.Semantics.PrivateNameKind.Accessor = 2
+Broiler.ECMAScript.Semantics.PrivateNameKind.Field = 0
+Broiler.ECMAScript.Semantics.PrivateNameKind.Method = 1
+Broiler.ECMAScript.Semantics.PrivateNameKind.value__ field System.Int32
 Broiler.ECMAScript.Semantics.Scope sealed class
 Broiler.ECMAScript.Semantics.Scope.get_Declarations() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.Declaration>
 Broiler.ECMAScript.Semantics.Scope.get_Kind() method Broiler.ECMAScript.Semantics.ScopeKind
@@ -76,6 +91,8 @@ Broiler.ECMAScript.Semantics.SemanticModel sealed class
 Broiler.ECMAScript.Semantics.SemanticModel.DeclarationOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.Declaration
 Broiler.ECMAScript.Semantics.SemanticModel.FactsOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.FunctionFacts
 Broiler.ECMAScript.Semantics.SemanticModel.ParentOf(Broiler.ECMAScript.Semantics.Scope) method Broiler.ECMAScript.Semantics.Scope
+Broiler.ECMAScript.Semantics.SemanticModel.PrivateEnvironmentOf(Broiler.ECMAScript.Syntax.ClassNode) method Broiler.ECMAScript.Semantics.PrivateEnvironment
+Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.PrivateIdentifier) method Broiler.ECMAScript.Semantics.PrivateNameBinding
 Broiler.ECMAScript.Semantics.SemanticModel.ScopeOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.Scope
 Broiler.ECMAScript.Semantics.SemanticModel.TargetOf(Broiler.ECMAScript.Syntax.BreakStatement) method Broiler.ECMAScript.Semantics.LabelTarget
 Broiler.ECMAScript.Semantics.SemanticModel.TargetOf(Broiler.ECMAScript.Syntax.ContinueStatement) method Broiler.ECMAScript.Semantics.LabelTarget

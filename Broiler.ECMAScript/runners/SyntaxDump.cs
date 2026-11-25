@@ -34,6 +34,13 @@ namespace Broiler.ECMAScript.Runners;
 /// D-js-part-g, so that the determinism runs compare this side table too). A parse without a model is dumped as before.
 /// <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
 /// </para>
+/// <para>
+/// From SJL-15.2 stage 4 it also holds, after those lines, the private-name tables: per class in tree order, its private
+/// environment (the class and the class of its outer environment) and then each of its names in order (the name, its
+/// kind, whether it is static, and its elements); then per private name in tree order, the class of the environment that
+/// holds its binding, or none (decision D-js-part-g). A parse without a model is dumped as before. <i>(Added 2026-11-25,
+/// at SJL-15.2 stage 4.)</i>
+/// </para>
 /// </remarks>
 internal static class SyntaxDump
 {
@@ -195,6 +202,34 @@ internal static class SyntaxDump
             }
 
             text.Append('\n');
+        }
+
+        // Each class's private environment and its names, then each private name's binding by its environment's class, in
+        // tree order, by the nodes' own references (SJL-15.2 stage 4); never the model's maps.
+        foreach (var node in nodes)
+        {
+            if (node is not ClassNode @class)
+                continue;
+            var environment = model.PrivateEnvironmentOf(@class);
+            text.Append("model-private-environment ").Append(Reference(order, @class)).Append(' ')
+                .Append(environment.Outer is { } outer ? Reference(order, outer.Class) : "-").Append('\n');
+            foreach (var binding in environment.Names)
+            {
+                text.Append("model-private-name ");
+                Escaped(text, binding.Name);
+                text.Append(' ').Append(Number((int)binding.Kind)).Append(' ').Append(Flag(binding.IsStatic));
+                foreach (var element in binding.Elements)
+                    text.Append(' ').Append(Reference(order, element));
+                text.Append('\n');
+            }
+        }
+
+        foreach (var node in nodes)
+        {
+            if (node is not PrivateIdentifier name)
+                continue;
+            text.Append("model-private ").Append(Reference(order, name)).Append(' ')
+                .Append(model.Resolve(name) is { } binding ? Reference(order, binding.Environment.Class) : "-").Append('\n');
         }
     }
 

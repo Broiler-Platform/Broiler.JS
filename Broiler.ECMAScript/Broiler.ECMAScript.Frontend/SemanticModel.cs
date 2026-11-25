@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   9
-// Annotated:        9/9
-// Exempt:           24
-// Human-reviewed:   0/9
+// Relevant units:   17
+// Annotated:        17/17
+// Exempt:           40
+// Human-reviewed:   0/17
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       9
+// Unverified:       17
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -101,17 +101,24 @@ public enum FunctionKind
 /// built per compilation unit, after the parse, by the declarations walk itself, which "does not start a second one", and
 /// only when the request sets <see cref="ParseRequest.BuildSemanticModel"/>. At SJL-15.2 stage 1 it holds the scopes with
 /// their parents, the declarations with their binding identifiers, and the per-function facts; from stage 3 it also holds
-/// each <c>break</c>'s and <c>continue</c>'s target (<see cref="TargetOf(BreakStatement)"/>); resolution, private names, the
-/// module record, named evaluation, captures and the early errors that are not purely grammatical are later stages'. From
-/// stage 2 the walk that builds it also reports its early errors of the function context (the super rows,
-/// ContainsArguments, eval code's from the caller's context, and three of expressions') among the parse's diagnostics, so
-/// that a source they refuse has no model, and from stage 3 those of jump targets (a <c>break</c> or a <c>continue</c> with
-/// no target, and an undefined break or continue target); the early errors of private names and the module record are
-/// later stages'. <i>(Revised 2026-11-25, at SJL-15.2 stage 2; where it names the early errors, it read "and the early
-/// errors that are not purely grammatical are later stages'.")</i> <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when jump
-/// targets joined the model; it read "resolution, jump targets, private names, the module record, named evaluation,
-/// captures and the early errors that are not purely grammatical are later stages'" and "the early errors of jump targets,
-/// private names and the module record are later stages'.")</i>
+/// each <c>break</c>'s and <c>continue</c>'s target (<see cref="TargetOf(BreakStatement)"/>), and from stage 4 each
+/// class's private environment and the binding each private name names (<see cref="PrivateEnvironmentOf"/>,
+/// <see cref="Resolve(PrivateIdentifier)"/>); resolution, the module record, named evaluation, captures and the early
+/// errors that are not purely grammatical are later stages'. From stage 2 the walk that builds it also reports its
+/// early errors of the function context (the super rows, ContainsArguments, eval code's from the caller's context, and
+/// three of expressions') among the parse's diagnostics, so that a source they refuse has no model, from stage 3 those
+/// of jump targets (a <c>break</c> or a <c>continue</c> with no target, and an undefined break or continue target), and
+/// from stage 4 those of private names (a private name no enclosing class declares, in a Script, in a Module, and in
+/// eval code against the private names its caller sees); the early errors of the module record are later stages'.
+/// <i>(Revised 2026-11-25, at SJL-15.2 stage 2; where it names the early errors, it read "and the early errors that are
+/// not purely grammatical are later stages'.")</i> <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when jump targets
+/// joined the model; it read "resolution, jump targets, private names, the module record, named evaluation, captures
+/// and the early errors that are not purely grammatical are later stages'" and "the early errors of jump targets,
+/// private names and the module record are later stages'.")</i> <i>(Revised 2026-11-25, at SJL-15.2 stage 4, when
+/// private names joined the model; it read "each <c>break</c>'s and <c>continue</c>'s target
+/// (<see cref="TargetOf(BreakStatement)"/>); resolution, private names, the module record, named evaluation, captures
+/// and the early errors that are not purely grammatical are later stages'", "and from stage 3 those of jump targets"
+/// and "the early errors of private names and the module record are later stages'.")</i>
 /// </summary>
 /// <remarks>
 /// <para>
@@ -128,11 +135,14 @@ public enum FunctionKind
 /// </para>
 /// <para>
 /// <b>A node of another tree is a caller's error</b> (convention 3): <see cref="ScopeOf"/>, <see cref="DeclarationOf"/>,
-/// <see cref="FactsOf"/> and both <see cref="TargetOf(BreakStatement)"/> overloads throw <see cref="ArgumentException"/>
+/// <see cref="FactsOf"/>, both <see cref="TargetOf(BreakStatement)"/> overloads, <see cref="PrivateEnvironmentOf"/> and
+/// <see cref="Resolve(PrivateIdentifier)"/> throw <see cref="ArgumentException"/>
 /// for a node that is not in the model's tree, and <see cref="ParentOf"/> for a scope that is not one of the model's.
 /// <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when <c>TargetOf</c> joined them; it read "<see cref="ScopeOf"/>,
 /// <see cref="DeclarationOf"/> and <see cref="FactsOf"/> throw <see cref="ArgumentException"/> for a node that is not in
-/// the model's tree".)</i>
+/// the model's tree".)</i> <i>(Revised 2026-11-25, at SJL-15.2 stage 4, when <c>PrivateEnvironmentOf</c> and
+/// <c>Resolve</c> joined them; it read "<see cref="FactsOf"/> and both <see cref="TargetOf(BreakStatement)"/> overloads
+/// throw".)</i>
 /// </para>
 /// <para><b>Immutable, and safe to call concurrently</b> (convention 10).</para>
 /// </remarks>
@@ -145,8 +155,10 @@ public sealed class SemanticModel
     private readonly Dictionary<SyntaxNode, Declaration> declarationOf;
     private readonly Dictionary<SyntaxNode, FunctionFacts> factsOf;
     private readonly Dictionary<SyntaxNode, LabelTarget> targetOf;
+    private readonly Dictionary<SyntaxNode, PrivateNameBinding> privateOf;
+    private readonly Dictionary<ClassNode, PrivateEnvironment> privateEnvironmentOf;
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design; IP=Low; Security=Low; Resources=1; Fingerprint=BD0D4A
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design; IP=Low; Security=Low; Resources=1; Fingerprint=40E31D
     // Hairs-Human:        PENDING
     internal SemanticModel(
         IReadOnlyList<Scope> scopes,
@@ -155,7 +167,9 @@ public sealed class SemanticModel
         Dictionary<Scope, Scope?> parentOf,
         Dictionary<SyntaxNode, Declaration> declarationOf,
         Dictionary<SyntaxNode, FunctionFacts> factsOf,
-        Dictionary<SyntaxNode, LabelTarget> targetOf)
+        Dictionary<SyntaxNode, LabelTarget> targetOf,
+        Dictionary<SyntaxNode, PrivateNameBinding> privateOf,
+        Dictionary<ClassNode, PrivateEnvironment> privateEnvironmentOf)
     {
         Scopes = scopes;
         Functions = functions;
@@ -164,6 +178,8 @@ public sealed class SemanticModel
         this.declarationOf = declarationOf;
         this.factsOf = factsOf;
         this.targetOf = targetOf;
+        this.privateOf = privateOf;
+        this.privateEnvironmentOf = privateEnvironmentOf;
     }
 
     /// <summary>
@@ -323,6 +339,54 @@ public sealed class SemanticModel
             throw new ArgumentException("The node is not in the semantic model's tree.", nameof(jump));
         return targetOf[jump];
     }
+
+    /// <summary>
+    /// The private environment a class's body declares (JSD-0080: "private-name environments"; ECMA-262 PrivateEnvironment
+    /// Records, made by ClassDefinitionEvaluation, clause 15.7.14): the class, the environment the class is
+    /// evaluated in as its outer one, and its PrivateBoundIdentifiers as bindings in source order, once each. Every class of
+    /// the tree has one, empty when it declares no private name. <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+    /// </summary>
+    /// <param name="class">A <see cref="ClassNode"/> of the model's tree.</param>
+    /// <returns>Its private environment.</returns>
+    /// <exception cref="ArgumentNullException">The class is null.</exception>
+    /// <exception cref="ArgumentException">The class is not in the model's tree.</exception>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 PrivateEnvironment Records, s15.7.14 ClassDefinitionEvaluation, PrivateBoundIdentifiers, JSD-0080 private names; IP=Low; Security=Medium; Resources=1; Fingerprint=F1416F
+    // Hairs-Human:        PENDING
+    public PrivateEnvironment PrivateEnvironmentOf(ClassNode @class)
+    {
+        ArgumentNullException.ThrowIfNull(@class);
+        if (!scopeOf.ContainsKey(@class))
+            throw new ArgumentException("The node is not in the semantic model's tree.", nameof(@class));
+        return privateEnvironmentOf[@class];
+    }
+
+    /// <summary>
+    /// The binding a private name names (JSD-0080: "private names"; ECMA-262 ResolvePrivateIdentifier, read
+    /// statically, and AllPrivateIdentifiersValid): for a class element's key, the binding it declares in its class's
+    /// environment; for a reference, a member's <c>.#x</c> (an optional link's among them) or <c>#x in o</c>, the binding of
+    /// the innermost class whose environment holds the reference and declares the name, whether the reference and the
+    /// declaration are static or not. A class's heritage is resolved in the environment around the class, its keys,
+    /// initialisers, static blocks and methods in its own. Every key and every reference that names one binding answer the
+    /// same instance. Null where no class of the unit declares the name: in eval code, for a name its caller sees; under the
+    /// dynamic function's goals; and for an object literal's private key, which declares nothing (catalogue row EE0016
+    /// refuses every such key, so that no model holds one). Under the Script and Module
+    /// goals no reference is null, since the model exists only for an accepted source. This is the first of the area
+    /// design's two <c>Resolve</c> overloads; a caller passing a null literal names the overload by a cast.
+    /// <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+    /// </summary>
+    /// <param name="name">A <see cref="PrivateIdentifier"/> of the model's tree.</param>
+    /// <returns>Its binding, or null.</returns>
+    /// <exception cref="ArgumentNullException">The name is null.</exception>
+    /// <exception cref="ArgumentException">The name is not in the model's tree.</exception>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolvePrivateIdentifier, AllPrivateIdentifiersValid, JSD-0080 private names; IP=Low; Security=Medium; Resources=1; Fingerprint=326814
+    // Hairs-Human:        PENDING
+    public PrivateNameBinding? Resolve(PrivateIdentifier name)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+        if (!scopeOf.ContainsKey(name))
+            throw new ArgumentException("The node is not in the semantic model's tree.", nameof(name));
+        return privateOf.TryGetValue(name, out var binding) ? binding : null;
+    }
 }
 
 /// <summary>
@@ -361,4 +425,132 @@ public sealed class LabelTarget
     /// [A, B, C]; empty when it has none.
     /// </summary>
     public IReadOnlyList<string> LabelSet { get; }
+}
+
+/// <summary>
+/// The kind of a private name (ECMA-262 PrivateElement's [[Kind]]): a field, a method, or an accessor, as
+/// <see cref="PrivateNameBinding.Kind"/>. <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+/// </summary>
+/// <remarks>The numbers are stable; a later member takes a new number.</remarks>
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 PrivateElement Kind, JSD-0080 private names; IP=Low; Security=Low; Resources=0; Fingerprint=1E0C8E
+// Hairs-Human:        PENDING
+public enum PrivateNameKind
+{
+    /// <summary>A private field: a <see cref="FieldDefinition"/> that is not an auto-accessor.</summary>
+    Field = 0,
+
+    /// <summary>A private method: a <see cref="MethodDefinition"/> of <see cref="MethodKind.Method"/>, plain, generator, async or async generator.</summary>
+    Method = 1,
+
+    /// <summary>
+    /// A private accessor: a getter, a setter, a getter and setter pair of one placement, or an auto-accessor
+    /// (<c>accessor #x</c>, the auto-accessors proposal, <see cref="ProposalFlags.AutoAccessors"/>).
+    /// </summary>
+    Accessor = 2,
+}
+
+/// <summary>
+/// A class's private environment, as <see cref="SemanticModel.PrivateEnvironmentOf"/> answers it (JSD-0080: "private-name
+/// environments"; milestone SJL-15.2, stage 4; ECMA-262 PrivateEnvironment Records, and
+/// ClassDefinitionEvaluation, clause 15.7.14): the class whose body declares it, the environment around it, and its private
+/// names. <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+/// </summary>
+/// <remarks>
+/// Its outer environment is the one the class is evaluated in, so that a class in another class's heritage skips that
+/// class, as AllPrivateIdentifiersValid and ClassDefinitionEvaluation read the heritage; it differs from the scope
+/// <see cref="SemanticModel.ScopeOf"/> gives the heritage, which is the class's own (the session's decision
+/// D-js-private-environments). Immutable, and safe to read concurrently (convention 10).
+/// </remarks>
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 PrivateEnvironment Records OuterPrivateEnvironment Names, s15.7.14 ClassDefinitionEvaluation, JSD-0080 private names; IP=Low; Security=Low; Resources=1; Fingerprint=5528D6
+// Hairs-Human:        PENDING
+public sealed class PrivateEnvironment
+{
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 PrivateEnvironment Records Names, JSD-0080 private names; IP=Low; Security=Low; Resources=0; Fingerprint=4214C5
+    // Hairs-Human:        PENDING
+    private IReadOnlyList<PrivateNameBinding> names = Array.Empty<PrivateNameBinding>();
+    private Dictionary<string, PrivateNameBinding>? byName;
+
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 private names; IP=Low; Security=Low; Resources=1; Fingerprint=0BB576
+    // Hairs-Human:        PENDING
+    internal PrivateEnvironment(ClassNode @class, PrivateEnvironment? outer)
+    {
+        Class = @class;
+        Outer = outer;
+    }
+
+    /// <summary>The class whose ClassBody declares the environment.</summary>
+    public ClassNode Class { get; }
+
+    /// <summary>
+    /// Its [[OuterPrivateEnvironment]] as the source gives it: the private environment the class is evaluated in, so that a
+    /// class in another class's heritage skips that class; null for the unit's outermost classes, eval code's included.
+    /// </summary>
+    public PrivateEnvironment? Outer { get; }
+
+    /// <summary>
+    /// Its [[Names]]: the class's PrivateBoundIdentifiers in source order, once each, <c>#constructor</c> among them where the
+    /// class writes it; empty when it declares none.
+    /// </summary>
+    public IReadOnlyList<PrivateNameBinding> Names => names;
+
+    /// <summary>The environment's names, set once by the walk that builds the model, before the model is published.</summary>
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 private names; IP=Low; Security=Low; Resources=1; Fingerprint=4AFDF8
+    // Hairs-Human:        PENDING
+    internal void Seal(PrivateNameBinding[] bindings)
+    {
+        names = Array.AsReadOnly(bindings);
+        byName = new Dictionary<string, PrivateNameBinding>(bindings.Length, StringComparer.Ordinal);
+        foreach (var binding in bindings)
+            byName.TryAdd(binding.Name, binding);
+    }
+
+    /// <summary>The binding of a name the environment declares, or null; a lookup, never an order.</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolvePrivateIdentifier, JSD-0080 private names; IP=Low; Security=Low; Resources=1; Fingerprint=419EDD
+    // Hairs-Human:        PENDING
+    internal PrivateNameBinding? Find(string name) => byName is not null && byName.TryGetValue(name, out var binding) ? binding : null;
+}
+
+/// <summary>
+/// A private name's binding in its class's environment, as <see cref="SemanticModel.Resolve(PrivateIdentifier)"/> answers
+/// it (JSD-0080: "private names"; milestone SJL-15.2, stage 4; the area design's <c>PrivateNameBinding</c>): its name, its
+/// environment, its kind, its placement, and the elements that declare it. One instance per binding, shared by its keys
+/// and by every reference to it. <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+/// </summary>
+/// <remarks>
+/// A getter and a setter of one name and one placement are one binding with two elements. The class's [[PrivateMethods]]
+/// brands are read from its environment's names: a binding not of <see cref="PrivateNameKind.Field"/>, instance or static
+/// (the session's decision D-js-private-environments). Immutable, and safe to read concurrently (convention 10).
+/// </remarks>
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 PrivateElement, PrivateEnvironment Records Names, PrivateBoundIdentifiers, JSD-0080 private names; IP=Low; Security=Low; Resources=1; Fingerprint=6F405B
+// Hairs-Human:        PENDING
+public sealed class PrivateNameBinding
+{
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 private names; IP=Low; Security=Low; Resources=1; Fingerprint=158CA8
+    // Hairs-Human:        PENDING
+    internal PrivateNameBinding(string name, PrivateEnvironment environment, PrivateNameKind kind, bool isStatic, IReadOnlyList<SyntaxNode> elements)
+    {
+        Name = name;
+        Environment = environment;
+        Kind = kind;
+        IsStatic = isStatic;
+        Elements = elements;
+    }
+
+    /// <summary>The name's StringValue, with its <c>#</c> (clause 12.7.1.2), as <see cref="PrivateIdentifier.Name"/> holds it.</summary>
+    public string Name { get; }
+
+    /// <summary>The private environment that holds it, the one <see cref="SemanticModel.PrivateEnvironmentOf"/> answers for its class.</summary>
+    public PrivateEnvironment Environment { get; }
+
+    /// <summary>Whether it is a field, a method or an accessor.</summary>
+    public PrivateNameKind Kind { get; }
+
+    /// <summary>Whether its elements are <c>static</c>. A static name used through an instance, or the other way round, is the brand check's run-time error, not an early one.</summary>
+    public bool IsStatic { get; }
+
+    /// <summary>
+    /// The class elements that declare it, each a <see cref="MethodDefinition"/> or a <see cref="FieldDefinition"/>, in source
+    /// order: one, or a getter and a setter.
+    /// </summary>
+    public IReadOnlyList<SyntaxNode> Elements { get; }
 }

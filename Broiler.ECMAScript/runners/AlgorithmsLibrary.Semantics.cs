@@ -39,10 +39,16 @@ namespace Broiler.ECMAScript.Runners;
 /// tokens retained; the one call <c>eval(</c> a string literal <c>)</c> is found among them, the Script holding exactly one
 /// <c>eval</c> name, not after <c>.</c> or <c>?.</c>; its literal's String value is the eval code; and the caller's facts are
 /// the model's functions whose node holds the call (a field initialiser's by its initialiser), the innermost giving the
-/// strictness and the nearest that is not an arrow the inherited context (PerformEval step 10). The eval code is then parsed
+/// strictness and the nearest that is not an arrow the inherited context (PerformEval step 10); from stage 4 the inherited
+/// context also carries the private names visible at the call, read from the Script's model as EvalDeclarationInstantiation
+/// builds them (steps 4 to 6): the names of the innermost class whose elements hold the call and of the environments
+/// around it, innermost first, each once, and an empty list where no class holds the call (the session's decision
+/// D-js-adapter-visible-names). The eval code is then parsed
 /// under <see cref="ParseGoal.Eval"/> with that context, forced strict where the caller is strict, the member on. Whether a
 /// name <c>eval</c> is the intrinsic one is not resolved: resolution is a later stage's. A Script the on path refuses, or
-/// one with no such call or more than one <c>eval</c>, is not implemented.
+/// one with no such call or more than one <c>eval</c>, is not implemented. <i>(Revised 2026-11-25, at SJL-15.2 stage 4,
+/// when the visible private names joined the context; it read "the nearest that is not an arrow the inherited context
+/// (PerformEval step 10). The eval code is then parsed".)</i>
 /// </para>
 /// <para>
 /// <b>What it answers</b> is the syntax area's rendering (<see cref="RenderParse"/>): <c>error: SyntaxError</c> for a
@@ -67,7 +73,10 @@ internal sealed partial class AlgorithmsLibrary
     /// <summary>
     /// The rows whose vectors this adapter answers, each the semantic model's (SJL-15.2): stage 2's, the super group with
     /// EE0172, the ContainsArguments rows, eval code's rows from the caller's context, and three rows of expressions; and
-    /// stage 3's, the rows of jump targets. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
+    /// stage 3's, the rows of jump targets. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i> Stage 4's, the rows of private
+    /// names; group <c>pn1</c> stays unanswered, its vectors naming no row and two of them expecting a value the Script
+    /// computes after catching the eval code's refusal (the session's decision D-js-adapter-visible-names).
+    /// <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
     /// </summary>
     internal static readonly IReadOnlyList<string> SemanticsAnsweredRows =
     [
@@ -87,6 +96,9 @@ internal sealed partial class AlgorithmsLibrary
 
         // Stage 3: jump targets: break or continue with no target, and ContainsUndefinedBreakTarget and ContainsUndefinedContinueTarget of each owner.
         "EE0058", "EE0059", "EE0081", "EE0082", "EE0136", "EE0137", "EE0165", "EE0166", "EE0175", "EE0176",
+
+        // Stage 4: private names: AllPrivateIdentifiersValid of a Script and of a Module, and of eval code against the private names visible at the call.
+        "EE0167", "EE0177", "EA0009",
     ];
 
     /// <summary>
@@ -239,28 +251,81 @@ internal sealed partial class AlgorithmsLibrary
 
         if (holding.Count == 0)
             return null;
-        InheritedContext? context = null;
-        for (var i = holding.Count - 1; i >= 0 && context is null; i--)
+
+        // The four flags from the innermost function that is not an arrow; a Script's are all false. (Revised 2026-11-25, at
+        // SJL-15.2 stage 4, which builds one context with the visible private names; it chose one of six contexts, a
+        // Script's being InheritedContext.TopLevel.)
+        var (inFunction, inMethod, inDerivedConstructor, inClassFieldInitializer) = (false, false, false, false);
+        for (var i = holding.Count - 1; i >= 0; i--)
         {
-            context = holding[i].Kind switch
+            if (holding[i].Kind == FunctionKind.Arrow)
+                continue;
+            (inFunction, inMethod, inDerivedConstructor, inClassFieldInitializer) = holding[i].Kind switch
             {
-                FunctionKind.Arrow => null,
-                FunctionKind.Script => InheritedContext.TopLevel,
-                FunctionKind.Normal => new InheritedContext { InFunction = true },
-                FunctionKind.Method or FunctionKind.Getter or FunctionKind.Setter or FunctionKind.ClassConstructor or FunctionKind.StaticBlock =>
-                    new InheritedContext { InFunction = true, InMethod = true },
-                FunctionKind.DerivedConstructor => new InheritedContext { InFunction = true, InMethod = true, InDerivedConstructor = true },
-                FunctionKind.FieldInitializer => new InheritedContext { InFunction = true, InMethod = true, InClassFieldInitializer = true },
-                _ => InheritedContext.TopLevel,
+                FunctionKind.Normal => (true, false, false, false),
+                FunctionKind.Method or FunctionKind.Getter or FunctionKind.Setter or FunctionKind.ClassConstructor or FunctionKind.StaticBlock => (true, true, false, false),
+                FunctionKind.DerivedConstructor => (true, true, true, false),
+                FunctionKind.FieldInitializer => (true, true, false, true),
+                _ => (false, false, false, false),
             };
+            break;
         }
 
         return new ParseRequest(new SourceText(code), ParseGoal.Eval, UnicodeDataHome.Tables, RunnerRegularExpressions.Instance)
         {
             Switches = ParseSwitches.For(ParseGoal.Eval) with { ForcedStrict = holding[^1].IsStrict },
-            Context = context ?? InheritedContext.TopLevel,
+            Context = new InheritedContext
+            {
+                InFunction = inFunction,
+                InMethod = inMethod,
+                InDerivedConstructor = inDerivedConstructor,
+                InClassFieldInitializer = inClassFieldInitializer,
+                VisiblePrivateNames = VisiblePrivateNames(model, at),
+            },
             BuildSemanticModel = true,
         };
+    }
+
+    /// <summary>
+    /// The private names visible at a direct <c>eval</c> at <paramref name="at"/> (SJL-15.2 stage 4; the session's decision
+    /// D-js-adapter-visible-names), as EvalDeclarationInstantiation builds them (steps 4 to 6) from the running context's
+    /// PrivateEnvironment, which an arrow does not change: the innermost class whose elements hold the call, a computed key, a
+    /// field initialiser and a static block among them but not its heritage, its name or its decorators; then that class's
+    /// <see cref="SemanticModel.PrivateEnvironmentOf"/> and its outer environments, innermost first, each environment's names
+    /// in source order and each name once; an empty list where no class holds the call. Read from the model's public
+    /// members alone.
+    /// </summary>
+    internal static IReadOnlyList<string> VisiblePrivateNames(SemanticModel model, int at)
+    {
+        ArgumentNullException.ThrowIfNull(model);
+        ClassNode? innermost = null;
+        foreach (var scope in model.Scopes)
+        {
+            if (scope.Kind != ScopeKind.ClassBody || scope.Node is not ClassNode @class)
+                continue;
+            foreach (var element in @class.Elements)
+            {
+                // The model's scopes are in source order, an outer class's before an inner one's, so the last that holds it is innermost.
+                if (element.Span.Offset <= at && at < element.Span.Offset + element.Span.Length)
+                {
+                    innermost = @class;
+                    break;
+                }
+            }
+        }
+
+        var names = new List<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        for (var environment = innermost is null ? null : model.PrivateEnvironmentOf(innermost); environment is not null; environment = environment.Outer)
+        {
+            foreach (var binding in environment.Names)
+            {
+                if (seen.Add(binding.Name))
+                    names.Add(binding.Name);
+            }
+        }
+
+        return names;
     }
 
     /// <summary>

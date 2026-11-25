@@ -10,13 +10,17 @@ namespace Broiler.ECMAScript.Conformance.Tests;
 
 /// <summary>
 /// The library-level runner's semantics adapter (SJL-15.2, from stage 2; the session's decisions D-js-adapter and
-/// D-js-adapter-form, and from stage 3 D-js-adapter-groups): it answers the <c>semantics</c> vectors whose identifier names
+/// D-js-adapter-form, from stage 3 D-js-adapter-groups and from stage 4 D-js-adapter-visible-names): it answers the
+/// <c>semantics</c> vectors whose identifier names
 /// a row the semantic model reports, and those of the correspondence groups the model decides, parses with
 /// <see cref="ParseRequest.BuildSemanticModel"/> on, and is read at the parse, <c>error: SyntaxError</c> as a refusal and
 /// any other outcome as an acceptance. Every other semantics vector is not implemented. <i>(Revised 2026-11-25, at SJL-15.2
 /// stage 3, when group <c>lb1</c> was answered; it read "(SJL-15.2, from stage 2; the session's decisions D-js-adapter and
 /// D-js-adapter-form): it answers the <c>semantics</c> vectors whose identifier names a row the semantic model reports,
-/// parses".)</i>
+/// parses".)</i> From stage 4 a <c>DirectEval</c> vector's eval code also inherits the private names visible at the call,
+/// read from its Script's model, and group <c>pn1</c> stays not implemented. <i>(Revised 2026-11-25, at SJL-15.2 stage 4;
+/// it read "D-js-adapter-form, and from stage 3 D-js-adapter-groups): it answers" and ended "Every other semantics vector is
+/// not implemented.")</i>
 /// </summary>
 public class SemanticsAdapterTests
 {
@@ -97,7 +101,12 @@ public class SemanticsAdapterTests
         Assert.All(SemanticsVectors, static v => Assert.StartsWith(AlgorithmsLibrary.SemanticsPrefix, v.Id, StringComparison.Ordinal));
     }
 
-    /// <summary>The Script request is the library's default for its goal plus the member; each answered DirectEval vector's context and strictness by id.</summary>
+    /// <summary>
+    /// The Script request is the library's default for its goal plus the member; each answered DirectEval vector's context,
+    /// its visible private names and its strictness by id. <i>(Revised 2026-11-25, at SJL-15.2 stage 4, when the visible
+    /// private names joined the context; it read "each answered DirectEval vector's context and strictness by id", and held
+    /// every context's names null.)</i>
+    /// </summary>
     [Fact]
     public void The_Script_request_is_the_default_plus_the_member_and_the_eval_code_inherits_its_caller_s_context()
     {
@@ -163,6 +172,20 @@ public class SemanticsAdapterTests
             ["semantics/super/ee0151/0003"] = (InheritedContext.TopLevel, false),
             ["semantics/super/ee0152/0003"] = (InheritedContext.TopLevel, false),
             ["semantics/super/ee0153/0003"] = (InheritedContext.TopLevel, false),
+
+            // Stage 4: the private-name rows' eval code, in a method of the class that declares #x, or at a sloppy Script's
+            // top level. Class code is strict. (Added 2026-11-25, at SJL-15.2 stage 4.)
+            ["semantics/private-names/ea0009/0001"] = (method, true),
+            ["semantics/private-names/ea0009/0002"] = (InheritedContext.TopLevel, false),
+            ["semantics/private-names/ea0009/0003"] = (method, true),
+        };
+
+        // The visible private names, by id: an empty list for every other entry, never null. (Added 2026-11-25, at SJL-15.2
+        // stage 4.)
+        var visible = new Dictionary<string, string[]>(StringComparer.Ordinal)
+        {
+            ["semantics/private-names/ea0009/0001"] = ["#x"],
+            ["semantics/private-names/ea0009/0003"] = ["#x"],
         };
 
         // Every answered DirectEval vector has its entry, and no other vector has one. (Added 2026-11-25, at SJL-15.2 stage
@@ -184,7 +207,7 @@ public class SemanticsAdapterTests
                 (context.InFunction, context.InMethod, context.InDerivedConstructor, context.InClassFieldInitializer)
                     == (actual.InFunction, actual.InMethod, actual.InDerivedConstructor, actual.InClassFieldInitializer),
                 id + ": " + (actual.InFunction, actual.InMethod, actual.InDerivedConstructor, actual.InClassFieldInitializer));
-            Assert.Null(actual.VisiblePrivateNames);
+            Assert.Equal(visible.GetValueOrDefault(id, []), actual.VisiblePrivateNames);
         }
 
         // ea0005/0001: the function is inside the eval code, so the eval code's own function resets ContainsArguments.
@@ -212,6 +235,32 @@ public class SemanticsAdapterTests
         Assert.Null(AlgorithmsLibrary.DirectEvalRequest("o.eval('1');"));
         Assert.Null(AlgorithmsLibrary.DirectEvalRequest("eval(x);"));
         Assert.Null(AlgorithmsLibrary.DirectEvalRequest("super.x; eval('1');"));
+    }
+
+    /// <summary>
+    /// The visible private names a direct eval's request carries (D-js-adapter-visible-names): the innermost class whose
+    /// elements hold the call and the environments around it, innermost first, each name once; a class's heritage not held
+    /// by its elements; a computed key, a field initialiser, a static block and an arrow held; an empty list, never null,
+    /// where no class holds the call or none declares a name. Group <c>pn1</c> is not answered. <i>(Added 2026-11-25, at
+    /// SJL-15.2 stage 4.)</i>
+    /// </summary>
+    [Theory]
+    [InlineData("class A { #a; m() { class B { #b; n() { return eval('1'); } } } }", "#b #a")]
+    [InlineData("class A { #a; m() { class B extends (eval('1'), Object) { #b; } } }", "#a")]
+    [InlineData("class A { #a; x = eval('1'); }", "#a")]
+    [InlineData("class A { #a; m() { return (() => eval('1'))(); } }", "#a")]
+    [InlineData("class A { #a; static { eval('1'); } }", "#a")]
+    [InlineData("class A { #a; [eval('1')] = 1; }", "#a")]
+    [InlineData("class A { #a; get #b() { return 1; } set #b(v) {} m() { class B { #a; #c; n() { return eval('1'); } } } }", "#a #c #b")]
+    [InlineData("class A { m() { eval('1'); } }", "")]
+    [InlineData("eval('1');", "")]
+    [InlineData("function f() { eval('1'); }", "")]
+    public void A_direct_eval_inherits_the_private_names_visible_at_the_call(string script, string names)
+    {
+        var request = AlgorithmsLibrary.DirectEvalRequest(script);
+        Assert.NotNull(request);
+        Assert.Equal(names.Split(' ', StringSplitOptions.RemoveEmptyEntries), request!.Context!.VisiblePrivateNames);
+        Assert.All(SemanticsVectors.Where(static v => AlgorithmsLibrary.SemanticsGroup(v) == "pn1"), static v => Assert.False(AlgorithmsLibrary.IsLibrarySemantics(v), v.Id));
     }
 
     /// <summary>

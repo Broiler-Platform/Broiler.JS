@@ -11,12 +11,17 @@ namespace Broiler.ECMAScript.Syntax.Tests;
 
 /// <summary>
 /// The semantic model's early errors (SJL-15.2 from stage 2; the session's decisions D-js-channel and D-js-semantic-rows,
-/// and from stage 3 D-js-jump-rows and D-js-jump-targets): the rows of <see cref="SemanticRows"/>, stage 2's of the
-/// function context and of expressions and stage 3's of jump targets, reported only with
+/// from stage 3 D-js-jump-rows and D-js-jump-targets, and from stage 4 D-js-private-rows and D-js-private-environments):
+/// the rows of <see cref="SemanticRows"/>, stage 2's of the
+/// function context and of expressions, stage 3's of jump targets and stage 4's of private names, reported only with
 /// <see cref="ParseRequest.BuildSemanticModel"/> on, through the declarations walk's one report and one sequence, in
 /// decision D11's order. Each row is refused on and accepted off, its nearest admitted variant accepted both ways; the
-/// places the rows are reported at; the boundaries of jumps; the tie of a <c>syntax</c> row with a <c>semantics</c> row at
-/// one place; and the partial walk before a grammar refusal. <i>(Revised 2026-11-25, at SJL-15.2 stage 3; it read "(SJL-15.2
+/// places the rows are reported at; the boundaries of jumps and of private names; the ties of a <c>syntax</c> row with a
+/// <c>semantics</c> row at one place; eval code's visible private names, read only with the member on; and the partial
+/// walk before a grammar refusal. <i>(Revised 2026-11-25, at SJL-15.2 stage 4; it read "and from stage 3 D-js-jump-rows
+/// and D-js-jump-targets): the rows of <see cref="SemanticRows"/>, stage 2's of the function context and of expressions
+/// and stage 3's of jump targets, reported only", "the boundaries of jumps; the tie of a <c>syntax</c> row with a
+/// <c>semantics</c> row at one place; and the partial walk".)</i> <i>(Revised 2026-11-25, at SJL-15.2 stage 3; it read "(SJL-15.2
 /// stage 2; the session's decisions D-js-channel and D-js-semantic-rows): the rows of <see cref="SemanticRows"/>, reported
 /// only" and "the places the rows are reported at; the tie".)</i>
 /// </summary>
@@ -35,11 +40,15 @@ public sealed class SemanticRowsTests
     /// exception is <c>cfo</c>, InClassFieldInitializer alone, a context PerformEval does not make, for the rows that read
     /// that flag alone. <i>(Revised 2026-11-25, at SJL-15.2 stage 2's review; it read "(with <c>im</c> InMethod, <c>dc</c>
     /// InDerivedConstructor, <c>cf</c> InClassFieldInitializer, <c>if</c> InFunction)", and <c>dc</c> left InFunction
-    /// unset.)</i>
+    /// unset.)</i> With <c>v</c>, eval code's context also gives the visible private names: the option tokens that begin
+    /// with <c>#</c>, read in their order from the options as written, not from the set, or an empty list where there are
+    /// none; without <c>v</c> the list is null. <i>(Revised 2026-11-25, at SJL-15.2 stage 4, which added <c>v</c>; the
+    /// eval context set no visible names.)</i>
     /// </summary>
     private static ParseRequest Request(string options, string text, bool model)
     {
-        var set = new HashSet<string>(options.Split(' ', StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal);
+        var tokens = options.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var set = new HashSet<string>(tokens, StringComparer.Ordinal);
         var goal = set.Contains("m") ? ParseGoal.Module : set.Contains("e") ? ParseGoal.Eval
             : set.Contains("p") ? ParseGoal.FormalParameters : set.Contains("b") ? ParseGoal.FunctionBody : ParseGoal.Script;
         var switches = ParseSwitches.For(goal);
@@ -63,6 +72,7 @@ public sealed class SemanticRowsTests
                     InMethod = set.Contains("im") || dc || cf,
                     InDerivedConstructor = dc,
                     InClassFieldInitializer = cf || set.Contains("cfo"),
+                    VisiblePrivateNames = set.Contains("v") ? tokens.Where(static o => o.StartsWith('#')).ToArray() : null,
                 },
             };
         }
@@ -194,6 +204,11 @@ public sealed class SemanticRowsTests
         new("EE0166", "", "continue L;", "continue", 0, "L", "", "var n = 0; L: for (var i = 0; i < 3; i++) { if (i) continue L; n++; } n"),
         new("EE0175", "m", "break L;", "break", 0, "L", "m", "L: { break L; }"),
         new("EE0176", "m", "continue L;", "continue", 0, "L", "m", "L: for (;;) { continue L; }"),
+
+        // Stage 4: a private name no enclosing class declares, at the member, with the name and its # as the argument.
+        new("EE0167", "", "this.#x;", "this", 0, "#x", "", "class C { #x; m() { this.#x; } }"),
+        new("EE0177", "m", "this.#x;", "this", 0, "#x", "m", "class C { #x; m() { this.#x; } }"),
+        new("EA0009", "e v", "this.#x;", "this", 0, "#x", "e v #x", "this.#x;"),
     ];
 
     public static TheoryData<Fixture> FixtureData()
@@ -255,6 +270,40 @@ public sealed class SemanticRowsTests
         { "EE0166", "", "A: { B: for (;;) continue A; }" },
         { "EE0166", "e", "continue L;" },
         { "EE0059", "e", "break;" },
+
+        // Stage 4: private names no enclosing class declares, with the vectors' refused sources. (Added 2026-11-25, at
+        // SJL-15.2 stage 4.)
+        { "EE0167", "", "class C { m() { return this.#y; } }" },
+        { "EE0167", "", "class C { #x; static m(o) { return #y in o; } }" },
+        { "EE0167", "", "var r = 'ran'; try { (function () { class C { m() { return this.#y; } } })(); } catch (e) { r = e.name; } r" },
+        { "EE0167", "", "function f() { class C { m() { return this.#y; } } }" },
+        { "EE0167", "", "class C { m(o) { return o?.#y; } }" },
+        { "EE0167", "", "class C { m(o) { return o?.a.#y; } }" },
+        { "EE0167", "", "class C { m() { return this.#f(); } }" },
+        { "EE0167", "", "class C { m() { return this.#t`x`; } }" },
+        { "EE0167", "", "class C { m() { return new this.#C(); } }" },
+        { "EE0167", "", "class C { m() { this.#y = 1; } }" },
+        { "EE0167", "", "class C { m() { this.#y++; } }" },
+        { "EE0167", "", "class C { m() { this.#y += 1; } }" },
+        { "EE0167", "", "class C { m() { [this.#y] = [1]; } }" },
+        { "EE0167", "", "class C { m() { ({ a: this.#y } = {}); } }" },
+        { "EE0167", "", "class C { m() { for (this.#y of []); } }" },
+        { "EE0167", "", "class C { m() { for (this.#y in {}); } }" },
+        { "EE0167", "", "class C extends (o => o.#x, Object) { #x; }" },
+        { "EE0167", "", "class O { m() { class I extends (o => o.#y, Object) { #y; } } }" },
+        { "EE0167", "", "class C { m() { class D { #x; } return this.#x; } }" },
+        { "EE0167", "", "this.#\\u0079;" },
+        { "EE0167", "", "switch (0) { case 0: this.#x; }" },
+        { "EE0167", "", "#y in {};" },
+        { "EE0167", "", "class C { #x; m() { return class { [this.#y] = 1; }; } }" },
+        { "EE0177", "m", "class C { m() { return this.#y; } }" },
+        { "EE0177", "m", "class C { #x; static m(o) { return #y in o; } }" },
+        { "EE0177", "m", "export default class { m() { return this.#y; } }" },
+        { "EA0009", "e v", "#y in this;" },
+        { "EA0009", "e im fs v #x", "this.#y;" },
+        { "EA0009", "e im fs v", "r += 'a'; this.#y" },
+        { "EA0009", "e v", "r += 'a'; this.#x" },
+        { "EA0009", "e v #x", "class D { m() { return this.#y; } }" },
     };
 
     // The nearest admitted variants of the dynamic goals and of each eval context: accepted on and off.
@@ -302,6 +351,46 @@ public sealed class SemanticRowsTests
         { "m", "L: for (;;) { if (x) break L; continue L; } switch (0) { default: break; }" },
         { "b", "L: for (;;) { continue L; } M: { break M; } while (0) break;" },
         { "e", "L: for (;;) { continue L; }" },
+
+        // Stage 4: private names a class declares, the vectors' accepted sources among them; placement playing no part.
+        // (Added 2026-11-25, at SJL-15.2 stage 4.)
+        { "", "class C { #x = 1; m() { return this.#x; } } new C().m()" },
+        { "", "class C { #x = 2; m() { class D { n(o) { return o.#x; } } return new D().n(this); } } new C().m()" },
+        { "", "class C { m() { return this.#x; } #x; }" },
+        { "", "class C { #x; m() { class D { #x; n(o) { return o.#x; } } } }" },
+        { "", "class C { static #s; m() { return C.#s; } }" },
+        { "", "class C { static #s; m() { return this.#s; } }" },
+        { "", "class C { #x; static m(o) { return o.#x; } }" },
+        { "", "class C { #x; static m(o) { return #x in o; } }" },
+        { "", "class C { get #a() { return 1; } set #a(v) {} m() { return this.#a; } }" },
+        { "", "class C { static get #a() { return 1; } static set #a(v) {} static m() { return C.#a; } }" },
+        { "", "class C { #m() {} *#g() {} async #f() {} async *#h() {} n() { this.#m(); this.#g(); this.#f(); this.#h(); } }" },
+        { "", "class C { #x; get g() { return this.#x; } set g(v) { this.#x = v; } }" },
+        { "", "class C { #x = 1; y = this.#x; }" },
+        { "", "class C { static #s; static { C.#s; } }" },
+        { "", "class C { #x; m(a = this.#x) {} }" },
+        { "", "class C { #x; m({ [this.#x]: y }) {} }" },
+        { "", "class C { #x; [o => o.#x] = 1; }" },
+        { "", "class C { #x; y = () => this.#x; }" },
+        { "", "class C { static #s; static { (function () { C.#s; }); } }" },
+        { "", "class C { #x; m() { return { f(o) { return o.#x; } }; } }" },
+        { "", "class O { #x; m() { class I extends (o => o.#x, Object) {} } }" },
+        { "", "class C { #x; m(o) { return o?.#x; } }" },
+        { "", "class C { #x; m() { this.#x = 1; this.#x++; this.#x += 1; [this.#x] = [1]; ({ a: this.#x } = {}); for (this.#x of []); delete this.y; } }" },
+        { "", "class C { #x; m() { switch (0) { case 0: this.#x; } } }" },
+        { "", "class C { #\\u0079; m() { return this.#y; } }" },
+        { "", "class C { #y; m() { return this.#\\u0079; } }" },
+        { "m", "class C { #x; m() { return this.#x; } }" },
+        { "e", "this.#x;" },
+        { "e", "#x in this; class D { m() { return this.#y; } }" },
+        { "e v #x", "this.#x;" },
+        { "e v", "class D { #y; m() { return this.#y; } }" },
+        { "e v #x", "class D { m(o) { return o.#x; } }" },
+        { "e im fs v #x", "this.#x" },
+        { "e im fs v #m", "this.#m()" },
+        { "e im fs v #s", "C.#s" },
+        { "b", "this.#x;" },
+        { "p", "a = this.#x" },
     };
 
     [Theory]
@@ -555,6 +644,175 @@ public sealed class SemanticRowsTests
         Assert.Equal(new[] { conflict.Code }, Parse("", text).Diagnostics.Select(static d => d.Code));
     }
 
+    /// <summary>
+    /// The private names' places and boundaries (SJL-15.2 stage 4): each row at its member or <c>in</c> expression, the
+    /// member's start and not its name, with the name and its <c>#</c> as the argument; a class's heritage reading the names
+    /// around the class, its computed keys, initialisers, static blocks, parameters and nested functions its own; a
+    /// <c>case</c> clause's reference refused; <c>#constructor</c> refused by EE0132 alone; one row per reference, a chain's
+    /// outer reference first at their one place; a private <c>delete</c>'s EE0030 beside the row; the Module's row, and
+    /// eval code's against the names its caller sees, before a PerformEval row at the same place, and before a ScriptBody
+    /// conflict placed later under first error (the known difference from EvalDeclarationInstantiation's order).
+    /// <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+    /// </summary>
+    [Fact]
+    public void Each_private_name_row_is_placed_at_its_member_or_in_expression()
+    {
+        var member = "class C { m(o) { return o.#y; } }";
+        Assert.Equal(new[] { (Code("EE0167"), Offset(member, "o.#y", 0)) }, Reported("all", member));
+        Assert.Equal(new[] { "#y" }, Parse("", member).Diagnostics[0].Arguments);
+        var privateIn = "class C { m(o) { return #y in o; } }";
+        Assert.Equal(new[] { (Code("EE0167"), Offset(privateIn, "#y", 0)) }, Reported("all", privateIn));
+        var heritage = "class C extends (o => o.#x, Object) { #x; }";
+        Assert.Equal(new[] { (Code("EE0167"), Offset(heritage, "o.#x", 0)) }, Reported("all", heritage));
+        foreach (var text in new[]
+        {
+            "class C { #x; [o => o.#x] = 1; }", "class C { #x; y = () => this.#x; }", "class C { static #s; static { (function () { C.#s; }); } }",
+            "class C { #x; m(a = this.#x) {} }",
+        })
+        {
+            var on = Parse("all", text);
+            Assert.True(on.Outcome == ParseOutcome.Accepted && on.Diagnostics.Count == 0, text + ": " + Describe(on));
+        }
+
+        var inCase = "switch (0) { case 0: this.#x; }";
+        Assert.Equal(new[] { (Code("EE0167"), Offset(inCase, "this", 0)) }, Reported("all", inCase));
+
+        // #constructor is in the class's environment: EE0132 alone refuses its declaration, and its use is no undeclared name.
+        var constructor = "class C { #constructor; m() { this.#constructor; } }";
+        Assert.Equal(new[] { CodeOfSyntax("EE0132") }, Reported("all", constructor).Select(static r => r.Code));
+        Assert.Equal(new[] { CodeOfSyntax("EE0132") }, Parse("all", constructor, model: false).Diagnostics.Select(static d => d.Code));
+
+        // Where no class declares #constructor, its use is undeclared like any other name's: EE0167 on, accepted off.
+        var undeclaredConstructor = "class C { m() { this.#constructor; } }";
+        Assert.Equal(new[] { (Code("EE0167"), Offset(undeclaredConstructor, "this", 0)) }, Reported("all", undeclaredConstructor));
+        Assert.Empty(Parse("all", undeclaredConstructor, model: false).Diagnostics);
+
+        // One row per reference, in source order; the first under first error.
+        var two = "this.#x; this.#y;";
+        Assert.Equal(new[] { (Code("EE0167"), 0), (Code("EE0167"), Offset(two, "this", 1)) }, Reported("all", two));
+        Assert.Equal(new[] { (Code("EE0167"), 0) }, Reported("", two));
+        Assert.Equal(new[] { "#x", "#y" }, Parse("all", two).Diagnostics.Select(static d => d.Arguments.Single()));
+
+        // A chain: both rows at the outer member's start, the outer reference (#b) first, in the walk's order.
+        var chain = Parse("all", "this.#a.#b;").Diagnostics;
+        Assert.Equal(new[] { (Code("EE0167"), 0, "#b"), (Code("EE0167"), 0, "#a") }, chain.Select(static d => (d.Code, d.Span.Offset, d.Arguments.Single())));
+
+        // A private delete: EE0030 at the unary on both paths, the row at the member on the on path.
+        var delete = "delete this.#x;";
+        Assert.Equal(new[] { (CodeOfSyntax("EE0030"), 0), (Code("EE0167"), Offset(delete, "this", 0)) }, Reported("all", delete));
+        Assert.Equal(new[] { CodeOfSyntax("EE0030") }, Parse("all", delete, model: false).Diagnostics.Select(static d => d.Code));
+
+        // The Module's row; eval code's under a list, before EA0005 at the same place.
+        Assert.Equal(new[] { (Code("EE0177"), 0) }, Reported("m all", "this.#x;"));
+        Assert.Equal(new[] { (Code("EA0009"), 0), (Code("EA0005"), 0) }, Reported("e cf v all", "arguments.#y"));
+        Assert.Equal(new[] { (Code("EA0009"), 0) }, Reported("e cf v", "arguments.#y"));
+
+        // Eval code: EA0009 keyed at its member comes before the ScriptBody's conflict keyed at the program's close, under
+        // first error too, where EvalDeclarationInstantiation would raise ParseText's early error first.
+        var conflict = Parse("e all", "this.#y; let a; let a;", model: false).Diagnostics.Single();
+        Assert.Equal(new[] { Code("EA0009"), conflict.Code }, Reported("e v all", "this.#y; let a; let a;").Select(static r => r.Code));
+        Assert.Equal(new[] { Code("EA0009") }, Reported("e v", "this.#y; let a; let a;").Select(static r => r.Code));
+
+        // The dynamic goals and eval code with no list check nothing.
+        foreach (var (options, text) in new[] { ("b", "this.#x;"), ("p", "a = this.#x"), ("e", "this.#x;"), ("e im", "#y in this;") })
+        {
+            var on = Parse(options + " all", text);
+            Assert.True(on.Outcome == ParseOutcome.Accepted && on.Diagnostics.Count == 0, options + " " + text + ": " + Describe(on));
+        }
+    }
+
+    /// <summary>
+    /// With the member off nothing reads eval code's visible private names (SJL-15.2 stage 4): Broiler.JS's bridge sends
+    /// them with the member off, so the same eval code with no list, an empty one and one holding <c>#x</c> gives the same
+    /// outcome, the same diagnostics and the same dump, under all errors, in each caller's context. Part B's identity runs
+    /// send no list and cannot show it. <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+    /// </summary>
+    [Fact]
+    public void With_the_member_off_eval_code_s_visible_private_names_are_read_nowhere()
+    {
+        var sources = new[]
+        {
+            "this.#x;", "this.#y;", "#y in this;", "this.#a.#b;", "class D { #y; m() { return this.#y; } }", "class D { m(o) { return o.#x; } }",
+            "arguments.#y", "this.#y; let a; let a;", "this.#y; super.x", "delete this.#x;", "r += 'a'; this.#y", "r += 'a'; this.#x",
+            "this.#x", "this.#m()", "C.#s", "this.#x; (",
+        };
+        var compared = 0;
+        foreach (var source in sources)
+        {
+            foreach (var caller in new[] { "e", "e im fs", "e cf", "e if" })
+            {
+                var results = new[] { caller + " all", caller + " all v", caller + " all v #x" }.Select(o => Parse(o, source, model: false)).ToArray();
+                var dump = SyntaxDump.Dump(results[0]);
+                foreach (var result in results)
+                {
+                    Assert.True(result.Outcome == results[0].Outcome && Describe(result) == Describe(results[0]), caller + " " + source + ": " + Describe(result));
+                    Assert.True(SyntaxDump.Dump(result).AsSpan().SequenceEqual(dump), caller + " " + source + ": the dump differs");
+                    Assert.Null(result.Model);
+                }
+
+                compared++;
+            }
+        }
+
+        Assert.Equal(sources.Length * 4, compared);
+    }
+
+    /// <summary>
+    /// A private name's row against a <c>syntax</c> row at the same place (SJL-15.2 stage 4; decision D11): a name row at
+    /// the member's start, keyed after the member's row, which is reported before the member's children are visited; a
+    /// scope's conflict at its close, which a member written right after it starts at, before the row by D11's sub-key; and
+    /// a row inside a scope, keyed before the scope's close and so before its conflict, although the conflicting
+    /// declarations come first in the source. <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+    /// </summary>
+    [Fact]
+    public void A_private_name_s_row_against_a_syntax_row_at_the_same_place()
+    {
+        const string text = "class C { m() { return implements.#y; } }";
+        var off = Parse("all", text, model: false);
+        Assert.Single(off.Diagnostics);
+        var name = off.Diagnostics[0];
+        Assert.Equal(Offset(text, "implements", 0), name.Span.Offset);
+        Assert.Equal(new[] { (Code("EE0167"), name.Span.Offset), (name.Code, name.Span.Offset) }, Reported("all", text));
+        Assert.Equal(new[] { Code("EE0167") }, Reported("", text).Select(static r => r.Code));
+        Assert.Equal(new[] { name.Code }, Parse("", text, model: false).Diagnostics.Select(static d => d.Code));
+
+        const string close = "{ let a; let a; }this.#x;";
+        var conflict = Parse("all", close, model: false).Diagnostics.Single();
+        var on = Parse("all", close).Diagnostics;
+        Assert.Equal(new[] { conflict.Code, Code("EE0167") }, on.Select(static d => d.Code));
+        Assert.True(on[0].Span.Offset < on[1].Span.Offset);
+        Assert.Equal(new[] { conflict.Code }, Parse("", close).Diagnostics.Select(static d => d.Code));
+        Assert.Equal(new[] { conflict.Code }, Parse("", close, model: false).Diagnostics.Select(static d => d.Code));
+
+        // A row anywhere inside a scope, before its close, comes before that scope's conflict, which is keyed at the close
+        // although its declarations come earlier: under first error the on path names the row, the off path the conflict.
+        const string inside = "class C { m() { let a; let a; this.#y; } }";
+        var insideConflict = Parse("all", inside, model: false).Diagnostics.Single();
+        Assert.True(insideConflict.Span.Offset < Offset(inside, "this", 0));
+        Assert.Equal(new[] { (Code("EE0167"), Offset(inside, "this", 0)), (insideConflict.Code, insideConflict.Span.Offset) }, Reported("all", inside));
+        Assert.Equal(new[] { Code("EE0167") }, Reported("", inside).Select(static r => r.Code));
+        Assert.Equal(new[] { insideConflict.Code }, Parse("", inside, model: false).Diagnostics.Select(static d => d.Code));
+    }
+
+    /// <summary>
+    /// An object literal's private key declares nothing (SJL-15.2 stage 4): EE0016 refuses the key on both paths, and a
+    /// reference only such a key could declare is still undeclared, so with the member on EE0167 follows at the member;
+    /// under first error EE0016, at the earlier place, on both paths. <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+    /// </summary>
+    [Theory]
+    [InlineData("({ #m() { return this.#m; } })")]
+    [InlineData("class C { f() { return { #m() {}, g() { return this.#m; } }; } }")]
+    public void An_object_literal_s_private_key_declares_nothing(string text)
+    {
+        var key = (CodeOfSyntax("EE0016"), Offset(text, "#m", 0));
+        Assert.Equal(new[] { key, (Code("EE0167"), Offset(text, "this", 0)) }, Reported("all", text));
+        Assert.Equal("#m", Parse("all", text).Diagnostics[1].Arguments.Single());
+        Assert.Equal(new[] { key }, Parse("all", text, model: false).Diagnostics.Select(static d => (d.Code, d.Span.Offset)));
+        Assert.Equal(new[] { key }, Reported("", text));
+        Assert.Equal(new[] { key }, Parse("", text, model: false).Diagnostics.Select(static d => (d.Code, d.Span.Offset)));
+        Assert.Null(Parse("all", text).Model);
+    }
+
     private static string CodeOfSyntax(string row) => ((LexicalRefusal)typeof(Rows).GetField(row, BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!).Code;
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -580,6 +838,10 @@ public sealed class SemanticRowsTests
     [InlineData("b", "break L; (", "EE0081")]
     [InlineData("m", "break L; (", "EE0175")]
     [InlineData("", "L: while (1) { if (x) break L; continue L; } switch (0) { default: break; } M: { break M; } break; (", "EE0059")]
+    [InlineData("", "this.#x; (", "EE0167")]
+    [InlineData("m", "this.#x; (", "EE0177")]
+    [InlineData("e v", "this.#x; (", "EA0009")]
+    [InlineData("", "class C { #x; m() { this.#x; } } this.#y; (", "EE0167")]
     public void The_partial_walk_reports_the_rows_before_a_grammar_refusal_with_the_member_on(string options, string text, string rows)
     {
         var codes = rows.Split(' ').Select(Code).ToArray();
@@ -594,5 +856,18 @@ public sealed class SemanticRowsTests
 
         Assert.Equal(new[] { grammar.Code }, Parse(options, text, model: false).Diagnostics.Select(static d => d.Code));
         Assert.Equal(new[] { codes[0] }, Parse(options, text).Diagnostics.Select(static d => d.Code));
+    }
+
+    /// <summary>
+    /// Eval code with no list before a grammar refusal: the grammar's refusal alone, on and off (SJL-15.2 stage 4).
+    /// <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+    /// </summary>
+    [Fact]
+    public void The_partial_walk_reads_no_null_list()
+    {
+        var off = Parse("e all", "this.#x; (", model: false);
+        var on = Parse("e all", "this.#x; (");
+        Assert.Single(off.Diagnostics);
+        Assert.Equal(Describe(off), Describe(on));
     }
 }

@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   114
-// Annotated:        114/114
-// Exempt:           69
-// Human-reviewed:   0/114
+// Relevant units:   119
+// Annotated:        119/119
+// Exempt:           73
+// Human-reviewed:   0/119
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       114
+// Unverified:       119
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -43,7 +43,9 @@ namespace Broiler.ECMAScript.Semantics;
 /// <b>The semantic model is built by this walk</b> (milestone SJL-15.2: "it does not start a second one"), when the request
 /// sets <see cref="ParseRequest.BuildSemanticModel"/>: the same visit, in the same order, also records each node's scope,
 /// each model scope's parent, the model's own scopes and its own facts, and, from stage 3, each jump's target
-/// <i>(added 2026-11-25, at SJL-15.2 stage 3)</i>, numbering them by a counter of its own, so that the
+/// <i>(added 2026-11-25, at SJL-15.2 stage 3)</i>, numbering them by a counter of its own, and, from stage 4, each class's
+/// private environment and each private name's binding, which it numbers by nothing <i>(added 2026-11-25, at SJL-15.2
+/// stage 4)</i>, so that the
 /// walk's sequence, which orders the diagnostics and the tables, is the same on or off on every parse the member's on path
 /// accepts. Only <see cref="Run"/> builds it; a partial walk before a grammar refusal never does, but with the member on it
 /// reports the model's rows (below). <i>(Revised 2026-11-25, at SJL-15.2 stage 2, when the model's rows joined the
@@ -109,7 +111,8 @@ internal sealed class DeclarationsWalk
 
     // The semantic model's state, made only when the request asks for the model (SJL-15.2): its scopes and facts with the
     // model's own sequence, the scope of every node, every model scope's parent, and the facts by node; from stage 3, each
-    // jump's target. (Added 2026-11-25, at SJL-15.2 stage 3.)
+    // jump's target. (Added 2026-11-25, at SJL-15.2 stage 3.) From stage 4, each private name's binding and each class's
+    // private environment. (Added 2026-11-25, at SJL-15.2 stage 4.)
     private readonly bool model;
     private readonly List<(int Start, int Sequence, Scope Scope)>? modelScopes;
     private readonly List<(int Start, int Sequence, FunctionFacts Facts)>? modelFunctions;
@@ -131,13 +134,20 @@ internal sealed class DeclarationsWalk
     // Hairs-AI:           Origin=AI; Spec=ECMA-262 ContainsUndefinedBreakTarget ContainsUndefinedContinueTarget LabelledEvaluation, JSD-0080 jump targets; IP=Low; Security=Medium; Resources=1; Fingerprint=10963D
     // Hairs-Human:        PENDING
     private readonly Dictionary<SyntaxNode, LabelTarget>? targetOf;
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolvePrivateIdentifier AllPrivateIdentifiersValid, JSD-0080 private names; IP=Low; Security=Medium; Resources=1; Fingerprint=C73638
+    // Hairs-Human:        PENDING
+    private readonly Dictionary<SyntaxNode, PrivateNameBinding>? privateOf;
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 PrivateEnvironment Records, s15.7.14 ClassDefinitionEvaluation, JSD-0080 private names; IP=Low; Security=Medium; Resources=1; Fingerprint=F74F37
+    // Hairs-Human:        PENDING
+    private readonly Dictionary<ClassNode, PrivateEnvironment>? privateEnvironmentOf;
     private int modelSequence;
 
     // Each class constructor's kind, on every request (the functions' facts are the same with the model on or off).
     private Dictionary<FunctionNode, FunctionKind>? constructorKinds;
 
     // The model's rows' state, made only when the request asks for the model (SJL-15.2 stage 2): whether the walk reports
-    // them, each method's home, and the members that have reported ContainsArguments once.
+    // them, each method's home, and the members that have reported ContainsArguments once; from stage 4, the row an
+    // undeclared private name breaks under the request's goal. (Added 2026-11-25, at SJL-15.2 stage 4.)
     private readonly bool semantics;
     // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.4 MethodDefinition HasDirectSuper, s15.7.1 ClassBody early errors, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=42B997
     // Hairs-Human:        PENDING
@@ -145,8 +155,11 @@ internal sealed class DeclarationsWalk
     // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.7.1 ContainsArguments, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=87C76A
     // Hairs-Human:        PENDING
     private readonly HashSet<SyntaxNode>? argumentsReported;
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s16.1.1 s16.2.1.1 AllPrivateIdentifiersValid, s19.2.1.3 EvalDeclarationInstantiation step 7, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=B03F19
+    // Hairs-Human:        PENDING
+    private readonly LexicalRefusal? undeclaredPrivateRow;
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=7FF2C0
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=01B720
     // Hairs-Human:        PENDING
     private DeclarationsWalk(ParseRequest request, bool buildModel, bool semantics)
     {
@@ -164,6 +177,8 @@ internal sealed class DeclarationsWalk
             ifClauseScopes = new(ReferenceEqualityComparer.Instance);
             declaredClasses = new(ReferenceEqualityComparer.Instance);
             targetOf = new(ReferenceEqualityComparer.Instance);
+            privateOf = new(ReferenceEqualityComparer.Instance);
+            privateEnvironmentOf = new(ReferenceEqualityComparer.Instance);
         }
 
         this.semantics = semantics;
@@ -171,6 +186,17 @@ internal sealed class DeclarationsWalk
         {
             methodHomes = new(ReferenceEqualityComparer.Instance);
             argumentsReported = new(ReferenceEqualityComparer.Instance);
+
+            // AllPrivateIdentifiersValid with no names, of a Script (EE0167) and of a Module (EE0177), and of eval code
+            // against the names its caller sees (EA0009), only where the request gives them: a null list leaves the check to
+            // the engine. The dynamic function's goals check none (the catalogue's EX0031 is an engine row).
+            undeclaredPrivateRow = request.Goal switch
+            {
+                ParseGoal.Script => SemanticRows.EE0167,
+                ParseGoal.Module => SemanticRows.EE0177,
+                ParseGoal.Eval => request.Context!.VisiblePrivateNames is null ? null : SemanticRows.EA0009,
+                _ => null,
+            };
         }
     }
 
@@ -295,7 +321,7 @@ internal sealed class DeclarationsWalk
     /// sequence; each declaration by its node, the tables' first, so that a class declaration's name answers its outer
     /// declaration (the session's decision D-js-declaration-of).
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=CADE39
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=3AD55B
     // Hairs-Human:        PENDING
     private SemanticModel Model(Scope[] tableScopes)
     {
@@ -321,7 +347,7 @@ internal sealed class DeclarationsWalk
                 declarationOf.TryAdd(declaration.Node, declaration);
         }
 
-        return new SemanticModel(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), scopeOf!, parentOf!, declarationOf, factsOf!, targetOf!);
+        return new SemanticModel(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), scopeOf!, parentOf!, declarationOf, factsOf!, targetOf!, privateOf!, privateEnvironmentOf!);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -550,9 +576,10 @@ internal sealed class DeclarationsWalk
     /// The rows of the program's own code (SJL-15.2 stage 2): a Script's <c>super</c> (EE0162) and a Module's (EE0172);
     /// eval code's from the caller's context, PerformEval's steps 11.f to 11.h (EA0003 to EA0005), for every eval request,
     /// direct or indirect, which the request does not tell apart; a dynamic function's those of the function its source is
-    /// parsed as (<paramref name="dynamic"/>).
+    /// parsed as (<paramref name="dynamic"/>). From stage 4 eval code's private names start at the names its caller sees,
+    /// where the request gives them; every other program's at none. <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s16.1.1 s16.2.1.1 Contains super, s19.2.1.1 PerformEval steps 11.f-11.h, s20.2.1.1.1 CreateDynamicFunction; IP=Low; Security=Medium; Resources=1; Fingerprint=154D35
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s16.1.1 s16.2.1.1 Contains super, s19.2.1.1 PerformEval steps 11.f-11.h, s20.2.1.1.1 CreateDynamicFunction; IP=Low; Security=Medium; Resources=1; Fingerprint=6D20C2
     // Hairs-Human:        PENDING
     private SemanticContext ProgramSemantic(SemanticContext? dynamic)
     {
@@ -566,7 +593,12 @@ internal sealed class DeclarationsWalk
                 return new SemanticContext(
                     caller.InMethod ? null : SemanticRows.EA0003,
                     caller.InDerivedConstructor ? null : SemanticRows.EA0004,
-                    caller.InClassFieldInitializer ? new ArgumentsAnchors(SemanticRows.EA0005, null, null) : null);
+                    caller.InClassFieldInitializer ? new ArgumentsAnchors(SemanticRows.EA0005, null, null) : null)
+                {
+                    // The caller's visible private names, the root of eval code's (EvalDeclarationInstantiation steps 4 to
+                    // 7; SJL-15.2 stage 4), where the request gives them.
+                    Privates = caller.VisiblePrivateNames is { } visible ? new PrivateScope(visible, null, null) : null,
+                };
             }
 
             case ParseGoal.FormalParameters or ParseGoal.FunctionBody:
@@ -692,7 +724,7 @@ internal sealed class DeclarationsWalk
     // The visit: each node's own rules, then its children under their context, pushed in reverse so that they are
     // visited in source order.
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=F12E47
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=48A9F3
     // Hairs-Human:        PENDING
     private void Visit(SyntaxNode node, Context context)
     {
@@ -916,6 +948,18 @@ internal sealed class DeclarationsWalk
                 CheckJump(unlabelledContinue, null, continues: true, context);
                 PushChildren(node, context);
                 return;
+
+            // The model's rows and fact (SJL-15.2 stage 4), at the member or `in` expression Broiler.VM's binder names: a
+            // private name's binding in the innermost class that declares it, or the undeclared name's row (EE0167, EE0177,
+            // EA0009). With the member off these fall to the default, as before.
+            case MemberExpression { Property: PrivateIdentifier privateName } privateMember when semantics:
+                CheckPrivateReference(privateName, privateMember, context);
+                PushChildren(node, context);
+                return;
+            case PrivateInExpression privateIn when semantics:
+                CheckPrivateReference(privateIn.Name, privateIn, context);
+                PushChildren(node, context);
+                return;
             default:
                 PushChildren(node, context);
                 return;
@@ -1049,7 +1093,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Functions (clauses 15.1 to 15.9).
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=5D6E14
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=D84F48
     // Hairs-Human:        PENDING
     private void VisitFunction(FunctionNode function, Context outer)
     {
@@ -1146,8 +1190,9 @@ internal sealed class DeclarationsWalk
             ModelScope = parameterScope,
 
             // The model's rows: an arrow's parameters and body are its enclosing code's for Contains and ContainsArguments,
-            // but, as every function's, a boundary for jumps (added 2026-11-25, at SJL-15.2 stage 3).
-            Semantic = isArrow ? (semantics ? outer.Semantic! with { Breakables = null, CurrentLabels = null } : null) : semantics ? FunctionSemantic(function, shape, inBody: false) : null,
+            // but, as every function's, a boundary for jumps (added 2026-11-25, at SJL-15.2 stage 3); every function's carry
+            // the private names around it (added 2026-11-25, at SJL-15.2 stage 4).
+            Semantic = isArrow ? (semantics ? outer.Semantic! with { Breakables = null, CurrentLabels = null } : null) : semantics ? FunctionSemantic(function, shape, inBody: false) with { Privates = outer.Semantic!.Privates } : null,
         };
         var bodyContext = parameterContext with
         {
@@ -1155,7 +1200,7 @@ internal sealed class DeclarationsWalk
             Await = function.IsAsync,
             ParamsOf = null,
             ModelScope = model ? bodyScope : null,
-            Semantic = isArrow ? (semantics ? outer.Semantic! with { Breakables = null, CurrentLabels = null } : null) : semantics ? FunctionSemantic(function, shape, inBody: true) : null,
+            Semantic = isArrow ? (semantics ? outer.Semantic! with { Breakables = null, CurrentLabels = null } : null) : semantics ? FunctionSemantic(function, shape, inBody: true) with { Privates = outer.Semantic!.Privates } : null,
         };
 
         Push(function.ExpressionBody, bodyContext);
@@ -1406,7 +1451,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Classes (clause 15.7) and object literals' methods (clause 13.2.5).
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=928113
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=7E8ABA
     // Hairs-Human:        PENDING
     private void VisitClass(ClassNode @class, Context outer)
     {
@@ -1486,7 +1531,19 @@ internal sealed class DeclarationsWalk
             }
         }
 
-        var elementContext = context with { InStaticBlock = false };
+        // The model's rows and fact (SJL-15.2 stage 4): the class's private names, in source order, once each, read by its
+        // elements' references, which the elements' context carries; the heritage, the name and the class's decorators keep
+        // the names around the class (AllPrivateIdentifiersValid; ClassDefinitionEvaluation evaluates the heritage in the
+        // outer private environment). With the model on, the class's environment and its bindings.
+        List<string>? names = null;
+        PrivateEnvironment? environment = null;
+        if (semantics)
+        {
+            names = new List<string>();
+            environment = CollectPrivateNames(@class, outer, names);
+        }
+
+        var elementContext = semantics ? context with { InStaticBlock = false, Semantic = context.Semantic! with { Privates = new PrivateScope(names!, environment, context.Semantic!.Privates) } } : context with { InStaticBlock = false };
         for (var i = @class.Elements.Count - 1; i >= 0; i--)
         {
             switch (@class.Elements[i])
@@ -1512,7 +1569,7 @@ internal sealed class DeclarationsWalk
 
                         // The model's rows: an initialiser admits a SuperProperty, not a SuperCall (EE0131), and anchors
                         // ContainsArguments (EE0130) at the field, inside every member that encloses it.
-                        Semantic = semantics ? new SemanticContext(null, SemanticRows.EE0131, new ArgumentsAnchors(SemanticRows.EE0130, field, elementContext.Semantic!.Arguments)) : null,
+                        Semantic = semantics ? new SemanticContext(null, SemanticRows.EE0131, new ArgumentsAnchors(SemanticRows.EE0130, field, elementContext.Semantic!.Arguments)) { Privates = elementContext.Semantic!.Privates } : null,
                     });
                     if (field.Key is ComputedPropertyName)
                         Push(field.Key, elementContext);
@@ -1537,7 +1594,7 @@ internal sealed class DeclarationsWalk
         PushAll(@class.Decorators, outer);
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=6A46B3
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=233DB0
     // Hairs-Human:        PENDING
     private void VisitStaticBlock(StaticBlock block, Context outer)
     {
@@ -1561,7 +1618,7 @@ internal sealed class DeclarationsWalk
 
             // The model's rows: a static block admits a SuperProperty, not a SuperCall (EE0139), and anchors
             // ContainsArguments (EE0138) at the block, inside every member that encloses it.
-            Semantic = semantics ? new SemanticContext(null, SemanticRows.EE0139, new ArgumentsAnchors(SemanticRows.EE0138, block, outer.Semantic!.Arguments)) : null,
+            Semantic = semantics ? new SemanticContext(null, SemanticRows.EE0139, new ArgumentsAnchors(SemanticRows.EE0138, block, outer.Semantic!.Arguments)) { Privates = outer.Semantic!.Privates } : null,
         };
         PushAll(block.Body, context);
     }
@@ -1590,6 +1647,107 @@ internal sealed class DeclarationsWalk
             seen[privateName.Name] = (isStatic, null);
         else
             Report(Rows.EE0123, key, privateName.Name);
+    }
+
+    /// <summary>
+    /// A class's private names (SJL-15.2 stage 4; PrivateBoundIdentifiers of its ClassBody): the key of every method, getter,
+    /// setter, field and auto-accessor that is a <see cref="PrivateIdentifier"/>, in source order, once each,
+    /// <c>#constructor</c> among them, added to <paramref name="names"/>; a pass of its own, which leaves EE0123's and
+    /// EE0132's dictionary as it is. With the model on, the class's environment, whose outer one is the innermost class
+    /// environment around the class, and its bindings: a getter and a setter of one name and one placement one binding, the
+    /// first occurrence of any other duplicate (which EE0123 refuses) the binding; each declaring key mapped to its binding.
+    /// It numbers nothing in the walk's sequence.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 PrivateBoundIdentifiers, s15.7.14 ClassDefinitionEvaluation, PrivateEnvironment Records, SJL-15.2 semantics rows, JSD-0080 private names; IP=Low; Security=Medium; Resources=1; Fingerprint=631988
+    // Hairs-Human:        PENDING
+    private PrivateEnvironment? CollectPrivateNames(ClassNode @class, Context outer, List<string> names)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        PrivateEnvironment? environment = null;
+        List<(string Name, PrivateNameKind Kind, bool IsStatic, List<SyntaxNode> Elements)>? declared = null;
+        Dictionary<string, (int Index, MethodKind? Pairable)>? byName = null;
+        List<(PrivateIdentifier Key, int Index)>? keys = null;
+        if (model)
+        {
+            PrivateEnvironment? around = null;
+            for (var scope = outer.Semantic!.Privates; scope is not null && around is null; scope = scope.Outer)
+                around = scope.Environment;
+            environment = new PrivateEnvironment(@class, around);
+            declared = new();
+            byName = new(StringComparer.Ordinal);
+            keys = new();
+        }
+
+        foreach (var element in @class.Elements)
+        {
+            var (key, isStatic, kind, method) = element switch
+            {
+                MethodDefinition m => (m.Key, m.IsStatic, m.MethodKind == MethodKind.Method ? PrivateNameKind.Method : PrivateNameKind.Accessor, (MethodKind?)m.MethodKind),
+                FieldDefinition f => (f.Key, f.IsStatic, f.IsAccessor ? PrivateNameKind.Accessor : PrivateNameKind.Field, (MethodKind?)null),
+                _ => ((SyntaxNode?)null, false, PrivateNameKind.Field, (MethodKind?)null),
+            };
+            if (key is not PrivateIdentifier privateKey)
+                continue;
+            if (seen.Add(privateKey.Name))
+                names.Add(privateKey.Name);
+            if (!model)
+                continue;
+
+            if (!byName!.TryGetValue(privateKey.Name, out var earlier))
+            {
+                byName[privateKey.Name] = (declared!.Count, method is MethodKind.Get or MethodKind.Set ? method : null);
+                keys!.Add((privateKey, declared.Count));
+                declared.Add((privateKey.Name, kind, isStatic, new List<SyntaxNode> { element }));
+                continue;
+            }
+
+            // A getter and a setter of one placement share one binding (EE0123's exception); a third element does not.
+            var first = declared![earlier.Index];
+            if (earlier.Pairable is { } pairable && method is MethodKind.Get or MethodKind.Set && method != pairable && first.IsStatic == isStatic)
+            {
+                first.Elements.Add(element);
+                byName[privateKey.Name] = (earlier.Index, null);
+            }
+
+            keys!.Add((privateKey, earlier.Index));
+        }
+
+        if (model)
+        {
+            var bindings = new PrivateNameBinding[declared!.Count];
+            for (var i = 0; i < bindings.Length; i++)
+                bindings[i] = new PrivateNameBinding(declared[i].Name, environment!, declared[i].Kind, declared[i].IsStatic, Array.AsReadOnly(declared[i].Elements.ToArray()));
+            environment!.Seal(bindings);
+            foreach (var (key, index) in keys!)
+                privateOf![key] = bindings[index];
+            privateEnvironmentOf![@class] = environment;
+        }
+
+        return environment;
+    }
+
+    /// <summary>
+    /// A private name's reference (SJL-15.2 stage 4; AllPrivateIdentifiersValid): its binding in the innermost class whose
+    /// names hold it, recorded with the model on; at eval code's root, a name its caller sees, which has no binding in the
+    /// unit; otherwise the request's goal's row (EE0167, EE0177, EA0009), at the member or <c>in</c> expression, with the
+    /// name and its <c>#</c> as its argument, once per reference. Whether the reference or the declaration is static plays
+    /// no part.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 AllPrivateIdentifiersValid, ResolvePrivateIdentifier, s16.1.1 s16.2.1.1 s19.2.1.3 early errors, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=CE4FB6
+    // Hairs-Human:        PENDING
+    private void CheckPrivateReference(PrivateIdentifier name, SyntaxNode at, Context context)
+    {
+        for (var scope = context.Semantic!.Privates; scope is not null; scope = scope.Outer)
+        {
+            if (!scope.Holds(name.Name))
+                continue;
+            if (model && scope.Environment is { } environment)
+                privateOf![name] = environment.Find(name.Name)!;
+            return;
+        }
+
+        if (undeclaredPrivateRow is { } row)
+            Report(row, at, name.Name);
     }
 
     // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=BC2B3E
@@ -2699,7 +2857,9 @@ internal sealed class DeclarationsWalk
     /// first, or null where none does. From stage 3, also the statements a jump there may leave or continue and the labels
     /// directly over the statement being visited, members that are not positional, so that every place that makes a fresh
     /// one (the program, the dynamic goals, every function but an arrow, a field initialiser, a static block) resets them,
-    /// and an arrow resets them itself. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
+    /// and an arrow resets them itself. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i> From stage 4, also the private names
+    /// visible there, a member that is not positional either, which the program sets for eval code and every place that
+    /// makes a fresh one carries, not resets. <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
     /// </summary>
     // Hairs-AI:           Origin=AI; Spec=ECMA-262 Contains SuperProperty SuperCall, s15.7.1 ContainsArguments, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=EEAC7A
     // Hairs-Human:        PENDING
@@ -2710,6 +2870,31 @@ internal sealed class DeclarationsWalk
 
         /// <summary>The labels directly over the statement being visited (LabelledEvaluation's labelSet), innermost first; null elsewhere.</summary>
         public LabelSet? CurrentLabels { get; init; }
+
+        /// <summary>
+        /// The private names visible here, innermost class first, carried through every function, parameter list, field
+        /// initialiser and static block; null where none is (SJL-15.2 stage 4). <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+        /// </summary>
+        public PrivateScope? Privates { get; init; }
+    }
+
+    /// <summary>
+    /// The private names one class declares, or at eval code's root the names its caller sees (SJL-15.2 stage 4): the names
+    /// in source order, or the caller's order; the class's environment with the model on (null without it, and always at
+    /// the root); and the names around it. Its lookup is a set, from which no order is read.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 AllPrivateIdentifiersValid, PrivateEnvironment Records, SJL-15.2 semantics rows; IP=Low; Security=Low; Resources=1; Fingerprint=1950F1
+    // Hairs-Human:        PENDING
+    private sealed record PrivateScope(IReadOnlyList<string> Names, PrivateEnvironment? Environment, PrivateScope? Outer)
+    {
+        // Hairs-AI:           Origin=AI; Spec=ECMA-262 AllPrivateIdentifiersValid, SJL-15.2 semantics rows; IP=Low; Security=Low; Resources=1; Fingerprint=7ECC5F
+        // Hairs-Human:        PENDING
+        private readonly HashSet<string> set = new(Names, StringComparer.Ordinal);
+
+        /// <summary>Whether the scope holds a name.</summary>
+        // Hairs-AI:           Origin=AI; Spec=ECMA-262 AllPrivateIdentifiersValid, SJL-15.2 semantics rows; IP=Low; Security=Low; Resources=1; Fingerprint=18339B
+        // Hairs-Human:        PENDING
+        public bool Holds(string name) => set.Contains(name);
     }
 
     /// <summary>What a statement a jump may leave or continue is (SJL-15.2 stage 3).</summary>
