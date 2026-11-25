@@ -1,0 +1,6 @@
+2026-11-25T18:02:53Z step 0 (start, before the worktree): d87044c9db5fe2a26841782308bd53e2f9294656	refs/heads/main
+2026-11-25T18:04:34Z step 1a (before the base run at 77fe27aa): d87044c9db5fe2a26841782308bd53e2f9294656	refs/heads/main
+2026-11-25T18:11:16Z step 1b (before the after run at d87044c9): d87044c9db5fe2a26841782308bd53e2f9294656	refs/heads/main
+2026-11-25T18:17:17Z step 2 (after both runs, before the comparison; both CI runs concluded): d87044c9db5fe2a26841782308bd53e2f9294656	refs/heads/main
+2026-11-25T18:18:51Z before step 4 (retain): d87044c9db5fe2a26841782308bd53e2f9294656	refs/heads/main
+2026-11-25T18:18:51Z note: the merge d87044c9 was made at 2026-11-25T16:38:32Z (its committer date) and both push runs at it were created at 16:38:36Z; the first check above (18:02:53Z) already finds main at d87044c9, and a ref that is not force-pushed cannot come back to a commit it has left, so nothing merged between. Shared libraries' run concluded at 16:44:10Z and ci.yml's at 16:53:07Z (each run record's updated_at), both before the first check, which finds main at d87044c9; the run statuses were read during the base run (18:04:51Z-18:06:34Z) and the CI read (18:11:38Z-18:12:13Z) was taken between the checks at 18:11:16Z and 18:17:17Z, each finding main at d87044c9.

@@ -1,0 +1,46 @@
+# Why stage 3's model-target lines cannot reach part B's --dump output; read 2026-11-25 by read-only git in the stage's
+# worktree, each command with its output below it. Stage 3 (d87044c9) adds 'model-target' lines to the model section
+# of the shared library's canonical dump, Broiler.ECMAScript/runners/SyntaxDump.cs, written only when
+# ParseResult.Model is present, which ParseRequest.BuildSemanticModel asks for (default false). Part B's tool,
+# docs/evidence/sjl-12-001/tools/parse-corpus, writes its own canonical dump (CanonicalDump.cs) of Broiler.JS's tree and
+# reaches the Frontend only through Broiler.JS's parser, whose request never sets the member.
+
+$ git diff --stat 77fe27aa d87044c9 -- Broiler.JS docs/evidence/sjl-12-001
+(exit 0)
+
+$ git grep -n model-target d87044c9 -- Broiler.ECMAScript/runners
+d87044c9:Broiler.ECMAScript/runners/SyntaxDump.cs:190:            text.Append("model-target ").Append(Reference(order, node)).Append(' ').Append(Reference(order, target.Statement));
+(exit 0)
+
+$ git grep -n 'BuildSemanticModel { get; init; }' d87044c9 -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs
+d87044c9:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs:236:    public bool BuildSemanticModel { get; init; }
+(exit 0)
+
+$ git grep -n BuildSemanticModel d87044c9 -- Broiler.JS docs/evidence/sjl-12-001
+(exit 1)
+
+$ git grep -n SyntaxDump d87044c9 -- Broiler.JS docs/evidence/sjl-12-001/tools
+(exit 1)
+
+$ git grep -n 'ProjectReference' d87044c9 -- docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj
+d87044c9:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:24:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj" />
+d87044c9:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:25:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj" />
+d87044c9:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:26:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj" />
+d87044c9:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:27:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj" />
+d87044c9:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:28:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj" />
+d87044c9:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:29:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj" />
+d87044c9:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:30:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj" />
+d87044c9:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:31:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj" />
+(exit 0)
+
+$ git grep -n 'new ParseRequest(' d87044c9 -- Broiler.JS
+d87044c9:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs:168:        return new ParseRequest(source, goal, request.UnicodeTables ?? JSUnicodeTables.Instance, BridgeRegularExpressions.Instance)
+d87044c9:Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs:84:        var request = new ParseRequest(new SourceText(source, string.Empty, 0), ParseGoal.Script, JSUnicode.Tables, RegularExpressions.Instance)
+(exit 0)
+
+# Notes: the first command's empty output says that no file of Broiler.JS/ or of bundle sjl-12-001 (the tool
+# included) differs between the two commits; the fourth's and fifth's (exit 1, no match) that nothing in them sets
+# BuildSemanticModel or uses the library's SyntaxDump; the tool references only Broiler.JS projects. The two
+# ParseRequest constructions in Broiler.JS (the bridge's, which the tool's P and K reach, and the portable compiler's)
+# set no BuildSemanticModel, so the member keeps its default, false, and the parse builds no model. And the dumps'
+# hashes are identical in every row at both commits (rows-d1.txt).
