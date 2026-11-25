@@ -127,8 +127,9 @@ checks are in the stage's scratch log only), the gate's log, the outer commands 
     Release, each "Passed!" with no test failed in each, and CompilerScaling's isolated line on both systems; and the
     engine corpus (`Category=EngineCorpus` of `Broiler.JavaScript.Vectors.Tests`) in the two engine vectors jobs, each
     passed ([`ci/test-projects.tsv`](ci/test-projects.tsv)). No `Broiler.ECMAScript` test project is in ci.yml's jobs.
-    The vectors jobs raised the warnings the workflow raises without failing (the vectors' timing, and the Windows
-    report against the Linux one); the logs hold them.
+    Two vectors jobs raised the warnings the workflow raises without failing: engine vectors (ubuntu-24.04) the
+    vectors' timing, and engine vectors (Windows against Linux) the Windows report against the Linux one; engine
+    vectors (windows-latest) raised none. The logs hold them.
   - **The artifacts**, every one both runs list, downloaded and checked against the API's digest and size, every one
     matching ([`ci/artifact-digests.tsv`](ci/artifact-digests.tsv)): CI's `engine-vectors-ubuntu-24.04` 15043663369,
     `engine-vectors-windows-latest` 15044332457 and `nuget-packages` 15044111675; Shared libraries' `shared-packages`

@@ -6,7 +6,10 @@
 # base run at 77fe27aa (between 18:04:51Z and 18:06:34Z, while its tool was building): CI 45656099731 attempt 1
 # completed success; Shared libraries 45656099616 attempt 1 completed success.
 #
-# One read, 2026-11-25T18:11:38Z-18:11:44Z, after both runs had concluded, each in its first attempt:
+# One read, 2026-11-25T18:11:38Z-18:11:44Z, after both runs had concluded, each in its first attempt. It and the
+# artifacts' downloads below (to 18:12:13Z) were taken while part B's after run at d87044c9 held the lock and built its
+# tool (build-parse-corpus 18:11:34Z-18:12:45Z, ../d87044c9/logs/runs.tsv), as the status read above was taken during
+# the base run's: network-only reads, which no report of part B depends on (part B compares no timings):
 R=repos/Broiler-Platform/Broiler.JS/actions/runs
 gh api "$R?head_sha=d87044c9db5fe2a26841782308bd53e2f9294656&per_page=50" > runs-at-d87044c9.json
 #   -> two runs at d87044c9, each event push, status completed, conclusion success, run_attempt 1:
