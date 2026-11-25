@@ -45,6 +45,7 @@
     <Compile Include="..\runners\AlgorithmsLibrary.IntlDurations.cs" Link="AlgorithmsLibrary.IntlDurations.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.Collation.cs" Link="AlgorithmsLibrary.Collation.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.Syntax.cs" Link="AlgorithmsLibrary.Syntax.cs" />
+    <Compile Include="..\runners\AlgorithmsLibrary.Semantics.cs" Link="AlgorithmsLibrary.Semantics.cs" />
     <Compile Include="..\runners\UnicodeDataHome.cs" Link="UnicodeDataHome.cs" />
     <!-- The canonical dump of a parse, for the corpus digest mode that compares the JIT and Native AOT parses (stage
          SJL-13.2e). It reads the tree's children and the token stream, internal to the frontend, which grants this

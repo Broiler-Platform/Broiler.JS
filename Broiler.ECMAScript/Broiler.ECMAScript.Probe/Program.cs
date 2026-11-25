@@ -56,11 +56,20 @@ internal static class Program
     /// SJL-13.2a; the plan's stage 4a: "the probe runs the syntax vectors (all expected to fail until 4c, recorded, not
     /// judged)")", whose verdicts added no failure, and whose remarks said "The syntax area leaves this set at stage 4d, and
     /// is judged from there by <see cref="AlgorithmsLibrary.MatchesAtTheParse"/>".)</i>
+    /// From SJL-15.2 stage 2 the <c>semantics</c> vectors the runner's semantics adapter answers
+    /// (<see cref="AlgorithmsLibrary.IsLibrarySemantics"/>) are judged at the parse as well, by
+    /// <see cref="AlgorithmsLibrary.MatchesSemanticsAtTheParse"/>, and counted on a line of their own
+    /// (<see cref="SemanticsJudgedLine"/>); every other semantics vector must still be not implemented. The area is not one
+    /// of these, since only some of its vectors are judged. <i>(Added 2026-11-25, at SJL-15.2 stage 2, the session's
+    /// decision D-js-probe-semantics; until then every semantics vector had to be not implemented.)</i>
     /// </remarks>
     internal static bool IsParseJudgedArea(string? area) => area is ParseJudgedAreas;
 
     /// <summary>The areas judged at the parse, as the probe's summary line names them.</summary>
     internal const string ParseJudgedAreas = "syntax";
+
+    /// <summary>The words that name the answered semantics vectors on the probe's summary line of their own (SJL-15.2 stage 2).</summary>
+    internal const string SemanticsJudgedLine = "semantics vectors the model answers";
 
     internal static int Main(string[] args)
     {
@@ -127,10 +136,13 @@ internal static class Program
         // the same embedded tables and the Unicode tables the runner's provider writes; until then each was not implemented.
         // The syntax area's vectors are the frontend's, through the runner's frontend adapter, judged at the parse from stage
         // 4d, which reports the static-semantic early errors (IsParseJudgedArea; recorded, not judged, from milestone SJL-13.2a
-        // to stage 4c).
+        // to stage 4c). From SJL-15.2 stage 2 the semantics vectors whose row the semantic model reports are the frontend's
+        // too, through the runner's semantics adapter, judged at the parse (AlgorithmsLibrary.IsLibrarySemantics, counted on
+        // a line of their own); every other semantics vector is not implemented. (Added 2026-11-25, at SJL-15.2 stage 2.)
         var library = new AlgorithmsLibrary();
         var results = LibraryRun.Run(corpus.Records, library);
         var recorded = new int[5];
+        var semantics = new int[5];
         foreach (var result in results)
         {
             if (IsParseJudgedArea(result.Vector["area"]))
@@ -138,6 +150,16 @@ internal static class Program
                 recorded[(int)result.Verdict]++;
                 if (AlgorithmsLibrary.MatchesAtTheParse(result))
                     recorded[4]++;
+                else
+                    failures.Add(result.Vector.Id + ": " + library.Name + " gave " + result.Rendered + ", which does not agree at the parse");
+                continue;
+            }
+
+            if (AlgorithmsLibrary.IsLibrarySemantics(result.Vector))
+            {
+                semantics[(int)result.Verdict]++;
+                if (AlgorithmsLibrary.MatchesSemanticsAtTheParse(result))
+                    semantics[4]++;
                 else
                     failures.Add(result.Vector.Id + ": " + library.Name + " gave " + result.Rendered + ", which does not agree at the parse");
                 continue;
@@ -172,6 +194,9 @@ internal static class Program
         var recordedCount = recorded[0] + recorded[1] + recorded[2] + recorded[3];
         if (recordedCount == 0)
             failures.Add("corpus: no vector of the areas judged at the parse (" + ParseJudgedAreas + ") was read");
+        var semanticsCount = semantics[0] + semantics[1] + semantics[2] + semantics[3];
+        if (semanticsCount == 0)
+            failures.Add("corpus: no vector of the " + SemanticsJudgedLine + " was read");
 
         if (reportPath is not null)
             File.WriteAllText(reportPath, report);
@@ -183,6 +208,10 @@ internal static class Program
             + Decimal(recordedCount) + " vectors, " + Decimal(recorded[(int)Verdict.Match]) + " match, "
             + Decimal(recorded[(int)Verdict.Difference] + recorded[(int)Verdict.ClassifiedDivergence]) + " differ, "
             + Decimal(recorded[(int)Verdict.NotImplemented]) + " not implemented, " + Decimal(recorded[4]) + " agree at the parse\n");
+        Console.Out.Write("Broiler.ECMAScript.Probe: judged at the parse (" + SemanticsJudgedLine + "): "
+            + Decimal(semanticsCount) + " vectors, " + Decimal(semantics[(int)Verdict.Match]) + " match, "
+            + Decimal(semantics[(int)Verdict.Difference] + semantics[(int)Verdict.ClassifiedDivergence]) + " differ, "
+            + Decimal(semantics[(int)Verdict.NotImplemented]) + " not implemented, " + Decimal(semantics[4]) + " agree at the parse\n");
         foreach (var failure in failures)
             Console.Error.Write(failure + "\n");
         return failures.Count == 0 ? 0 : 1;
