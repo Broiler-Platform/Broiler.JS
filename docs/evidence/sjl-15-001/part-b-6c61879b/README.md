@@ -51,7 +51,9 @@ byte-unchanged; the manifest `conformance/parse/corpus.manifest` is the same blo
   built with no warning and no error at both commits (`logs/build-parse-corpus.stdout.txt`). Both runs exited 0, and
   neither was stopped, re-run or set aside.
 - **The comparison**, in [`identity/`](identity/commands.txt), with the commands as run (the scratch command log, with
-  a note beginning "# Notes, 2026-11-25" added at its end when it was retained; the commands above it are unchanged):
+  a note beginning "# Notes, 2026-11-25" added at its end when it was retained, and after it one beginning "# Noted
+  2026-11-25, at review", which adds that `completeness.txt` also ends with an appended "rc=0"; the commands above them
+  are unchanged):
   - `scripts/compliance/compare_parse_corpus.py acceptance`, base `2259fd4a`, after `6c61879b`, the manifest at
     `6c61879b`, no classification file: [`identity/acceptance.txt`](identity/acceptance.txt) and `acceptance.json`. The
     script refuses runs that do not report every manifest input and variant at P and K, so it checks the default
@@ -135,7 +137,8 @@ checks are in the stage's scratch log only), the gate's log, the outer commands 
   `completeness.py` differ from those only in the worktree, the build tree and the suite folder each names and in their
   header comments (`identity.py`'s header there read "SJL-15.2 stage 1's part B rehearsal (not a run of the rule).", the
   stage-1 rehearsal's label); `test_projects.py` also names this commit's runs, each with one attempt, as its log
-  sources, and its matching of result lines is unchanged (`logs/notes.log`).
+  sources, and the header lines it prints are rewritten for this commit; its matching of result lines is unchanged
+  (`logs/notes.log`).
 - Nothing was set aside at this commit: no run was stopped or re-taken, and no CI job was re-run.
 
 [`../hashes.txt`](../hashes.txt) gives the SHA-256 of every file here.

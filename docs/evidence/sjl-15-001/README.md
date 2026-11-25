@@ -255,7 +255,8 @@ No rule file is added or edited. "What it will hold" above is left as written.
 `6c61879bce81b1a7badf987e16c7b0531030258d`**, the merge of Broiler-Platform/Broiler.JS#1135 (head `8b0c233c`), whose
 first parent is `2259fd4a1860aefc68d49b8f6f9f0200fcb6cc4d` (Broiler-Platform/Broiler.JS#1134, ci.yml's Test step). It
 changes `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/` and `Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/`,
-with the library-level adapter in `Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/` and the Native AOT probe in
+among others the library-level adapter `Broiler.ECMAScript/runners/AlgorithmsLibrary.Semantics.cs` with its tests in
+`Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/` and the Native AOT probe in
 `Broiler.ECMAScript/Broiler.ECMAScript.Probe/`, and descends from W2 (`83a9bd82`) and from the first model commit
 `be6c4a5c`. Its first parent is no model commit: nothing from `be6c4a5c` to `2259fd4a` changes a path under
 `Broiler.ECMAScript/Broiler.ECMAScript.Frontend*`. The note above of 2026-11-25 at SJL-15.2 stage 2 reads "This branch's

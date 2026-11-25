@@ -8,3 +8,6 @@
 # neither copy is kept here. No classification file is given: part B admits no difference class. The first line's
 # output, stdout and stderr, is acceptance.txt, with the line "acceptance rc=..." appended; each identity.py line ends
 # with "rc=..." appended to its output.
+# Noted 2026-11-25, at review: the note above names the appended "rc=..." lines of acceptance.txt and of each
+# identity.py output only. completeness.txt likewise ends with the line "rc=0" appended to completeness.py's output;
+# that script prints no such line.
