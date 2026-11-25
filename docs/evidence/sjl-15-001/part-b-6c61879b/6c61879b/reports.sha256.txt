@@ -1,0 +1,2 @@
+27db60b94dda3a3ff66c00017b2c9723e2f8f7167003ec2a89581ac530fbe5f4  ./parse-corpus-c.tsv.gz
+37bd17dcd7b8eb54ff3513634a0cf4ac357223cea53d900e84b6f8d89f7e0e40  ./parse-corpus-d1.tsv.gz

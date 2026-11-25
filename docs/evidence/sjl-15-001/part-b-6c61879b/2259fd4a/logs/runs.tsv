@@ -1,0 +1,3 @@
+build-parse-corpus	rc=0	wall=81.8s maxrss=336MB	started=2026-11-25T12:01:40Z	ended=2026-11-25T12:03:02Z
+parse-corpus-c	rc=0	wall=210.9s maxrss=1383MB	started=2026-11-25T12:03:02Z	ended=2026-11-25T12:06:33Z
+parse-corpus-d1	rc=0	wall=70.0s maxrss=484MB	started=2026-11-25T12:06:34Z	ended=2026-11-25T12:07:44Z
