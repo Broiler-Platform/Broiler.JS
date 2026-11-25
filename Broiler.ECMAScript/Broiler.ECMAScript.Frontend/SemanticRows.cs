@@ -3,25 +3,27 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   38
-// Annotated:        38/38
+// Relevant units:   48
+// Annotated:        48/48
 // Exempt:           0
-// Human-reviewed:   0/38
+// Human-reviewed:   0/48
 // IP risk:          Low
 // Security risk:    Low
 // Criteria:         0/0
 // Resource impact:  0/10 max
-// Unverified:       38
+// Unverified:       48
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
 namespace Broiler.ECMAScript.Syntax;
 
 /// <summary>
-/// The catalogue rows the semantic model reports (milestone SJL-15.2, stage 2; Broiler.VM's JSD-0080, one early-error
+/// The catalogue rows the semantic model reports (milestone SJL-15.2, from stage 2; Broiler.VM's JSD-0080, one early-error
 /// stage): one entry per row the stage table (<c>Broiler.ECMAScript/docs/frontend/stages.tsv</c>) assigns <c>semantics</c>
 /// that the library reports, each the row's shared code and message identifier as the catalogue (<c>early-errors.tsv</c>)
-/// gives them. The declarations walk reports them only when the request sets
+/// gives them: stage 2's rows of the function context and of expressions, and stage 3's rows of jump targets (the
+/// session's decision D-js-jump-rows). <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when its rows joined the table; it
+/// read "(milestone SJL-15.2, stage 2; Broiler.VM's JSD-0080, one early-error stage)" and ended "gives them".)</i> The declarations walk reports them only when the request sets
 /// <see cref="ParseRequest.BuildSemanticModel"/>, through the same report as <see cref="Rows"/>' rows, in decision D11's
 /// order (the session's decisions D-js-channel and D-js-semantic-rows). EP0017 and EP0018 have no report of their own:
 /// no goal is ShadowRealm's, and EA0003, EA0004 or EE0162 refuses their source first. The Frontend tests hold this list a
@@ -52,6 +54,16 @@ internal static class SemanticRows
     // Hairs-Human:        PENDING
     internal static readonly LexicalRefusal EE0054 = new("JSE1415", "assignment.target.invalid");
 
+    /// <summary>EE0058: <c>jump.continue.no-iteration</c>, a <c>continue</c> in no iteration statement of its function, static block or program (clause 14.8.1); stage 3.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=A5E68A
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EE0058 = new("JSE1419", "jump.continue.no-iteration");
+
+    /// <summary>EE0059: <c>jump.break.no-target</c>, a <c>break;</c> in no iteration statement or <c>switch</c> of its function, static block or program (clause 14.9.1); stage 3.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=1B07B7
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EE0059 = new("JSE1420", "jump.break.no-target");
+
     /// <summary>EE0074: <c>super.property.outside-method</c>, a SuperProperty in a function's parameters (clause 15.2.1).</summary>
     // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=8CD953
     // Hairs-Human:        PENDING
@@ -71,6 +83,16 @@ internal static class SemanticRows
     // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=E0AE5B
     // Hairs-Human:        PENDING
     internal static readonly LexicalRefusal EE0077 = new("JSE1510", "super.call.outside-derived-constructor");
+
+    /// <summary>EE0081: <c>jump.break.undefined-label</c>, ContainsUndefinedBreakTarget of a function body (clause 15.2.1): a <c>break L</c> no enclosing statement of the body labels; stage 3.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=8EC093
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EE0081 = new("JSE1514", "jump.break.undefined-label");
+
+    /// <summary>EE0082: <c>jump.continue.undefined-label</c>, ContainsUndefinedContinueTarget of a function body (clause 15.2.1): a <c>continue L</c> no enclosing iteration statement of the body has in its label set; stage 3.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=6A00E0
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EE0082 = new("JSE1515", "jump.continue.undefined-label");
 
     /// <summary>EE0093: <c>super.call.outside-derived-constructor</c>, HasDirectSuper of a generator method (clause 15.5.1).</summary>
     // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=659070
@@ -147,6 +169,16 @@ internal static class SemanticRows
     // Hairs-Human:        PENDING
     internal static readonly LexicalRefusal EE0131 = new("JSE1564", "super.call.outside-derived-constructor");
 
+    /// <summary>EE0136: <c>jump.break.undefined-label</c>, ContainsUndefinedBreakTarget of a class static block (clause 15.7.1); stage 3.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=5E973E
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EE0136 = new("JSE1569", "jump.break.undefined-label");
+
+    /// <summary>EE0137: <c>jump.continue.undefined-label</c>, ContainsUndefinedContinueTarget of a class static block (clause 15.7.1); stage 3.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=8B7A00
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EE0137 = new("JSE1570", "jump.continue.undefined-label");
+
     /// <summary>EE0138: <c>class.initializer.arguments</c>, ContainsArguments of a static block (clause 15.7.1).</summary>
     // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=B3D47F
     // Hairs-Human:        PENDING
@@ -187,10 +219,30 @@ internal static class SemanticRows
     // Hairs-Human:        PENDING
     internal static readonly LexicalRefusal EE0162 = new("JSE1603", "super.outside-method");
 
+    /// <summary>EE0165: <c>jump.break.undefined-label</c>, ContainsUndefinedBreakTarget of a Script's statements, eval code's too (clause 16.1.1); stage 3.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=27B16F
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EE0165 = new("JSE1606", "jump.break.undefined-label");
+
+    /// <summary>EE0166: <c>jump.continue.undefined-label</c>, ContainsUndefinedContinueTarget of a Script's statements, eval code's too (clause 16.1.1); stage 3.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=788F27
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EE0166 = new("JSE1607", "jump.continue.undefined-label");
+
     /// <summary>EE0172: <c>super.outside-method</c>, <c>super</c> in a Module's own code (clause 16.2.1.1).</summary>
     // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=120EF9
     // Hairs-Human:        PENDING
     internal static readonly LexicalRefusal EE0172 = new("JSE1613", "super.outside-method");
+
+    /// <summary>EE0175: <c>jump.break.undefined-label</c>, ContainsUndefinedBreakTarget of a Module's items (clause 16.2.1.1); stage 3, moved here from stage 6.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=4580F6
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EE0175 = new("JSE1616", "jump.break.undefined-label");
+
+    /// <summary>EE0176: <c>jump.continue.undefined-label</c>, ContainsUndefinedContinueTarget of a Module's items (clause 16.2.1.1); stage 3, moved here from stage 6.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=7099A8
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EE0176 = new("JSE1617", "jump.continue.undefined-label");
 
     /// <summary>EA0003: <c>super.property.outside-method</c>, a SuperProperty in eval code whose caller has no super binding (PerformEval step 11.f, clause 19.2.1.1).</summary>
     // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=6652EF

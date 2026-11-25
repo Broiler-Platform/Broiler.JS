@@ -14,7 +14,9 @@ namespace Broiler.ECMAScript.Syntax.Tests;
 /// The semantic model's foundation (SJL-15.2 stage 1; Broiler.VM's JSD-0080, "The semantic model's design"): the request's
 /// <see cref="ParseRequest.BuildSemanticModel"/>, which leaves the parse as it was; the model's scopes, a superset of the
 /// side tables' sharing their instances; every node's scope; each binding identifier's declaration; and the per-function
-/// facts, on the fixtures the stage names and over the determinism tests' population of the parse corpus.
+/// facts, on the fixtures the stage names and over the determinism tests' population of the parse corpus. From stage 3,
+/// each jump's target, <see cref="SemanticModel.TargetOf(BreakStatement)"/> and its <c>ContinueStatement</c> overload, on
+/// fixtures and over the same population. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
 /// </summary>
 /// <remarks>
 /// The off/on identity is written so that stage 2 narrows it mechanically: equality wherever the on path accepts, and,
@@ -139,11 +141,14 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         "class C { static m() { super(); } }", "class C { constructor() { super(); } }", "class C extends Object { x = super(); }",
         "class C { static { super(); } }", "super.x;", "class C { x = arguments; }", "class C { static { arguments; } }",
         "({ __proto__: 1, '__proto__': 2 });", "for (this in {}) ;", "class C { x = class { static { arguments; } }; }",
+
+        // Stage 3's jump rows. (Added 2026-11-25, at SJL-15.2 stage 3.)
+        "break;", "continue;", "break L;", "L: { continue L; }", "function f() { break L; }", "class C { static { break L; } }",
     ];
 
     // Sources both paths refuse, where the on path's first diagnostic is a row of the model's at an earlier place than the
     // off path's first, so that the identity test's branch for it runs (SJL-15.2 stage 2's review).
-    private static readonly string[] BothRefusedRowSources = ["super.x; let a; let a;"];
+    private static readonly string[] BothRefusedRowSources = ["super.x; let a; let a;", "break; let a; let a;"];
 
     private static ParseRequest RowSourceRequest(string text, bool model, bool allErrors = false) =>
         new(new SourceText(text), ParseGoal.Script, UnicodeDataHome.Tables, NoValidator.Instance)
@@ -930,5 +935,171 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         }
 
         Assert.Equal(Enum.GetValues<BindingKind>().OrderBy(static k => k), seen.OrderBy(static k => k));
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // Jump targets (SJL-15.2 stage 3; the session's decision D-js-jump-targets). (Added 2026-11-25, at SJL-15.2 stage 3.)
+
+    // Every break and continue of a tree, in tree order.
+    private static List<Statement> Jumps(ParseResult result) =>
+        Nodes(result.Tree!).Where(static n => n is BreakStatement or ContinueStatement).Cast<Statement>().ToList();
+
+    private static LabelTarget TargetOf(SemanticModel model, Statement jump) => jump switch
+    {
+        BreakStatement b => model.TargetOf(b),
+        ContinueStatement c => model.TargetOf(c),
+        _ => throw new ArgumentException("not a jump", nameof(jump)),
+    };
+
+    // The accepted sources with jumps the fixtures name, beside the population.
+    private static readonly string[] JumpSources =
+    [
+        "while (c) { break; }", "while (c) { switch (d) { case 0: break; } }", "while (c) { switch (d) { case 0: continue; } }",
+        "L: { break L; }", "A: B: { break A; }", "L: switch (d) { default: break L; }", "L: break L;",
+        "var n = 0; A: B: for (var i = 0; i < 2; i++) { n++; continue A; } n",
+        "function f() { var n = 0; A: B: for (var i = 0; i < 3; i++) { n++; continue A; } return n; } f()",
+        "var n = 0; A: B: C: do { n++; if (n < 3) continue B; } while (n < 5); n",
+        "var s = ''; o: for (var i = 0; i < 2; i++) { for (var j = 0; j < 2; j++) { if (j) continue o; s += i + '' + j; } } s",
+        "var n = 0; A: { B: for (var i = 0; i < 2; i++) { n++; continue B; } } n",
+        "for (;;) break;", "for (let i = 0;;) continue;", "for (x in y) break;", "for (x of y) continue;", "for (let x of y) break;",
+        "do break; while (c)", "L: while (1) { M: { break L; } }", "A: while (1) { B: { continue A; } }", "L1: L2: while (c) continue L1;",
+        "while (a) { (function () { while (b) break; }); }", "while (a) { (() => { for (;;) continue; }); }",
+        "while (a) { ({ m() { do break; while (b) } }); }", "while (a) { class C { static { while (b) continue; } } }",
+        "L: while (c) { if (x) break L; continue L; break; continue; }", "L: if (x) break L; else { M: break M; }",
+    ];
+
+    /// <summary>
+    /// Each jump's target and label set: the innermost iteration statement or switch for an unlabelled break, the innermost
+    /// iteration statement for an unlabelled continue, the iteration statement whose label set holds the label for a
+    /// labelled continue, wherever the label stands in it (H20 read by the specification), and the labelled item, through
+    /// every label on it, for a labelled break; the label set outermost first.
+    /// </summary>
+    [Theory]
+    [InlineData("while (c) { break; }", 0, nameof(WhileStatement), 0, "")]
+    [InlineData("while (c) { switch (d) { case 0: break; } }", 0, nameof(SwitchStatement), 0, "")]
+    [InlineData("while (c) { switch (d) { case 0: continue; } }", 0, nameof(WhileStatement), 0, "")]
+    [InlineData("L: { break L; }", 0, nameof(BlockStatement), 0, "L")]
+    [InlineData("A: B: { break A; }", 0, nameof(BlockStatement), 0, "A B")]
+    [InlineData("L: switch (d) { default: break L; }", 0, nameof(SwitchStatement), 0, "L")]
+    [InlineData("var n = 0; A: B: for (var i = 0; i < 2; i++) { n++; continue A; } n", 0, nameof(ForStatement), 0, "A B")]
+    [InlineData("var n = 0; A: B: C: do { n++; if (n < 3) continue B; } while (n < 5); n", 0, nameof(DoWhileStatement), 0, "A B C")]
+    [InlineData("var s = ''; o: for (var i = 0; i < 2; i++) { for (var j = 0; j < 2; j++) { if (j) continue o; s += i + '' + j; } } s", 0, nameof(ForStatement), 0, "o")]
+    [InlineData("var n = 0; A: { B: for (var i = 0; i < 2; i++) { n++; continue B; } } n", 0, nameof(ForStatement), 0, "B")]
+    [InlineData("L: break L;", 0, nameof(BreakStatement), 0, "L")]
+    [InlineData("L: while (1) { M: { break L; } }", 0, nameof(WhileStatement), 0, "L")]
+    [InlineData("A: while (1) { B: { continue A; } }", 0, nameof(WhileStatement), 0, "A")]
+    [InlineData("for (;;) break;", 0, nameof(ForStatement), 0, "")]
+    [InlineData("for (let i = 0;;) continue;", 0, nameof(ForStatement), 0, "")]
+    [InlineData("for (x in y) break;", 0, nameof(ForInStatement), 0, "")]
+    [InlineData("for (x of y) continue;", 0, nameof(ForOfStatement), 0, "")]
+    [InlineData("for (let x of y) break;", 0, nameof(ForOfStatement), 0, "")]
+    [InlineData("do break; while (c)", 0, nameof(DoWhileStatement), 0, "")]
+    [InlineData("while (a) { (function () { while (b) break; }); }", 0, nameof(WhileStatement), 1, "")]
+    [InlineData("while (a) { (() => { for (;;) continue; }); }", 0, nameof(ForStatement), 0, "")]
+    [InlineData("while (a) { ({ m() { do break; while (b) } }); }", 0, nameof(DoWhileStatement), 0, "")]
+    [InlineData("while (a) { class C { static { while (b) continue; } } }", 0, nameof(WhileStatement), 1, "")]
+    [InlineData("L: if (x) break L; else { M: break M; }", 0, nameof(IfStatement), 0, "L")]
+    [InlineData("L: if (x) break L; else { M: break M; }", 1, nameof(BreakStatement), 1, "M")]
+    public void Each_jump_answers_its_target_and_the_target_s_own_label_set(string text, int jump, string targetType, int targetIndex, string labels)
+    {
+        var (result, model) = Model(text);
+        var target = TargetOf(model, Jumps(result)[jump]);
+        var expected = Nodes(result.Tree!).Where(n => n.GetType().Name == targetType).ElementAt(targetIndex);
+        Assert.Same(expected, target.Statement);
+        Assert.Equal(labels.Split(' ', StringSplitOptions.RemoveEmptyEntries), target.LabelSet);
+        Assert.IsNotType<LabelledStatement>(target.Statement);
+    }
+
+    [Fact]
+    public void Every_jump_that_targets_one_statement_answers_the_same_instance()
+    {
+        var (result, model) = Model("L: while (c) { if (x) break L; continue L; break; continue; }");
+        var jumps = Jumps(result);
+        Assert.Equal(4, jumps.Count);
+        var first = TargetOf(model, jumps[0]);
+        foreach (var jump in jumps)
+            Assert.Same(first, TargetOf(model, jump));
+        Assert.Same(First<WhileStatement>(result), first.Statement);
+        Assert.Equal(new[] { "L" }, first.LabelSet);
+    }
+
+    [Fact]
+    public void A_null_jump_or_a_jump_of_another_tree_is_refused()
+    {
+        const string text = "while (c) { break; continue; }";
+        var (_, model) = Model(text);
+        var (other, _) = Model(text);
+        Assert.Throws<ArgumentNullException>(() => model.TargetOf((BreakStatement)null!));
+        Assert.Throws<ArgumentNullException>(() => model.TargetOf((ContinueStatement)null!));
+        Assert.Throws<ArgumentException>(() => model.TargetOf(First<BreakStatement>(other)));
+        Assert.Throws<ArgumentException>(() => model.TargetOf(First<ContinueStatement>(other)));
+    }
+
+    /// <summary>
+    /// Over the determinism tests' population and the fixtures' accepted sources: every jump of an accepted tree has a
+    /// target; the target is in the tree and its span holds the jump's; a continue's is an iteration statement and an
+    /// unlabelled break's an iteration statement or a switch; a labelled jump's label is in the label set; and the label set
+    /// is the chain of labelled statements directly over the target, outermost first.
+    /// </summary>
+    [Fact]
+    public void Every_jump_of_an_accepted_tree_has_a_target_over_the_population()
+    {
+        var items = DeterminismTests.Population.Value;
+        var jumps = OnDocumentedStack(() =>
+        {
+            var count = 0;
+            void One(string name, ParseResult on)
+            {
+                if (on.Model is not { } model)
+                    return;
+                var parents = new Dictionary<SyntaxNode, SyntaxNode>(ReferenceEqualityComparer.Instance);
+                var children = new List<SyntaxNode>();
+                foreach (var node in Nodes(on.Tree!))
+                {
+                    children.Clear();
+                    node.AddChildren(children);
+                    foreach (var child in children)
+                        parents[child] = node;
+                }
+
+                foreach (var jump in Nodes(on.Tree!).Where(static n => n is BreakStatement or ContinueStatement).Cast<Statement>())
+                {
+                    count++;
+                    var target = TargetOf(model, jump);
+                    var statement = target.Statement;
+                    var at = name + ": the jump at " + jump.Span.Offset.ToString(CultureInfo.InvariantCulture);
+                    Assert.NotNull(model.ScopeOf(statement));
+                    Assert.True(statement.Span.Offset <= jump.Span.Offset && jump.Span.Offset + jump.Span.Length <= statement.Span.Offset + statement.Span.Length, at + ": the target does not hold it");
+                    Assert.False(statement is LabelledStatement, at + ": the target is a labelled statement");
+                    var label = jump switch { BreakStatement b => b.Label, ContinueStatement c => c.Label, _ => null };
+                    var iteration = statement is WhileStatement or DoWhileStatement or ForStatement or ForInStatement or ForOfStatement;
+                    if (jump is ContinueStatement)
+                        Assert.True(iteration, at + ": a continue's target is no iteration statement");
+                    else if (label is null)
+                        Assert.True(iteration || statement is SwitchStatement, at + ": an unlabelled break's target is no iteration statement or switch");
+                    if (label is not null)
+                        Assert.Contains(label.Name, target.LabelSet);
+
+                    var chain = new List<string>();
+                    for (var node = (SyntaxNode)statement; parents.TryGetValue(node, out var parent) && parent is LabelledStatement labelled && ReferenceEquals(labelled.Body, node); node = parent)
+                        chain.Add(labelled.Label.Name);
+                    chain.Reverse();
+                    Assert.True(chain.SequenceEqual(target.LabelSet), at + ": the label set is not the chain over the target");
+                }
+            }
+
+            foreach (var item in items)
+                One(Name(item), SyntaxParser.Parse(DeterminismTests.Request(item, model: true)));
+            foreach (var text in JumpSources)
+            {
+                var on = Parse(text);
+                Assert.True(on.Outcome == ParseOutcome.Accepted, text);
+                One("jump source \"" + text + "\"", on);
+            }
+
+            return count;
+        });
+        Assert.True(jumps > JumpSources.Length, jumps.ToString(CultureInfo.InvariantCulture) + " jumps");
+        output.WriteLine("jumps with a target: " + jumps.ToString(CultureInfo.InvariantCulture));
     }
 }

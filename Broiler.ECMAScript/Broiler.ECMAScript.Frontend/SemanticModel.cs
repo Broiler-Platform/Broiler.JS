@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   6
-// Annotated:        6/6
-// Exempt:           20
-// Human-reviewed:   0/6
+// Relevant units:   9
+// Annotated:        9/9
+// Exempt:           24
+// Human-reviewed:   0/9
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       6
+// Unverified:       9
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -100,13 +100,18 @@ public enum FunctionKind
 /// The semantic model of one compilation unit (Broiler.VM's JSD-0080, "The semantic model's design"; milestone SJL-15.2):
 /// built per compilation unit, after the parse, by the declarations walk itself, which "does not start a second one", and
 /// only when the request sets <see cref="ParseRequest.BuildSemanticModel"/>. At SJL-15.2 stage 1 it holds the scopes with
-/// their parents, the declarations with their binding identifiers, and the per-function facts; resolution, jump targets,
-/// private names, the module record, named evaluation, captures and the early errors that are not purely grammatical are
-/// later stages'. From stage 2 the walk that builds it also reports its early errors of the function context (the super
-/// rows, ContainsArguments, eval code's from the caller's context, and three of expressions') among the parse's
-/// diagnostics, so that a source they refuse has no model; the early errors of jump targets, private names and the module
-/// record are later stages'. <i>(Revised 2026-11-25, at SJL-15.2 stage 2; where it names the early errors, it read "and the
-/// early errors that are not purely grammatical are later stages'.")</i>
+/// their parents, the declarations with their binding identifiers, and the per-function facts; from stage 3 it also holds
+/// each <c>break</c>'s and <c>continue</c>'s target (<see cref="TargetOf(BreakStatement)"/>); resolution, private names, the
+/// module record, named evaluation, captures and the early errors that are not purely grammatical are later stages'. From
+/// stage 2 the walk that builds it also reports its early errors of the function context (the super rows,
+/// ContainsArguments, eval code's from the caller's context, and three of expressions') among the parse's diagnostics, so
+/// that a source they refuse has no model, and from stage 3 those of jump targets (a <c>break</c> or a <c>continue</c> with
+/// no target, and an undefined break or continue target); the early errors of private names and the module record are
+/// later stages'. <i>(Revised 2026-11-25, at SJL-15.2 stage 2; where it names the early errors, it read "and the early
+/// errors that are not purely grammatical are later stages'.")</i> <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when jump
+/// targets joined the model; it read "resolution, jump targets, private names, the module record, named evaluation,
+/// captures and the early errors that are not purely grammatical are later stages'" and "the early errors of jump targets,
+/// private names and the module record are later stages'.")</i>
 /// </summary>
 /// <remarks>
 /// <para>
@@ -122,9 +127,12 @@ public enum FunctionKind
 /// every scope inside it. Every fact is keyed by node identity.
 /// </para>
 /// <para>
-/// <b>A node of another tree is a caller's error</b> (convention 3): <see cref="ScopeOf"/>, <see cref="DeclarationOf"/> and
-/// <see cref="FactsOf"/> throw <see cref="ArgumentException"/> for a node that is not in the model's tree, and
-/// <see cref="ParentOf"/> for a scope that is not one of the model's.
+/// <b>A node of another tree is a caller's error</b> (convention 3): <see cref="ScopeOf"/>, <see cref="DeclarationOf"/>,
+/// <see cref="FactsOf"/> and both <see cref="TargetOf(BreakStatement)"/> overloads throw <see cref="ArgumentException"/>
+/// for a node that is not in the model's tree, and <see cref="ParentOf"/> for a scope that is not one of the model's.
+/// <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when <c>TargetOf</c> joined them; it read "<see cref="ScopeOf"/>,
+/// <see cref="DeclarationOf"/> and <see cref="FactsOf"/> throw <see cref="ArgumentException"/> for a node that is not in
+/// the model's tree".)</i>
 /// </para>
 /// <para><b>Immutable, and safe to call concurrently</b> (convention 10).</para>
 /// </remarks>
@@ -136,8 +144,9 @@ public sealed class SemanticModel
     private readonly Dictionary<Scope, Scope?> parentOf;
     private readonly Dictionary<SyntaxNode, Declaration> declarationOf;
     private readonly Dictionary<SyntaxNode, FunctionFacts> factsOf;
+    private readonly Dictionary<SyntaxNode, LabelTarget> targetOf;
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design; IP=Low; Security=Low; Resources=1; Fingerprint=FBDB9D
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design; IP=Low; Security=Low; Resources=1; Fingerprint=BD0D4A
     // Hairs-Human:        PENDING
     internal SemanticModel(
         IReadOnlyList<Scope> scopes,
@@ -145,7 +154,8 @@ public sealed class SemanticModel
         Dictionary<SyntaxNode, Scope> scopeOf,
         Dictionary<Scope, Scope?> parentOf,
         Dictionary<SyntaxNode, Declaration> declarationOf,
-        Dictionary<SyntaxNode, FunctionFacts> factsOf)
+        Dictionary<SyntaxNode, FunctionFacts> factsOf,
+        Dictionary<SyntaxNode, LabelTarget> targetOf)
     {
         Scopes = scopes;
         Functions = functions;
@@ -153,6 +163,7 @@ public sealed class SemanticModel
         this.parentOf = parentOf;
         this.declarationOf = declarationOf;
         this.factsOf = factsOf;
+        this.targetOf = targetOf;
     }
 
     /// <summary>
@@ -266,4 +277,88 @@ public sealed class SemanticModel
             throw new ArgumentException("The node is not a program, a function, a static block or an initialised field.", nameof(node));
         return facts;
     }
+
+    /// <summary>
+    /// The target of a <c>break</c> (JSD-0080: "jump targets"; ECMA-262 clause 14.9.1's early errors, ContainsUndefinedBreakTarget
+    /// and LabelledEvaluation): for <c>break;</c> the innermost iteration statement or
+    /// <c>switch</c> that encloses it within its function, static block or program; for <c>break L;</c> the statement
+    /// <c>L</c> labels, looked at through every further label on it, which may be any statement, the jump itself among them
+    /// (<c>L: break L;</c>), and never a <see cref="LabelledStatement"/>. Every jump that targets one statement answers the
+    /// same instance. Never null: the model exists only for a source the early errors accept, and in one every jump has a
+    /// target. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
+    /// </summary>
+    /// <param name="jump">A <see cref="BreakStatement"/> of the model's tree.</param>
+    /// <returns>Its target, with the target statement's own label set.</returns>
+    /// <exception cref="ArgumentNullException">The jump is null.</exception>
+    /// <exception cref="ArgumentException">The jump is not in the model's tree.</exception>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14.9.1 BreakStatement early errors, ContainsUndefinedBreakTarget, LabelledEvaluation, JSD-0080 jump targets; IP=Low; Security=Medium; Resources=1; Fingerprint=AAC5E3
+    // Hairs-Human:        PENDING
+    public LabelTarget TargetOf(BreakStatement jump)
+    {
+        ArgumentNullException.ThrowIfNull(jump);
+        if (!scopeOf.ContainsKey(jump))
+            throw new ArgumentException("The node is not in the semantic model's tree.", nameof(jump));
+        return targetOf[jump];
+    }
+
+    /// <summary>
+    /// The target of a <c>continue</c> (JSD-0080: "jump targets"; ECMA-262 clause 14.8.1's early errors,
+    /// ContainsUndefinedContinueTarget and LabelledEvaluation): for <c>continue;</c> the
+    /// innermost iteration statement that encloses it within its function, static block or program; for
+    /// <c>continue L;</c> the innermost such iteration statement whose own label set holds <c>L</c>, wherever <c>L</c>
+    /// stands in that set, so that in <c>A: B: for (;;) continue A;</c> it is the <c>for</c> (Broiler.VM's hand-off H20,
+    /// read by the specification). Every jump that targets one statement answers the same instance. Never null, as for
+    /// <see cref="TargetOf(BreakStatement)"/>. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
+    /// </summary>
+    /// <param name="jump">A <see cref="ContinueStatement"/> of the model's tree.</param>
+    /// <returns>Its target, an iteration statement with its own label set.</returns>
+    /// <exception cref="ArgumentNullException">The jump is null.</exception>
+    /// <exception cref="ArgumentException">The jump is not in the model's tree.</exception>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14.8.1 ContinueStatement early errors, ContainsUndefinedContinueTarget, LabelledEvaluation, JSD-0080 jump targets; IP=Low; Security=Medium; Resources=1; Fingerprint=4CCEB2
+    // Hairs-Human:        PENDING
+    public LabelTarget TargetOf(ContinueStatement jump)
+    {
+        ArgumentNullException.ThrowIfNull(jump);
+        if (!scopeOf.ContainsKey(jump))
+            throw new ArgumentException("The node is not in the semantic model's tree.", nameof(jump));
+        return targetOf[jump];
+    }
+}
+
+/// <summary>
+/// A jump's target, as <see cref="SemanticModel.TargetOf(BreakStatement)"/> and
+/// <see cref="SemanticModel.TargetOf(ContinueStatement)"/> answer it (JSD-0080: "jump targets"; milestone SJL-15.2, stage
+/// 3; ECMA-262 ContainsUndefinedBreakTarget and ContainsUndefinedContinueTarget, and
+/// LabelledEvaluation): the statement the jump leaves or continues, and that statement's own label set.
+/// One instance per target statement, shared by every jump that targets it. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
+/// </summary>
+/// <remarks>
+/// The statement is the labelled item, never the <see cref="LabelledStatement"/> that carries a label, so that a loop's
+/// labels and a block's are read one way (the session's decision D-js-jump-targets). Immutable, and safe to read
+/// concurrently (convention 10).
+/// </remarks>
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 ContainsUndefinedBreakTarget ContainsUndefinedContinueTarget, LabelledEvaluation labelSet, JSD-0080 jump targets; IP=Low; Security=Low; Resources=1; Fingerprint=6D5CFC
+// Hairs-Human:        PENDING
+public sealed class LabelTarget
+{
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 jump targets; IP=Low; Security=Low; Resources=1; Fingerprint=DD87FC
+    // Hairs-Human:        PENDING
+    internal LabelTarget(Statement statement, IReadOnlyList<string> labelSet)
+    {
+        Statement = statement;
+        LabelSet = labelSet;
+    }
+
+    /// <summary>
+    /// The statement the jump leaves or continues: an iteration statement, a <c>switch</c>, or the statement a labelled
+    /// <c>break</c> names, looked at through every label on it; never a <see cref="LabelledStatement"/>.
+    /// </summary>
+    public Statement Statement { get; }
+
+    /// <summary>
+    /// The statement's own label set (LabelledEvaluation's labelSet): the labels of the chain of
+    /// <see cref="LabelledStatement"/>s directly over it, outermost first, so that in <c>A: B: C: do ... while (c)</c> it is
+    /// [A, B, C]; empty when it has none.
+    /// </summary>
+    public IReadOnlyList<string> LabelSet { get; }
 }
