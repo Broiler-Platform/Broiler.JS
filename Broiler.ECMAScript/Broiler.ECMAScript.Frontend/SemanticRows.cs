@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   48
-// Annotated:        48/48
+// Relevant units:   51
+// Annotated:        51/51
 // Exempt:           0
-// Human-reviewed:   0/48
+// Human-reviewed:   0/51
 // IP risk:          Low
 // Security risk:    Low
 // Criteria:         0/0
 // Resource impact:  0/10 max
-// Unverified:       48
+// Unverified:       51
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -21,9 +21,12 @@ namespace Broiler.ECMAScript.Syntax;
 /// The catalogue rows the semantic model reports (milestone SJL-15.2, from stage 2; Broiler.VM's JSD-0080, one early-error
 /// stage): one entry per row the stage table (<c>Broiler.ECMAScript/docs/frontend/stages.tsv</c>) assigns <c>semantics</c>
 /// that the library reports, each the row's shared code and message identifier as the catalogue (<c>early-errors.tsv</c>)
-/// gives them: stage 2's rows of the function context and of expressions, and stage 3's rows of jump targets (the
-/// session's decision D-js-jump-rows). <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when its rows joined the table; it
-/// read "(milestone SJL-15.2, stage 2; Broiler.VM's JSD-0080, one early-error stage)" and ended "gives them".)</i> The declarations walk reports them only when the request sets
+/// gives them: stage 2's rows of the function context and of expressions, stage 3's rows of jump targets (the
+/// session's decision D-js-jump-rows), and stage 4's rows of private names (the session's decision D-js-private-rows).
+/// <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when its rows joined the table; it
+/// read "(milestone SJL-15.2, stage 2; Broiler.VM's JSD-0080, one early-error stage)" and ended "gives them".)</i>
+/// <i>(Revised 2026-11-25, at SJL-15.2 stage 4, when its rows joined the table; it read "stage 2's rows of the function
+/// context and of expressions, and stage 3's rows of jump targets (the session's decision D-js-jump-rows).")</i> The declarations walk reports them only when the request sets
 /// <see cref="ParseRequest.BuildSemanticModel"/>, through the same report as <see cref="Rows"/>' rows, in decision D11's
 /// order (the session's decisions D-js-channel and D-js-semantic-rows). EP0017 and EP0018 have no report of their own:
 /// no goal is ShadowRealm's, and EA0003, EA0004 or EE0162 refuses their source first. The Frontend tests hold this list a
@@ -229,6 +232,11 @@ internal static class SemanticRows
     // Hairs-Human:        PENDING
     internal static readonly LexicalRefusal EE0166 = new("JSE1607", "jump.continue.undefined-label");
 
+    /// <summary>EE0167: <c>class.private-name.undeclared</c>, AllPrivateIdentifiersValid of a Script's statements with no names (clause 16.1.1); stage 4.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=067FF5
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EE0167 = new("JSE1608", "class.private-name.undeclared");
+
     /// <summary>EE0172: <c>super.outside-method</c>, <c>super</c> in a Module's own code (clause 16.2.1.1).</summary>
     // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=120EF9
     // Hairs-Human:        PENDING
@@ -244,6 +252,11 @@ internal static class SemanticRows
     // Hairs-Human:        PENDING
     internal static readonly LexicalRefusal EE0176 = new("JSE1617", "jump.continue.undefined-label");
 
+    /// <summary>EE0177: <c>class.private-name.undeclared</c>, AllPrivateIdentifiersValid of a Module's items with no names (clause 16.2.1.1); stage 4, moved here from stage 6.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=275C4F
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EE0177 = new("JSE1618", "class.private-name.undeclared");
+
     /// <summary>EA0003: <c>super.property.outside-method</c>, a SuperProperty in eval code whose caller has no super binding (PerformEval step 11.f, clause 19.2.1.1).</summary>
     // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=6652EF
     // Hairs-Human:        PENDING
@@ -258,6 +271,11 @@ internal static class SemanticRows
     // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=1F12F3
     // Hairs-Human:        PENDING
     internal static readonly LexicalRefusal EA0005 = new("JSE1905", "class.initializer.arguments");
+
+    /// <summary>EA0009: <c>class.private-name.undeclared</c>, AllPrivateIdentifiersValid of eval code against the private names its caller sees (EvalDeclarationInstantiation step 7, clause 19.2.1.3); reported only where the request gives them; stage 4.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=A367B5
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EA0009 = new("JSE1909", "class.private-name.undeclared");
 
     /// <summary>EP0017: <c>super.property.outside-method</c>, a SuperProperty in ShadowRealm's evaluated code (PerformShadowRealmEval step 2.f); no goal reaches it on its own.</summary>
     // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=8980CB

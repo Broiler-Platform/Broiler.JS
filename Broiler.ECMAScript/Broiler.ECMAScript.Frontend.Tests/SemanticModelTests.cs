@@ -16,7 +16,9 @@ namespace Broiler.ECMAScript.Syntax.Tests;
 /// side tables' sharing their instances; every node's scope; each binding identifier's declaration; and the per-function
 /// facts, on the fixtures the stage names and over the determinism tests' population of the parse corpus. From stage 3,
 /// each jump's target, <see cref="SemanticModel.TargetOf(BreakStatement)"/> and its <c>ContinueStatement</c> overload, on
-/// fixtures and over the same population. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
+/// fixtures and over the same population. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i> From stage 4, the private-name
+/// environments, <see cref="SemanticModel.PrivateEnvironmentOf"/> and <see cref="SemanticModel.Resolve(PrivateIdentifier)"/>,
+/// on fixtures and over the same population. <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
 /// </summary>
 /// <remarks>
 /// The off/on identity is written so that stage 2 narrows it mechanically: equality wherever the on path accepts, and,
@@ -144,11 +146,15 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
 
         // Stage 3's jump rows. (Added 2026-11-25, at SJL-15.2 stage 3.)
         "break;", "continue;", "break L;", "L: { continue L; }", "function f() { break L; }", "class C { static { break L; } }",
+
+        // Stage 4's private-name rows. (Added 2026-11-25, at SJL-15.2 stage 4.)
+        "this.#x;", "class C { m() { this.#y; } }", "class C { m(o) { return #y in o; } }", "class C extends (o => o.#x, Object) { #x; }",
+        "function f() { class C { m() { this.#y; } } }",
     ];
 
     // Sources both paths refuse, where the on path's first diagnostic is a row of the model's at an earlier place than the
     // off path's first, so that the identity test's branch for it runs (SJL-15.2 stage 2's review).
-    private static readonly string[] BothRefusedRowSources = ["super.x; let a; let a;", "break; let a; let a;"];
+    private static readonly string[] BothRefusedRowSources = ["super.x; let a; let a;", "break; let a; let a;", "this.#x; let a; let a;"];
 
     private static ParseRequest RowSourceRequest(string text, bool model, bool allErrors = false) =>
         new(new SourceText(text), ParseGoal.Script, UnicodeDataHome.Tables, NoValidator.Instance)
@@ -1140,5 +1146,277 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         var off = Parse(text, model: false);
         Assert.True(SyntaxDump.Dump(off).AsSpan().SequenceEqual(SyntaxDump.Dump(on, model: false)));
         Assert.DoesNotContain("model-target", System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(off)), StringComparison.Ordinal);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // Private names (SJL-15.2 stage 4; the session's decision D-js-private-environments). (Added 2026-11-25, at SJL-15.2
+    // stage 4.)
+
+    private static (ParseResult Result, SemanticModel Model) EvalModel(string text, params string[] visible)
+    {
+        var request = new ParseRequest(new SourceText(text), ParseGoal.Eval, UnicodeDataHome.Tables, NoValidator.Instance)
+        {
+            BuildSemanticModel = true,
+            Switches = ParseSwitches.For(ParseGoal.Eval) with { ForcedStrict = true },
+            Context = new InheritedContext { InFunction = true, InMethod = true, VisiblePrivateNames = visible },
+        };
+        var result = SyntaxParser.Parse(request);
+        Assert.True(result.Outcome == ParseOutcome.Accepted, text + ": " + (result.Diagnostics.Count > 0 ? result.Diagnostics[0].Code : "-"));
+        return (result, result.Model!);
+    }
+
+    // The private names of a tree in tree order, with the given name.
+    private static PrivateIdentifier Private(ParseResult result, string name, int index = 0) => Nth<PrivateIdentifier>(result, index, p => p.Name == name);
+
+    private static ClassNode Class(ParseResult result, int index = 0) => Nth<ClassNode>(result, index);
+
+    /// <summary>
+    /// Each kind and placement, a getter and setter pair one binding with two elements, and the declaring keys and every
+    /// reference answering one instance.
+    /// </summary>
+    [Fact]
+    public void Each_private_name_resolves_to_its_binding_with_its_kind_and_placement()
+    {
+        var (result, model) = Model(
+            "class C { #f = 1; #m() {} get #g() { return 1; } set #s(v) {} get #p() { return 1; } set #p(v) {} static #t; static #u() {} "
+            + "n() { return [this.#f, this.#m(), this.#g, this.#s = 1, this.#p, C.#t, C.#u(), #f in this]; } }");
+        var environment = model.PrivateEnvironmentOf(Class(result));
+        Assert.Equal(new[] { "#f", "#m", "#g", "#s", "#p", "#t", "#u" }, environment.Names.Select(static b => b.Name));
+        Assert.Equal(
+            new[] { PrivateNameKind.Field, PrivateNameKind.Method, PrivateNameKind.Accessor, PrivateNameKind.Accessor, PrivateNameKind.Accessor, PrivateNameKind.Field, PrivateNameKind.Method },
+            environment.Names.Select(static b => b.Kind));
+        Assert.Equal(new[] { false, false, false, false, false, true, true }, environment.Names.Select(static b => b.IsStatic));
+        Assert.Equal(new[] { 1, 1, 1, 1, 2, 1, 1 }, environment.Names.Select(static b => b.Elements.Count));
+        foreach (var binding in environment.Names)
+        {
+            Assert.Same(environment, binding.Environment);
+            var all = Nodes(result.Tree!).OfType<PrivateIdentifier>().Where(p => p.Name == binding.Name).ToList();
+            Assert.True(all.Count >= 2, binding.Name);
+            foreach (var node in all)
+                Assert.Same(binding, model.Resolve(node));
+        }
+
+        // The pair's elements are the getter and the setter, in source order.
+        var pair = environment.Names.Single(static b => b.Name == "#p");
+        Assert.Equal(new[] { MethodKind.Get, MethodKind.Set }, pair.Elements.Cast<MethodDefinition>().Select(static m => m.MethodKind));
+
+        // An auto-accessor, under its proposal.
+        var (accessor, accessorModel) = Model("class C { accessor #a = 1; m() { return this.#a; } }", proposals: ProposalFlags.AutoAccessors);
+        var a = accessorModel.Resolve(Private(accessor, "#a", 1))!;
+        Assert.Equal(PrivateNameKind.Accessor, a.Kind);
+        Assert.Same(a, accessorModel.Resolve(Private(accessor, "#a")));
+        Assert.IsType<FieldDefinition>(Assert.Single(a.Elements));
+
+        // Placement plays no part: a static name used through an instance and the other way round resolve as written.
+        var (crossed, crossedModel) = Model("class C { static #s; #i; m() { return this.#s; } static n(o) { return o.#i; } }");
+        Assert.Same(crossedModel.Resolve(Private(crossed, "#s")), crossedModel.Resolve(Private(crossed, "#s", 1)));
+        Assert.Same(crossedModel.Resolve(Private(crossed, "#i")), crossedModel.Resolve(Private(crossed, "#i", 1)));
+    }
+
+    /// <summary>
+    /// The innermost class that declares a name wins; a nested class reads an outer name; a class's heritage reads the
+    /// names around the class; computed keys, initialisers, static blocks, arrows, parameter defaults and an object literal's
+    /// methods read the class's own; an object literal's private key declares nothing.
+    /// </summary>
+    [Fact]
+    public void A_reference_resolves_in_the_innermost_class_that_declares_it_and_a_heritage_in_the_names_around_its_class()
+    {
+        var (shadow, shadowModel) = Model("class O { #x; m() { class I { #x; n(o) { return o.#x; } } return this.#x; } }");
+        var outerX = shadowModel.Resolve(Private(shadow, "#x"))!;
+        var innerX = shadowModel.Resolve(Private(shadow, "#x", 1))!;
+        Assert.NotSame(outerX, innerX);
+        Assert.Same(innerX, shadowModel.Resolve(Private(shadow, "#x", 2)));
+        Assert.Same(outerX, shadowModel.Resolve(Private(shadow, "#x", 3)));
+        Assert.Same(Class(shadow, 1), innerX.Environment.Class);
+
+        var (nested, nestedModel) = Model("class O { #x; m() { class I { n(o) { return o.#x; } } } }");
+        Assert.Same(nestedModel.Resolve(Private(nested, "#x")), nestedModel.Resolve(Private(nested, "#x", 1)));
+
+        var (heritage, heritageModel) = Model("class O { #x; m() { class I extends (o => o.#x, Object) {} } }");
+        Assert.Same(heritageModel.PrivateEnvironmentOf(Class(heritage)), heritageModel.Resolve(Private(heritage, "#x", 1))!.Environment);
+
+        foreach (var text in new[]
+        {
+            "class C { #x; [o => o.#x] = 1; }", "class C { #x; y = this.#x; }", "class C { #x; static { (o => o.#x); } }",
+            "class C { #x; m() { return () => this.#x; } }", "class C { #x; m(a = this.#x) {} }", "class C { #x; m() { return { f(o) { return o.#x; } }; } }",
+        })
+        {
+            var (result, model) = Model(text);
+            Assert.Same(model.Resolve(Private(result, "#x")), model.Resolve(Private(result, "#x", 1)));
+            Assert.Same(Class(result), model.Resolve(Private(result, "#x", 1))!.Environment.Class);
+        }
+
+        // An object literal's private key declares nothing; EE0016 refuses it on both paths, so that no model holds one.
+        Assert.Null(Parse("({ #m() {} });").Model);
+        Assert.Null(Parse("class C { #m() {} f() { return { #m() {}, g() { return this.#m; } }; } }").Model);
+    }
+
+    /// <summary>
+    /// Eval code: a name the caller sees and no class of the eval code declares has no binding in the unit; an eval-code
+    /// class's own names resolve; the dynamic function's goals answer null; an eval-code class's outer environment is null.
+    /// </summary>
+    [Fact]
+    public void Eval_code_s_caller_names_and_the_dynamic_goals_answer_null()
+    {
+        var (caller, callerModel) = EvalModel("this.#x;", "#x");
+        Assert.Null(callerModel.Resolve(Private(caller, "#x")));
+
+        var (own, ownModel) = EvalModel("class D { #y; m() { return this.#y + this.#x; } }", "#x");
+        var y = ownModel.Resolve(Private(own, "#y", 1))!;
+        Assert.Same(ownModel.Resolve(Private(own, "#y")), y);
+        Assert.Null(ownModel.Resolve(Private(own, "#x")));
+        Assert.Null(ownModel.PrivateEnvironmentOf(Class(own)).Outer);
+
+        var (body, bodyModel) = Model("return this.#x;", ParseGoal.FunctionBody);
+        Assert.Null(bodyModel.Resolve(Private(body, "#x")));
+    }
+
+    /// <summary>
+    /// Each class's environment: its names in source order, once each, <c>#constructor</c> excluded only by the source
+    /// EE0132 refuses; the outer chain, a class in another class's heritage skipping that class; an empty environment for a
+    /// class that declares none; a binding's environment the class's.
+    /// </summary>
+    [Fact]
+    public void Each_class_has_a_private_environment_whose_outer_one_is_the_environment_it_is_evaluated_in()
+    {
+        var (result, model) = Model("class O { #o; m() { class A extends (class I { n(p) { return p.#o; } }, Object) { #a; } } }");
+        var o = model.PrivateEnvironmentOf(Class(result, 0));
+        var a = model.PrivateEnvironmentOf(Class(result, 1));
+        var i = model.PrivateEnvironmentOf(Class(result, 2));
+        Assert.Same(Class(result, 1), a.Class);
+        Assert.Null(o.Outer);
+        Assert.Same(o, a.Outer);
+        Assert.Same(o, i.Outer);
+        Assert.Empty(i.Names);
+        Assert.Same(o.Names.Single(), model.Resolve(Private(result, "#o", 1)));
+        Assert.Equal(new[] { "#a" }, a.Names.Select(static b => b.Name));
+
+        var (method, methodModel) = Model("class O { #x; m() { class I extends (o => o.#x, Object) {} } }");
+        Assert.Same(methodModel.PrivateEnvironmentOf(Class(method, 0)), methodModel.PrivateEnvironmentOf(Class(method, 1)).Outer);
+
+        var (empty, emptyModel) = Model("class C { m() {} } (class {});");
+        Assert.Empty(emptyModel.PrivateEnvironmentOf(Class(empty, 0)).Names);
+        Assert.Empty(emptyModel.PrivateEnvironmentOf(Class(empty, 1)).Names);
+
+        var (order, orderModel) = Model("class C { #b; static #a() {} get #c() { return 1; } #d; set #c(v) {} }");
+        var names = orderModel.PrivateEnvironmentOf(Class(order)).Names;
+        Assert.Equal(new[] { "#b", "#a", "#c", "#d" }, names.Select(static b => b.Name));
+        foreach (var binding in names)
+            Assert.Same(binding.Environment, orderModel.PrivateEnvironmentOf(binding.Environment.Class));
+    }
+
+    [Fact]
+    public void A_null_or_foreign_class_or_private_name_is_refused()
+    {
+        const string text = "class C { #x; m() { return this.#x; } }";
+        var (_, model) = Model(text);
+        var (other, _) = Model(text);
+        Assert.Throws<ArgumentNullException>(() => model.Resolve((PrivateIdentifier)null!));
+        Assert.Throws<ArgumentNullException>(() => model.PrivateEnvironmentOf(null!));
+        Assert.Throws<ArgumentException>(() => model.Resolve(Private(other, "#x")));
+        Assert.Throws<ArgumentException>(() => model.PrivateEnvironmentOf(Class(other)));
+    }
+
+    // Accepted sources with private names, beside the population.
+    private static readonly string[] PrivateSources =
+    [
+        "class C { #x = 1; m() { return this.#x; } } new C().m()", "class C { #x = 2; m() { class D { n(o) { return o.#x; } } return new D().n(this); } } new C().m()",
+        "class C { m() { return this.#x; } #x; }", "class C { #x; m() { class D { #x; n(o) { return o.#x; } } } }",
+        "class C { static #s; m() { return C.#s; } }", "class C { #x; static m(o) { return #x in o; } }",
+        "class C { get #a() { return 1; } set #a(v) {} m() { return this.#a; } }", "class C { #x = 1; y = this.#x; }",
+        "class C { static #s; static { C.#s; } }", "class C { #x; m(a = this.#x) {} }", "class C { #x; m({ [this.#x]: y }) {} }",
+        "class C { #x; [o => o.#x] = 1; }", "class C { #x; m() { return { f(o) { return o.#x; } }; } }",
+        "class O { #x; m() { class I extends (o => o.#x, Object) {} } }", "class C { #x; m(o) { return o?.#x; } }",
+        "class O { #o; m() { class A extends (class I { n(p) { return p.#o; } }, Object) { #a; m() { return this.#a; } } } }",
+    ];
+
+    /// <summary>
+    /// Over the determinism tests' population and the fixtures' accepted sources, Script and Module trees: every private
+    /// name has a scope; every class element's key and every reference resolves to a binding of its name; a key's binding
+    /// lists its element; a reference's binding is that of the innermost class whose elements hold it and whose names hold
+    /// it; every class's environment holds its distinct private key names in source order.
+    /// </summary>
+    [Fact]
+    public void Every_private_name_of_an_accepted_tree_resolves_over_the_population()
+    {
+        var items = DeterminismTests.Population.Value;
+        var (references, keys, classes) = OnDocumentedStack(() =>
+        {
+            var (r, k, c) = (0, 0, 0);
+            void One(string name, ParseResult on)
+            {
+                if (on.Model is not { } model || on.Tree!.Goal is not (ParseGoal.Script or ParseGoal.Module))
+                    return;
+                var parents = new Dictionary<SyntaxNode, SyntaxNode>(ReferenceEqualityComparer.Instance);
+                var children = new List<SyntaxNode>();
+                var nodes = Nodes(on.Tree!);
+                foreach (var node in nodes)
+                {
+                    children.Clear();
+                    node.AddChildren(children);
+                    foreach (var child in children)
+                        parents[child] = node;
+                }
+
+                // The classes whose elements hold a node, innermost first.
+                IEnumerable<ClassNode> Holding(SyntaxNode node)
+                {
+                    for (var at = node; parents.TryGetValue(at, out var parent); at = parent)
+                    {
+                        if (parent is ClassNode @class && @class.Elements.Contains(at))
+                            yield return @class;
+                    }
+                }
+
+                foreach (var node in nodes)
+                {
+                    if (node is ClassNode @class)
+                    {
+                        c++;
+                        var keyNames = @class.Elements.Select(static e => e switch { MethodDefinition m => m.Key, FieldDefinition f => f.Key, _ => null })
+                            .OfType<PrivateIdentifier>().Select(static p => p.Name).Distinct(StringComparer.Ordinal);
+                        Assert.True(keyNames.SequenceEqual(model.PrivateEnvironmentOf(@class).Names.Select(static b => b.Name)), name + ": the class at " + @class.Span.Offset.ToString(CultureInfo.InvariantCulture) + " has other names");
+                        continue;
+                    }
+
+                    if (node is not PrivateIdentifier privateName)
+                        continue;
+                    var at = name + ": " + privateName.Name + " at " + privateName.Span.Offset.ToString(CultureInfo.InvariantCulture);
+                    Assert.NotNull(model.ScopeOf(privateName));
+                    var parent = parents[privateName];
+                    if (parent is PropertyDefinition)
+                        continue; // an object literal's key, which EE0016 refuses: no model holds one
+                    var binding = model.Resolve(privateName);
+                    Assert.True(binding is not null && binding.Name == privateName.Name, at + ": no binding of its name");
+                    if (parent is MethodDefinition or FieldDefinition)
+                    {
+                        k++;
+                        Assert.Contains(parent, binding!.Elements);
+                        continue;
+                    }
+
+                    r++;
+                    var expected = Holding(parent).First(h => model.PrivateEnvironmentOf(h).Names.Any(b => b.Name == privateName.Name));
+                    Assert.True(ReferenceEquals(expected, binding!.Environment.Class), at + ": not the innermost class that holds and declares it");
+                }
+            }
+
+            foreach (var item in items)
+                One(Name(item), SyntaxParser.Parse(DeterminismTests.Request(item, model: true)));
+            foreach (var text in PrivateSources)
+            {
+                var on = Parse(text);
+                Assert.True(on.Outcome == ParseOutcome.Accepted, text);
+                One("private source \"" + text + "\"", on);
+                var module = Parse(text, ParseGoal.Module);
+                Assert.True(module.Outcome == ParseOutcome.Accepted, "module " + text);
+                One("module private source \"" + text + "\"", module);
+            }
+
+            return (r, k, c);
+        });
+        Assert.True(references > PrivateSources.Length && keys > PrivateSources.Length && classes > PrivateSources.Length);
+        output.WriteLine("private names resolved: references " + references.ToString(CultureInfo.InvariantCulture) + ", keys "
+            + keys.ToString(CultureInfo.InvariantCulture) + "; classes " + classes.ToString(CultureInfo.InvariantCulture));
     }
 }

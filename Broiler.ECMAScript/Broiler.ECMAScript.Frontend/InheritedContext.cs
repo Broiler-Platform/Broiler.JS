@@ -34,9 +34,13 @@ namespace Broiler.ECMAScript.Syntax;
 /// <para>
 /// <b>The private names are optional, and their absence leaves the check to the engine</b> (decisions D16 and D44):
 /// <see langword="null"/> means the request does not say which private names the caller sees, so the library refuses no
-/// private name as undeclared; a list, empty or not, is every private name visible at the call, which an undeclared one
-/// is checked against (PerformEval step 7, AllPrivateIdentifiersValid). At SJL-13 neither engine passes one, and the
-/// stage table assigns that check (catalogue row EA0009) to SJL-15's model.
+/// private name as undeclared; a list, empty or not, is every private name visible at the call. From SJL-15.2 stage 4,
+/// with <see cref="ParseRequest.BuildSemanticModel"/> on, the semantic model checks an undeclared one against the list
+/// (EvalDeclarationInstantiation step 7, AllPrivateIdentifiersValid; catalogue row EA0009); with the member off nothing
+/// reads the list, and the engine keeps the check. <i>(Revised 2026-11-25, at SJL-15.2 stage 4, when the model began to
+/// check the list, and to give the catalogue's anchor; it read "a list, empty or not, is every private name visible at the
+/// call, which an undeclared one is checked against (PerformEval step 7, AllPrivateIdentifiersValid). At SJL-13 neither
+/// engine passes one, and the stage table assigns that check (catalogue row EA0009) to SJL-15's model.")</i>
 /// </para>
 /// <para>
 /// <b>No caller's lexical names</b> (decision D16): the conflict they serve is EvalDeclarationInstantiation's, a run-time
@@ -83,7 +87,10 @@ public sealed class InheritedContext
     /// <summary>
     /// The private names visible at the call, each as its StringValue (ECMA-262 clause 15.7.1, <c>#</c> and the
     /// IdentifierName), in the order the caller gives them; or <see langword="null"/>, which leaves the check of an
-    /// undeclared private name to the engine.
+    /// undeclared private name to the engine. From SJL-15.2 stage 4 a list is read only with
+    /// <see cref="ParseRequest.BuildSemanticModel"/> on, where the semantic model refuses eval code's private name that
+    /// neither the list nor a class of the eval code declares (catalogue row EA0009). <i>(Added 2026-11-25, at SJL-15.2
+    /// stage 4.)</i>
     /// </summary>
     /// <exception cref="ArgumentException">A name is null, or is not <c>#</c> followed by at least one code unit.</exception>
     // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.7.1 PrivateIdentifier, JSD-0083 D16 D44 private names; IP=Low; Security=Medium; Resources=1; Fingerprint=EE18DD
