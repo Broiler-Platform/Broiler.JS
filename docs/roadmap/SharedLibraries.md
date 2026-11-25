@@ -3814,6 +3814,17 @@ parent's push run (`Broiler.ECMAScript.Frontend.Tests`) and in the first attempt
 step; then stage 2. None of it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in both
 repositories.
 
+*(Noted 2026-11-25, in the change that makes it.)* The paragraph above reads "ci.yml's Test step starts a test host for
+every `Broiler.ECMAScript` test project although its filter selects none of their tests" and "Next: a separate change,
+before stage 2, leaves those projects out of that step". That change is the one carrying this note: ci.yml's Test step
+now tests, with the same filter, every project of `Broiler.JS.slnx` but those of `Broiler.ECMAScript.slnf`, through
+`eng/run-tests.sh --engine-only`, and starts no test host for a `Broiler.ECMAScript` test project. Since Shared
+libraries' Windows job failed the same way on Broiler-Platform/Broiler.JS#1133's head, the same change also has both
+workflows' Windows test steps start fewer test projects at once and every test host wait longer for its data collector,
+as mitigations whose effect is not shown: why a test host, its data collector or its test process failed to answer is
+not known, and only the hosted Windows runs can show whether these steps now pass. Then stage 2. None of it is
+accepted.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

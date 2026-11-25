@@ -68,8 +68,18 @@ jobs:
         run: python -m pip install --disable-pip-version-check tzdata==2025.2
       - name: Build
         run: dotnet build Broiler.ECMAScript.slnf -c Release --nologo
+      # On hosted Windows runners, while other test projects were starting or running, a test host, its
+      # data collector or its test process has failed to answer within a fixed wait: the 60 s xUnit's
+      # adapter gives the test process to report its assembly information, or the 90 s a host waits for
+      # its data collector (the blame-hang collector Directory.Build.targets turns on). Why is not known.
+      # As mitigations whose effect is not shown, as in ci.yml's Test step: on Windows two test projects
+      # run at a time (-m:2), not one per processor, so fewer start together; and on both systems a host
+      # waits up to 300 s for the collector, which helps only if such a start is slow rather than
+      # stalled. (Until 2026-11-25 the step was the same command without either.)
       - name: Test, the SL rules among them
-        run: dotnet test Broiler.ECMAScript.slnf -c Release --no-build --nologo
+        env:
+          VSTEST_CONNECTION_TIMEOUT: '300'
+        run: dotnet test Broiler.ECMAScript.slnf -c Release --no-build --nologo ${{ runner.os == 'Windows' && '-m:2' || '' }}
       - name: The corpus generator's own tests
         run: python -m unittest discover -s scripts/conformance/tests -v
       # Milestone SJL-8's data-home exit clause 3: the generated zone table against the host's zic -b fat

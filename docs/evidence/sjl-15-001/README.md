@@ -206,6 +206,20 @@ respond within 60 seconds"; and at `be6c4a5c`, the first attempt above. **Next, 
 leaves the `Broiler.ECMAScript` test projects out of that step; it is named here and not made by this change, which is
 records only.
 
+*(Noted 2026-11-25, in the change that makes it.)* **ci.yml's Test step leaves the `Broiler.ECMAScript` test projects
+out.** The paragraph above reads "The step runs `dotnet test` over `Broiler.JS.slnx` with a filter that leaves out every
+`Broiler.ECMAScript.` test, since Shared libraries runs those projects, but it still starts a test host for each of
+them" and "**Next, before stage 2:** a separate change leaves the `Broiler.ECMAScript` test projects out of that step".
+That change is the one carrying this note: the step now passes `--engine-only` to `eng/run-tests.sh`, which tests a
+solution filter of every project of `Broiler.JS.slnx` but those of `Broiler.ECMAScript.slnf`, with the same filter, and
+refuses to run unless those are exactly the solution's projects under `Broiler.ECMAScript/`; it starts no test host for
+a `Broiler.ECMAScript` test project. Shared libraries' Windows job then failed the same way on
+Broiler-Platform/Broiler.JS#1133's head (`Broiler.ECMAScript.Frontend.Tests`' test process "did not respond within 60
+seconds"), so the same change also has both workflows' Windows test steps start two test projects at a time and every
+test host wait longer for its data collector. Why a test host, its data collector or its test process failed to answer
+in the three failures is not known: those two settings are mitigations whose effect is not shown, and only the hosted
+Windows runs can show whether these steps now pass. None of it is part of part B's reading.
+
 **The method's notes.** A first attempt at `8b1fa311` was stopped at the disk gate before its dump run, the shortfall
 being its own build tree with the suite extracted on disk beside it; it is kept in
 [`part-b-be6c4a5c/8b1fa311-attempt1-disk-gate/`](part-b-be6c4a5c/8b1fa311-attempt1-disk-gate/logs/commit.txt), set
