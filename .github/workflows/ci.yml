@@ -121,9 +121,14 @@ jobs:
 
       # The engine corpus (Category=EngineCorpus) runs in the engine vectors job below, and the
       # Broiler.ECMAScript test projects in Shared libraries, on every push and pull request and from
-      # Publish. The Build step still builds them.
+      # Publish. The Build step still builds them, and this step starts no test host for them:
+      # --engine-only tests a solution filter that run-tests.sh writes from Broiler.JS.slnx, every
+      # project outside Broiler.ECMAScript/. (Until 2026-11-25 it tested the whole solution with the same
+      # filter, which selected none of their tests but started a host for each; two Windows runs failed
+      # in such a host before any test ran.) The filter's last clause still leaves out any
+      # Broiler.ECMAScript. test an engine project might hold.
       - name: Test
-        run: bash ./eng/run-tests.sh Release --filter "Category!=EngineCorpus&Category!=CompilerScaling&FullyQualifiedName!~Broiler.ECMAScript."
+        run: bash ./eng/run-tests.sh Release --engine-only --filter "Category!=EngineCorpus&Category!=CompilerScaling&FullyQualifiedName!~Broiler.ECMAScript."
 
       # Timing ratios need the runner without other test assemblies competing for CPU/GC.
       # Keep the original 8x regression bound and execute this on every build matrix entry.
