@@ -968,6 +968,16 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         "L: while (c) { if (x) break L; continue L; break; continue; }", "L: if (x) break L; else { M: break M; }",
     ];
 
+    // The same under the other goals, whose label owner is not the Script's: the Module, a function body and eval code.
+    private static readonly (ParseGoal Goal, string Text)[] GoalJumpSources =
+    [
+        (ParseGoal.Module, "L: for (;;) { if (x) break L; continue L; } switch (0) { default: break; }"),
+        (ParseGoal.Module, "A: B: { break A; } o: for (;;) { for (;;) { continue o; } }"),
+        (ParseGoal.FunctionBody, "L: while (c) { if (x) break L; continue L; } A: B: do { continue A; } while (c); M: break M;"),
+        (ParseGoal.FunctionBody, "while (a) { class C { static { L: while (b) { break L; } } } (() => { for (;;) continue; }); }"),
+        (ParseGoal.Eval, "L: for (;;) { continue L; } A: B: C: do { break B; } while (c); switch (d) { case 0: break; }"),
+    ];
+
     /// <summary>
     /// Each jump's target and label set: the innermost iteration statement or switch for an unlabelled break, the innermost
     /// iteration statement for an unlabelled continue, the iteration statement whose label set holds the label for a
@@ -1036,10 +1046,11 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     }
 
     /// <summary>
-    /// Over the determinism tests' population and the fixtures' accepted sources: every jump of an accepted tree has a
-    /// target; the target is in the tree and its span holds the jump's; a continue's is an iteration statement and an
-    /// unlabelled break's an iteration statement or a switch; a labelled jump's label is in the label set; and the label set
-    /// is the chain of labelled statements directly over the target, outermost first.
+    /// Over the determinism tests' population and the fixtures' accepted sources, under the Script goal and under the Module,
+    /// function body and eval goals: every jump of an accepted tree has a target; the target is in the tree and its span
+    /// holds the jump's; a continue's is an iteration statement and an unlabelled break's an iteration statement or a
+    /// switch; a labelled jump's label is in the label set; and the label set is the chain of labelled statements directly
+    /// over the target, outermost first.
     /// </summary>
     [Fact]
     public void Every_jump_of_an_accepted_tree_has_a_target_over_the_population()
@@ -1095,6 +1106,13 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
                 var on = Parse(text);
                 Assert.True(on.Outcome == ParseOutcome.Accepted, text);
                 One("jump source \"" + text + "\"", on);
+            }
+
+            foreach (var (goal, text) in GoalJumpSources)
+            {
+                var on = Parse(text, goal);
+                Assert.True(on.Outcome == ParseOutcome.Accepted, goal + ": " + text);
+                One(goal + " jump source \"" + text + "\"", on);
             }
 
             return count;

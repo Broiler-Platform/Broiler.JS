@@ -467,8 +467,9 @@ public sealed class SemanticRowsTests
     /// <summary>
     /// The jumps' places and boundaries (SJL-15.2 stage 3): each row at its jump, with the label as the undefined-label rows'
     /// argument; every function, arrows included, and every static block a boundary; the owner's row by the label set's
-    /// owner, a static block in a dynamic function's parameters included; one row per construct; and the whole chain of
-    /// enclosing statements searched. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
+    /// owner, a static block in a dynamic function's parameters included, and eval code a Script's owner whatever its
+    /// caller's context, since PerformEval parses a Script and eval code inherits no label; one row per construct; and the
+    /// whole chain of enclosing statements searched. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
     /// </summary>
     [Fact]
     public void Each_jump_row_is_placed_at_its_jump_and_every_function_and_static_block_is_a_boundary()
@@ -482,8 +483,12 @@ public sealed class SemanticRowsTests
             ("EE0082", "", "L: while (1) { class C { x = function () { continue L; }; } }", "continue"),
             ("EE0136", "", "L: { class C { static { break L; } } }", "break"),
             ("EE0165", "e", "break L;", "break"),
+            ("EE0165", "e if", "break L;", "break"),
+            ("EE0166", "e cf", "continue L;", "continue"),
+            ("EE0058", "e im", "continue;", "continue"),
             ("EE0081", "b", "break L;", "break"),
             ("EE0059", "p", "a = () => { break; }", "break"),
+            ("EE0081", "p", "a = () => { break L; }", "break"),
             ("EE0136", "p", "a = class { static { break L; } }", "break"),
             ("EE0175", "m", "break L;", "break"),
             ("EE0176", "m", "continue L;", "continue"),
