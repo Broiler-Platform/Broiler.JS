@@ -292,7 +292,7 @@ public sealed class SemanticRowsTests
         { "EE0167", "", "class C extends (o => o.#x, Object) { #x; }" },
         { "EE0167", "", "class O { m() { class I extends (o => o.#y, Object) { #y; } } }" },
         { "EE0167", "", "class C { m() { class D { #x; } return this.#x; } }" },
-        { "EE0167", "", "this.#\u0079;" },
+        { "EE0167", "", "this.#\\u0079;" },
         { "EE0167", "", "switch (0) { case 0: this.#x; }" },
         { "EE0167", "", "#y in {};" },
         { "EE0167", "", "class C { #x; m() { return class { [this.#y] = 1; }; } }" },
@@ -378,6 +378,8 @@ public sealed class SemanticRowsTests
         { "", "class C { #x; m(o) { return o?.#x; } }" },
         { "", "class C { #x; m() { this.#x = 1; this.#x++; this.#x += 1; [this.#x] = [1]; ({ a: this.#x } = {}); for (this.#x of []); delete this.y; } }" },
         { "", "class C { #x; m() { switch (0) { case 0: this.#x; } } }" },
+        { "", "class C { #\\u0079; m() { return this.#y; } }" },
+        { "", "class C { #y; m() { return this.#\\u0079; } }" },
         { "m", "class C { #x; m() { return this.#x; } }" },
         { "e", "this.#x;" },
         { "e", "#x in this; class D { m() { return this.#y; } }" },
@@ -680,6 +682,11 @@ public sealed class SemanticRowsTests
         Assert.Equal(new[] { CodeOfSyntax("EE0132") }, Reported("all", constructor).Select(static r => r.Code));
         Assert.Equal(new[] { CodeOfSyntax("EE0132") }, Parse("all", constructor, model: false).Diagnostics.Select(static d => d.Code));
 
+        // Where no class declares #constructor, its use is undeclared like any other name's: EE0167 on, accepted off.
+        var undeclaredConstructor = "class C { m() { this.#constructor; } }";
+        Assert.Equal(new[] { (Code("EE0167"), Offset(undeclaredConstructor, "this", 0)) }, Reported("all", undeclaredConstructor));
+        Assert.Empty(Parse("all", undeclaredConstructor, model: false).Diagnostics);
+
         // One row per reference, in source order; the first under first error.
         var two = "this.#x; this.#y;";
         Assert.Equal(new[] { (Code("EE0167"), 0), (Code("EE0167"), Offset(two, "this", 1)) }, Reported("all", two));
@@ -752,9 +759,10 @@ public sealed class SemanticRowsTests
 
     /// <summary>
     /// A private name's row against a <c>syntax</c> row at the same place (SJL-15.2 stage 4; decision D11): a name row at
-    /// the member's start, keyed after the member's row, which is reported before the member's children are visited; and a
-    /// scope's conflict at its close, which a member written right after it starts at, before the row by D11's sub-key.
-    /// <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+    /// the member's start, keyed after the member's row, which is reported before the member's children are visited; a
+    /// scope's conflict at its close, which a member written right after it starts at, before the row by D11's sub-key; and
+    /// a row inside a scope, keyed before the scope's close and so before its conflict, although the conflicting
+    /// declarations come first in the source. <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
     /// </summary>
     [Fact]
     public void A_private_name_s_row_against_a_syntax_row_at_the_same_place()
@@ -775,6 +783,34 @@ public sealed class SemanticRowsTests
         Assert.True(on[0].Span.Offset < on[1].Span.Offset);
         Assert.Equal(new[] { conflict.Code }, Parse("", close).Diagnostics.Select(static d => d.Code));
         Assert.Equal(new[] { conflict.Code }, Parse("", close, model: false).Diagnostics.Select(static d => d.Code));
+
+        // A row anywhere inside a scope, before its close, comes before that scope's conflict, which is keyed at the close
+        // although its declarations come earlier: under first error the on path names the row, the off path the conflict.
+        const string inside = "class C { m() { let a; let a; this.#y; } }";
+        var insideConflict = Parse("all", inside, model: false).Diagnostics.Single();
+        Assert.True(insideConflict.Span.Offset < Offset(inside, "this", 0));
+        Assert.Equal(new[] { (Code("EE0167"), Offset(inside, "this", 0)), (insideConflict.Code, insideConflict.Span.Offset) }, Reported("all", inside));
+        Assert.Equal(new[] { Code("EE0167") }, Reported("", inside).Select(static r => r.Code));
+        Assert.Equal(new[] { insideConflict.Code }, Parse("", inside, model: false).Diagnostics.Select(static d => d.Code));
+    }
+
+    /// <summary>
+    /// An object literal's private key declares nothing (SJL-15.2 stage 4): EE0016 refuses the key on both paths, and a
+    /// reference only such a key could declare is still undeclared, so with the member on EE0167 follows at the member;
+    /// under first error EE0016, at the earlier place, on both paths. <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+    /// </summary>
+    [Theory]
+    [InlineData("({ #m() { return this.#m; } })")]
+    [InlineData("class C { f() { return { #m() {}, g() { return this.#m; } }; } }")]
+    public void An_object_literal_s_private_key_declares_nothing(string text)
+    {
+        var key = (CodeOfSyntax("EE0016"), Offset(text, "#m", 0));
+        Assert.Equal(new[] { key, (Code("EE0167"), Offset(text, "this", 0)) }, Reported("all", text));
+        Assert.Equal("#m", Parse("all", text).Diagnostics[1].Arguments.Single());
+        Assert.Equal(new[] { key }, Parse("all", text, model: false).Diagnostics.Select(static d => (d.Code, d.Span.Offset)));
+        Assert.Equal(new[] { key }, Reported("", text));
+        Assert.Equal(new[] { key }, Parse("", text, model: false).Diagnostics.Select(static d => (d.Code, d.Span.Offset)));
+        Assert.Null(Parse("all", text).Model);
     }
 
     private static string CodeOfSyntax(string row) => ((LexicalRefusal)typeof(Rows).GetField(row, BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!).Code;

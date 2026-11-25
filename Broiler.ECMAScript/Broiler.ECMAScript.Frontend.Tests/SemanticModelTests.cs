@@ -1246,9 +1246,21 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
             Assert.Same(Class(result), model.Resolve(Private(result, "#x", 1))!.Environment.Class);
         }
 
+        // An escaped spelling is its StringValue: the escaped key and the plain reference, or the plain key and the escaped
+        // reference, answer one binding of #y.
+        foreach (var text in new[] { "class C { #\\u0079; m() { return this.#y; } }", "class C { #y; m() { return this.#\\u0079; } }" })
+        {
+            var (escaped, escapedModel) = Model(text);
+            var y = escapedModel.Resolve(Private(escaped, "#y"))!;
+            Assert.Equal("#y", y.Name);
+            Assert.Same(y, escapedModel.Resolve(Private(escaped, "#y", 1)));
+            Assert.Same(escapedModel.PrivateEnvironmentOf(Class(escaped)).Names.Single(), y);
+        }
+
         // An object literal's private key declares nothing; EE0016 refuses it on both paths, so that no model holds one.
         Assert.Null(Parse("({ #m() {} });").Model);
         Assert.Null(Parse("class C { #m() {} f() { return { #m() {}, g() { return this.#m; } }; } }").Model);
+        Assert.Null(Parse("class C { f() { return { #m() {}, g() { return this.#m; } }; } }").Model);
     }
 
     /// <summary>
@@ -1328,6 +1340,16 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         "class C { #x; [o => o.#x] = 1; }", "class C { #x; m() { return { f(o) { return o.#x; } }; } }",
         "class O { #x; m() { class I extends (o => o.#x, Object) {} } }", "class C { #x; m(o) { return o?.#x; } }",
         "class O { #o; m() { class A extends (class I { n(p) { return p.#o; } }, Object) { #a; m() { return this.#a; } } } }",
+
+        // The fixtures' admitted variants of SemanticRowsTests not above, Script and Module alike.
+        "class C { #x; m() { this.#x; } }", "class C { static #s; m() { return this.#s; } }", "class C { #x; static m(o) { return o.#x; } }",
+        "class C { static get #a() { return 1; } static set #a(v) {} static m() { return C.#a; } }",
+        "class C { #m() {} *#g() {} async #f() {} async *#h() {} n() { this.#m(); this.#g(); this.#f(); this.#h(); } }",
+        "class C { #x; get g() { return this.#x; } set g(v) { this.#x = v; } }", "class C { #x; y = () => this.#x; }",
+        "class C { static #s; static { (function () { C.#s; }); } }",
+        "class C { #x; m() { this.#x = 1; this.#x++; this.#x += 1; [this.#x] = [1]; ({ a: this.#x } = {}); for (this.#x of []); delete this.y; } }",
+        "class C { #x; m() { switch (0) { case 0: this.#x; } } }", "class C { #x; m() { return this.#x; } }",
+        "class C { #\\u0079; m() { return this.#y; } }", "class C { #y; m() { return this.#\\u0079; } }",
     ];
 
     /// <summary>

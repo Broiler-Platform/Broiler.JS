@@ -101,24 +101,24 @@ public enum FunctionKind
 /// built per compilation unit, after the parse, by the declarations walk itself, which "does not start a second one", and
 /// only when the request sets <see cref="ParseRequest.BuildSemanticModel"/>. At SJL-15.2 stage 1 it holds the scopes with
 /// their parents, the declarations with their binding identifiers, and the per-function facts; from stage 3 it also holds
-/// each <c>break</c>'s and <c>continue</c>'s target (<see cref="TargetOf(BreakStatement)"/>), and from stage 4 each class's
-/// private environment and the binding each private name names (<see cref="PrivateEnvironmentOf"/>,
+/// each <c>break</c>'s and <c>continue</c>'s target (<see cref="TargetOf(BreakStatement)"/>), and from stage 4 each
+/// class's private environment and the binding each private name names (<see cref="PrivateEnvironmentOf"/>,
 /// <see cref="Resolve(PrivateIdentifier)"/>); resolution, the module record, named evaluation, captures and the early
-/// errors that are not purely grammatical are later stages'. From
-/// stage 2 the walk that builds it also reports its early errors of the function context (the super rows,
-/// ContainsArguments, eval code's from the caller's context, and three of expressions') among the parse's diagnostics, so
-/// that a source they refuse has no model, from stage 3 those of jump targets (a <c>break</c> or a <c>continue</c> with
-/// no target, and an undefined break or continue target), and from stage 4 those of private names (a private name no
-/// enclosing class declares, in a Script, in a Module, and in eval code against the private names its caller sees); the
-/// early errors of the module record are later stages'. <i>(Revised 2026-11-25, at SJL-15.2 stage 2; where it names the early errors, it read "and the early
-/// errors that are not purely grammatical are later stages'.")</i> <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when jump
-/// targets joined the model; it read "resolution, jump targets, private names, the module record, named evaluation,
-/// captures and the early errors that are not purely grammatical are later stages'" and "the early errors of jump targets,
-/// private names and the module record are later stages'.")</i> <i>(Revised 2026-11-25, at SJL-15.2 stage 4, when private
-/// names joined the model; it read "each <c>break</c>'s and <c>continue</c>'s target (<see cref="TargetOf(BreakStatement)"/>);
-/// resolution, private names, the module record, named evaluation, captures and the early errors that are not purely
-/// grammatical are later stages'", "and from stage 3 those of jump targets" and "the early errors of private names and the
-/// module record are later stages'.")</i>
+/// errors that are not purely grammatical are later stages'. From stage 2 the walk that builds it also reports its
+/// early errors of the function context (the super rows, ContainsArguments, eval code's from the caller's context, and
+/// three of expressions') among the parse's diagnostics, so that a source they refuse has no model, from stage 3 those
+/// of jump targets (a <c>break</c> or a <c>continue</c> with no target, and an undefined break or continue target), and
+/// from stage 4 those of private names (a private name no enclosing class declares, in a Script, in a Module, and in
+/// eval code against the private names its caller sees); the early errors of the module record are later stages'.
+/// <i>(Revised 2026-11-25, at SJL-15.2 stage 2; where it names the early errors, it read "and the early errors that are
+/// not purely grammatical are later stages'.")</i> <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when jump targets
+/// joined the model; it read "resolution, jump targets, private names, the module record, named evaluation, captures
+/// and the early errors that are not purely grammatical are later stages'" and "the early errors of jump targets,
+/// private names and the module record are later stages'.")</i> <i>(Revised 2026-11-25, at SJL-15.2 stage 4, when
+/// private names joined the model; it read "each <c>break</c>'s and <c>continue</c>'s target
+/// (<see cref="TargetOf(BreakStatement)"/>); resolution, private names, the module record, named evaluation, captures
+/// and the early errors that are not purely grammatical are later stages'", "and from stage 3 those of jump targets"
+/// and "the early errors of private names and the module record are later stages'.")</i>
 /// </summary>
 /// <remarks>
 /// <para>
