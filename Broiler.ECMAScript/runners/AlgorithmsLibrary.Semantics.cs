@@ -8,19 +8,29 @@ namespace Broiler.ECMAScript.Runners;
 
 /// <summary>
 /// The library-level runner's semantics adapter (milestone SJL-15.2, from stage 2; the session's decisions D-js-adapter of
+/// 2026-11-24 and D-js-adapter-form of 2026-11-25, and from stage 3 D-js-adapter-groups): the <c>semantics</c> area's
+/// vectors (corpus revision 42, <c>conformance/vectors/semantics/</c>) whose row the semantic model reports, and those of
+/// the correspondence groups the model decides, parsed by <c>Broiler.ECMAScript.Frontend</c> with
+/// <see cref="ParseRequest.BuildSemanticModel"/> on, and judged at the parse. <i>(Revised 2026-11-25, at SJL-15.2 stage 3,
+/// when group <c>lb1</c> was answered; it read "(milestone SJL-15.2, from stage 2; the session's decisions D-js-adapter of
 /// 2026-11-24 and D-js-adapter-form of 2026-11-25): the <c>semantics</c> area's vectors (corpus revision 42,
-/// <c>conformance/vectors/semantics/</c>) whose row the semantic model reports, parsed by <c>Broiler.ECMAScript.Frontend</c>
-/// with <see cref="ParseRequest.BuildSemanticModel"/> on, and judged at the parse.
+/// <c>conformance/vectors/semantics/</c>) whose row the semantic model reports, parsed".)</i>
 /// </summary>
 /// <remarks>
 /// <para>
 /// <b>Which vectors are answered</b> (<see cref="IsLibrarySemantics"/>): a vector of the area, of one of its two operations,
-/// whose identifier names a row of <see cref="SemanticsAnsweredRows"/>. A vector's row is its identifier's third segment,
+/// whose identifier names a row of <see cref="SemanticsAnsweredRows"/>, or, from stage 3, whose identifier names a group of
+/// <see cref="SemanticsAnsweredGroups"/>, under that group's operation. A vector's row is its identifier's third segment,
 /// upper-cased, where it reads as a catalogue row (<c>semantics/{file}/{group}/{n}</c>, the generator's form); the
-/// <c>note</c> decides nothing (the corpus's <c>SCHEMA.md</c>). The groups that name no row are never answered. The list is
-/// the adapter's own and grows stage by stage; it is not read from the Frontend's table, so that the library cannot shape
-/// its own expectations, and the Conformance tests hold it equal to that table. Every other semantics vector is
-/// <c>status: not-implemented</c>.
+/// <c>note</c> decides nothing (the corpus's <c>SCHEMA.md</c>). A group that names no row is answered only when it is one of
+/// <see cref="SemanticsAnsweredGroups"/>, the correspondence groups whose vectors the model's rows decide, each with the
+/// rows it rests on. The lists are the adapter's own and grow stage by stage; they are not read from the Frontend's table,
+/// so that the library cannot shape its own expectations, and the Conformance tests hold the rows equal to that table and
+/// every group's rows among them. Every other semantics vector is <c>status: not-implemented</c>. <i>(Revised 2026-11-25,
+/// at SJL-15.2 stage 3, when group <c>lb1</c> was answered (the session's decision D-js-adapter-groups); it read "whose
+/// identifier names a row of <see cref="SemanticsAnsweredRows"/>." and "The groups that name no row are never answered. The
+/// list is the adapter's own and grows stage by stage; it is not read from the Frontend's table, so that the library cannot
+/// shape its own expectations, and the Conformance tests hold it equal to that table.")</i>
 /// </para>
 /// <para>
 /// <b>How each is parsed.</b> <c>ScriptEvaluation</c>: the vector's one String as a Script, under the library's default
@@ -38,7 +48,9 @@ namespace Broiler.ECMAScript.Runners;
 /// <b>What it answers</b> is the syntax area's rendering (<see cref="RenderParse"/>): <c>error: SyntaxError</c> for a
 /// refusal and <c>status: accepted</c> for an acceptance. <see cref="MatchesSemanticsAtTheParse"/> reads the expected
 /// outcome at the parse, as bundle sjl-13-001's rule reads its syntax vectors': <c>error: SyntaxError</c> as a refusal, any
-/// other outcome as an acceptance (the session's reading, D-js-adapter-form, flagged for the owner).
+/// other outcome as an acceptance (the session's reading, D-js-adapter-form, which the owner ruled on 2026-11-25 to keep
+/// ("Keep the reading at the parse (Recommended)")). <i>(Revised 2026-11-25, at SJL-15.2 stage 3, after the owner's answer;
+/// it read "(the session's reading, D-js-adapter-form, flagged for the owner)".)</i>
 /// </para>
 /// </remarks>
 internal sealed partial class AlgorithmsLibrary
@@ -54,7 +66,8 @@ internal sealed partial class AlgorithmsLibrary
 
     /// <summary>
     /// The rows whose vectors this adapter answers, each the semantic model's (SJL-15.2): stage 2's, the super group with
-    /// EE0172, the ContainsArguments rows, eval code's rows from the caller's context, and three rows of expressions.
+    /// EE0172, the ContainsArguments rows, eval code's rows from the caller's context, and three rows of expressions; and
+    /// stage 3's, the rows of jump targets. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
     /// </summary>
     internal static readonly IReadOnlyList<string> SemanticsAnsweredRows =
     [
@@ -71,6 +84,22 @@ internal sealed partial class AlgorithmsLibrary
 
         // Stage 2: expressions' rows.
         "EE0018", "EE0021", "EE0054",
+
+        // Stage 3: jump targets: break or continue with no target, and ContainsUndefinedBreakTarget and ContainsUndefinedContinueTarget of each owner.
+        "EE0058", "EE0059", "EE0081", "EE0082", "EE0136", "EE0137", "EE0165", "EE0166", "EE0175", "EE0176",
+    ];
+
+    /// <summary>
+    /// The correspondence groups whose vectors this adapter answers, each under one operation and with the rows of
+    /// <see cref="SemanticsAnsweredRows"/> its vectors rest on (SJL-15.2, from stage 3; the session's decision
+    /// D-js-adapter-groups): <c>lb1</c>, correspondence row LB1, a <c>continue</c> naming any label of a loop's label set
+    /// (Broiler.VM's hand-off H20), decided by EE0082 and EE0166. A group's vectors are answered as a listed row's are; the
+    /// Conformance tests hold each group's rows among the answered rows and each of its vectors' notes naming only them.
+    /// </summary>
+    internal static readonly IReadOnlyList<(string Group, string Operation, string[] Rows)> SemanticsAnsweredGroups =
+    [
+        // Stage 3: row LB1, a continue to any label of an iteration statement's label set.
+        ("lb1", ScriptEvaluationOperation, ["EE0082", "EE0166"]),
     ];
 
     /// <summary>Whether an operation is one of the semantics area's.</summary>
@@ -98,15 +127,42 @@ internal sealed partial class AlgorithmsLibrary
         return string.Concat("E", group[1] is 'e' or 'E' ? "E" : group[1] is 'a' or 'A' ? "A" : "P", group.AsSpan(2));
     }
 
-    /// <summary>Whether a vector is one this adapter answers: of the area, of one of its operations, and of a row in <see cref="SemanticsAnsweredRows"/>.</summary>
+    /// <summary>A semantics vector's group: its identifier's third segment, as the corpus writes it; null where it has none.</summary>
+    internal static string? SemanticsGroup(VectorRecord vector)
+    {
+        ArgumentNullException.ThrowIfNull(vector);
+        if (!vector.Id.StartsWith(SemanticsPrefix, StringComparison.Ordinal))
+            return null;
+        var segments = vector.Id.Split('/');
+        return segments.Length < 4 ? null : segments[2];
+    }
+
+    /// <summary>
+    /// Whether a vector is one this adapter answers: of the area, of one of its operations, and of a row in
+    /// <see cref="SemanticsAnsweredRows"/> or a group of <see cref="SemanticsAnsweredGroups"/> under its operation.
+    /// <i>(Revised 2026-11-25, at SJL-15.2 stage 3, which added the groups; it read "and of a row in
+    /// <see cref="SemanticsAnsweredRows"/>".)</i>
+    /// </summary>
     internal static bool IsLibrarySemantics(VectorRecord vector)
     {
         ArgumentNullException.ThrowIfNull(vector);
-        if (!vector.Id.StartsWith(SemanticsPrefix, StringComparison.Ordinal) || !IsSemanticsOperation(vector["op"]) || SemanticsRow(vector) is not { } row)
+        if (!vector.Id.StartsWith(SemanticsPrefix, StringComparison.Ordinal) || !IsSemanticsOperation(vector["op"]))
             return false;
-        foreach (var answered in SemanticsAnsweredRows)
+        if (SemanticsRow(vector) is { } row)
         {
-            if (answered == row)
+            foreach (var answered in SemanticsAnsweredRows)
+            {
+                if (answered == row)
+                    return true;
+            }
+
+            return false;
+        }
+
+        var group = SemanticsGroup(vector);
+        foreach (var answered in SemanticsAnsweredGroups)
+        {
+            if (answered.Group == group && answered.Operation == vector["op"])
                 return true;
         }
 

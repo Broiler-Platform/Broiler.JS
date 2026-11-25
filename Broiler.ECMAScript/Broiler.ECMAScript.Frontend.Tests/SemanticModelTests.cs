@@ -1102,4 +1102,25 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         Assert.True(jumps > JumpSources.Length, jumps.ToString(CultureInfo.InvariantCulture) + " jumps");
         output.WriteLine("jumps with a target: " + jumps.ToString(CultureInfo.InvariantCulture));
     }
+
+    /// <summary>
+    /// The model section of the canonical dump holds each jump's target (decision D-js-part-g): one <c>model-target</c> line
+    /// per jump, naming the jump, its target and the target's label set; a dump without the model is the dump with it off.
+    /// </summary>
+    [Fact]
+    public void The_dump_s_model_section_holds_each_jump_s_target()
+    {
+        const string text = "L: while (1) { break L; }";
+        var (on, _) = Model(text);
+        var lines = System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(on)).Split('\n');
+        var targets = lines.Where(static l => l.StartsWith("model-target ", StringComparison.Ordinal)).ToList();
+        var nodes = Nodes(on.Tree!);
+        var jump = nodes.FindIndex(static n => n is BreakStatement);
+        var loop = nodes.FindIndex(static n => n is WhileStatement);
+        Assert.Single(targets);
+        Assert.Equal("model-target " + jump.ToString(CultureInfo.InvariantCulture) + " " + loop.ToString(CultureInfo.InvariantCulture) + " \"L\"", targets[0]);
+        var off = Parse(text, model: false);
+        Assert.True(SyntaxDump.Dump(off).AsSpan().SequenceEqual(SyntaxDump.Dump(on, model: false)));
+        Assert.DoesNotContain("model-target", System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(off)), StringComparison.Ordinal);
+    }
 }
