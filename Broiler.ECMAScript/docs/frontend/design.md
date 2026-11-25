@@ -811,8 +811,10 @@ siblings"), and as both engines make one refusal per jump. A `break` never meets
 alone. The duplicate-label rows, `syntax` rows, stay at the label.
 
 **The order.** A jump's row is keyed at the jump, before its label's name row, which is keyed at the label: under first
-error `"use strict"; break yield;` answers EE0165 with the member on and the name row with it off. No `syntax` row is
-keyed at a jump's own place.
+error `"use strict"; break yield;` answers EE0165 with the member on and the name row with it off. The one `syntax`
+place a jump's row can share is a scope's close, where the scope's declared-name conflicts are keyed, when a jump is
+written right after it (`{ let a; let a; }break;`): D11's sub-key, the second declaration's place, puts the conflict
+first.
 
 **The vectors.** The adapter answers the jump rows' vectors by their identifiers, and the vectors of group `lb1`, row
 LB1, by a second list of its own, the correspondence groups the model decides, each with the rows it rests on: `lb1` on

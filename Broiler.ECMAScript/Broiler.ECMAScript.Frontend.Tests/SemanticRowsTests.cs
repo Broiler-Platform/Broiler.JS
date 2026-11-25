@@ -513,8 +513,8 @@ public sealed class SemanticRowsTests
 
     /// <summary>
     /// A jump's row precedes its label's name row, which is keyed at the label, later than the jump (decision D11): with
-    /// all errors both on and the name row alone off; with first error the jump's row on. No <c>syntax</c> row is keyed at
-    /// a jump's own place, so no tie arises there. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
+    /// all errors both on and the name row alone off; with first error the jump's row on. <i>(Added 2026-11-25, at SJL-15.2
+    /// stage 3.)</i>
     /// </summary>
     [Fact]
     public void A_jump_s_row_comes_before_its_label_s_name_row()
@@ -527,6 +527,27 @@ public sealed class SemanticRowsTests
         Assert.Equal(new[] { (Code("EE0165"), Offset(text, "break", 0)), (name.Code, name.Span.Offset) }, Reported("all", text));
         Assert.Equal(new[] { Code("EE0165") }, Reported("", text).Select(static r => r.Code));
         Assert.Equal(new[] { name.Code }, Parse("", text, model: false).Diagnostics.Select(static d => d.Code));
+    }
+
+    /// <summary>
+    /// The one <c>syntax</c> place a jump's row can share: a scope's declared-name conflicts are keyed at the scope's close,
+    /// which a jump written right after it starts at; D11's sub-key, the second declaration's place, which comes before the
+    /// jump, puts the conflict first, under all errors and under first error alike. <i>(Added 2026-11-25, at SJL-15.2
+    /// stage 3.)</i>
+    /// </summary>
+    [Theory]
+    [InlineData("{ let a; let a; }break;", "EE0059")]
+    [InlineData("for (let a;;) { var a; }break;", "EE0059")]
+    [InlineData("{ { let a; let a; }continue; }", "EE0058")]
+    public void A_scope_s_conflict_at_its_close_comes_before_a_jump_row_at_the_same_place(string text, string row)
+    {
+        var off = Parse("all", text, model: false);
+        Assert.Single(off.Diagnostics);
+        var conflict = off.Diagnostics[0];
+        var on = Parse("all", text).Diagnostics;
+        Assert.Equal(new[] { conflict.Code, Code(row) }, on.Select(static d => d.Code));
+        Assert.True(conflict.Span.Offset < on[1].Span.Offset);
+        Assert.Equal(new[] { conflict.Code }, Parse("", text).Diagnostics.Select(static d => d.Code));
     }
 
     private static string CodeOfSyntax(string row) => ((LexicalRefusal)typeof(Rows).GetField(row, BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!).Code;
