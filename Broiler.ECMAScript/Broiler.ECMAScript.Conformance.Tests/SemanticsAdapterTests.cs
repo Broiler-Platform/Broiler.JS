@@ -89,7 +89,7 @@ public class SemanticsAdapterTests
         Assert.All(SemanticsVectors, static v => Assert.StartsWith(AlgorithmsLibrary.SemanticsPrefix, v.Id, StringComparison.Ordinal));
     }
 
-    /// <summary>The Script request is the library's default for its goal plus the member; each DirectEval vector's context by id.</summary>
+    /// <summary>The Script request is the library's default for its goal plus the member; each answered DirectEval vector's context and strictness by id.</summary>
     [Fact]
     public void The_Script_request_is_the_default_plus_the_member_and_the_eval_code_inherits_its_caller_s_context()
     {
@@ -125,7 +125,43 @@ public class SemanticsAdapterTests
             ["semantics/arguments/ea0005/0001"] = (field, true),
             ["semantics/arguments/ea0005/0002"] = (field, true),
             ["semantics/arguments/ea0005/0003"] = (field, true),
+
+            // A sloppy Script's own top-level eval of the row's source.
+            ["semantics/arguments/ee0130/0005"] = (InheritedContext.TopLevel, false),
+            ["semantics/arguments/ee0138/0004"] = (InheritedContext.TopLevel, false),
+            ["semantics/expressions/ee0054/0005"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0015/0004"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0074/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0075/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0076/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0077/0004"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0093/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0102/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0103/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0104/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0105/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0106/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0117/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0118/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0119/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0120/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0121/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0124/0004"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0126/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0131/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0139/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0142/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0150/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0151/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0152/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/super/ee0153/0003"] = (InheritedContext.TopLevel, false),
         };
+
+        // Every answered DirectEval vector has its entry, and no other vector has one. (Added 2026-11-25, at SJL-15.2 stage
+        // 2's review; the entries above the sloppy top-level ones were the only ones asserted.)
+        Assert.Equal(
+            expected.Keys.Order(StringComparer.Ordinal),
+            Answered.Where(static v => v["op"] == AlgorithmsLibrary.DirectEvalOperation).Select(static v => v.Id).Order(StringComparer.Ordinal));
         foreach (var (id, (context, strict)) in expected)
         {
             var vector = Answered.Single(v => v.Id == id);

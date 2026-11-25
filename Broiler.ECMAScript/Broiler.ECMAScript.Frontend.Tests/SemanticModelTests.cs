@@ -141,6 +141,10 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         "({ __proto__: 1, '__proto__': 2 });", "for (this in {}) ;", "class C { x = class { static { arguments; } }; }",
     ];
 
+    // Sources both paths refuse, where the on path's first diagnostic is a row of the model's at an earlier place than the
+    // off path's first, so that the identity test's branch for it runs (SJL-15.2 stage 2's review).
+    private static readonly string[] BothRefusedRowSources = ["super.x; let a; let a;"];
+
     private static ParseRequest RowSourceRequest(string text, bool model, bool allErrors = false) =>
         new(new SourceText(text), ParseGoal.Script, UnicodeDataHome.Tables, NoValidator.Instance)
         {
@@ -161,10 +165,10 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     {
         var rows = SemanticRowSet();
         var items = DeterminismTests.Population.Value;
-        var (accepted, bothRefused, onlyOn, semanticFirst) = OnDocumentedStack(() =>
+        var (accepted, bothRefused, onlyOn, semanticFirst, onlyOnRowSources, semanticFirstRowSources) = OnDocumentedStack(() =>
         {
-            var (a, b, o, s) = (0, 0, 0, 0);
-            void One(string name, ParseResult off, ParseResult on)
+            var (a, b, o, s, ro, rs) = (0, 0, 0, 0, 0, 0);
+            void One(string name, ParseResult off, ParseResult on, bool rowSource = false)
             {
                 Assert.Null(off.Model);
                 if (on.Outcome == ParseOutcome.Accepted)
@@ -183,6 +187,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
                 {
                     // Refused by the model's rows alone.
                     o++;
+                    ro += rowSource ? 1 : 0;
                     Assert.All(on.Diagnostics, d => Assert.True(rows.Contains((d.Code, d.MessageId)), name + ": " + d.Code + " refuses on and is not a SemanticRows row"));
                     return;
                 }
@@ -198,24 +203,33 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
                 }
 
                 s++;
+                rs += rowSource ? 1 : 0;
                 Assert.True(rows.Contains((first.Code, first.MessageId)), name + ": the first diagnostic on, " + first.Code + ", is neither the off path's nor a SemanticRows row");
             }
 
             foreach (var item in items)
                 One(Name(item), SyntaxParser.Parse(DeterminismTests.Request(item)), SyntaxParser.Parse(DeterminismTests.Request(item, model: true)));
             foreach (var text in RowSources)
-                One("row source \"" + text + "\"", SyntaxParser.Parse(RowSourceRequest(text, model: false)), SyntaxParser.Parse(RowSourceRequest(text, model: true)));
-            return (a, b, o, s);
+                One("row source \"" + text + "\"", SyntaxParser.Parse(RowSourceRequest(text, model: false)), SyntaxParser.Parse(RowSourceRequest(text, model: true)), rowSource: true);
+            foreach (var text in BothRefusedRowSources)
+                One("row source \"" + text + "\"", SyntaxParser.Parse(RowSourceRequest(text, model: false)), SyntaxParser.Parse(RowSourceRequest(text, model: true)), rowSource: true);
+            return (a, b, o, s, ro, rs);
         });
 
-        // Not vacuous: most of the corpus is accepted, some of it refused both ways, and some refused on alone (the row
-        // sources are, each of them).
+        // Not vacuous: most of the corpus is accepted, some of it refused both ways, every row source refused on alone, and
+        // every source of the second kind refused first by a row of the model's. The population's own counts are reported
+        // apart from the row sources'. (Revised 2026-11-25, at SJL-15.2 stage 2's review; it read "and some refused on alone
+        // (the row sources are, each of them)", and it asserted only that the count refused on alone, population and row
+        // sources together, was at least the number of row sources.)
         Assert.True(accepted > items.Count / 2, accepted.ToString(CultureInfo.InvariantCulture) + " of " + items.Count.ToString(CultureInfo.InvariantCulture) + " accepted");
         Assert.True(bothRefused > 0);
-        Assert.True(onlyOn >= RowSources.Length, onlyOn.ToString(CultureInfo.InvariantCulture) + " refused on alone");
+        Assert.Equal(RowSources.Length, onlyOnRowSources);
+        Assert.Equal(BothRefusedRowSources.Length, semanticFirstRowSources);
         output.WriteLine("identity branches: accepted on " + accepted.ToString(CultureInfo.InvariantCulture) + ", refused both ways "
             + bothRefused.ToString(CultureInfo.InvariantCulture) + " (of which a SemanticRows row first on " + semanticFirst.ToString(CultureInfo.InvariantCulture)
-            + "), refused on alone " + onlyOn.ToString(CultureInfo.InvariantCulture) + " (row sources " + RowSources.Length.ToString(CultureInfo.InvariantCulture) + ")");
+            + ", of those row sources " + semanticFirstRowSources.ToString(CultureInfo.InvariantCulture)
+            + "), refused on alone " + onlyOn.ToString(CultureInfo.InvariantCulture) + " (population " + (onlyOn - onlyOnRowSources).ToString(CultureInfo.InvariantCulture)
+            + ", row sources " + onlyOnRowSources.ToString(CultureInfo.InvariantCulture) + ")");
     }
 
     /// <summary>
@@ -254,7 +268,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
 
             foreach (var item in items)
                 One(Name(item), SyntaxParser.Parse(DeterminismTests.Request(item, allErrors: true)), SyntaxParser.Parse(DeterminismTests.Request(item, model: true, allErrors: true)));
-            foreach (var text in RowSources)
+            foreach (var text in RowSources.Concat(BothRefusedRowSources))
                 One("row source \"" + text + "\"", SyntaxParser.Parse(RowSourceRequest(text, model: false, allErrors: true)), SyntaxParser.Parse(RowSourceRequest(text, model: true, allErrors: true)));
             return (count, more);
         });

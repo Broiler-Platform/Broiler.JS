@@ -22,10 +22,16 @@ public sealed class SemanticRowsTests
     // Requests.
 
     /// <summary>
-    /// A request: <c>m</c> the Module goal, <c>e</c> eval code (with <c>im</c> InMethod, <c>dc</c> InDerivedConstructor,
-    /// <c>cf</c> InClassFieldInitializer, <c>if</c> InFunction), <c>p</c> or <c>b</c> the dynamic function's parameters or
+    /// A request: <c>m</c> the Module goal, <c>e</c> eval code, <c>p</c> or <c>b</c> the dynamic function's parameters or
     /// body (<c>g</c> generator, <c>a</c> async, <c>ag</c> async generator), <c>fs</c> forced strict, <c>all</c> all errors;
-    /// the member on unless <paramref name="model"/> is false.
+    /// the member on unless <paramref name="model"/> is false. Eval code's context is one PerformEval makes (step 10), each
+    /// option with the flags its caller implies: <c>if</c> InFunction (a plain function); <c>im</c> InFunction and InMethod (a
+    /// method); <c>dc</c> InFunction, InMethod and InDerivedConstructor (a derived constructor); <c>cf</c> InFunction,
+    /// InMethod and InClassFieldInitializer (a field initialiser, whose function is a method); none of them TopLevel. The one
+    /// exception is <c>cfo</c>, InClassFieldInitializer alone, a context PerformEval does not make, for the rows that read
+    /// that flag alone. <i>(Revised 2026-11-25, at SJL-15.2 stage 2's review; it read "(with <c>im</c> InMethod, <c>dc</c>
+    /// InDerivedConstructor, <c>cf</c> InClassFieldInitializer, <c>if</c> InFunction)", and <c>dc</c> left InFunction
+    /// unset.)</i>
     /// </summary>
     private static ParseRequest Request(string options, string text, bool model)
     {
@@ -41,6 +47,7 @@ public sealed class SemanticRowsTests
         if (goal == ParseGoal.Eval)
         {
             var cf = set.Contains("cf");
+            var dc = set.Contains("dc");
             return new ParseRequest(new SourceText(text), goal, UnicodeDataHome.Tables, NoValidator.Instance)
             {
                 Switches = switches,
@@ -48,10 +55,10 @@ public sealed class SemanticRowsTests
                 BuildSemanticModel = model,
                 Context = new InheritedContext
                 {
-                    InFunction = set.Contains("if") || set.Contains("im") || cf,
-                    InMethod = set.Contains("im") || set.Contains("dc") || cf,
-                    InDerivedConstructor = set.Contains("dc"),
-                    InClassFieldInitializer = cf,
+                    InFunction = set.Contains("if") || set.Contains("im") || dc || cf,
+                    InMethod = set.Contains("im") || dc || cf,
+                    InDerivedConstructor = dc,
+                    InClassFieldInitializer = cf || set.Contains("cfo"),
                 },
             };
         }
@@ -211,6 +218,10 @@ public sealed class SemanticRowsTests
         { "EA0004", "e", "super();" },
         { "EA0004", "e im", "super();" },
         { "EA0005", "e cf", "() => arguments;" },
+        { "EA0005", "e cfo", "arguments;" },
+
+        // A function expression that is an object literal's property value is no method (Broiler.JS admits it).
+        { "EE0075", "", "var o = { run: function () { super.x = 1; } };" },
     };
 
     // The nearest admitted variants of the dynamic goals and of each eval context: accepted on and off.
@@ -354,6 +365,10 @@ public sealed class SemanticRowsTests
 
         // Off, EE0033 alone.
         Assert.Equal(new[] { CodeOfSyntax("EE0033") }, Parse("e fs cf all", "arguments = 1;", model: false).Diagnostics.Select(static d => d.Code));
+
+        // The same with InClassFieldInitializer alone, the context as the brief names it.
+        Assert.Equal(new[] { (CodeOfSyntax("EE0033"), 0), (Code("EA0005"), 0) }, Parse("e fs cfo all", "arguments = 1;").Diagnostics.Select(static d => (d.Code, d.Span.Offset)));
+        Assert.Equal(new[] { CodeOfSyntax("EE0033") }, Parse("e fs cfo all", "arguments = 1;", model: false).Diagnostics.Select(static d => d.Code));
     }
 
     private static (string Code, int Offset)[] Reported(string options, string text) =>
@@ -400,20 +415,35 @@ public sealed class SemanticRowsTests
     // -----------------------------------------------------------------------------------------------------------------
     // The partial walk before a grammar refusal.
 
+    /// <summary>
+    /// Before a grammar refusal the partial walk reports the rows, in order, then the grammar's refusal; with the member off
+    /// the grammar's refusal alone. The later inputs reach the rows' own walk state, the methods' homes, the field and
+    /// static-block anchors, the object literal's <c>__proto__</c> entries and the for-in head, which the partial walk must
+    /// read with no model. <i>(Revised 2026-11-25, at SJL-15.2 stage 2's review, which added the inputs with more than one
+    /// row; it took one row per input.)</i>
+    /// </summary>
     [Theory]
     [InlineData("", "super.x; (", "EE0162")]
     [InlineData("b", "super(); (", "EE0077")]
-    public void The_partial_walk_reports_the_rows_before_a_grammar_refusal_with_the_member_on(string options, string text, string row)
+    [InlineData("", "class C { m() { super(); } x = arguments; static { arguments; } } (", "EE0124 EE0130 EE0138")]
+    [InlineData("", "({ __proto__: 1, __proto__: 2, m() { super(); } }); (", "EE0018 EE0015")]
+    [InlineData("", "for (this in {}) ; class E { x = () => class { static { arguments; } }; } (", "EE0054 EE0130 EE0138")]
+    [InlineData("", "function f() { super(); } var g = () => super.x; class D extends Object { constructor() { super(); } } (", "EE0077 EE0162")]
+    [InlineData("m", "super.x; (", "EE0172")]
+    [InlineData("e cf", "arguments; (", "EA0005")]
+    public void The_partial_walk_reports_the_rows_before_a_grammar_refusal_with_the_member_on(string options, string text, string rows)
     {
+        var codes = rows.Split(' ').Select(Code).ToArray();
         var offAll = Parse(options + " all", text, model: false);
         var onAll = Parse(options + " all", text);
         Assert.Single(offAll.Diagnostics);
         var grammar = offAll.Diagnostics[0];
-        Assert.Equal(new[] { Code(row), grammar.Code }, onAll.Diagnostics.Select(static d => d.Code));
-        Assert.Equal(grammar.Span, onAll.Diagnostics[1].Span);
+        Assert.Equal(codes.Append(grammar.Code), onAll.Diagnostics.Select(static d => d.Code));
+        Assert.Equal(grammar.Span, onAll.Diagnostics[^1].Span);
+        Assert.Null(offAll.Model);
         Assert.Null(onAll.Model);
 
         Assert.Equal(new[] { grammar.Code }, Parse(options, text, model: false).Diagnostics.Select(static d => d.Code));
-        Assert.Equal(new[] { Code(row) }, Parse(options, text).Diagnostics.Select(static d => d.Code));
+        Assert.Equal(new[] { codes[0] }, Parse(options, text).Diagnostics.Select(static d => d.Code));
     }
 }
