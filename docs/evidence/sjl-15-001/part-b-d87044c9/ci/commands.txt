@@ -1,0 +1,31 @@
+# The push runs at the third model commit d87044c9db5fe2a26841782308bd53e2f9294656, imported 2026-11-25 as bundle
+# sjl-14-001's bridge/w1-ci/ imported W1's and part-b-be6c4a5c/ci/ and part-b-6c61879b/ci/ imported the first and second
+# model commits': by read-only GitHub API calls (gh api, GET only), each file the API's answer unchanged, but
+# slnx-test-projects.txt, test-projects.tsv and artifact-digests.tsv, written from them. Nothing was dispatched, re-run
+# or cancelled by these reads. The run statuses were also read through the GitHub API before the read, during part B's
+# base run at 77fe27aa (between 18:04:51Z and 18:06:34Z, while its tool was building): CI 45656099731 attempt 1
+# completed success; Shared libraries 45656099616 attempt 1 completed success.
+#
+# One read, 2026-11-25T18:11:38Z-18:11:44Z, after both runs had concluded, each in its first attempt. It and the
+# artifacts' downloads below (to 18:12:13Z) were taken while part B's after run at d87044c9 held the lock and built its
+# tool (build-parse-corpus 18:11:34Z-18:12:45Z, ../d87044c9/logs/runs.tsv), as the status read above was taken during
+# the base run's: network-only reads, which no report of part B depends on (part B compares no timings):
+R=repos/Broiler-Platform/Broiler.JS/actions/runs
+gh api "$R?head_sha=d87044c9db5fe2a26841782308bd53e2f9294656&per_page=50" > runs-at-d87044c9.json
+#   -> two runs at d87044c9, each event push, status completed, conclusion success, run_attempt 1:
+#      45656099731 CI (.github/workflows/ci.yml); 45656099616 Shared libraries (.github/workflows/shared-libraries.yml)
+for r in 45656099731 45656099616; do
+  gh api $R/$r > run-$r.json
+  gh api "$R/$r/jobs?per_page=100&filter=all" > jobs-$r.json
+  gh api "$R/$r/artifacts?per_page=100" > artifacts-$r.json
+  gh api $R/$r/logs > logs-$r.zip
+done
+#
+# The artifacts, every one both runs list, downloaded (2026-11-25T18:11:44Z-18:12:13Z) and checked against the API's
+# digest and size; the zips are not kept here (bridge/w1-ci/ kept none), their check is artifact-digests.tsv (every one
+# "match"):
+for id in 15044332457 15044111675 15043663369 15043321540 15042262811 15042044807; do
+  gh api repos/Broiler-Platform/Broiler.JS/actions/artifacts/$id/zip > $id.zip   # then sha256 and size against the API's
+done
+git show d87044c9:Broiler.JS.slnx | grep -o 'Path="[^"]*\.csproj"' | sed 's/Path="//;s/"//' | grep -i test | sort > slnx-test-projects.txt
+python3 -I ../scripts/test_projects.py slnx-test-projects.txt . > test-projects.tsv

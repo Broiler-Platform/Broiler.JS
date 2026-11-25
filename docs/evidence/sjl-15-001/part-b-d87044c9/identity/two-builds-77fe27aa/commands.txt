@@ -1,0 +1,7 @@
+# Two builds of one commit, 77fe27aa, by the same tool tree (5ede6114) and the same method: SJL-15.2 stage 3's part B
+# rehearsal's (2026-11-25T13:16Z, build tree /home/user/js-s153-build/pb/, its record rehearsal-77fe27aa-commit.txt
+# and its reports' SHA-256 rehearsal-77fe27aa-reports.sha256.txt; the reports stay in scratch, checked against that
+# file before this comparison) and part B's (../../77fe27aa/, build tree /home/user/js-s153-pb-build/). Compared by the
+# same identity.py; written 2026-11-25:
+python3 -I /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s153-pb/scripts/identity.py /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s153/rehearsal/77fe27aa/parse-corpus-c.tsv.gz /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s153-pb/base/77fe27aa/parse-corpus-c.tsv.gz > rows-c.txt; echo rc=$? >> rows-c.txt
+python3 -I /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s153-pb/scripts/identity.py /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s153/rehearsal/77fe27aa/parse-corpus-d1.tsv.gz /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s153-pb/base/77fe27aa/parse-corpus-d1.tsv.gz > rows-d1.txt; echo rc=$? >> rows-d1.txt
