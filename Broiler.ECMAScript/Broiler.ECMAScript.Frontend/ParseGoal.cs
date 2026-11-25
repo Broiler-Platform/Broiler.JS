@@ -47,7 +47,12 @@ public enum ParseGoal
 
     /// <summary>
     /// Eval code (ECMA-262 clause 19.2.1.1, PerformEval): the <c>Script</c> grammar, with the early errors PerformEval's
-    /// step 11 adds read from the request's <see cref="ParseRequest.Context"/>, the caller's function context.
+    /// step 11 adds read from the request's <see cref="ParseRequest.Context"/>, the caller's function context: step 11.e's
+    /// (<c>new.target</c>) on every request, and steps 11.f to 11.h's (a SuperProperty, a SuperCall, <c>arguments</c> in a
+    /// field initialiser) when the request sets <see cref="ParseRequest.BuildSemanticModel"/>, as the semantic model's rows.
+    /// <i>(Revised 2026-11-25, at SJL-15.2 stage 2, which reports steps 11.f to 11.h with the member on; it read "the
+    /// <c>Script</c> grammar, with the early errors PerformEval's step 11 adds read from the request's
+    /// <see cref="ParseRequest.Context"/>, the caller's function context.")</i>
     /// </summary>
     Eval = 2,
 

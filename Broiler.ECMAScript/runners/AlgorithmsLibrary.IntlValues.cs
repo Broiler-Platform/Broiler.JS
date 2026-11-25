@@ -44,6 +44,14 @@ namespace Broiler.ECMAScript.Runners;
 /// identifier is this file's, so those keep their outcome, which <c>LibraryRunTests</c> holds for every operation this
 /// part answers, across every area.
 /// </para>
+/// <para>
+/// <b>The semantics area is read whole too</b> (SJL-15.2, from stage 2): <see cref="Call(VectorRecord)"/> hands a
+/// <c>semantics</c> vector whose identifier names a row the semantic model reports to the semantics adapter
+/// (<see cref="IsLibrarySemantics"/>, <c>AlgorithmsLibrary.Semantics.cs</c>) before its fallback, since its row is in its
+/// identifier alone; every other vector reaches the operation and the inputs as before.
+/// <i>(Added 2026-11-25, at SJL-15.2 stage 2; until then <see cref="Call(VectorRecord)"/> read the Intl area's vectors
+/// whole and gave every other vector to <see cref="IVectorLibrary.Call"/>.)</i>
+/// </para>
 /// </remarks>
 internal sealed partial class AlgorithmsLibrary : IVectorRecordLibrary
 {
@@ -80,7 +88,9 @@ internal sealed partial class AlgorithmsLibrary : IVectorRecordLibrary
                         ? IntlDurationsArea(vector)
                         : IsLibraryIntlDefaultLocaleScript(vector)
                             ? IntlNumbersArea(vector)
-                            : Call(vector["op"] ?? string.Empty, LibraryRun.Inputs(vector));
+                            : IsLibrarySemantics(vector)
+                                ? SemanticsArea(vector)
+                                : Call(vector["op"] ?? string.Empty, LibraryRun.Inputs(vector));
     }
 
     /// <summary>Whether a vector is sub-area (b)'s and one this runner answers: of the file, and of an operation it answers.</summary>

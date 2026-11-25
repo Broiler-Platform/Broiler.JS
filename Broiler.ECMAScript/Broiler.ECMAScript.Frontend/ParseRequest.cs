@@ -224,9 +224,14 @@ public sealed class ParseRequest
     /// JSD-0080, "The semantic model's design": computed per compilation unit, after the parse; milestone SJL-15.2: by the
     /// declarations walk, which "does not start a second one"). With it off the parse is exactly SJL-13's and SJL-14's:
     /// the same tree, side tables and diagnostics, and no model. With it on the same walk builds the model as it goes, and
-    /// the tree, the side tables and the diagnostics are the same as with it off. It is a parameter of the request, as
-    /// <see cref="RetainTokens"/> is, not a switch of the language (the session's decisions D-js-entry and D-js-default-off
-    /// of 2026-11-24).
+    /// also reports the model's early errors, the stage table's <c>semantics</c> rows the library reports, among the
+    /// diagnostics in decision D11's order; they refuse the parse as the walk's other diagnostics do, so that a refused
+    /// source has no model, and on every source the member's on path accepts the tree, the side tables and the diagnostics
+    /// are the same as with it off. It is a parameter of the request, as <see cref="RetainTokens"/> is, not a switch of the
+    /// language (the session's decisions D-js-entry and D-js-default-off of 2026-11-24, and D-js-channel of 2026-11-25).
+    /// <i>(Revised 2026-11-25, at SJL-15.2 stage 2, when the model's rows joined the diagnostics; where it says what the
+    /// member's on path reports, it read "With it on the same walk builds the model as it goes, and the tree, the side tables
+    /// and the diagnostics are the same as with it off.")</i>
     /// </summary>
     public bool BuildSemanticModel { get; init; }
 

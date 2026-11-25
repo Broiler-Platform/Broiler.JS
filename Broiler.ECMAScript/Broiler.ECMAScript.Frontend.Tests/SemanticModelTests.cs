@@ -19,9 +19,12 @@ namespace Broiler.ECMAScript.Syntax.Tests;
 /// <remarks>
 /// The off/on identity is written so that stage 2 narrows it mechanically: equality wherever the on path accepts, and,
 /// separately, no on-path diagnostic outside <c>Rows</c>, which stage 2 turns into "every extra on-path diagnostic is a
-/// <c>SemanticRows</c> row". At stage 1 both hold for every input.
+/// <c>SemanticRows</c> row". From stage 2 the first holds wherever the on path accepts, a refusal on the on path being the
+/// off path's or one by a <c>SemanticRows</c> row; the second holds with <c>SemanticRows</c>' rows added to the library's,
+/// and with them removed the on path's diagnostics under all errors are the off path's. <i>(Revised 2026-11-25, at SJL-15.2
+/// stage 2, which narrowed both; the remarks ended "At stage 1 both hold for every input.")</i>
 /// </remarks>
-public sealed class SemanticModelTests
+public sealed class SemanticModelTests(ITestOutputHelper output)
 {
     // -----------------------------------------------------------------------------------------------------------------
     // Helpers.
@@ -122,71 +125,156 @@ public sealed class SemanticModelTests
     // -----------------------------------------------------------------------------------------------------------------
     // Over the determinism tests' population: the off/on identity, the projection and the completeness.
 
+    // The model's rows (SJL-15.2 stage 2), as (code, message id) pairs.
+    private static HashSet<(string Code, string MessageId)> SemanticRowSet() =>
+        typeof(SemanticRows).GetFields(BindingFlags.Static | BindingFlags.NonPublic)
+            .Select(static f => (LexicalRefusal)f.GetValue(null)!).Select(static r => (r.Code, r.MessageId)).ToHashSet();
+
+    // The fixtures' refused sources of the model's rows, a second population of Script requests: the determinism
+    // population may hold no source the off path accepts and a semantics row refuses (SJL-15.2 stage 2).
+    private static readonly string[] RowSources =
+    [
+        "function f(a = super.x) {}", "function f() { super(); }", "function* g() { super.x; }", "async function f() { super(); }",
+        "async function* g(a = super()) {}", "({ m() { super(); } });", "({ *g() { super(); } });", "class C { m() { super(); } }",
+        "class C { static m() { super(); } }", "class C { constructor() { super(); } }", "class C extends Object { x = super(); }",
+        "class C { static { super(); } }", "super.x;", "class C { x = arguments; }", "class C { static { arguments; } }",
+        "({ __proto__: 1, '__proto__': 2 });", "for (this in {}) ;", "class C { x = class { static { arguments; } }; }",
+    ];
+
+    // Sources both paths refuse, where the on path's first diagnostic is a row of the model's at an earlier place than the
+    // off path's first, so that the identity test's branch for it runs (SJL-15.2 stage 2's review).
+    private static readonly string[] BothRefusedRowSources = ["super.x; let a; let a;"];
+
+    private static ParseRequest RowSourceRequest(string text, bool model, bool allErrors = false) =>
+        new(new SourceText(text), ParseGoal.Script, UnicodeDataHome.Tables, NoValidator.Instance)
+        {
+            BuildSemanticModel = model,
+            Limits = new ParseLimits { Reporting = allErrors ? ErrorReporting.AllErrors : ErrorReporting.FirstError },
+        };
+
+    /// <summary>
+    /// Off and on over the population: an accepted parse on is the parse off; a refusal on with the off path accepting is a
+    /// refusal by the model's rows alone, with no model; with both refused, the on path's first diagnostic is the off path's
+    /// or one of the model's rows, and where it is the off path's the dumps are the same bytes. <i>(Revised 2026-11-25, at
+    /// SJL-15.2 stage 2, which narrowed it; its refusal branch held every refusal's dump equal, "A refusal has no model, so
+    /// its whole dump, the ordered diagnostics with their message ids, arguments and spans among it, is the off path's
+    /// byte for byte".)</i>
+    /// </summary>
     [Fact]
     public void With_the_member_on_every_accepted_parse_is_the_parse_with_it_off()
     {
+        var rows = SemanticRowSet();
         var items = DeterminismTests.Population.Value;
-        var (accepted, refused) = OnDocumentedStack(() =>
+        var (accepted, bothRefused, onlyOn, semanticFirst, onlyOnRowSources, semanticFirstRowSources) = OnDocumentedStack(() =>
         {
-            var (a, r) = (0, 0);
-            foreach (var item in items)
+            var (a, b, o, s, ro, rs) = (0, 0, 0, 0, 0, 0);
+            void One(string name, ParseResult off, ParseResult on, bool rowSource = false)
             {
-                var off = SyntaxParser.Parse(DeterminismTests.Request(item));
-                var on = SyntaxParser.Parse(DeterminismTests.Request(item, model: true));
                 Assert.Null(off.Model);
-                if (on.Outcome != ParseOutcome.Accepted)
+                if (on.Outcome == ParseOutcome.Accepted)
                 {
-                    // A refusal has no model, so its whole dump, the ordered diagnostics with their message ids,
-                    // arguments and spans among it, is the off path's byte for byte.
-                    Assert.Null(on.Model);
-                    Assert.True(SyntaxDump.Dump(off).AsSpan().SequenceEqual(SyntaxDump.Dump(on)), Name(item) + ": the refusal's dump differs");
-                    r++;
-                    continue;
+                    a++;
+                    Assert.True(off.Outcome == on.Outcome, name + ": the outcome differs");
+                    Assert.True(off.Diagnostics.Count == on.Diagnostics.Count, name + ": the diagnostics differ");
+                    Assert.True(SyntaxDump.Dump(off).AsSpan().SequenceEqual(SyntaxDump.Dump(on, model: false)), name + ": the dump without the model differs");
+                    Assert.NotNull(on.Model);
+                    return;
                 }
 
-                a++;
-                var name = Name(item);
-                Assert.True(off.Outcome == on.Outcome, name + ": the outcome differs");
-                Assert.True(off.Diagnostics.Count == on.Diagnostics.Count, name + ": the diagnostics differ");
-                Assert.True(SyntaxDump.Dump(off).AsSpan().SequenceEqual(SyntaxDump.Dump(on, model: false)), name + ": the dump without the model differs");
-                Assert.NotNull(on.Model);
+                // A refusal has no model.
+                Assert.Null(on.Model);
+                if (off.Outcome == ParseOutcome.Accepted)
+                {
+                    // Refused by the model's rows alone.
+                    o++;
+                    ro += rowSource ? 1 : 0;
+                    Assert.All(on.Diagnostics, d => Assert.True(rows.Contains((d.Code, d.MessageId)), name + ": " + d.Code + " refuses on and is not a SemanticRows row"));
+                    return;
+                }
+
+                b++;
+                var first = on.Diagnostics[0];
+                var offFirst = off.Diagnostics[0];
+                if (first.Code == offFirst.Code && first.MessageId == offFirst.MessageId && first.Span == offFirst.Span && first.Arguments.SequenceEqual(offFirst.Arguments))
+                {
+                    // The off path's first: the whole dump, the ordered diagnostics among it, is the off path's byte for byte.
+                    Assert.True(SyntaxDump.Dump(off).AsSpan().SequenceEqual(SyntaxDump.Dump(on)), name + ": the refusal's dump differs");
+                    return;
+                }
+
+                s++;
+                rs += rowSource ? 1 : 0;
+                Assert.True(rows.Contains((first.Code, first.MessageId)), name + ": the first diagnostic on, " + first.Code + ", is neither the off path's nor a SemanticRows row");
             }
 
-            return (a, r);
+            foreach (var item in items)
+                One(Name(item), SyntaxParser.Parse(DeterminismTests.Request(item)), SyntaxParser.Parse(DeterminismTests.Request(item, model: true)));
+            foreach (var text in RowSources)
+                One("row source \"" + text + "\"", SyntaxParser.Parse(RowSourceRequest(text, model: false)), SyntaxParser.Parse(RowSourceRequest(text, model: true)), rowSource: true);
+            foreach (var text in BothRefusedRowSources)
+                One("row source \"" + text + "\"", SyntaxParser.Parse(RowSourceRequest(text, model: false)), SyntaxParser.Parse(RowSourceRequest(text, model: true)), rowSource: true);
+            return (a, b, o, s, ro, rs);
         });
 
-        // Not vacuous: most of the corpus is accepted, and some of it refused.
+        // Not vacuous: most of the corpus is accepted, some of it refused both ways, every row source refused on alone, and
+        // every source of the second kind refused first by a row of the model's. The population's own counts are reported
+        // apart from the row sources'. (Revised 2026-11-25, at SJL-15.2 stage 2's review; it read "and some refused on alone
+        // (the row sources are, each of them)", and it asserted only that the count refused on alone, population and row
+        // sources together, was at least the number of row sources.)
         Assert.True(accepted > items.Count / 2, accepted.ToString(CultureInfo.InvariantCulture) + " of " + items.Count.ToString(CultureInfo.InvariantCulture) + " accepted");
-        Assert.True(refused > 0);
+        Assert.True(bothRefused > 0);
+        Assert.Equal(RowSources.Length, onlyOnRowSources);
+        Assert.Equal(BothRefusedRowSources.Length, semanticFirstRowSources);
+        output.WriteLine("identity branches: accepted on " + accepted.ToString(CultureInfo.InvariantCulture) + ", refused both ways "
+            + bothRefused.ToString(CultureInfo.InvariantCulture) + " (of which a SemanticRows row first on " + semanticFirst.ToString(CultureInfo.InvariantCulture)
+            + ", of those row sources " + semanticFirstRowSources.ToString(CultureInfo.InvariantCulture)
+            + "), refused on alone " + onlyOn.ToString(CultureInfo.InvariantCulture) + " (population " + (onlyOn - onlyOnRowSources).ToString(CultureInfo.InvariantCulture)
+            + ", row sources " + onlyOnRowSources.ToString(CultureInfo.InvariantCulture) + ")");
     }
 
+    /// <summary>
+    /// No on-path diagnostic is outside the library's rows, <c>Rows</c> and <c>SemanticRows</c>; under all errors, the on
+    /// path's diagnostics with the model's rows removed are the off path's, in order, by code, message id, span and
+    /// arguments. Under first error an earlier row of the model's displaces the off path's diagnostic, which the test above
+    /// reads. <i>(Revised 2026-11-25, at SJL-15.2 stage 2, which narrowed it; its rows were <c>Rows</c>' alone, and it held
+    /// "At stage 1 the refusals are the same, on or off", comparing the first-error lists by code and span.)</i>
+    /// </summary>
     [Fact]
     public void With_the_member_on_no_diagnostic_is_outside_the_library_s_rows()
     {
-        // Stage 2 turns this into "every extra on-path diagnostic is a SemanticRows row".
+        var semantic = SemanticRowSet();
         var rows = typeof(Rows).GetFields(BindingFlags.Static | BindingFlags.NonPublic)
             .Select(static f => (LexicalRefusal)f.GetValue(null)!).Select(static r => (r.Code, r.MessageId)).ToHashSet();
+        rows.UnionWith(semantic);
         var items = DeterminismTests.Population.Value;
-        var seen = OnDocumentedStack(() =>
+        var (seen, extra) = OnDocumentedStack(() =>
         {
-            var count = 0;
-            foreach (var item in items)
+            var (count, more) = (0, 0);
+            void One(string name, ParseResult off, ParseResult on)
             {
-                var off = SyntaxParser.Parse(DeterminismTests.Request(item));
-                var on = SyntaxParser.Parse(DeterminismTests.Request(item, model: true));
                 foreach (var diagnostic in on.Diagnostics)
                 {
-                    Assert.True(rows.Contains((diagnostic.Code, diagnostic.MessageId)), Name(item) + ": " + diagnostic.Code + " is not a row");
+                    Assert.True(rows.Contains((diagnostic.Code, diagnostic.MessageId)), name + ": " + diagnostic.Code + " is not a row");
                     count++;
+                    more += semantic.Contains((diagnostic.Code, diagnostic.MessageId)) ? 1 : 0;
                 }
 
-                // At stage 1 the refusals are the same, on or off.
-                Assert.True(off.Diagnostics.Select(static d => (d.Code, d.Span)).SequenceEqual(on.Diagnostics.Select(static d => (d.Code, d.Span))), Name(item) + ": the diagnostics differ");
+                // Under all errors, the on path's list without the model's rows is the off path's.
+                static (string, string, SourceSpan, string) Key(SyntaxDiagnostic d) => (d.Code, d.MessageId, d.Span, string.Join("\u0000", d.Arguments));
+                Assert.True(
+                    off.Diagnostics.Select(Key).SequenceEqual(on.Diagnostics.Where(d => !semantic.Contains((d.Code, d.MessageId))).Select(Key)),
+                    name + ": the diagnostics differ but for the model's rows");
             }
 
-            return count;
+            foreach (var item in items)
+                One(Name(item), SyntaxParser.Parse(DeterminismTests.Request(item, allErrors: true)), SyntaxParser.Parse(DeterminismTests.Request(item, model: true, allErrors: true)));
+            foreach (var text in RowSources.Concat(BothRefusedRowSources))
+                One("row source \"" + text + "\"", SyntaxParser.Parse(RowSourceRequest(text, model: false, allErrors: true)), SyntaxParser.Parse(RowSourceRequest(text, model: true, allErrors: true)));
+            return (count, more);
         });
         Assert.True(seen > 0);
+        Assert.True(extra >= RowSources.Length);
+        output.WriteLine("all-errors identity: diagnostics on " + seen.ToString(CultureInfo.InvariantCulture) + ", of which SemanticRows rows " + extra.ToString(CultureInfo.InvariantCulture));
     }
 
     [Fact]

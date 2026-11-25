@@ -391,6 +391,8 @@ public sealed class EarlyErrorTests
     private static string RowName(LexicalRefusal refusal) =>
         typeof(Rows).GetFields(BindingFlags.Static | BindingFlags.NonPublic).First(f => (LexicalRefusal)f.GetValue(null)! == refusal).Name;
 
+    // It holds for the default request (Request above), where BuildSemanticModel is off: with the member on, the semantic
+    // model's rows are reported (SJL-15.2 stage 2, SemanticRowsTests). (Added 2026-11-25, at SJL-15.2 stage 2.)
     [Fact]
     public void No_request_engine_or_semantics_row_is_reported()
     {

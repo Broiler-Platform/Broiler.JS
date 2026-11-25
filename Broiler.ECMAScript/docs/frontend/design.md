@@ -637,14 +637,17 @@ D-js-declaration-of, D-js-function-kind and D-js-names among them), and where th
 records that win (the header), it is corrected to match. Section 4 stays the sketch as restated at SJL-12.1. Stage 1 is
 the model's foundation; the members the sketch names beyond it (resolution, jump targets, private names, the module
 record, named evaluation, captures and the early errors) are its later stages', and none is declared before its stage.
+Stage 2 adds the early errors of the function context (section 10.4); the early errors of jump targets, private names
+and the module record stay their stages'. *(Revised 2026-11-25, at SJL-15.2 stage 2; the paragraph ended at "and none is
+declared before its stage".)*
 
 ### 10.1 The entry
 
 | Item | What | Decisions |
 |---|---|---|
 | The request | `ParseRequest.BuildSemanticModel`, init-only and false by default: a parameter of the request, as `RetainTokens` and the first-error parameter are (section 3), not a switch of the language. With it off the parse is exactly SJL-13's and SJL-14's | D-js-entry, D-js-default-off |
-| The walk | The declarations walk builds the model as it goes, in the same visit and order, with explicit stacks; it starts no second walk (the milestone's words). Its own counter numbers the model's scopes and facts, so the walk's sequence, which orders the diagnostics and the tables, is the same with the model on or off. A partial walk before a grammar refusal builds none | D-js-entry, D-js-scope-shape |
-| The result | `ParseResult.Model`, computed from the side tables (`Declarations?.Model`), so that the result keeps the layout it had at `0.1.0-preview.9`: null unless the member is on and the source is accepted, as `Declarations` is null for a refused source. With the member on, the tree, the side tables and the diagnostics are those of the parse with it off | D-js-entry |
+| The walk | The declarations walk builds the model as it goes, in the same visit and order, with explicit stacks; it starts no second walk (the milestone's words). Its own counter numbers the model's scopes and facts, so the walk's sequence, which orders the diagnostics and the tables, is the same with the model on or off on every parse the member's on path accepts. A partial walk before a grammar refusal builds none, and with the member on reports the model's rows (section 10.4). *(Revised 2026-11-25, at SJL-15.2 stage 2; it read "is the same with the model on or off. A partial walk before a grammar refusal builds none".)* | D-js-entry, D-js-scope-shape, D-js-channel |
+| The result | `ParseResult.Model`, computed from the side tables (`Declarations?.Model`), so that the result keeps the layout it had at `0.1.0-preview.9`: null unless the member is on and the source is accepted, as `Declarations` is null for a refused source. With the member on, the model's rows also refuse a source (section 10.4); on every source the on path accepts, the tree, the side tables and the diagnostics are those of the parse with it off. *(Revised 2026-11-25, at SJL-15.2 stage 2; it read "With the member on, the tree, the side tables and the diagnostics are those of the parse with it off".)* | D-js-entry, D-js-channel |
 | Who sets it | No engine before its own cut-over: Broiler.JS's bridge does not set it before SJL-15.5, and Broiler.VM reads the model only from a published version its pin commit admits | D-js-default-off |
 
 ### 10.2 The types
@@ -690,6 +693,65 @@ function's scopes. A node that owns a scope is in the scope around it and its ch
 `DeclarationOf` answers one declaration: for a class declaration's name the outer `Class` declaration the tables hold,
 the inner `ClassName` declaration, with the same node, being in the class's `ClassBody` scope; for a class
 expression's name its `ClassName` declaration.
+
+### 10.4 The early errors
+
+*(Added 2026-11-25, at SJL-15.2 stage 2.)* The model's early errors as the library reports them. Like the rest of this
+section it restates and decides nothing: the decisions are D-js-channel, D-js-semantic-rows, D-js-adapter-form and
+D-js-probe-semantics of 2026-11-25, in `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)".
+
+**The channel.** With `ParseRequest.BuildSemanticModel` on, the model's rows join `ParseResult.Diagnostics`; there is no
+list of early errors of the model's own. They refuse the parse as every walk diagnostic does, so that a refused source has
+no model. With the member off the parse is exactly the one before: no row is reported, and the walk runs no statement
+that reports, sorts or numbers anything it did not before.
+
+**The table.** `SemanticRows`, internal, beside `Rows`: one entry per row of the stage table's `semantics` rows that the
+library reports, each the catalogue's shared code and message identifier. The Frontend tests hold it a subset of those
+rows, to be equal at stage 8 but for EA0006, and hold that no code in it is one of `Rows`'. `Rows` is unchanged, and the
+test holding it equal to the stage table's `syntax` rows stands.
+
+**Decision D11's order and the walk's sequence.** Each row is reported through the walk's one report, at its construct's
+offset, numbered by the walk's one sequence; so a `syntax` row and a `semantics` row at one place keep the order the walk
+found them in (an assignment's target refused before its `arguments` reference is visited, for example). On the on path
+the sequence moves where a row is reported, and that parse is refused; on every parse the on path accepts the sequence is
+the off path's.
+
+**First error or all errors** stays the request's existing parameter (`ParseLimits.Reporting`, section 3). Under first
+error an earlier row of the model's displaces the diagnostic the parse with the member off would give: JSD-0080's one
+early-error stage.
+
+**The partial walk.** Before a grammar refusal, the walk over the top-level statements the parse completed reports the
+model's rows, with the member on, and builds no model. Every row is decided inside its construct, from the request and the
+enclosing function, class element or literal, so it is complete within those statements; the dynamic function's
+parameters goal hands the partial walk no statement, its body goal its statements under the program's context.
+
+**The rows by group, their facts and their places.**
+
+| Group | Rows | Fact | Place |
+|---|---|---|---|
+| A function's parameters or body | EE0074 to EE0077, EE0102 to EE0105, EE0117 to EE0120, EE0150 to EE0153 | The non-arrow function's shape and the side; an arrow is its enclosing code's, parameters included | The SuperProperty (a `MemberExpression` on `super`) or the SuperCall (a `CallExpression` on `super`), each reported |
+| HasDirectSuper of methods | EE0093, EE0142, EE0106 (by shape, first); EE0015, EE0124, EE0126, EE0121 (by home) | The method's shape, then its home: an object literal's, a class's, a static one, the class's constructor (the first element named `"constructor"`) with or without a heritage; a later element of that name admits the call, EE0122 or EE0125 already refusing it | The SuperCall |
+| Class elements | EE0131, EE0139 | A field initialiser or a static block admits a SuperProperty, not a SuperCall | The SuperCall |
+| A program's own code | EE0162 (Script), EE0172 (Module) | The goal | The SuperProperty or the SuperCall |
+| Eval code | EA0003, EA0004, EA0005 | The request's `InheritedContext`, for every eval request, direct or indirect, which the request does not tell apart | The SuperProperty, the SuperCall, each `arguments` reference |
+| ContainsArguments | EE0130, EE0138 | The anchors that enclose an `arguments` reference: fields and static blocks push one, arrows and a nested class's heritage and computed keys keep them, every non-arrow function and every method's parameters and body clear them | Once per member, at the `FieldDefinition` or the `StaticBlock`, every enclosing member reporting |
+| Expressions | EE0018, EE0021, EE0054 | An object literal's `PropertyName : value` entries named `__proto__`; a template's TemplateStrings at 2^32, which no source reaches; a for-in or for-of head target whose AssignmentTargetType is invalid, EG0008 in its place for a non-optional call | Every `__proto__` entry after the first; the template; the head target |
+| ShadowRealm | EP0017, EP0018 | No goal is ShadowRealm's; EA0003, EA0004 or EE0162 refuses their sources first | No report of their own |
+
+Each place is the one Broiler.VM's binder names (section 3, "a check taken from Broiler.VM's binder at the node the
+binder names"), but where the library differs from either engine, as `docs/roadmap/SharedLibraries.md` lists for
+SJL-15.3: Broiler.JS refuses a duplicate `__proto__` entry at the second entry only; Broiler.VM does not search an
+arrow's parameters for `arguments`, and reports only the innermost member when members nest; and the library reports
+EA0005 at each reference, a real place. It also differs in what it refuses: Broiler.JS admits a SuperProperty in a
+function expression that is an object literal's property value and not a method, which EE0075 refuses
+(`Broiler.JS/Broiler.JavaScript.Compiler.Tests/PropertyStoreCacheTests.cs`,
+`ASuperAssignmentStillTargetsTheHomeObjectsPrototype`, runs such a program); and Broiler.VM drops EA0005 when the eval
+code itself declares `arguments`, where ContainsArguments reads every reference, which shows only in sources already
+refused (eval code in a field initialiser is strict, and a strict binding of `arguments` is refused).
+
+**The vectors.** The library-level adapter (`runners/AlgorithmsLibrary.Semantics.cs`) answers the `semantics` vectors
+whose identifier names a row in its own list, held equal to `SemanticRows` by a Conformance test, and reads them at the
+parse; the Native AOT probe judges those vectors at the parse on a line of its own.
 
 ## Corrections
 
