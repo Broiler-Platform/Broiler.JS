@@ -21,8 +21,11 @@ namespace Broiler.ECMAScript.Syntax;
 /// The catalogue rows the syntax half reports (stage SJL-13.2d; Broiler.VM's JSD-0083, decisions D10 and D11): one entry per
 /// row the stage table (<c>Broiler.ECMAScript/docs/frontend/stages.tsv</c>) assigns <c>syntax</c>, each the row's shared code
 /// and message identifier as the catalogue (<c>early-errors.tsv</c>) gives them. No <c>request</c>, <c>engine</c> or
-/// <c>semantics</c> row has an entry, so the library cannot report one; the Frontend tests hold this list equal to the two
-/// tables.
+/// <c>semantics</c> row has an entry; the library reports no <c>request</c> or <c>engine</c> row, and a <c>semantics</c>
+/// row only from <see cref="SemanticRows"/>, when the request sets <see cref="ParseRequest.BuildSemanticModel"/>. The
+/// Frontend tests hold this list equal to the two tables. <i>(Revised 2026-11-25, at SJL-15.2 stage 2, when the semantic
+/// model's rows were added beside this list; it read "No <c>request</c>, <c>engine</c> or <c>semantics</c> row has an
+/// entry, so the library cannot report one; the Frontend tests hold this list equal to the two tables.")</i>
 /// </summary>
 // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=27CB08
 // Hairs-Human:        PENDING

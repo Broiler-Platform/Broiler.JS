@@ -64,8 +64,11 @@ public sealed class DeterminismTests
         return items;
     }
 
-    internal static ParseRequest Request(Item item, bool retainTokens = false, bool model = false)
+    // With allErrors, every diagnostic up to the cap rather than the first, the nesting bound as for first error (SJL-15.2
+    // stage 2, whose identity test compares the two paths' lists whole).
+    internal static ParseRequest Request(Item item, bool retainTokens = false, bool model = false, bool allErrors = false)
     {
+        var reporting = allErrors ? ErrorReporting.AllErrors : ErrorReporting.FirstError;
         if (item.Variant[0] == 'E')
         {
             var strict = item.Variant == "E3";
@@ -73,7 +76,7 @@ public sealed class DeterminismTests
             {
                 Switches = ParseSwitches.For(ParseGoal.Eval) with { ForcedStrict = strict },
                 Context = new InheritedContext { InFunction = strict },
-                Limits = new ParseLimits { NestingDepth = new DepthLimit(64) },
+                Limits = new ParseLimits { NestingDepth = new DepthLimit(64), Reporting = reporting },
                 RetainTokens = retainTokens,
                 BuildSemanticModel = model,
             };
@@ -86,7 +89,7 @@ public sealed class DeterminismTests
             Switches = ParseSwitches.For(goal),
             Proposals = j ? ProposalFlags.Decorators | ProposalFlags.AutoAccessors | ProposalFlags.ImportSourceCalls | ProposalFlags.ImportDeferCalls : ProposalFlags.None,
             Extensions = j ? LexerExtensions.DecimalSuffix : LexerExtensions.None,
-            Limits = new ParseLimits { NestingDepth = new DepthLimit(j ? ParseLimits.MaximumSupportedNestingDepth : 64) },
+            Limits = new ParseLimits { NestingDepth = new DepthLimit(j ? ParseLimits.MaximumSupportedNestingDepth : 64), Reporting = reporting },
             RetainTokens = retainTokens,
             BuildSemanticModel = model,
         };

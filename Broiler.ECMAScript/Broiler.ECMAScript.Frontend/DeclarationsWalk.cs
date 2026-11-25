@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   97
-// Annotated:        97/97
-// Exempt:           53
-// Human-reviewed:   0/97
+// Relevant units:   107
+// Annotated:        107/107
+// Exempt:           63
+// Human-reviewed:   0/107
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       97
+// Unverified:       107
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -43,13 +43,22 @@ namespace Broiler.ECMAScript.Semantics;
 /// <b>The semantic model is built by this walk</b> (milestone SJL-15.2: "it does not start a second one"), when the request
 /// sets <see cref="ParseRequest.BuildSemanticModel"/>: the same visit, in the same order, also records each node's scope,
 /// each model scope's parent, the model's own scopes and its own facts, numbering them by a counter of its own, so that the
-/// walk's sequence, which orders the diagnostics and the tables, is the same on or off. Only <see cref="Run"/> builds it;
-/// a partial walk before a grammar refusal never does.
+/// walk's sequence, which orders the diagnostics and the tables, is the same on or off on every parse the member's on path
+/// accepts. Only <see cref="Run"/> builds it; a partial walk before a grammar refusal never does, but with the member on it
+/// reports the model's rows (below). <i>(Revised 2026-11-25, at SJL-15.2 stage 2, when the model's rows joined the
+/// diagnostics; it read "so that the walk's sequence, which orders the diagnostics and the tables, is the same on or off.
+/// Only <see cref="Run"/> builds it; a partial walk before a grammar refusal never does.")</i>
 /// </para>
 /// <para>
-/// <b>No <c>request</c>, <c>engine</c> or <c>semantics</c> row is reported</b>: every refusal is one of <see cref="Rows"/>.
-/// The top-level-<c>await</c> switch (EX0023, the one <c>request</c> row) reaches the walk only as the [Await] parameter
-/// of the top level, as it reaches the parser (decision D10).
+/// <b>No <c>request</c> or <c>engine</c> row is reported, and a <c>semantics</c> row only with the member on</b>: with it
+/// off every refusal is one of <see cref="Rows"/>; with it on the walk also reports the rows of <see cref="SemanticRows"/>,
+/// each a construct's refusal at its construct, through the same report and the same sequence, so that decision D11's order
+/// merges them with the <c>syntax</c> rows (the session's decisions D-js-channel and D-js-semantic-rows). The walk's
+/// <c>semantics</c> flag, set from the member for <see cref="Run"/> and for the partial walk alike, guards every statement
+/// that reports one. The top-level-<c>await</c> switch (EX0023, the one <c>request</c> row) reaches the walk only as the
+/// [Await] parameter of the top level, as it reaches the parser (decision D10). <i>(Revised 2026-11-25, at SJL-15.2 stage
+/// 2; it read "<b>No <c>request</c>, <c>engine</c> or <c>semantics</c> row is reported</b>: every refusal is one of
+/// <see cref="Rows"/>.")</i>
 /// </para>
 /// </remarks>
 // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B38FCA
@@ -122,9 +131,19 @@ internal sealed class DeclarationsWalk
     // Each class constructor's kind, on every request (the functions' facts are the same with the model on or off).
     private Dictionary<FunctionNode, FunctionKind>? constructorKinds;
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=099C8B
+    // The model's rows' state, made only when the request asks for the model (SJL-15.2 stage 2): whether the walk reports
+    // them, each method's home, and the members that have reported ContainsArguments once.
+    private readonly bool semantics;
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.4 MethodDefinition HasDirectSuper, s15.7.1 ClassBody early errors, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=42B997
     // Hairs-Human:        PENDING
-    private DeclarationsWalk(ParseRequest request, bool buildModel)
+    private readonly Dictionary<FunctionNode, MethodHome>? methodHomes;
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.7.1 ContainsArguments, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=87C76A
+    // Hairs-Human:        PENDING
+    private readonly HashSet<SyntaxNode>? argumentsReported;
+
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=007C8E
+    // Hairs-Human:        PENDING
+    private DeclarationsWalk(ParseRequest request, bool buildModel, bool semantics)
     {
         this.request = request;
         annexB = request.Switches.AnnexB;
@@ -140,6 +159,30 @@ internal sealed class DeclarationsWalk
             ifClauseScopes = new(ReferenceEqualityComparer.Instance);
             declaredClasses = new(ReferenceEqualityComparer.Instance);
         }
+
+        this.semantics = semantics;
+        if (semantics)
+        {
+            methodHomes = new(ReferenceEqualityComparer.Instance);
+            argumentsReported = new(ReferenceEqualityComparer.Instance);
+        }
+    }
+
+    /// <summary>
+    /// Where a method stands, which decides the row its HasDirectSuper is reported by (clauses 13.2.5.1 and 15.7.1): an
+    /// object literal's, a class's, a class's static one, the class's constructor (ConstructorMethod of its ClassBody, the
+    /// first element whose PropName is <c>"constructor"</c>) with no heritage or with one, or a later element of that name.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.4 MethodDefinition HasDirectSuper, s15.7.1 ClassBody early errors, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=DA6343
+    // Hairs-Human:        PENDING
+    private enum MethodHome
+    {
+        ObjectLiteral,
+        Class,
+        StaticClass,
+        BaseConstructor,
+        DerivedConstructor,
+        DuplicateConstructor,
     }
 
     /// <summary>The shape of a function, which decides the catalogue row each of its rules is reported by.</summary>
@@ -183,11 +226,11 @@ internal sealed class DeclarationsWalk
     }
 
     /// <summary>Walks a tree the grammar admitted.</summary>
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=A9C222
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=16FD67
     // Hairs-Human:        PENDING
     internal static Result Run(ParseRequest request, ProgramNode program)
     {
-        var walk = new DeclarationsWalk(request, request.BuildSemanticModel);
+        var walk = new DeclarationsWalk(request, request.BuildSemanticModel, request.BuildSemanticModel);
         walk.WalkProgram(program, program.Body, closed: true);
         return new Result(walk.Ordered(int.MaxValue), walk.Tables());
     }
@@ -195,13 +238,14 @@ internal sealed class DeclarationsWalk
     /// <summary>
     /// Walks the top-level statements a parse completed before the grammar refused at <paramref name="refusedAt"/>: their
     /// early errors come before the grammar's refusal (decision D11). The top level's own scope never closed, so its conflicts
-    /// are not checked.
+    /// are not checked. It builds no model; with the request's <see cref="ParseRequest.BuildSemanticModel"/> on it reports
+    /// the model's rows, each of which its construct decides whole (SJL-15.2 stage 2).
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=30333A
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=49D611
     // Hairs-Human:        PENDING
     internal static List<SyntaxDiagnostic> RunPartial(ParseRequest request, List<Statement> completed, int refusedAt)
     {
-        var walk = new DeclarationsWalk(request, buildModel: false);
+        var walk = new DeclarationsWalk(request, buildModel: false, semantics: request.BuildSemanticModel);
         var span = new SourceSpan(request.Source.BaseOffset, 0, request.Source.BaseLine, request.Source.BaseColumn);
         var program = new ProgramNode(span, request.Goal, completed.ToArray(), Array.Empty<Pattern>(), false, false);
         walk.WalkProgram(program, completed, closed: false);
@@ -394,7 +438,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // The program.
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=33FAF8
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=87BEB8
     // Hairs-Human:        PENDING
     private void WalkProgram(ProgramNode program, IReadOnlyList<Statement> body, bool closed)
     {
@@ -410,6 +454,7 @@ internal sealed class DeclarationsWalk
             Await = isDynamic ? kind is DynamicFunctionKind.Async or DynamicFunctionKind.AsyncGenerator : request.Switches.TopLevelAwait,
             InFunction = inFunction,
             LabelOwner = isModule ? LabelOwner.Module : isDynamic ? LabelOwner.Function : LabelOwner.Script,
+            Semantic = semantics ? ProgramSemantic(isDynamic ? FunctionRows(DynamicShape(kind), inBody: true) : null) : null,
         };
 
         var parameterNames = new List<string>();
@@ -485,10 +530,97 @@ internal sealed class DeclarationsWalk
             }
         }
 
-        var parameterContext = context with { ParamsOf = isDynamic ? DynamicShape(kind) : null, ModelScope = programParameters ?? context.ModelScope };
+        var parameterContext = context with
+        {
+            ParamsOf = isDynamic ? DynamicShape(kind) : null,
+            ModelScope = programParameters ?? context.ModelScope,
+            Semantic = semantics ? isDynamic ? FunctionRows(DynamicShape(kind), inBody: false) : context.Semantic : null,
+        };
         Run(program.Parameters, parameterContext);
         Run(body, context);
     }
+
+    /// <summary>
+    /// The rows of the program's own code (SJL-15.2 stage 2): a Script's <c>super</c> (EE0162) and a Module's (EE0172);
+    /// eval code's from the caller's context, PerformEval's steps 11.f to 11.h (EA0003 to EA0005), for every eval request,
+    /// direct or indirect, which the request does not tell apart; a dynamic function's those of the function its source is
+    /// parsed as (<paramref name="dynamic"/>).
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s16.1.1 s16.2.1.1 Contains super, s19.2.1.1 PerformEval steps 11.f-11.h, s20.2.1.1.1 CreateDynamicFunction; IP=Low; Security=Medium; Resources=1; Fingerprint=154D35
+    // Hairs-Human:        PENDING
+    private SemanticContext ProgramSemantic(SemanticContext? dynamic)
+    {
+        switch (request.Goal)
+        {
+            case ParseGoal.Module:
+                return new SemanticContext(SemanticRows.EE0172, SemanticRows.EE0172, null);
+            case ParseGoal.Eval:
+            {
+                var caller = request.Context!;
+                return new SemanticContext(
+                    caller.InMethod ? null : SemanticRows.EA0003,
+                    caller.InDerivedConstructor ? null : SemanticRows.EA0004,
+                    caller.InClassFieldInitializer ? new ArgumentsAnchors(SemanticRows.EA0005, null, null) : null);
+            }
+
+            case ParseGoal.FormalParameters or ParseGoal.FunctionBody:
+                return dynamic!;
+            default:
+                return new SemanticContext(SemanticRows.EE0162, SemanticRows.EE0162, null);
+        }
+    }
+
+    /// <summary>
+    /// The rows a SuperProperty and a SuperCall break in a non-arrow function's parameters or body (SJL-15.2 stage 2): a
+    /// method's call row by its shape and home and no property row (every method admits one); any other function's by its
+    /// shape and side (clauses 15.2.1, 15.5.1, 15.6.1 and 15.8.1). A function's parameters and body reset ContainsArguments'
+    /// anchors.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.2.1 s15.5.1 s15.6.1 s15.8.1 Contains SuperProperty SuperCall, s15.4 HasDirectSuper; IP=Low; Security=Medium; Resources=1; Fingerprint=6466CC
+    // Hairs-Human:        PENDING
+    private SemanticContext FunctionSemantic(FunctionNode function, Shape shape, bool inBody) =>
+        methodHomes!.TryGetValue(function, out var home)
+            ? new SemanticContext(null, MethodCallRow(shape, home), null)
+            : FunctionRows(shape, inBody);
+
+    /// <summary>A function's rows by its shape and side; a shape no such row names (a method's, an arrow's) admits both.</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.2.1 s15.5.1 s15.6.1 s15.8.1 Contains SuperProperty SuperCall; IP=Low; Security=Medium; Resources=1; Fingerprint=13E42B
+    // Hairs-Human:        PENDING
+    private static SemanticContext FunctionRows(Shape shape, bool inBody) => shape switch
+    {
+        Shape.Function => inBody ? new(SemanticRows.EE0075, SemanticRows.EE0077, null) : new(SemanticRows.EE0074, SemanticRows.EE0076, null),
+        Shape.Generator => inBody ? new(SemanticRows.EE0103, SemanticRows.EE0105, null) : new(SemanticRows.EE0102, SemanticRows.EE0104, null),
+        Shape.AsyncGenerator => inBody ? new(SemanticRows.EE0118, SemanticRows.EE0120, null) : new(SemanticRows.EE0117, SemanticRows.EE0119, null),
+        Shape.AsyncFunction => inBody ? new(SemanticRows.EE0151, SemanticRows.EE0153, null) : new(SemanticRows.EE0150, SemanticRows.EE0152, null),
+        _ => new(null, null, null),
+    };
+
+    /// <summary>
+    /// The row a method's SuperCall breaks (HasDirectSuper; the session's proposal of one row per construct): its shape's
+    /// first (EE0093, EE0142, EE0106), then its home's (EE0015, EE0124, EE0126, EE0121); a derived class's constructor, and
+    /// every later element named <c>"constructor"</c>, which EE0122 or EE0125 already refuses, admit it.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.2.5.1 s15.5.1 s15.6.1 s15.7.1 s15.8.1 HasDirectSuper early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=2AD253
+    // Hairs-Human:        PENDING
+    private static LexicalRefusal? MethodCallRow(Shape shape, MethodHome home) => shape switch
+    {
+        Shape.GeneratorMethod => SemanticRows.EE0093,
+        Shape.AsyncMethod => SemanticRows.EE0142,
+        Shape.AsyncGeneratorMethod => SemanticRows.EE0106,
+        _ => home switch
+        {
+            MethodHome.ObjectLiteral => SemanticRows.EE0015,
+            MethodHome.Class => SemanticRows.EE0124,
+            MethodHome.StaticClass => SemanticRows.EE0126,
+            MethodHome.BaseConstructor => SemanticRows.EE0121,
+            _ => null,
+        },
+    };
+
+    /// <summary>Whether a template's TemplateStrings reach EE0021's bound, 2^32 elements (clause 13.2.8.1); no .NET source reaches it.</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.2.8.1 TemplateLiteral early errors; IP=Low; Security=Low; Resources=0; Fingerprint=A0C330
+    // Hairs-Human:        PENDING
+    internal static bool TooManyTemplateStrings(long count) => count >= 1L << 32;
 
     // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=DCC45B
     // Hairs-Human:        PENDING
@@ -554,7 +686,7 @@ internal sealed class DeclarationsWalk
     // The visit: each node's own rules, then its children under their context, pushed in reverse so that they are
     // visited in source order.
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=C46E8B
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=33362A
     // Hairs-Human:        PENDING
     private void Visit(SyntaxNode node, Context context)
     {
@@ -562,6 +694,11 @@ internal sealed class DeclarationsWalk
         {
             case Identifier identifier:
                 CheckName(identifier.Name, identifier.IsEscaped, identifier, NameUse.Reference, context);
+
+                // The model's rows: ContainsArguments of each member whose initialiser or block holds the reference, once
+                // per member (EE0130, EE0138), and of eval code a field initialiser evaluates, at the reference (EA0005).
+                if (semantics && identifier.Name == "arguments")
+                    ReportArguments(identifier, context);
                 return;
             case BindingIdentifier binding:
                 if (!skippedNames.Contains(binding))
@@ -579,6 +716,9 @@ internal sealed class DeclarationsWalk
                 ValidateRegularExpression(literal);
                 return;
             case TemplateLiteral template:
+                // The model's row: TemplateStrings of 2^32 elements or more (EE0021), which no source reaches.
+                if (semantics && TooManyTemplateStrings(template.Quasis.Count))
+                    Report(SemanticRows.EE0021, template);
                 if (!taggedQuasis.Contains(template))
                     CheckTemplateEscapes(template);
                 PushChildren(node, context);
@@ -730,6 +870,24 @@ internal sealed class DeclarationsWalk
                     CheckExportName(imported);
                 PushChildren(node, context);
                 return;
+
+            // The model's rows (SJL-15.2 stage 2), at the construct Broiler.VM's binder names: each SuperProperty and each
+            // SuperCall where the enclosing function, class element, program or caller does not admit it, and an object
+            // literal's duplicate __proto__ entries. With the member off these fall to the default, as before.
+            case MemberExpression { Object: SuperExpression } superProperty when semantics:
+                if (context.Semantic!.SuperPropertyRow is { } propertyRow)
+                    Report(propertyRow, superProperty);
+                PushChildren(node, context);
+                return;
+            case CallExpression { Callee: SuperExpression } superCall when semantics:
+                if (context.Semantic!.SuperCallRow is { } callRow)
+                    Report(callRow, superCall);
+                PushChildren(node, context);
+                return;
+            case ObjectLiteral literal when semantics:
+                CheckProtoEntries(literal);
+                PushChildren(node, context);
+                return;
             default:
                 PushChildren(node, context);
                 return;
@@ -863,7 +1021,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Functions (clauses 15.1 to 15.9).
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B8267A
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=11045B
     // Hairs-Human:        PENDING
     private void VisitFunction(FunctionNode function, Context outer)
     {
@@ -958,6 +1116,9 @@ internal sealed class DeclarationsWalk
             Labels = null,
             LabelOwner = LabelOwner.Function,
             ModelScope = parameterScope,
+
+            // The model's rows: an arrow's parameters and body are its enclosing code's for Contains and ContainsArguments.
+            Semantic = isArrow ? outer.Semantic : semantics ? FunctionSemantic(function, shape, inBody: false) : null,
         };
         var bodyContext = parameterContext with
         {
@@ -965,6 +1126,7 @@ internal sealed class DeclarationsWalk
             Await = function.IsAsync,
             ParamsOf = null,
             ModelScope = model ? bodyScope : null,
+            Semantic = isArrow ? outer.Semantic : semantics ? FunctionSemantic(function, shape, inBody: true) : null,
         };
 
         Push(function.ExpressionBody, bodyContext);
@@ -1215,7 +1377,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Classes (clause 15.7) and object literals' methods (clause 13.2.5).
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=501D3D
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=928113
     // Hairs-Human:        PENDING
     private void VisitClass(ClassNode @class, Context outer)
     {
@@ -1231,6 +1393,7 @@ internal sealed class DeclarationsWalk
 
         var context = model ? outer with { Strict = true, ModelScope = classScope } : outer with { Strict = true };
         var constructors = 0;
+        var constructorMethodSeen = false;
         var privateNames = new Dictionary<string, (bool IsStatic, MethodKind? Kind)>(StringComparer.Ordinal);
         foreach (var element in @class.Elements)
         {
@@ -1241,6 +1404,19 @@ internal sealed class DeclarationsWalk
                     shapes[method.Function] = MethodShape(method.MethodKind, method.Function);
                     var name = PropName(method.Key);
                     var special = method.MethodKind != MethodKind.Method || method.Function.IsAsync || method.Function.IsGenerator;
+
+                    // The model's: the method's home, the class's ConstructorMethod being its first element named
+                    // "constructor", special or not (clause 15.7.1, ClassTail; ClassBody's ConstructorMethod).
+                    if (semantics)
+                    {
+                        var home = method.IsStatic ? MethodHome.StaticClass
+                            : name != "constructor" ? MethodHome.Class
+                            : constructorMethodSeen ? MethodHome.DuplicateConstructor
+                            : @class.Heritage is null ? MethodHome.BaseConstructor : MethodHome.DerivedConstructor;
+                        constructorMethodSeen |= home is MethodHome.BaseConstructor or MethodHome.DerivedConstructor;
+                        methodHomes![method.Function] = home;
+                    }
+
                     if (!method.IsStatic && name == "constructor")
                     {
                         if (special)
@@ -1296,7 +1472,19 @@ internal sealed class DeclarationsWalk
                     }
 
                     // A field's initialiser is read under [~Yield, ~Await] (design section 9.3), inside a function boundary.
-                    Push(field.Value, elementContext with { Yield = false, Await = false, InFunction = true, ParamsOf = null, Labels = null, LabelOwner = LabelOwner.Function });
+                    Push(field.Value, elementContext with
+                    {
+                        Yield = false,
+                        Await = false,
+                        InFunction = true,
+                        ParamsOf = null,
+                        Labels = null,
+                        LabelOwner = LabelOwner.Function,
+
+                        // The model's rows: an initialiser admits a SuperProperty, not a SuperCall (EE0131), and anchors
+                        // ContainsArguments (EE0130) at the field, inside every member that encloses it.
+                        Semantic = semantics ? new SemanticContext(null, SemanticRows.EE0131, new ArgumentsAnchors(SemanticRows.EE0130, field, elementContext.Semantic!.Arguments)) : null,
+                    });
                     if (field.Key is ComputedPropertyName)
                         Push(field.Key, elementContext);
                     PushAll(field.Decorators, elementContext);
@@ -1320,7 +1508,7 @@ internal sealed class DeclarationsWalk
         PushAll(@class.Decorators, outer);
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=ED5971
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=6A46B3
     // Hairs-Human:        PENDING
     private void VisitStaticBlock(StaticBlock block, Context outer)
     {
@@ -1341,6 +1529,10 @@ internal sealed class DeclarationsWalk
             Labels = null,
             LabelOwner = LabelOwner.StaticBlock,
             ModelScope = model ? blockScope : null,
+
+            // The model's rows: a static block admits a SuperProperty, not a SuperCall (EE0139), and anchors
+            // ContainsArguments (EE0138) at the block, inside every member that encloses it.
+            Semantic = semantics ? new SemanticContext(null, SemanticRows.EE0139, new ArgumentsAnchors(SemanticRows.EE0138, block, outer.Semantic!.Arguments)) : null,
         };
         PushAll(block.Body, context);
     }
@@ -1380,7 +1572,7 @@ internal sealed class DeclarationsWalk
         _ => null,
     };
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=27AE15
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=D4357B
     // Hairs-Human:        PENDING
     private void VisitProperty(PropertyDefinition property, Context context)
     {
@@ -1393,6 +1585,8 @@ internal sealed class DeclarationsWalk
                 _ => MethodKind.Method,
             };
             shapes[method] = MethodShape(kind, method);
+            if (semantics)
+                methodHomes![method] = MethodHome.ObjectLiteral;
 
             // An object literal's method may not have a private name (EE0016).
             if (property.Key is PrivateIdentifier privateKey)
@@ -1400,6 +1594,44 @@ internal sealed class DeclarationsWalk
         }
 
         PushChildren(property, context);
+    }
+
+    /// <summary>
+    /// An object literal's duplicate <c>__proto__</c> entries (EE0018, clause 13.2.5.1): every <c>PropertyName : value</c>
+    /// entry whose non-computed PropName is <c>"__proto__"</c>, after the first, at the entry, as Broiler.VM's binder places
+    /// it. Shorthand, method and computed entries do not count; a literal the grammar converted to a pattern is none.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13.2.5.1 ObjectLiteral early errors PropertyNameList __proto__; IP=Low; Security=Medium; Resources=1; Fingerprint=9D23B3
+    // Hairs-Human:        PENDING
+    private void CheckProtoEntries(ObjectLiteral literal)
+    {
+        var seen = false;
+        foreach (var entry in literal.Properties)
+        {
+            if (entry is not PropertyDefinition { PropertyKind: PropertyKind.Init } definition || definition.Key is ComputedPropertyName || PropName(definition.Key) != "__proto__")
+                continue;
+            if (seen)
+                Report(SemanticRows.EE0018, definition, "__proto__");
+            seen = true;
+        }
+    }
+
+    /// <summary>
+    /// ContainsArguments where an <c>arguments</c> reference stands (SJL-15.2 stage 2): for each anchor that encloses it,
+    /// innermost first, the field's or static block's row once per member, at the member (EE0130, EE0138, decision D11's
+    /// place, as Broiler.VM's binder reports it), and eval code's in a field initialiser at the reference (EA0005).
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.7.1 ContainsArguments early errors, s19.2.1.1 PerformEval step 11.h; IP=Low; Security=Medium; Resources=1; Fingerprint=D40D9B
+    // Hairs-Human:        PENDING
+    private void ReportArguments(Identifier identifier, Context context)
+    {
+        for (var anchor = context.Semantic!.Arguments; anchor is not null; anchor = anchor.Outer)
+        {
+            if (anchor.At is null)
+                Report(anchor.Row, identifier, "arguments");
+            else if (argumentsReported!.Add(anchor.At))
+                Report(anchor.Row, anchor.At, "arguments");
+        }
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -1649,13 +1881,18 @@ internal sealed class DeclarationsWalk
         PushChildren(@for, model && forScope is not null ? context with { ModelScope = forScope } : context);
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B0161B
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=91D46B
     // Hairs-Human:        PENDING
     private void VisitForInOf(Statement statement, SyntaxNode left, Statement body, Context context)
     {
         // A call as a for-in or for-of target: Annex B.3.9 makes it a run-time refusal in non-strict code only (EG0008).
         if (left is CallExpression { IsOptional: false } call && (context.Strict || !annexB))
             Report(Rows.EG0008, call);
+
+        // The model's row: a head target whose AssignmentTargetType is invalid (EE0054); EG0008 in its place for a
+        // non-optional call, which Annex B makes web-compatible in sloppy code; a converted pattern is no expression.
+        if (semantics && left is Expression target && left is not CallExpression { IsOptional: false } && TargetTypeOf(target, context) == TargetType.Invalid)
+            Report(SemanticRows.EE0054, target);
 
         if (left is VariableDeclaration { DeclarationKind: not DeclarationKind.Var } head)
         {
@@ -2295,5 +2532,25 @@ internal sealed class DeclarationsWalk
 
         /// <summary>The semantic model's scope where the node stands; null unless the request asks for the model.</summary>
         public Scope? ModelScope { get; init; }
+
+        /// <summary>What the model's rows read where the node stands; null unless the request asks for the model.</summary>
+        public SemanticContext? Semantic { get; init; }
     }
+
+    /// <summary>
+    /// What the model's rows read where a node stands (SJL-15.2 stage 2): the row a SuperProperty breaks there, or null
+    /// where one is admitted; the same for a SuperCall; and the ContainsArguments anchors that enclose the place, innermost
+    /// first, or null where none does.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Contains SuperProperty SuperCall, s15.7.1 ContainsArguments, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=D81EA6
+    // Hairs-Human:        PENDING
+    private sealed record SemanticContext(LexicalRefusal? SuperPropertyRow, LexicalRefusal? SuperCallRow, ArgumentsAnchors? Arguments);
+
+    /// <summary>
+    /// A ContainsArguments anchor: its row, the <c>FieldDefinition</c> or <c>StaticBlock</c> it is reported at, or null for
+    /// eval code's in a field initialiser (EA0005), reported at each reference; and the anchor enclosing it.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s15.7.1 ContainsArguments, s19.2.1.1 PerformEval step 11.h, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=0EE3A9
+    // Hairs-Human:        PENDING
+    private sealed record ArgumentsAnchors(LexicalRefusal Row, SyntaxNode? At, ArgumentsAnchors? Outer);
 }

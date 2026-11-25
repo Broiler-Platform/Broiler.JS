@@ -102,7 +102,11 @@ public enum FunctionKind
 /// only when the request sets <see cref="ParseRequest.BuildSemanticModel"/>. At SJL-15.2 stage 1 it holds the scopes with
 /// their parents, the declarations with their binding identifiers, and the per-function facts; resolution, jump targets,
 /// private names, the module record, named evaluation, captures and the early errors that are not purely grammatical are
-/// later stages'.
+/// later stages'. From stage 2 the walk that builds it also reports its early errors of the function context (the super
+/// rows, ContainsArguments, eval code's from the caller's context, and three of expressions') among the parse's
+/// diagnostics, so that a source they refuse has no model; the early errors of jump targets, private names and the module
+/// record are later stages'. <i>(Revised 2026-11-25, at SJL-15.2 stage 2; where it names the early errors, it read "and the
+/// early errors that are not purely grammatical are later stages'.")</i>
 /// </summary>
 /// <remarks>
 /// <para>

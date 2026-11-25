@@ -29,7 +29,12 @@ public enum ParseOutcome
     /// <summary>
     /// The source parses under the request: the result carries its tree, the declarations walk's side tables and no
     /// diagnostic. The grammar admits it, no static-semantic early error of a row the stage table assigns <c>syntax</c>
-    /// refuses it, and the request's regular-expression provider admits each of its literals. <i>(Revised 2026-11-02, at
+    /// refuses it, nor, with the request's <see cref="ParseRequest.BuildSemanticModel"/> on, one of the semantic model's
+    /// rows (<c>SemanticRows</c>, rows the stage table assigns <c>semantics</c>), and the request's regular-expression
+    /// provider admits each of its literals. <i>(Revised 2026-11-25, at SJL-15.2 stage 2, when the model's rows joined the
+    /// parse; it read "The grammar admits it, no static-semantic early error of a row the stage table assigns
+    /// <c>syntax</c> refuses it, and the request's regular-expression provider admits each of its literals.")</i>
+    /// <i>(Revised 2026-11-02, at
     /// stage SJL-13.2d, when the declarations walk was added; it read "The source parses under the request: the result
     /// carries its tree and no diagnostic. From stage 4c the grammar alone decides it; the static-semantic early errors
     /// join at stage 4d, so a source only such an error refuses is accepted until then.")</i> <i>(Revised 2026-11-01, at
@@ -158,14 +163,19 @@ public sealed class ParseResult
 /// <remarks>
 /// <para>
 /// <b>From stage SJL-13.2d it parses the syntactic grammar</b> of the request's goal (clauses 13 to 16), then walks the
-/// tree it admitted for the static-semantic early errors of every row the stage table assigns <c>syntax</c>, asking the
-/// request's regular-expression provider about each literal (decisions D7 and D10). It answers
+/// tree it admitted for the static-semantic early errors of every row the stage table assigns <c>syntax</c>, and, with the
+/// request's <see cref="ParseRequest.BuildSemanticModel"/> on, of the semantic model's rows (<c>SemanticRows</c>, from
+/// SJL-15.2 stage 2), asking the request's regular-expression provider about each literal (decisions D7 and D10). It answers
 /// <see cref="ParseOutcome.Accepted"/> with the tree and the side tables, or <see cref="ParseOutcome.Refused"/> with its
 /// refusals in the library's order (decision D11), each with its catalogue row's code: a lexical refusal with the
 /// tokenizer's diagnostic, a grammar refusal, one of the contract's two limits, an early error, or the provider's verdict.
 /// The result carries one diagnostic under <see cref="ErrorReporting.FirstError"/>, and up to
 /// <see cref="ParseLimits.DiagnosticCap"/> under <see cref="ErrorReporting.AllErrors"/>. It charges the request's meter for
 /// the whole text before it reads the first code unit (<see cref="ParseRequest.Meter"/>), and reads the Unicode provider.
+/// <i>(Revised 2026-11-25, at SJL-15.2 stage 2, when the semantic model's rows joined the walk; where it names the rows the
+/// walk reports, it read "then walks the tree it admitted for the static-semantic early errors of every row the stage table
+/// assigns <c>syntax</c>, asking the request's regular-expression provider about each literal (decisions D7 and
+/// D10).")</i>
 /// <i>(Revised 2026-11-02, at stage SJL-13.2d, when the declarations walk was added; it read "At stage SJL-13.2c it parses
 /// the syntactic grammar of the request's goal (clauses 13 to 16) and answers Accepted with the tree, or Refused with the
 /// first refusal: a lexical refusal with the tokenizer's diagnostic, a grammar refusal with a provisional code stage 4d
