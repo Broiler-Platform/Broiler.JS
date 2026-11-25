@@ -3908,6 +3908,59 @@ project passed" is read on both workflows' push runs, each as it concluded in it
 targets and labels, the third model commit, judged by its part B against its own first parent. None of it is accepted:
 no second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
 
+*(Noted 2026-11-25, at SJL-15.2 stage 3, whose merge is the third model commit.)* The note above reads "Next: SJL-15.2
+stage 3, jump targets and labels, the third model commit, judged by its part B against its own first parent." The
+change before this one is stage 2's part B records, Broiler-Platform/Broiler.JS#1136 (`77fe27aa`), after stage 2's
+merge, Broiler-Platform/Broiler.JS#1135 (`6c61879b`). This change is stage 3: jump targets and labels. With
+`ParseRequest.BuildSemanticModel` on, the semantic model holds each jump's target: `SemanticModel.TargetOf` answers a
+`break`'s or a `continue`'s `LabelTarget`, a new public type holding the statement the jump leaves or continues and that
+statement's own label set; and the declarations walk reports the jump rows, a `continue` or a `break` with no enclosing
+target and the undefined break and continue targets of a function body, a static block, a Script and eval code, and a
+Module, EE0175 and EE0176 moved here from stage 6, each at its jump. The library-level adapter answers their vectors and,
+by decision D-js-adapter-groups below, those of correspondence group `lb1`, read at the parse; the canonical dump's model
+section writes each jump's target. With the member off nothing moves. Rule SL6's `PublicAPI.txt` gains these lines and
+loses none:
+- `Broiler.ECMAScript.Semantics.LabelTarget sealed class`
+- ``Broiler.ECMAScript.Semantics.LabelTarget.get_LabelSet() method System.Collections.Generic.IReadOnlyList`1<System.String>``
+- `Broiler.ECMAScript.Semantics.LabelTarget.get_Statement() method Broiler.ECMAScript.Syntax.Statement`
+- `Broiler.ECMAScript.Semantics.SemanticModel.TargetOf(Broiler.ECMAScript.Syntax.BreakStatement) method Broiler.ECMAScript.Semantics.LabelTarget`
+- `Broiler.ECMAScript.Semantics.SemanticModel.TargetOf(Broiler.ECMAScript.Syntax.ContinueStatement) method Broiler.ECMAScript.Semantics.LabelTarget`
+
+**The merge condition.** Both workflows are green on the PR; after the merge, nothing merges to `main` until both push
+runs at the merge have concluded. For ci.yml's run that includes the one re-run D-js-part-b-attempt allows
+(`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run (`.github/workflows/ci.yml:25-27`,
+:36-39). A later push never cancels Shared libraries' push run, because its push group carries the commit
+(`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1 ("Nothing merged to the
+default branch until both push runs at it had concluded", `docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken
+after the merge, against the merge's own first parent. Stage 2's part B records say the same of stage 2: "Nothing merged
+to the default branch until both push runs at it had concluded" (`docs/roadmap/SharedLibraries.md:3893-3894`).
+
+**This stage's decisions of 2026-11-25**, each taken as recommended under the owner's direction and recorded as the
+owner's decision of 2026-11-25. Their authority is the direction quoted above, which leaves out only "the start ...;
+decision D-census ...; and each publication of the shared stream (JSD-0083's decision D30)"; none below is one of those.
+Every later stage's decisions are recorded when that stage lands (the note of 2026-11-24 above); these are stage 3's.
+
+| Decision | Taken | Not taken, and why |
+|---|---|---|
+| D-js-jump-targets | **`SemanticModel.TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)` answer a jump's `LabelTarget`**: the statement it leaves or continues, and that statement's own label set in source order. An unlabelled `break` targets the innermost iteration statement or `switch`; an unlabelled `continue` the innermost iteration statement; `continue L` the innermost iteration statement whose label set holds L, any label of the set, so that hand-off H20 is read by the specification; `break L` the statement L labels, through any further labels on it. The statement is never a `LabelledStatement`. The answer is never null: a model exists only for an accepted source, and on one every jump has a target. One instance per statement. A node not in the model's tree is refused as `ScopeOf` refuses it. `LabelTarget` is sealed, its constructor internal | (a) `LabelTarget?`, as the sketch writes it: a null would never occur. (b) The `LabelledStatement` as a labelled `break`'s target, where LabelledEvaluation catches it and where Broiler.VM's binder names it: a loop's labels and a block's would be read two ways. (c) Only the label written directly on a loop, as Broiler.VM's exit stack carries it: that is H20. (d) One member over `SyntaxNode`, or a wrapper type for the sketch's `BreakOrContinue`: D-js-names maps it onto the tree's two types |
+| D-js-jump-rows | **The jump rows in `SemanticRows`**: `continue` and `break` with no enclosing target (EE0058, EE0059), and the undefined break and continue targets of a function body (EE0081, EE0082), a static block (EE0136, EE0137), a Script and eval code (EE0165, EE0166) and a Module (EE0175, EE0176), by the walk's label owner. Each is placed at its jump, where both engines place it, with the label's name as the undefined-label rows' argument. EE0175 and EE0176 come here from stage 6, needing only the Module owner the walk already has. One row per construct, as the catalogue's note on EE0058 reads it: a labelled `continue` with no enclosing iteration statement reports its owner's undefined-label row alone. The rows' state rides in the model's row context, which every function, arrows included, and every static block resets; the search reads the whole chain of enclosing statements | (a) EE0175 and EE0176 left to stage 6: no fact they need is stage 6's, and a module's undefined jump target would be accepted on the on path until then. (b) EE0058 as well for a labelled `continue` with no iteration: two refusals of one jump, where both engines make one. (c) The state as members of the walk's own context: every `with` would copy them on the off path too. (d) The undefined-label rows at the label, beside the duplicate-label rows: it departs from the binder's place for no fact |
+| D-js-adapter-groups | **The adapter also answers the vectors of the correspondence groups the model decides**, by a second list of its own, each group with the rows it rests on: `lb1`, row LB1, on EE0082 and EE0166, `ScriptEvaluation` only. D-js-adapter-form's dispatch by a row's identifier is unchanged | The identifier's row alone: the vectors that show H20 read by the specification would stay not implemented, and part F's library-level run would not read acceptances the model decides |
+
+The places where the library differs from either engine, named for SJL-15.3. In what it refuses: the library accepts
+`continue` to any label of an enclosing iteration statement's label set, as the specification does (hand-off H20), and
+as Broiler.JS does since Broiler-Platform/Broiler.JS#1075 (`Broiler.JS/Broiler.JavaScript.Compiler/SyntaxValidation.cs`,
+`VisitLabeledStatement`); Broiler.VM's binder refuses `continue` to the outer label of a loop's label set
+(`VMC/JsBinder.Walks.cs`, `VMC/` as above, its `Target`; Broiler.VM pins it in its `BinderChecks.cs`, "continue to the outer label of a label
+set stays refused"), a correction of Broiler.VM, class F, row LB1. In the target's mapping: Broiler.VM's `JumpTarget`
+names the `LabelledStatement` for a labelled target that is not a loop, and carries only the label written directly on a
+loop (`VMC/JsBinder.Walks.cs`, `VMC/JsBinder.cs`), where the library names the labelled item with its whole label set; a
+difference of mapping for SJL-15.3 to read, not of fact but for H20 (an inference). In places: none known, both engines
+placing every jump refusal at the jump, as the library does. The catalogue's notes on EE0166 and EE0176
+(`Broiler.ECMAScript/docs/frontend/early-errors.tsv`) read both engines as over-refusing `L1: L2: while (c) continue
+L1;`, "JS adds it to continueLabels only when its own body is a loop", which is stale for Broiler.JS since #1075; the
+stage table's `stale_cells` already name `status` for those rows, and the catalogue is left as it is. None of it is
+accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

@@ -295,3 +295,25 @@ which attempt decides, flagged for the owner at the first model commit, does not
 `be6c4a5c`, its basis and its flag, in the note of 2026-11-24 above, stay as written. A NOT MET at any later model
 commit makes part B NOT MET. **Next:** SJL-15.2 stage 3, jump targets and labels, the third model commit. No rule file
 is added or edited, and no earlier output changes.
+
+*(Noted 2026-11-25, at SJL-15.2 stage 3, written before part B's run at it.)* **The third model commit.** This branch's
+merge will be the third model commit: SJL-15.2 stage 3, jump targets and labels, named here once it exists. Part B is
+taken after it, against its own first parent (decision D-js-part-b-method), with both workflows' push runs imported and
+decision D-js-part-b-attempt applying. The merge condition: both workflows are green on the PR; after the merge, nothing
+merges to `main` until both push runs at the merge have concluded. For ci.yml's run that includes the one re-run
+D-js-part-b-attempt allows (`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run
+(`.github/workflows/ci.yml:25-27`, :36-39). A later push never cancels Shared libraries' push run, because its push
+group carries the commit (`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1
+("Nothing merged to the default branch until both push runs at it had concluded",
+`docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken after the merge, against the merge's own first parent. The
+reading at it will be limited to the model commits taken so far.
+
+From this change the library-level adapter, `runners/AlgorithmsLibrary.Semantics.cs`, also answers the vectors of
+stage 3's jump rows, and, by decision D-js-adapter-groups in `docs/roadmap/SharedLibraries.md`'s section "Shared static
+semantics (SJL-15)", those of correspondence group `lb1`, row LB1, which rest on EE0082 and EE0166: the acceptances that
+show hand-off H20 read by the specification. Each is read at the parse, the reading the owner ruled on 2026-11-25 to
+keep ("Keep the reading at the parse (Recommended)"), as the note above at SJL-15.2 stage 2 records it. The longer
+test-host wait that Broiler-Platform/Broiler.JS#1134 set on both workflows' test steps, which the note of 2026-11-25 in
+the change that made it names among "mitigations whose effect is not shown", was kept by the owner's own answer of
+2026-11-25, "Keep the 300 s wait", as `docs/roadmap/SharedLibraries.md`'s note of 2026-11-25 at SJL-15.2 stage 2 records
+it. No rule file is added or edited, and no earlier output changes. "What it will hold" above is left as written.
