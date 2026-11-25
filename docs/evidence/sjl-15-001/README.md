@@ -31,6 +31,7 @@ default branch on 2026-11-17.
 | [`corrections.md`](corrections.md) and [`corrections/`](corrections/class-t.tsv) | The classes E and T and the corrections C1, each by row, before any run, written by [`tools/write_lists.py`](tools/write_lists.py) from the stage table and the probes |
 | [`engine/`](engine/commands.txt) | The `semantics` vectors' runs: each engine's first run on corpus revision 42, with its negative control; both engines' runs on revision 43 as drafted, for the vectors it adds; and both engines' runs on revision 43, with their negative controls. Not runs of the rule *(noted 2026-11-24, at corpus revision 44: the folder also holds both engines' runs on revision 44 as drafted, for the vectors it adds, and both engines' runs on revision 44, with their negative controls; the cell is left as written)* |
 | [`part-b-be6c4a5c/`](part-b-be6c4a5c/README.md) | Part B's runs at the first model commit `be6c4a5c` and at its first parent `8b1fa311`, with their comparison and the push runs at `be6c4a5c` of both workflows that run the test projects of `Broiler.JS.slnx`; runs of the rule *(row added 2026-11-24, after those runs)* |
+| [`part-b-6c61879b/`](part-b-6c61879b/README.md) | Part B's runs at the second model commit `6c61879b` and at its first parent `2259fd4a`, with their comparison and the push runs at `6c61879b` of both workflows that run the test projects of `Broiler.JS.slnx`; runs of the rule *(row added 2026-11-25, after those runs)* |
 | [`hashes.txt`](hashes.txt) | The SHA-256 of every other file of the bundle |
 
 ## What it will hold
@@ -249,3 +250,48 @@ the owner ruled on 2026-11-25 to keep ("Keep the reading at the parse (Recommend
 their own in the library: no goal is ShadowRealm's, and EA0003, EA0004 or EE0162 refuses their sources first; whether
 part F reads that as "a site in the library" is unknown, since the rule names only EA0006 to EA0008 as rows without one.
 No rule file is added or edited. "What it will hold" above is left as written.
+
+*(Noted 2026-11-25, after SJL-15.2 stage 2's merge.)* **The second model commit is
+`6c61879bce81b1a7badf987e16c7b0531030258d`**, the merge of Broiler-Platform/Broiler.JS#1135 (head `8b0c233c`), whose
+first parent is `2259fd4a1860aefc68d49b8f6f9f0200fcb6cc4d` (Broiler-Platform/Broiler.JS#1134, ci.yml's Test step). It
+changes `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/` and `Broiler.ECMAScript/Broiler.ECMAScript.Frontend.Tests/`,
+among others the library-level adapter `Broiler.ECMAScript/runners/AlgorithmsLibrary.Semantics.cs` with its tests in
+`Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/` and the Native AOT probe in
+`Broiler.ECMAScript/Broiler.ECMAScript.Probe/`, and descends from W2 (`83a9bd82`) and from the first model commit
+`be6c4a5c`. Its first parent is no model commit: nothing from `be6c4a5c` to `2259fd4a` changes a path under
+`Broiler.ECMAScript/Broiler.ECMAScript.Frontend*`. The note above of 2026-11-25 at SJL-15.2 stage 2 reads "This branch's
+merge will be the second model commit: SJL-15.2 stage 2, the early-error channel and the function-context rows, named
+here once it exists"; this names it. The section "The commits"' second item, "named here when each exists", is left as
+written: the library commit, the base commit and the after commit do not exist yet.
+
+*(Noted 2026-11-25, after part B's runs at `6c61879b`.)* **Part B at the second model commit.** The note of 2026-11-25
+at SJL-15.2 stage 2 reads "Part B is taken after it, against its own first parent (decision D-js-part-b-method), with both
+workflows' push runs imported and decision D-js-part-b-attempt applying" and "The reading at it will be limited to the
+model commits taken so far." It is taken, in [`part-b-6c61879b/`](part-b-6c61879b/README.md), as part B at the first
+model commit was taken and in the same layout: bundle `sjl-12-001`'s tool, the same tree (`5ede6114`) at both commits,
+built and run as the rule says from a clean `git archive` of `6c61879b` and of `2259fd4a`, entry points P and K and the
+`--dump` mode over every input and variant of `conformance/parse/corpus.manifest`, the suite's archive checked by its
+SHA-256 before each run; compared by `scripts/compliance/compare_parse_corpus.py acceptance` with no classification
+file and by the dumps' hashes row for row; and both workflows' push runs at `6c61879b` imported as at the first model
+commit. Nothing merged to the default branch from the merge until both push runs had concluded. What the runs say:
+- **Both runs are complete and identical in every field**: each report holds every input and variant of the manifest,
+  at P and K and once for the dumps, with its end line; the comparison finds no difference and every row line of both
+  modes is the same. The reports' headers differ only in each engine assembly's module version id, which is a build's
+  name, not an answer: two builds of `2259fd4a` in two build trees differ the same way with every row the same, as two
+  builds of `8b1fa311` did at the first model commit.
+- **Shared libraries' push run concluded `success`** in its first attempt, every job green; its Build and SL rules
+  jobs test `Broiler.ECMAScript.slnf`, so its six `Broiler.ECMAScript.*` test projects, each passed on both systems.
+- **ci.yml's push run concluded `success`** in its first attempt, every job green, with no re-run: its Test step, which
+  since #1134 tests every project of `Broiler.JS.slnx` but those of `Broiler.ECMAScript.slnf`, passed the fifteen
+  `Broiler.JavaScript.*` test projects on Linux and on Windows, the isolated CompilerScaling step ran on both, and the
+  engine corpus passed in its two vectors jobs. So the re-run decision D-js-part-b-attempt allows was not needed.
+
+**The reading**, taken as recommended under the owner's direction ("Please do all recommended decisions and skip
+waiting for review."): **part B read MET on the retained runs at the model commits taken so far
+(`be6c4a5c3e389c7eb2aff71c34e31bdae5efe276`, `6c61879bce81b1a7badf987e16c7b0531030258d`), limited to them; the part's
+verdict waits for the last model commit before the base.** At `6c61879b` the rule's "the commit's CI run of every test
+project passed" is read on both workflows' push runs as they concluded, each in its first attempt, so the question of
+which attempt decides, flagged for the owner at the first model commit, does not arise here. The reading at
+`be6c4a5c`, its basis and its flag, in the note of 2026-11-24 above, stay as written. A NOT MET at any later model
+commit makes part B NOT MET. **Next:** SJL-15.2 stage 3, jump targets and labels, the third model commit. No rule file
+is added or edited, and no earlier output changes.

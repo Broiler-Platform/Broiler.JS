@@ -1,0 +1,7 @@
+2026-11-25T12:00:34Z step0-start 6c61879bce81b1a7badf987e16c7b0531030258d	refs/heads/main
+2026-11-25T12:01:33Z before-run-base-2259fd4a 6c61879bce81b1a7badf987e16c7b0531030258d	refs/heads/main
+2026-11-25T12:07:56Z before-run-after-6c61879b 6c61879bce81b1a7badf987e16c7b0531030258d	refs/heads/main
+2026-11-25T12:15:01Z after-both-runs,ci-both-concluded 6c61879bce81b1a7badf987e16c7b0531030258d	refs/heads/main
+2026-11-25T12:17:15Z before step 4 (retain): 6c61879bce81b1a7badf987e16c7b0531030258d	refs/heads/main
+2026-11-25T12:17:48Z note: the merge 6c61879b was made at 2026-11-25T11:49:35Z (its committer date) and both push runs at it were created at 11:49:39Z; the first check above (12:00:34Z) already finds main at 6c61879b, and a ref that is not force-pushed cannot come back to a commit it has left, so nothing merged between. Shared libraries' run concluded at 11:53:58Z and ci.yml's at 12:08:07Z (each run record's updated_at); the check at 12:15:01Z follows both and finds main at 6c61879b. The comparison (12:15:01Z-12:15:03Z) and the CI read (12:15:34Z-12:15:43Z) were both taken after the 12:15:01Z check, with no separate check between them.
+2026-11-25T12:17:54Z check (retention; later checks are in the stage's scratch log only): 6c61879bce81b1a7badf987e16c7b0531030258d	refs/heads/main
