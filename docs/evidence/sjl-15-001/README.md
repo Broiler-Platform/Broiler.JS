@@ -305,8 +305,10 @@ D-js-part-b-attempt allows (`docs/roadmap/SharedLibraries.md:3808`). A later pus
 (`.github/workflows/ci.yml:25-27`, :36-39). A later push never cancels Shared libraries' push run, because its push
 group carries the commit (`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1
 ("Nothing merged to the default branch until both push runs at it had concluded",
-`docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken after the merge, against the merge's own first parent. The
-reading at it will be limited to the model commits taken so far.
+`docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken after the merge, against the merge's own first parent.
+Stage 2's part B records say the same of stage 2: "Nothing merged to the default branch until both push runs at it had
+concluded" (`docs/roadmap/SharedLibraries.md:3893-3894`). The reading at it will be limited to the model commits taken
+so far.
 
 From this change the library-level adapter, `runners/AlgorithmsLibrary.Semantics.cs`, also answers the vectors of
 stage 3's jump rows, and, by decision D-js-adapter-groups in `docs/roadmap/SharedLibraries.md`'s section "Shared static

@@ -3949,17 +3949,20 @@ Every later stage's decisions are recorded when that stage lands (the note of 20
 The places where the library differs from either engine, named for SJL-15.3. In what it refuses: the library accepts
 `continue` to any label of an enclosing iteration statement's label set, as the specification does (hand-off H20), and
 as Broiler.JS does since Broiler-Platform/Broiler.JS#1075 (`Broiler.JS/Broiler.JavaScript.Compiler/SyntaxValidation.cs`,
-`VisitLabeledStatement`); Broiler.VM's binder refuses `continue` to the outer label of a loop's label set
-(`VMC/JsBinder.Walks.cs`, `VMC/` as above, its `Target`; Broiler.VM pins it in its `BinderChecks.cs`, "continue to the outer label of a label
-set stays refused"), a correction of Broiler.VM, class F, row LB1. In the target's mapping: Broiler.VM's `JumpTarget`
-names the `LabelledStatement` for a labelled target that is not a loop, and carries only the label written directly on a
-loop (`VMC/JsBinder.Walks.cs`, `VMC/JsBinder.cs`), where the library names the labelled item with its whole label set; a
-difference of mapping for SJL-15.3 to read, not of fact but for H20 (an inference). In places: none known, both engines
-placing every jump refusal at the jump, as the library does. The catalogue's notes on EE0166 and EE0176
-(`Broiler.ECMAScript/docs/frontend/early-errors.tsv`) read both engines as over-refusing `L1: L2: while (c) continue
-L1;`, "JS adds it to continueLabels only when its own body is a loop", which is stale for Broiler.JS since #1075; the
-stage table's `stale_cells` already name `status` for those rows, and the catalogue is left as it is. None of it is
-accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
+`VisitLabeledStatement`); Broiler.VM's binder refuses `continue` to the outer label of a loop's label set (its `Target`,
+in `VMC/JsBinder.Walks.cs`, where `VMC/` is Broiler.VM's `src/Broiler.VM.Profile.JavaScript.Compiler/` as in stage 2's
+note; Broiler.VM pins it in its `BinderChecks.cs`, "continue to the outer label of a label set stays refused"), a
+correction of Broiler.VM, class F, row LB1. In the target's mapping: Broiler.VM's `JumpTarget` names the
+`LabelledStatement` for a `break` to any label not written directly on the loop or `switch` it labels, both a target
+that is no loop or `switch` and an outer label of a loop's or a `switch`'s label set (`A: B: while (1) break A;`), and
+carries only the label written directly on a loop or `switch` (`VMC/JsBinder.Walks.cs`, `VMC/JsBinder.cs`), where the
+library names the labelled item with its whole label set; a difference of mapping for SJL-15.3 to read, not of fact but
+for H20 (an inference). In places: none known, both engines placing every jump refusal at the jump, as the library does.
+The catalogue's notes on EE0166 and EE0176 (`Broiler.ECMAScript/docs/frontend/early-errors.tsv`) read both engines as
+over-refusing `L1: L2: while (c) continue L1;`, "JS adds it to continueLabels only when its own body is a loop", which
+is stale for Broiler.JS since #1075; the stage table's `stale_cells` already name `status` for those rows, and the
+catalogue is left as it is. None of it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet,
+in both repositories.
 
 ## Invariants
 

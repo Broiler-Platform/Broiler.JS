@@ -824,9 +824,11 @@ EE0082 and EE0166, `ScriptEvaluation` only. Its vectors are the acceptances that
 what it refuses, H20 (`continue` to any label of an enclosing iteration statement's label set is accepted), against
 Broiler.VM's binder, which refuses `continue` to the outer label of a loop's label set, and the same as Broiler.JS since
 Broiler-Platform/Broiler.JS#1075; in the target's mapping, Broiler.VM's `JumpTarget` names the `LabelledStatement` for a
-labelled target that is not a loop and carries only the label written directly on a loop, where the library names the
-labelled item with its whole label set; in places, none known. The catalogue's notes on EE0166 and EE0176 read
-Broiler.JS as over-refusing `L1: L2: while (c) continue L1;`, which is stale since #1075.
+`break` to any label not written directly on the loop or `switch` it labels, both a target that is no loop or `switch`
+and an outer label of a loop's or a `switch`'s label set (`A: B: while (1) break A;`), and carries only the label
+written directly on a loop or `switch`, where the library names the labelled item with its whole label set; in places,
+none known. The catalogue's notes on EE0166 and EE0176 read Broiler.JS as over-refusing `L1: L2: while (c) continue
+L1;`, which is stale since #1075.
 
 ## Corrections
 
