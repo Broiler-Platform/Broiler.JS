@@ -244,8 +244,8 @@ semantics adapter, `runners/AlgorithmsLibrary.Semantics.cs`, which answers the v
 by a row list of its own that a test holds equal to the Frontend's table (decisions D-js-adapter and D-js-adapter-form
 in `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)"). Part F's "every vector the adapter
 answers matches" is read at the parse, `error: SyntaxError` as a refusal and any other outcome as an acceptance, as
-bundle `sjl-13-001`'s rule reads its syntax vectors: a reading of the session's, taken before any run of part F and
-flagged for the owner. EP0017 and EP0018 have no site of their own in the library: no goal is ShadowRealm's, and EA0003,
-EA0004 or EE0162 refuses their sources first; whether part F reads that as "a site in the library" is unknown, since
-the rule names only EA0006 to EA0008 as rows without one. No rule file is added or edited. "What it will hold" above is
-left as written.
+bundle `sjl-13-001`'s rule reads its syntax vectors: a reading of the session's, taken before any run of part F, which
+the owner ruled on 2026-11-25 to keep ("Keep the reading at the parse (Recommended)"). EP0017 and EP0018 have no site of
+their own in the library: no goal is ShadowRealm's, and EA0003, EA0004 or EE0162 refuses their sources first; whether
+part F reads that as "a site in the library" is unknown, since the rule names only EA0006 to EA0008 as rows without one.
+No rule file is added or edited. "What it will hold" above is left as written.
