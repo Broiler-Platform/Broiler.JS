@@ -10,9 +10,13 @@ namespace Broiler.ECMAScript.Conformance.Tests;
 
 /// <summary>
 /// The library-level runner's semantics adapter (SJL-15.2, from stage 2; the session's decisions D-js-adapter and
+/// D-js-adapter-form, and from stage 3 D-js-adapter-groups): it answers the <c>semantics</c> vectors whose identifier names
+/// a row the semantic model reports, and those of the correspondence groups the model decides, parses with
+/// <see cref="ParseRequest.BuildSemanticModel"/> on, and is read at the parse, <c>error: SyntaxError</c> as a refusal and
+/// any other outcome as an acceptance. Every other semantics vector is not implemented. <i>(Revised 2026-11-25, at SJL-15.2
+/// stage 3, when group <c>lb1</c> was answered; it read "(SJL-15.2, from stage 2; the session's decisions D-js-adapter and
 /// D-js-adapter-form): it answers the <c>semantics</c> vectors whose identifier names a row the semantic model reports,
-/// parses with <see cref="ParseRequest.BuildSemanticModel"/> on, and is read at the parse, <c>error: SyntaxError</c> as a
-/// refusal and any other outcome as an acceptance. Every other semantics vector is not implemented.
+/// parses".)</i>
 /// </summary>
 public class SemanticsAdapterTests
 {
@@ -36,8 +40,10 @@ public class SemanticsAdapterTests
     }
 
     /// <summary>
-    /// Every semantics vector whose row is not in the adapter's list is not implemented, and no answered one is; the
-    /// operation-only call answers neither operation.
+    /// Every semantics vector whose row is not in the adapter's list, and that is not of one of its groups, is not
+    /// implemented, and no answered one is; the operation-only call answers neither operation. <i>(Revised 2026-11-25, at
+    /// SJL-15.2 stage 3, which added the groups; it read "Every semantics vector whose row is not in the adapter's list is
+    /// not implemented, and no answered one is".)</i>
     /// </summary>
     [Fact]
     public void Every_other_semantics_vector_is_not_implemented()
@@ -48,8 +54,10 @@ public class SemanticsAdapterTests
         Assert.All(LibraryRun.Run(others, library), static r => Assert.Equal(Verdict.NotImplemented, r.Verdict));
         Assert.All(LibraryRun.Run(Answered, library), static r => Assert.NotEqual(Verdict.NotImplemented, r.Verdict));
 
-        // A vector's row is its identifier's; a group that names none is never answered.
+        // A vector's row is its identifier's; a group that names none is answered only when it is one of the adapter's
+        // groups. (Revised 2026-11-25, at SJL-15.2 stage 3; it read "a group that names none is never answered".)
         Assert.All(others, static v => Assert.DoesNotContain(AlgorithmsLibrary.SemanticsRow(v) ?? "-", AlgorithmsLibrary.SemanticsAnsweredRows));
+        Assert.All(others, static v => Assert.DoesNotContain(AlgorithmsLibrary.SemanticsAnsweredGroups, g => g.Group == AlgorithmsLibrary.SemanticsGroup(v) && g.Operation == v["op"]));
         Assert.Contains(others, static v => AlgorithmsLibrary.SemanticsRow(v) is null);
         var input = LibraryRun.Inputs(Answered[0]);
         Assert.Equal(EmptyLibrary.NotImplemented, ((IVectorLibrary)library).Call(AlgorithmsLibrary.ScriptEvaluationOperation, input));
@@ -218,6 +226,51 @@ public class SemanticsAdapterTests
         Assert.NotEmpty(fields);
         Assert.Equal(fields, AlgorithmsLibrary.SemanticsAnsweredRows.Order(StringComparer.Ordinal));
         Assert.Equal(AlgorithmsLibrary.SemanticsAnsweredRows.Count, AlgorithmsLibrary.SemanticsAnsweredRows.Distinct(StringComparer.Ordinal).Count());
+    }
+
+    /// <summary>
+    /// The adapter's groups (D-js-adapter-groups): each has vectors, all of its operation and answered; every row a group
+    /// names is one of the adapter's rows; and every row each of its vectors' notes names is one of the group's, a check on
+    /// the corpus, not a dispatch. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
+    /// </summary>
+    [Fact]
+    public void Each_group_rests_on_answered_rows_that_its_vectors_notes_name()
+    {
+        Assert.NotEmpty(AlgorithmsLibrary.SemanticsAnsweredGroups);
+        foreach (var (group, operation, rows) in AlgorithmsLibrary.SemanticsAnsweredGroups)
+        {
+            Assert.NotEmpty(rows);
+            Assert.All(rows, static r => Assert.Contains(r, AlgorithmsLibrary.SemanticsAnsweredRows));
+            var vectors = SemanticsVectors.Where(v => AlgorithmsLibrary.SemanticsGroup(v) == group).ToList();
+            Assert.NotEmpty(vectors);
+            foreach (var vector in vectors)
+            {
+                Assert.Null(AlgorithmsLibrary.SemanticsRow(vector));
+                Assert.Equal(operation, vector["op"]);
+                Assert.Contains(vector, Answered);
+                var named = RowsNamed(vector["note"] ?? string.Empty);
+                Assert.NotEmpty(named);
+                Assert.All(named, r => Assert.Contains(r, rows));
+            }
+        }
+
+        // lb1, the vectors of hand-off H20, are answered and all acceptances.
+        var lb1 = Answered.Where(static v => AlgorithmsLibrary.SemanticsGroup(v) == "lb1").ToList();
+        Assert.NotEmpty(lb1);
+        Assert.All(LibraryRun.Run(lb1, new AlgorithmsLibrary()), static r => Assert.Equal(AlgorithmsLibrary.SyntaxAccepted, r.Rendered));
+    }
+
+    // The catalogue rows a note names, E[EAP] and four digits, in order.
+    private static List<string> RowsNamed(string note)
+    {
+        var rows = new List<string>();
+        for (var i = 0; i + 6 <= note.Length; i++)
+        {
+            if (note[i] == 'E' && note[i + 1] is 'E' or 'A' or 'P' && note.AsSpan(i + 2, 4).IndexOfAnyExceptInRange('0', '9') < 0)
+                rows.Add(note.Substring(i, 6));
+        }
+
+        return rows;
     }
 
     /// <summary>The counts, by operation, of the vectors answered and not implemented (a record for the stage's report).</summary>

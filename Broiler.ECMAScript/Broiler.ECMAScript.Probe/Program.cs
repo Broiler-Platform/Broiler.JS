@@ -139,6 +139,9 @@ internal static class Program
         // to stage 4c). From SJL-15.2 stage 2 the semantics vectors whose row the semantic model reports are the frontend's
         // too, through the runner's semantics adapter, judged at the parse (AlgorithmsLibrary.IsLibrarySemantics, counted on
         // a line of their own); every other semantics vector is not implemented. (Added 2026-11-25, at SJL-15.2 stage 2.)
+        // From stage 3 so are the vectors of the correspondence groups the model's rows decide (AlgorithmsLibrary's
+        // SemanticsAnsweredGroups, group lb1), on the same line. (Added 2026-11-25, at SJL-15.2 stage 3, the session's
+        // decision D-js-adapter-groups; until then a group that names no row was never answered.)
         var library = new AlgorithmsLibrary();
         var results = LibraryRun.Run(corpus.Records, library);
         var recorded = new int[5];

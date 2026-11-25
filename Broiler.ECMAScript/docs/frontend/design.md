@@ -635,11 +635,14 @@ are this repository's of 2026-11-24, recorded in `docs/roadmap/SharedLibraries.m
 (SJL-15)" (D-js-entry, D-js-default-off, D-js-instances, D-js-kinds, D-js-scope-shape, D-js-parameters,
 D-js-declaration-of, D-js-function-kind and D-js-names among them), and where this section differs from them or from the
 records that win (the header), it is corrected to match. Section 4 stays the sketch as restated at SJL-12.1. Stage 1 is
-the model's foundation; the members the sketch names beyond it (resolution, jump targets, private names, the module
-record, named evaluation, captures and the early errors) are its later stages', and none is declared before its stage.
-Stage 2 adds the early errors of the function context (section 10.4); the early errors of jump targets, private names
-and the module record stay their stages'. *(Revised 2026-11-25, at SJL-15.2 stage 2; the paragraph ended at "and none is
-declared before its stage".)*
+the model's foundation; the members the sketch names beyond it (resolution, private names, the module record, named
+evaluation, captures and the early errors) are its later stages', and none is declared before its stage. Stage 2 adds
+the early errors of the function context (section 10.4), and stage 3 the jump targets with their early errors (section
+10.5); the early errors of private names and the module record stay their stages'. *(Revised 2026-11-25, at SJL-15.2
+stage 2; the paragraph ended at "and none is declared before its stage".)* *(Revised 2026-11-25, at SJL-15.2 stage 3,
+when the jump targets landed; it read "(resolution, jump targets, private names, the module record, named evaluation,
+captures and the early errors)" and "Stage 2 adds the early errors of the function context (section 10.4); the early
+errors of jump targets, private names and the module record stay their stages'".)*
 
 ### 10.1 The entry
 
@@ -654,16 +657,18 @@ declared before its stage".)*
 
 | Sketch | The library's | What |
 |---|---|---|
-| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)` |
+| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)`; `TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)` (section 10.5) *(revised 2026-11-25, at SJL-15.2 stage 3; the cell ended at "`FactsOf(SyntaxNode)`")* |
 | `Scope` | The tables' `Scope`, the same instances | The model's `Scopes` are a superset of `DeclarationTables.Scopes` in the same relative order, adding the kinds `With`, `ClassBody`, `FunctionName` and `Parameters`. Eval code is not a kind: its program's scope is a `Script` scope and its facts' kind `FunctionKind.EvalCode`; the separate variable environment is a function fact of a later stage |
 | `Declaration` | The tables' `Declaration`, the same instances | `BindingKind` gains `Parameter`, `FunctionName` (a named function expression's own name) and `ClassName` (a class's inner name), each with its three flags false, and `Declaration.IsMutable`, from the kind |
 | `FunctionFacts` | The tables' `FunctionFacts`, the same instances | `Kind` (`FunctionKind`), `IsAsync`, `IsGenerator`, `HasSimpleParameterList` and `HasParameterExpressions`, the same on every request; the model's `Functions` add one for every static block and every field with an initialiser |
-| `IdentifierReference`, `BreakOrContinue`, `PrivateNameReference`, `Diagnostic` | `Identifier`, `BreakStatement` and `ContinueStatement`, `PrivateIdentifier`, `SyntaxDiagnostic` | The tree's types, at the stages that read them; `Resolution`, `LabelTarget`, `PrivateNameBinding` and `ModuleRecord` are new types of those stages |
+| `IdentifierReference`, `BreakOrContinue`, `PrivateNameReference`, `Diagnostic` | `Identifier`, `BreakStatement` and `ContinueStatement`, `PrivateIdentifier`, `SyntaxDiagnostic` | The tree's types, at the stages that read them; `LabelTarget` is stage 3's new type (section 10.5), and `Resolution`, `PrivateNameBinding` and `ModuleRecord` are new types of their stages *(revised 2026-11-25, at SJL-15.2 stage 3; it read "`Resolution`, `LabelTarget`, `PrivateNameBinding` and `ModuleRecord` are new types of those stages")* |
 
 Every collection is in source order: the scopes and the facts by the start of their node and, for one start, by the order
 the walk made them in, which puts a scope before the scopes inside it; every fact is keyed by node identity. A node
-that is not in the model's tree is a caller's error: `ScopeOf`, `DeclarationOf` and `FactsOf` throw
-`ArgumentException` for it, and `FactsOf` for a node of the tree that has no facts.
+that is not in the model's tree is a caller's error: `ScopeOf`, `DeclarationOf`, `FactsOf` and both `TargetOf`
+overloads throw `ArgumentException` for it, and `FactsOf` for a node of the tree that has no facts. *(Revised
+2026-11-25, at SJL-15.2 stage 3; it read "`ScopeOf`, `DeclarationOf` and `FactsOf` throw `ArgumentException` for
+it".)*
 
 ### 10.3 Scopes and `ScopeOf`
 
@@ -750,8 +755,80 @@ code itself declares `arguments`, where ContainsArguments reads every reference,
 refused (eval code in a field initialiser is strict, and a strict binding of `arguments` is refused).
 
 **The vectors.** The library-level adapter (`runners/AlgorithmsLibrary.Semantics.cs`) answers the `semantics` vectors
-whose identifier names a row in its own list, held equal to `SemanticRows` by a Conformance test, and reads them at the
-parse; the Native AOT probe judges those vectors at the parse on a line of its own.
+whose identifier names a row in its own list, held equal to `SemanticRows` by a Conformance test, and, from stage 3, the
+vectors of the correspondence groups in a second list of its own (section 10.5), and reads them at the parse; the Native
+AOT probe judges those vectors at the parse on a line of its own. *(Revised 2026-11-25, at SJL-15.2 stage 3; it read
+"whose identifier names a row in its own list, held equal to `SemanticRows` by a Conformance test, and reads them at the
+parse".)*
+
+### 10.5 Jump targets and labels
+
+*(Added 2026-11-25, at SJL-15.2 stage 3.)* Each jump's target, and the early errors of jump targets, as the library
+answers and reports them. Like the rest of this section it restates and decides nothing: the decisions are
+D-js-jump-targets, D-js-jump-rows and D-js-adapter-groups of 2026-11-25, in `docs/roadmap/SharedLibraries.md`'s section
+"Shared static semantics (SJL-15)".
+
+**`TargetOf` and `LabelTarget`.** `SemanticModel.TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)`, the
+sketch's `TargetOf(BreakOrContinue)` on the tree's two jump types (D-js-names), answer a `LabelTarget`, public and
+sealed, its constructor internal: `Statement`, the statement the jump leaves or continues, and `LabelSet`, that
+statement's own label set, the labels of the chain of `LabelledStatement`s directly over it, outermost first, empty
+when it has none.
+
+| Jump | `Statement` | `LabelSet` |
+|---|---|---|
+| `break;` | The innermost iteration statement or `switch` enclosing it within its function, static block or program | That statement's own |
+| `continue;` | The innermost iteration statement so enclosing it | Its own |
+| `continue L;` | The innermost such iteration statement whose own label set holds `L`, wherever `L` stands in it, so that `A: B: for (;;) continue A;` targets the `for` with [A, B] (hand-off H20, by the specification) | Its own |
+| `break L;` | The statement `L` labels, looked at through every further label on it: the labelled item, never the `LabelledStatement`, so that `A: B: { break A; }` targets the block with [A, B] and `L: break L;` the `break` itself with [L] | The labels directly over that item |
+
+The search reads the whole chain of enclosing statements, not only the first that carries the label. The answer is
+never null, where the sketch writes `LabelTarget?` (section 4): a model exists only for a source the early errors
+accept, and in one every jump has a target. One instance per target statement is shared by every jump that targets it,
+as the model is keyed by node identity. A node that is not in the model's tree is refused as `ScopeOf` refuses it.
+
+**The rows**, each in `SemanticRows`, reported with the member on at the jump, keyed at its offset, where both engines
+place a jump's refusal:
+
+| Rows | Fact | Owner | Argument |
+|---|---|---|---|
+| EE0058 (`continue` with no iteration statement), EE0059 (`break;` with no iteration statement or `switch`) | The statements the jump may leave or continue, up to the boundary | Any | None |
+| EE0081, EE0082 | ContainsUndefinedBreakTarget, ContainsUndefinedContinueTarget of a function body, every function's, arrows' included, and the dynamic function's body goal | Function | The label |
+| EE0136, EE0137 | The same of a class static block | Static block | The label |
+| EE0165, EE0166 | The same of a Script's statements, eval code's included | Script | The label |
+| EE0175, EE0176 | The same of a Module's items, moved here from stage 6 | Module | The label |
+
+The walk carries the jump state in its row context: the statements a jump may leave or continue, innermost first, with
+each one's label set, and the labels directly over the statement being visited. Every non-arrow function, the program,
+the dynamic goals, a field initialiser and a static block make a fresh row context, which resets it, and an arrow resets
+it itself: every function is a boundary. A labelled statement's item takes its label set from the labels over it: a
+further label, an iteration statement or a `switch` takes them over, and any other item is a statement a labelled
+`break` may leave.
+
+**One row per construct.** A labelled `continue` that no iteration statement encloses meets EE0058, whose productions
+include `continue LabelIdentifier ;`, and its owner's undefined-continue row; it reports the owner's row alone, as the
+catalogue's note on EE0058 reads it ("The `continue L` forms that name no iteration label are EE0082 and its
+siblings"), and as both engines make one refusal per jump. A `break` never meets two, since EE0059 covers `break ;`
+alone. The duplicate-label rows, `syntax` rows, stay at the label.
+
+**The order.** A jump's row is keyed at the jump, before its label's name row, which is keyed at the label: under first
+error `"use strict"; break yield;` answers EE0165 with the member on and the name row with it off. The one `syntax`
+place a jump's row can share is a scope's close, where the scope's declared-name conflicts are keyed, when a jump is
+written right after it (`{ let a; let a; }break;`): D11's sub-key, the second declaration's place, puts the conflict
+first.
+
+**The vectors.** The adapter answers the jump rows' vectors by their identifiers, and the vectors of group `lb1`, row
+LB1, by a second list of its own, the correspondence groups the model decides, each with the rows it rests on: `lb1` on
+EE0082 and EE0166, `ScriptEvaluation` only. Its vectors are the acceptances that show H20 read by the specification.
+
+**Where the library differs from each engine**, named for SJL-15.3, as `docs/roadmap/SharedLibraries.md` lists it: in
+what it refuses, H20 (`continue` to any label of an enclosing iteration statement's label set is accepted), against
+Broiler.VM's binder, which refuses `continue` to the outer label of a loop's label set, and the same as Broiler.JS since
+Broiler-Platform/Broiler.JS#1075; in the target's mapping, Broiler.VM's `JumpTarget` names the `LabelledStatement` for a
+`break` to any label not written directly on the loop or `switch` it labels, both a target that is no loop or `switch`
+and an outer label of a loop's or a `switch`'s label set (`A: B: while (1) break A;`), and carries only the label
+written directly on a loop or `switch`, where the library names the labelled item with its whole label set; in places,
+none known. The catalogue's notes on EE0166 and EE0176 read Broiler.JS as over-refusing `L1: L2: while (c) continue
+L1;`, which is stale since #1075.
 
 ## Corrections
 

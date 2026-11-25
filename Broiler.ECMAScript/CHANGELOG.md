@@ -615,6 +615,32 @@ Not yet packed under a version of its own: the stream's next version is set when
   answer the vectors of those rows, judged at the parse. No public member is added. No observable change: no published
   version carries the member, and with it off nothing moves.
 
+- `Broiler.ECMAScript.Frontend`: **the semantic model's jump targets and their early errors** (milestone SJL-15.2, stage
+  3; the decisions of 2026-11-25, D-js-jump-targets, D-js-jump-rows and D-js-adapter-groups, in
+  `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)"; design
+  [`docs/frontend/design.md`](docs/frontend/design.md), section 10.5). A minor change under convention 16, which no
+  published version carries: nothing is removed, and with the new request member off the parse answers as before, its
+  tree, side tables and diagnostics unchanged. It adds, as rule SL6's `PublicAPI.txt` lists them:
+  - `Broiler.ECMAScript.Semantics.SemanticModel.TargetOf(Broiler.ECMAScript.Syntax.BreakStatement) method Broiler.ECMAScript.Semantics.LabelTarget`
+    and `Broiler.ECMAScript.Semantics.SemanticModel.TargetOf(Broiler.ECMAScript.Syntax.ContinueStatement) method Broiler.ECMAScript.Semantics.LabelTarget`:
+    a jump's target, never null, one instance per target statement; a `continue` naming any label of an iteration
+    statement's label set targets that statement (hand-off H20, by the specification), and a labelled `break` the
+    labelled item, never the `LabelledStatement`. Each throws `ArgumentException` for a jump that is not the model's;
+  - `Broiler.ECMAScript.Semantics.LabelTarget sealed class`, its constructor internal, with
+    `Broiler.ECMAScript.Semantics.LabelTarget.get_Statement() method Broiler.ECMAScript.Syntax.Statement`, the statement
+    the jump leaves or continues, and
+    ``Broiler.ECMAScript.Semantics.LabelTarget.get_LabelSet() method System.Collections.Generic.IReadOnlyList`1<System.String>``,
+    that statement's own label set, outermost first.
+
+  With `ParseRequest.BuildSemanticModel` on, the parse also reports the jump rows, each at its jump: a `continue` or a
+  `break` with no enclosing target (EE0058, EE0059), and the undefined break and continue targets of a function body
+  (EE0081, EE0082), a static block (EE0136, EE0137), a Script and eval code (EE0165, EE0166) and a Module (EE0175,
+  EE0176), with the label as the undefined-label rows' argument; a labelled `continue` that no iteration statement
+  encloses reports its owner's row alone. The canonical dump's model section (`runners/SyntaxDump.cs`) writes each jump's
+  target, and the Native AOT probe and the conformance runner's library-level adapter answer the jump rows' vectors and
+  those of correspondence group `lb1`, judged at the parse. No observable change: no published version carries the
+  member, and with it off nothing moves.
+
 ### Changed
 
 - `Broiler.ECMAScript.Intl`'s `NumberFormatter`, over data that carries them (the owner's decision of 2026-11-08, "Keep + fix

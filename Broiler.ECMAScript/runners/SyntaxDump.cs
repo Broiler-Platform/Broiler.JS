@@ -28,6 +28,12 @@ namespace Broiler.ECMAScript.Runners;
 /// dumped as before, byte for byte; <see cref="Dump(ParseResult, bool)"/> leaves the section out on request, so that the
 /// model's tests can compare the rest of a dump with the model on and off (2026-11-24, SJL-15.2 stage 1).
 /// </para>
+/// <para>
+/// From SJL-15.2 stage 3 the model section also holds, after the nodes' lines, one line per <c>break</c> and
+/// <c>continue</c> in tree order: the jump, its target statement, and that statement's label set in order (decision
+/// D-js-part-g, so that the determinism runs compare this side table too). A parse without a model is dumped as before.
+/// <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
+/// </para>
 /// </remarks>
 internal static class SyntaxDump
 {
@@ -167,6 +173,27 @@ internal static class SyntaxDump
             text.Append("model-node ").Append(Number(i)).Append(' ').Append(Number(scopeIndex[model.ScopeOf(nodes[i])]));
             if (model.DeclarationOf(nodes[i]) is { } declaration)
                 text.Append(' ').Append(declarationIndex[declaration]);
+            text.Append('\n');
+        }
+
+        // Each jump's target, in tree order, by the nodes' own references (SJL-15.2 stage 3); never the model's map.
+        foreach (var node in nodes)
+        {
+            var target = node switch
+            {
+                BreakStatement jump => model.TargetOf(jump),
+                ContinueStatement jump => model.TargetOf(jump),
+                _ => null,
+            };
+            if (target is null)
+                continue;
+            text.Append("model-target ").Append(Reference(order, node)).Append(' ').Append(Reference(order, target.Statement));
+            foreach (var label in target.LabelSet)
+            {
+                text.Append(' ');
+                Escaped(text, label);
+            }
+
             text.Append('\n');
         }
     }

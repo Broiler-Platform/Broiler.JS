@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `hairs.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 3056 relevant units. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 3076 relevant units. `dotnet tool run hairs -- assurance check --root Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 170 |
-| Code units | 4777 |
-| Relevant | 3056 |
-| Exempt | 1721 |
-| Assessed | 3056 of 3056 (100%) |
-| Human reviewed | 0 of 3056 (0%) |
-| Unverified | 3056 |
+| Code units | 4807 |
+| Relevant | 3076 |
+| Exempt | 1731 |
+| Assessed | 3076 of 3076 (100%) |
+| Human reviewed | 0 of 3076 (0%) |
+| Unverified | 3076 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 3056 |
+| HUMAN_PENDING | 3076 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1721 |
+| EXEMPT | 1731 |
 
 ## 5. Aliases In The Tree
 
@@ -168,7 +168,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Conformance/VectorRun.cs` | 17 | 12 | 5 | 12 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorValidator.cs` | 25 | 21 | 4 | 21 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/DeclarationTables.cs` | 56 | 7 | 49 | 7 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Frontend/DeclarationsWalk.cs` | 170 | 107 | 63 | 107 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Frontend/DeclarationsWalk.cs` | 183 | 114 | 69 | 114 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/IRegularExpressionValidator.cs` | 17 | 7 | 10 | 7 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/InheritedContext.cs` | 9 | 3 | 6 | 3 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Frontend/ParseGoal.cs` | 11 | 2 | 9 | 2 | Low | Low | 0/0 |
@@ -182,8 +182,8 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Frontend/Parser.cs` | 77 | 42 | 35 | 42 | Low | High | 6/6 |
 | `Broiler.ECMAScript.Frontend/ProposalFlags.cs` | 11 | 2 | 9 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/Rows.cs` | 212 | 212 | 0 | 212 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Frontend/SemanticModel.cs` | 26 | 6 | 20 | 6 | Low | Medium | 0/0 |
-| `Broiler.ECMAScript.Frontend/SemanticRows.cs` | 38 | 38 | 0 | 38 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Frontend/SemanticModel.cs` | 33 | 9 | 24 | 9 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Frontend/SemanticRows.cs` | 48 | 48 | 0 | 48 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SourceText.cs` | 7 | 2 | 5 | 2 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxDiagnostic.cs` | 20 | 7 | 13 | 7 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Frontend/SyntaxParser.cs` | 18 | 9 | 9 | 9 | Low | High | 1/1 |
@@ -757,5 +757,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-1753 of the 3056 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+1773 of the 3076 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

@@ -10,11 +10,15 @@ using Xunit;
 namespace Broiler.ECMAScript.Syntax.Tests;
 
 /// <summary>
-/// The semantic model's early errors (SJL-15.2 stage 2; the session's decisions D-js-channel and D-js-semantic-rows): the
-/// rows of <see cref="SemanticRows"/>, reported only with <see cref="ParseRequest.BuildSemanticModel"/> on, through the
-/// declarations walk's one report and one sequence, in decision D11's order. Each row is refused on and accepted off, its
-/// nearest admitted variant accepted both ways; the places the rows are reported at; the tie of a <c>syntax</c> row with a
-/// <c>semantics</c> row at one place; and the partial walk before a grammar refusal.
+/// The semantic model's early errors (SJL-15.2 from stage 2; the session's decisions D-js-channel and D-js-semantic-rows,
+/// and from stage 3 D-js-jump-rows and D-js-jump-targets): the rows of <see cref="SemanticRows"/>, stage 2's of the
+/// function context and of expressions and stage 3's of jump targets, reported only with
+/// <see cref="ParseRequest.BuildSemanticModel"/> on, through the declarations walk's one report and one sequence, in
+/// decision D11's order. Each row is refused on and accepted off, its nearest admitted variant accepted both ways; the
+/// places the rows are reported at; the boundaries of jumps; the tie of a <c>syntax</c> row with a <c>semantics</c> row at
+/// one place; and the partial walk before a grammar refusal. <i>(Revised 2026-11-25, at SJL-15.2 stage 3; it read "(SJL-15.2
+/// stage 2; the session's decisions D-js-channel and D-js-semantic-rows): the rows of <see cref="SemanticRows"/>, reported
+/// only" and "the places the rows are reported at; the tie".)</i>
 /// </summary>
 public sealed class SemanticRowsTests
 {
@@ -178,6 +182,18 @@ public sealed class SemanticRowsTests
         // 2h: expressions.
         new("EE0018", "", "({ __proto__: 1, '__proto__': 2 });", "'__proto__'", 0, "__proto__", "", "({ __proto__: 1, ['__proto__']: 2 });"),
         new("EE0054", "", "for (this in {}) ;", "this", 0, "", "", "for (o.p in x) ;"),
+
+        // Stage 3: a jump with no target, at the jump (the refused sources and their twins the vectors' where one exists).
+        new("EE0058", "", "continue;", "continue", 0, "", "", "var n = 0; for (var i = 0; i < 3; i++) { if (i === 1) continue; n += i; } n"),
+        new("EE0059", "", "break;", "break", 0, "", "", "var r = 0; switch (1) { case 1: r = 5; break; case 2: r = 6; } r"),
+        new("EE0081", "", "L: { (function () { break L; }); }", "break", 0, "L", "", "function f() { L: { break L; } return 1; } f()"),
+        new("EE0082", "b", "continue L;", "continue", 0, "L", "b", "var n = 0; L: for (var i = 0; i < 3; i++) { n++; continue L; } return n;"),
+        new("EE0136", "", "L: { class C { static { break L; } } }", "break", 0, "L", "", "var r = 0; class C { static { L: { r = 1; break L; } } } r"),
+        new("EE0137", "", "L: do { class C { static { continue L; } } } while (0);", "continue", 0, "L", "", "var n = 0; class C { static { L: for (var i = 0; i < 2; i++) { n++; continue L; } } } n"),
+        new("EE0165", "", "break L;", "break", 0, "L", "", "var r = 0; L: { r = 2; break L; r = 3; } r"),
+        new("EE0166", "", "continue L;", "continue", 0, "L", "", "var n = 0; L: for (var i = 0; i < 3; i++) { if (i) continue L; n++; } n"),
+        new("EE0175", "m", "break L;", "break", 0, "L", "m", "L: { break L; }"),
+        new("EE0176", "m", "continue L;", "continue", 0, "L", "m", "L: for (;;) { continue L; }"),
     ];
 
     public static TheoryData<Fixture> FixtureData()
@@ -222,6 +238,23 @@ public sealed class SemanticRowsTests
 
         // A function expression that is an object literal's property value is no method (Broiler.JS admits it).
         { "EE0075", "", "var o = { run: function () { super.x = 1; } };" },
+
+        // Stage 3: the jumps' triggers, with the vectors' refused sources. (Added 2026-11-25, at SJL-15.2 stage 3.)
+        { "EE0058", "", "while (0) { (function () { continue; }); }" },
+        { "EE0058", "", "for (;;) { class C { static { continue; } } }" },
+        { "EE0058", "", "while (1) { (() => { continue; }); }" },
+        { "EE0058", "", "var r = 'ran'; try { (function () { continue; })(); } catch (e) { r = e.name; } r" },
+        { "EE0059", "", "do { (function () { break; }); } while (0);" },
+        { "EE0059", "", "switch (0) { case 0: class C { static { break; } } }" },
+        { "EE0081", "b", "break L;" },
+        { "EE0082", "", "L: do { (function () { continue L; }); } while (0);" },
+        { "EE0165", "", "L: { } break L;" },
+        { "EE0166", "", "L: { continue L; }" },
+        { "EE0166", "", "L: { while (c) continue L; }" },
+        { "EE0166", "", "while (1) { L: switch (1) { default: continue L; } }" },
+        { "EE0166", "", "A: { B: for (;;) continue A; }" },
+        { "EE0166", "e", "continue L;" },
+        { "EE0059", "e", "break;" },
     };
 
     // The nearest admitted variants of the dynamic goals and of each eval context: accepted on and off.
@@ -248,6 +281,27 @@ public sealed class SemanticRowsTests
         { "", "class C extends Object { constructor(a = super()) { super(); } }" },
         { "", "class C extends Object { static { super.x; } x = super.x; constructor() { super(); } }" },
         { "", "`${a}b${c}`; tag`x${y}`;" },
+
+        // Stage 3: the jumps' admitted variants, LB1 and hand-off H20 among them, read by the specification.
+        { "", "L: break L;" },
+        { "", "L: { break L; }" },
+        { "", "L: while (1) { M: { break L; } }" },
+        { "", "A: B: for (;;) continue A;" },
+        { "", "A: B: C: do { continue B; } while (0)" },
+        { "", "o: for (;;) { for (;;) { continue o; } }" },
+        { "", "A: { B: for (;;) continue B; }" },
+        { "", "A: while (1) { B: { continue A; } }" },
+        { "", "L1: L2: while (c) continue L1;" },
+        { "", "while (1) { L: { break; } }" },
+        { "", "while (1) { switch (0) { case 0: continue; } }" },
+        { "", "var n = 0; A: B: for (var i = 0; i < 2; i++) { n++; continue A; } n" },
+        { "", "function f() { var n = 0; A: B: for (var i = 0; i < 3; i++) { n++; continue A; } return n; } f()" },
+        { "", "var n = 0; A: B: C: do { n++; if (n < 3) continue B; } while (n < 5); n" },
+        { "", "var s = ''; o: for (var i = 0; i < 2; i++) { for (var j = 0; j < 2; j++) { if (j) continue o; s += i + '' + j; } } s" },
+        { "", "var n = 0; A: { B: for (var i = 0; i < 2; i++) { n++; continue B; } } n" },
+        { "m", "L: for (;;) { if (x) break L; continue L; } switch (0) { default: break; }" },
+        { "b", "L: for (;;) { continue L; } M: { break M; } while (0) break;" },
+        { "e", "L: for (;;) { continue L; }" },
     };
 
     [Theory]
@@ -410,6 +464,97 @@ public sealed class SemanticRowsTests
         Assert.Equal(new[] { (Code("EE0124"), Offset(twice, "super", 0)), (Code("EE0124"), Offset(twice, "super", 1)) }, Reported("all", twice));
     }
 
+    /// <summary>
+    /// The jumps' places and boundaries (SJL-15.2 stage 3): each row at its jump, with the label as the undefined-label rows'
+    /// argument; every function, arrows included, and every static block a boundary; the owner's row by the label set's
+    /// owner, a static block in a dynamic function's parameters included, and eval code a Script's owner whatever its
+    /// caller's context, since PerformEval parses a Script and eval code inherits no label; one row per construct; and the
+    /// whole chain of enclosing statements searched. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
+    /// </summary>
+    [Fact]
+    public void Each_jump_row_is_placed_at_its_jump_and_every_function_and_static_block_is_a_boundary()
+    {
+        (string Code, int Offset)[] At(string row, string text, string at, int nth = 0) => [(Code(row), Offset(text, at, nth))];
+        foreach (var (row, options, text, at) in new[]
+        {
+            ("EE0059", "", "while (0) { (() => { break; }); }", "break"),
+            ("EE0058", "", "while (1) { (() => { continue; }); }", "continue"),
+            ("EE0081", "", "L: { (() => { break L; }); }", "break"),
+            ("EE0082", "", "L: while (1) { class C { x = function () { continue L; }; } }", "continue"),
+            ("EE0136", "", "L: { class C { static { break L; } } }", "break"),
+            ("EE0165", "e", "break L;", "break"),
+            ("EE0165", "e if", "break L;", "break"),
+            ("EE0166", "e cf", "continue L;", "continue"),
+            ("EE0058", "e im", "continue;", "continue"),
+            ("EE0081", "b", "break L;", "break"),
+            ("EE0059", "p", "a = () => { break; }", "break"),
+            ("EE0081", "p", "a = () => { break L; }", "break"),
+            ("EE0136", "p", "a = class { static { break L; } }", "break"),
+            ("EE0175", "m", "break L;", "break"),
+            ("EE0176", "m", "continue L;", "continue"),
+            ("EE0059", "m", "break;", "break"),
+        })
+        {
+            Assert.Equal(At(row, text, at), Reported(options + " all", text));
+            var first = Parse(options, text).Diagnostics[0];
+            var expected = Row(row);
+            Assert.Equal((expected.Code, expected.MessageId), (first.Code, first.MessageId));
+            Assert.Equal(row is "EE0058" or "EE0059" ? Array.Empty<string>() : new[] { "L" }, first.Arguments);
+        }
+
+        // One row per construct: a labelled continue that no iteration statement encloses reports its owner's row alone.
+        foreach (var text in new[] { "continue L;", "L: { continue L; }", "while (1) { L: { continue L; } }" })
+            Assert.Equal(At("EE0166", text, "continue"), Reported("all", text));
+
+        // The whole chain is searched: the duplicate label's syntax row alone, no jump row.
+        foreach (var text in new[] { "A: A: while (1) continue A;", "A: while (1) { A: { continue A; } }" })
+            Assert.Equal(new[] { CodeOfSyntax("EE0164") }, Reported("all", text).Select(static r => r.Code));
+
+        // In source order under all errors; the first under first error.
+        var both = "break; continue;";
+        Assert.Equal(new[] { (Code("EE0059"), 0), (Code("EE0058"), Offset(both, "continue", 0)) }, Reported("all", both));
+        Assert.Equal(At("EE0059", both, "break"), Reported("", both));
+    }
+
+    /// <summary>
+    /// A jump's row precedes its label's name row, which is keyed at the label, later than the jump (decision D11): with
+    /// all errors both on and the name row alone off; with first error the jump's row on. <i>(Added 2026-11-25, at SJL-15.2
+    /// stage 3.)</i>
+    /// </summary>
+    [Fact]
+    public void A_jump_s_row_comes_before_its_label_s_name_row()
+    {
+        const string text = "\"use strict\"; break yield;";
+        var off = Parse("all", text, model: false);
+        Assert.Single(off.Diagnostics);
+        var name = off.Diagnostics[0];
+        Assert.Equal(Offset(text, "yield", 0), name.Span.Offset);
+        Assert.Equal(new[] { (Code("EE0165"), Offset(text, "break", 0)), (name.Code, name.Span.Offset) }, Reported("all", text));
+        Assert.Equal(new[] { Code("EE0165") }, Reported("", text).Select(static r => r.Code));
+        Assert.Equal(new[] { name.Code }, Parse("", text, model: false).Diagnostics.Select(static d => d.Code));
+    }
+
+    /// <summary>
+    /// The one <c>syntax</c> place a jump's row can share: a scope's declared-name conflicts are keyed at the scope's close,
+    /// which a jump written right after it starts at; D11's sub-key, the second declaration's place, which comes before the
+    /// jump, puts the conflict first, under all errors and under first error alike. <i>(Added 2026-11-25, at SJL-15.2
+    /// stage 3.)</i>
+    /// </summary>
+    [Theory]
+    [InlineData("{ let a; let a; }break;", "EE0059")]
+    [InlineData("for (let a;;) { var a; }break;", "EE0059")]
+    [InlineData("{ { let a; let a; }continue; }", "EE0058")]
+    public void A_scope_s_conflict_at_its_close_comes_before_a_jump_row_at_the_same_place(string text, string row)
+    {
+        var off = Parse("all", text, model: false);
+        Assert.Single(off.Diagnostics);
+        var conflict = off.Diagnostics[0];
+        var on = Parse("all", text).Diagnostics;
+        Assert.Equal(new[] { conflict.Code, Code(row) }, on.Select(static d => d.Code));
+        Assert.True(conflict.Span.Offset < on[1].Span.Offset);
+        Assert.Equal(new[] { conflict.Code }, Parse("", text).Diagnostics.Select(static d => d.Code));
+    }
+
     private static string CodeOfSyntax(string row) => ((LexicalRefusal)typeof(Rows).GetField(row, BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!).Code;
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -431,6 +576,10 @@ public sealed class SemanticRowsTests
     [InlineData("", "function f() { super(); } var g = () => super.x; class D extends Object { constructor() { super(); } } (", "EE0077 EE0162")]
     [InlineData("m", "super.x; (", "EE0172")]
     [InlineData("e cf", "arguments; (", "EA0005")]
+    [InlineData("", "break; (", "EE0059")]
+    [InlineData("b", "break L; (", "EE0081")]
+    [InlineData("m", "break L; (", "EE0175")]
+    [InlineData("", "L: while (1) { if (x) break L; continue L; } switch (0) { default: break; } M: { break M; } break; (", "EE0059")]
     public void The_partial_walk_reports_the_rows_before_a_grammar_refusal_with_the_member_on(string options, string text, string rows)
     {
         var codes = rows.Split(' ').Select(Code).ToArray();

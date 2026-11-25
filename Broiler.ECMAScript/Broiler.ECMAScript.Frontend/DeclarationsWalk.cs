@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   107
-// Annotated:        107/107
-// Exempt:           63
-// Human-reviewed:   0/107
+// Relevant units:   114
+// Annotated:        114/114
+// Exempt:           69
+// Human-reviewed:   0/114
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       107
+// Unverified:       114
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -42,7 +42,8 @@ namespace Broiler.ECMAScript.Semantics;
 /// <para>
 /// <b>The semantic model is built by this walk</b> (milestone SJL-15.2: "it does not start a second one"), when the request
 /// sets <see cref="ParseRequest.BuildSemanticModel"/>: the same visit, in the same order, also records each node's scope,
-/// each model scope's parent, the model's own scopes and its own facts, numbering them by a counter of its own, so that the
+/// each model scope's parent, the model's own scopes and its own facts, and, from stage 3, each jump's target
+/// <i>(added 2026-11-25, at SJL-15.2 stage 3)</i>, numbering them by a counter of its own, so that the
 /// walk's sequence, which orders the diagnostics and the tables, is the same on or off on every parse the member's on path
 /// accepts. Only <see cref="Run"/> builds it; a partial walk before a grammar refusal never does, but with the member on it
 /// reports the model's rows (below). <i>(Revised 2026-11-25, at SJL-15.2 stage 2, when the model's rows joined the
@@ -107,7 +108,8 @@ internal sealed class DeclarationsWalk
     private int sequence;
 
     // The semantic model's state, made only when the request asks for the model (SJL-15.2): its scopes and facts with the
-    // model's own sequence, the scope of every node, every model scope's parent, and the facts by node.
+    // model's own sequence, the scope of every node, every model scope's parent, and the facts by node; from stage 3, each
+    // jump's target. (Added 2026-11-25, at SJL-15.2 stage 3.)
     private readonly bool model;
     private readonly List<(int Start, int Sequence, Scope Scope)>? modelScopes;
     private readonly List<(int Start, int Sequence, FunctionFacts Facts)>? modelFunctions;
@@ -126,6 +128,9 @@ internal sealed class DeclarationsWalk
     // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=8237C1
     // Hairs-Human:        PENDING
     private readonly HashSet<SyntaxNode>? declaredClasses;
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ContainsUndefinedBreakTarget ContainsUndefinedContinueTarget LabelledEvaluation, JSD-0080 jump targets; IP=Low; Security=Medium; Resources=1; Fingerprint=10963D
+    // Hairs-Human:        PENDING
+    private readonly Dictionary<SyntaxNode, LabelTarget>? targetOf;
     private int modelSequence;
 
     // Each class constructor's kind, on every request (the functions' facts are the same with the model on or off).
@@ -141,7 +146,7 @@ internal sealed class DeclarationsWalk
     // Hairs-Human:        PENDING
     private readonly HashSet<SyntaxNode>? argumentsReported;
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=007C8E
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=7FF2C0
     // Hairs-Human:        PENDING
     private DeclarationsWalk(ParseRequest request, bool buildModel, bool semantics)
     {
@@ -158,6 +163,7 @@ internal sealed class DeclarationsWalk
             factsOf = new(ReferenceEqualityComparer.Instance);
             ifClauseScopes = new(ReferenceEqualityComparer.Instance);
             declaredClasses = new(ReferenceEqualityComparer.Instance);
+            targetOf = new(ReferenceEqualityComparer.Instance);
         }
 
         this.semantics = semantics;
@@ -289,7 +295,7 @@ internal sealed class DeclarationsWalk
     /// sequence; each declaration by its node, the tables' first, so that a class declaration's name answers its outer
     /// declaration (the session's decision D-js-declaration-of).
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=91A074
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=CADE39
     // Hairs-Human:        PENDING
     private SemanticModel Model(Scope[] tableScopes)
     {
@@ -315,7 +321,7 @@ internal sealed class DeclarationsWalk
                 declarationOf.TryAdd(declaration.Node, declaration);
         }
 
-        return new SemanticModel(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), scopeOf!, parentOf!, declarationOf, factsOf!);
+        return new SemanticModel(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), scopeOf!, parentOf!, declarationOf, factsOf!, targetOf!);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -686,7 +692,7 @@ internal sealed class DeclarationsWalk
     // The visit: each node's own rules, then its children under their context, pushed in reverse so that they are
     // visited in source order.
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=33362A
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=F12E47
     // Hairs-Human:        PENDING
     private void Visit(SyntaxNode node, Context context)
     {
@@ -810,11 +816,11 @@ internal sealed class DeclarationsWalk
                 return;
             case WhileStatement @while:
                 CheckLabelledFunctionBody(@while.Body, Rows.EE0049);
-                PushChildren(node, context);
+                PushChildren(node, semantics ? Inside(context, BreakableKind.Iteration, @while) : context);
                 return;
             case DoWhileStatement doWhile:
                 CheckLabelledFunctionBody(doWhile.Body, Rows.EE0048);
-                PushChildren(node, context);
+                PushChildren(node, semantics ? Inside(context, BreakableKind.Iteration, doWhile) : context);
                 return;
             case WithStatement with:
                 if (context.Strict)
@@ -836,15 +842,24 @@ internal sealed class DeclarationsWalk
             case LabelledStatement labelled:
                 VisitLabelled(labelled, context);
                 return;
-            case BreakStatement { Label: { } breakLabel }:
+            case BreakStatement { Label: { } breakLabel } labelledBreak:
                 CheckName(breakLabel.Name, breakLabel.IsEscaped, breakLabel, NameUse.Label, context);
                 if (model)
                     RecordSubtree(breakLabel, context.ModelScope!);
+
+                // The model's row and fact (SJL-15.2 stage 3): the statement the label names, or the undefined target's row.
+                if (semantics)
+                    CheckJump(labelledBreak, breakLabel.Name, continues: false, context);
                 return;
-            case ContinueStatement { Label: { } continueLabel }:
+            case ContinueStatement { Label: { } continueLabel } labelledContinue:
                 CheckName(continueLabel.Name, continueLabel.IsEscaped, continueLabel, NameUse.Label, context);
                 if (model)
                     RecordSubtree(continueLabel, context.ModelScope!);
+
+                // The model's row and fact (SJL-15.2 stage 3): the iteration statement whose label set holds the label, or
+                // the undefined target's row.
+                if (semantics)
+                    CheckJump(labelledContinue, continueLabel.Name, continues: true, context);
                 return;
             case CatchClause @catch:
                 VisitCatch(@catch, context);
@@ -886,6 +901,19 @@ internal sealed class DeclarationsWalk
                 return;
             case ObjectLiteral literal when semantics:
                 CheckProtoEntries(literal);
+                PushChildren(node, context);
+                return;
+
+            // The model's rows and fact (SJL-15.2 stage 3), at the jump Broiler.VM's binder names: an unlabelled break's
+            // innermost iteration statement or switch (EE0059 where none encloses it), an unlabelled continue's innermost
+            // iteration statement (EE0058). The labelled jumps are the cases above. With the member off these fall to the
+            // default, as before.
+            case BreakStatement unlabelledBreak when semantics:
+                CheckJump(unlabelledBreak, null, continues: false, context);
+                PushChildren(node, context);
+                return;
+            case ContinueStatement unlabelledContinue when semantics:
+                CheckJump(unlabelledContinue, null, continues: true, context);
                 PushChildren(node, context);
                 return;
             default:
@@ -1021,7 +1049,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Functions (clauses 15.1 to 15.9).
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=11045B
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=5D6E14
     // Hairs-Human:        PENDING
     private void VisitFunction(FunctionNode function, Context outer)
     {
@@ -1117,8 +1145,9 @@ internal sealed class DeclarationsWalk
             LabelOwner = LabelOwner.Function,
             ModelScope = parameterScope,
 
-            // The model's rows: an arrow's parameters and body are its enclosing code's for Contains and ContainsArguments.
-            Semantic = isArrow ? outer.Semantic : semantics ? FunctionSemantic(function, shape, inBody: false) : null,
+            // The model's rows: an arrow's parameters and body are its enclosing code's for Contains and ContainsArguments,
+            // but, as every function's, a boundary for jumps (added 2026-11-25, at SJL-15.2 stage 3).
+            Semantic = isArrow ? (semantics ? outer.Semantic! with { Breakables = null, CurrentLabels = null } : null) : semantics ? FunctionSemantic(function, shape, inBody: false) : null,
         };
         var bodyContext = parameterContext with
         {
@@ -1126,7 +1155,7 @@ internal sealed class DeclarationsWalk
             Await = function.IsAsync,
             ParamsOf = null,
             ModelScope = model ? bodyScope : null,
-            Semantic = isArrow ? outer.Semantic : semantics ? FunctionSemantic(function, shape, inBody: true) : null,
+            Semantic = isArrow ? (semantics ? outer.Semantic! with { Breakables = null, CurrentLabels = null } : null) : semantics ? FunctionSemantic(function, shape, inBody: true) : null,
         };
 
         Push(function.ExpressionBody, bodyContext);
@@ -1775,7 +1804,7 @@ internal sealed class DeclarationsWalk
         return scope;
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=F19170
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=F44922
     // Hairs-Human:        PENDING
     private void VisitSwitch(SwitchStatement @switch, Context context)
     {
@@ -1791,12 +1820,14 @@ internal sealed class DeclarationsWalk
         {
             // The model's: the cases in the CaseBlock's scope, the discriminant outside it (clause 14.12.4).
             var caseContext = context with { ModelScope = switchScope };
+            if (semantics)
+                caseContext = Inside(caseContext, BreakableKind.Switch, @switch);
             PushAll(@switch.Cases, caseContext);
             Push(@switch.Discriminant, context);
         }
         else
         {
-            PushChildren(@switch, context);
+            PushChildren(@switch, semantics ? Inside(context, BreakableKind.Switch, @switch) : context);
         }
     }
 
@@ -1862,7 +1893,7 @@ internal sealed class DeclarationsWalk
         }
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=884771
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=FF94BD
     // Hairs-Human:        PENDING
     private void VisitFor(ForStatement @for, Context context)
     {
@@ -1878,10 +1909,13 @@ internal sealed class DeclarationsWalk
         }
 
         CheckLabelledFunctionBody(@for.Body, Rows.EE0050);
-        PushChildren(@for, model && forScope is not null ? context with { ModelScope = forScope } : context);
+        var forContext = model && forScope is not null ? context with { ModelScope = forScope } : context;
+        if (semantics)
+            forContext = Inside(forContext, BreakableKind.Iteration, @for);
+        PushChildren(@for, forContext);
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=91D46B
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=629473
     // Hairs-Human:        PENDING
     private void VisitForInOf(Statement statement, SyntaxNode left, Statement body, Context context)
     {
@@ -1913,6 +1947,9 @@ internal sealed class DeclarationsWalk
                 Record(head, forScope);
             }
 
+            if (semantics)
+                inner = Inside(inner, BreakableKind.Iteration, statement);
+
             children.Clear();
             statement.AddChildren(children);
             for (var i = children.Count - 1; i >= 0; i--)
@@ -1925,7 +1962,7 @@ internal sealed class DeclarationsWalk
         }
         else
         {
-            PushChildren(statement, context);
+            PushChildren(statement, semantics ? Inside(context, BreakableKind.Iteration, statement) : context);
         }
 
         CheckLabelledFunctionBody(body, Rows.EE0052);
@@ -1974,7 +2011,7 @@ internal sealed class DeclarationsWalk
             Report(row, function, "function");
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=A9D147
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=AAE59A
     // Hairs-Human:        PENDING
     private void VisitLabelled(LabelledStatement labelled, Context context)
     {
@@ -2001,7 +2038,126 @@ internal sealed class DeclarationsWalk
         // A labelled function declaration in strict code, or where Annex B.3.1 does not apply (EE0064).
         if (labelled.Body is FunctionDeclaration function && (context.Strict || !annexB))
             Report(Rows.EE0064, function, "function");
-        Push(labelled.Body, context with { Labels = new LabelSet(name, context.Labels) });
+
+        // The model's (SJL-15.2 stage 3): the label joins the label set of the item it labels, which a further label, a
+        // loop or a switch takes over, and which any other item carries as a statement a break may leave.
+        var bodyContext = context with { Labels = new LabelSet(name, context.Labels) };
+        if (semantics)
+            bodyContext = LabelledItem(bodyContext, labelled.Body, new LabelSet(name, context.Semantic!.CurrentLabels));
+        Push(labelled.Body, bodyContext);
+    }
+
+    /// <summary>
+    /// The context of a labelled statement's item (SJL-15.2 stage 3; LabelledEvaluation's labelSet): a further label, an
+    /// iteration statement or a <c>switch</c> takes <paramref name="labels"/> as the label set it is labelled by; any other
+    /// item is a statement a <c>break</c> naming one of them leaves, with that label set.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 LabelledEvaluation labelSet, ContainsUndefinedBreakTarget, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=29F8F7
+    // Hairs-Human:        PENDING
+    private Context LabelledItem(Context context, Statement item, LabelSet labels)
+    {
+        var semantic = context.Semantic!;
+        if (item is LabelledStatement or WhileStatement or DoWhileStatement or ForStatement or ForInStatement or ForOfStatement or SwitchStatement)
+            return context with { Semantic = semantic with { CurrentLabels = labels } };
+        return context with
+        {
+            Semantic = semantic with
+            {
+                Breakables = new Breakable(BreakableKind.Labelled, item, labels, TargetFor(item, labels), semantic.Breakables),
+                CurrentLabels = null,
+            },
+        };
+    }
+
+    /// <summary>
+    /// The context of an iteration statement's or a <c>switch</c>'s children (SJL-15.2 stage 3): the statement joins the
+    /// statements a jump there may leave or continue, with the labels directly over it, which it takes from the context.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14.8.1 s14.9.1 ContainsUndefinedBreakTarget ContainsUndefinedContinueTarget LabelledEvaluation, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=2A82C5
+    // Hairs-Human:        PENDING
+    private Context Inside(Context context, BreakableKind kind, Statement statement)
+    {
+        var semantic = context.Semantic!;
+        var labels = semantic.CurrentLabels;
+        return context with
+        {
+            Semantic = semantic with
+            {
+                Breakables = new Breakable(kind, statement, labels, TargetFor(statement, labels), semantic.Breakables),
+                CurrentLabels = null,
+            },
+        };
+    }
+
+    /// <summary>A statement's target, with its own label set outermost first; the model's alone, null without it.</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 LabelledEvaluation labelSet, JSD-0080 jump targets; IP=Low; Security=Low; Resources=1; Fingerprint=BC2F75
+    // Hairs-Human:        PENDING
+    private LabelTarget? TargetFor(Statement statement, LabelSet? labels)
+    {
+        if (!model)
+            return null;
+        var count = 0;
+        for (var set = labels; set is not null; set = set.Next)
+            count++;
+        var names = new string[count];
+        for (var set = labels; set is not null; set = set.Next)
+            names[--count] = set.Name;
+        return new LabelTarget(statement, Array.AsReadOnly(names));
+    }
+
+    /// <summary>
+    /// A jump's target, or its row (SJL-15.2 stage 3): the innermost of the statements it may leave or continue - for an
+    /// unlabelled <c>break</c> an iteration statement or a <c>switch</c>, for an unlabelled <c>continue</c> an iteration
+    /// statement, for <c>break L</c> any statement whose label set holds <c>L</c>, for <c>continue L</c> an iteration
+    /// statement whose label set holds it, wherever it stands in the set - recorded as the jump's target with the model on;
+    /// with none, EE0059 or EE0058 for an unlabelled jump, and for a labelled one the undefined target's row of the label
+    /// set's owner, with the label as its argument, at the jump. A labelled <c>continue</c> that no iteration statement
+    /// encloses reports its owner's row alone (the session's decision D-js-jump-rows: one row per construct).
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14.8.1 s14.9.1 s15.2.1 s15.7.1 s16.1.1 s16.2.1.1 ContainsUndefinedBreakTarget ContainsUndefinedContinueTarget, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=5DFB7C
+    // Hairs-Human:        PENDING
+    private void CheckJump(Statement jump, string? label, bool continues, Context context)
+    {
+        for (var entry = context.Semantic!.Breakables; entry is not null; entry = entry.Outer)
+        {
+            var matches = label is null
+                ? entry.Kind == BreakableKind.Iteration || (!continues && entry.Kind == BreakableKind.Switch)
+                : (!continues || entry.Kind == BreakableKind.Iteration) && Holds(entry.Labels, label);
+            if (!matches)
+                continue;
+            if (model)
+                targetOf![jump] = entry.Target!;
+            return;
+        }
+
+        if (label is null)
+        {
+            Report(continues ? SemanticRows.EE0058 : SemanticRows.EE0059, jump);
+            return;
+        }
+
+        var row = context.LabelOwner switch
+        {
+            LabelOwner.Module => continues ? SemanticRows.EE0176 : SemanticRows.EE0175,
+            LabelOwner.StaticBlock => continues ? SemanticRows.EE0137 : SemanticRows.EE0136,
+            LabelOwner.Function => continues ? SemanticRows.EE0082 : SemanticRows.EE0081,
+            _ => continues ? SemanticRows.EE0166 : SemanticRows.EE0165,
+        };
+        Report(row, jump, label);
+    }
+
+    /// <summary>Whether a label set holds a label.</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 LabelledEvaluation labelSet; IP=Low; Security=Low; Resources=0; Fingerprint=A93A4E
+    // Hairs-Human:        PENDING
+    private static bool Holds(LabelSet? labels, string label)
+    {
+        for (var set = labels; set is not null; set = set.Next)
+        {
+            if (set.Name == label)
+                return true;
+        }
+
+        return false;
     }
 
     // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=1C89D0
@@ -2540,11 +2696,39 @@ internal sealed class DeclarationsWalk
     /// <summary>
     /// What the model's rows read where a node stands (SJL-15.2 stage 2): the row a SuperProperty breaks there, or null
     /// where one is admitted; the same for a SuperCall; and the ContainsArguments anchors that enclose the place, innermost
-    /// first, or null where none does.
+    /// first, or null where none does. From stage 3, also the statements a jump there may leave or continue and the labels
+    /// directly over the statement being visited, members that are not positional, so that every place that makes a fresh
+    /// one (the program, the dynamic goals, every function but an arrow, a field initialiser, a static block) resets them,
+    /// and an arrow resets them itself. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Contains SuperProperty SuperCall, s15.7.1 ContainsArguments, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=D81EA6
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Contains SuperProperty SuperCall, s15.7.1 ContainsArguments, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=EEAC7A
     // Hairs-Human:        PENDING
-    private sealed record SemanticContext(LexicalRefusal? SuperPropertyRow, LexicalRefusal? SuperCallRow, ArgumentsAnchors? Arguments);
+    private sealed record SemanticContext(LexicalRefusal? SuperPropertyRow, LexicalRefusal? SuperCallRow, ArgumentsAnchors? Arguments)
+    {
+        /// <summary>The statements a jump here may leave or continue, innermost first, up to the boundary; null at a boundary.</summary>
+        public Breakable? Breakables { get; init; }
+
+        /// <summary>The labels directly over the statement being visited (LabelledEvaluation's labelSet), innermost first; null elsewhere.</summary>
+        public LabelSet? CurrentLabels { get; init; }
+    }
+
+    /// <summary>What a statement a jump may leave or continue is (SJL-15.2 stage 3).</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14.8.1 s14.9.1 ContainsUndefinedBreakTarget ContainsUndefinedContinueTarget, SJL-15.2 semantics rows; IP=Low; Security=Low; Resources=0; Fingerprint=C9EF45
+    // Hairs-Human:        PENDING
+    private enum BreakableKind
+    {
+        Iteration,
+        Switch,
+        Labelled,
+    }
+
+    /// <summary>
+    /// A statement a jump may leave or continue (SJL-15.2 stage 3): its kind, the statement, its own label set innermost
+    /// first (null when it has none), its target with the model on (null without it), and the one enclosing it.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ContainsUndefinedBreakTarget ContainsUndefinedContinueTarget LabelledEvaluation, SJL-15.2 semantics rows; IP=Low; Security=Low; Resources=0; Fingerprint=4FD15B
+    // Hairs-Human:        PENDING
+    private sealed record Breakable(BreakableKind Kind, Statement Statement, LabelSet? Labels, LabelTarget? Target, Breakable? Outer);
 
     /// <summary>
     /// A ContainsArguments anchor: its row, the <c>FieldDefinition</c> or <c>StaticBlock</c> it is reported at, or null for
