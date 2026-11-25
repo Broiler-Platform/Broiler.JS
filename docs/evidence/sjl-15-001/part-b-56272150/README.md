@@ -63,8 +63,11 @@ first parents, so it ran byte-unchanged; the manifest `conformance/parse/corpus.
     report's end line: [`identity/rows-c.txt`](identity/rows-c.txt) (P's and K's outcome, exception type and message)
     and [`identity/rows-d1.txt`](identity/rows-d1.txt) (per input and variant, P's outcome and both dumps' hashes).
   - [`scripts/completeness.py`](scripts/completeness.py): each of the four reports holds exactly the manifest's inputs
-    and variants, at P and K or once for the dumps, with its end line, and its outcomes counted, so that a run that read
-    no input would show ([`identity/completeness.txt`](identity/completeness.txt)).
+    and variants, twice each in the default mode or once for the dumps, with its end line, and its outcomes counted, so
+    that a run that read no input would show ([`identity/completeness.txt`](identity/completeness.txt)). It counts each
+    input and variant's rows but does not read which entry points they name; that the two are P and K is
+    `compare_parse_corpus.py`'s check above, which refuses a row that appears twice and runs missing any input and
+    variant at P or at K, and compared both runs' 213,926 rows with rc 0.
   - [`identity/model-private.txt`](identity/model-private.txt): why the lines stage 4 adds to the model section of the
     library's canonical dump, and the private names the declarations walk now reads from a request, cannot reach this
     tool's `--dump` output, read by read-only git with each command's output.
@@ -84,14 +87,15 @@ SHA-256 (`reports.sha256.txt`). Each report's header is the tool's own record of
 and rows, the order, one thread and its stack, the environment (`TZ=UTC`, `LANG`, `LC_*` and `BROILER_*` unset), the
 invariant culture, the time zone `UTC`, the runtime, the system, the processors, and each engine assembly's name,
 version and module version id. [`logs/`](logs/runs.tsv) holds the stage's logs: the checks of the default branch logged
-during the stage up to the retention (`main-checks.log`, with its own note on the times of the merge, the push runs and
-the checks), the gate's log, the outer commands and runs, and the stage's notes (`notes.log`).
+during the stage up to the retention and at the review's fixes (`main-checks.log`, with its own notes on the times of
+the merge, the push runs and the checks), the gate's log, the outer commands and runs, and the stage's notes (`notes.log`).
 
 ## What the runs say
 
 - **Both runs are complete.** At each commit the default mode reports every input and variant of the manifest at P and
   K and the dump mode every input and variant once, each report ending with its end line; the outcomes are counted the
-  same at both commits ([`identity/completeness.txt`](identity/completeness.txt)).
+  same at both commits ([`identity/completeness.txt`](identity/completeness.txt); for P and K,
+  [`identity/acceptance.txt`](identity/acceptance.txt)).
 - **They are identical in every field.** `compare_parse_corpus.py acceptance` finds no difference, with nothing to
   admit; `identity.py` finds every row line of both modes the same bytes in the same order ([`identity/`](identity/)).
 - **The dumps are unchanged by stage 4's private-name lines.** Stage 4 adds `model-private-environment`,
@@ -145,7 +149,13 @@ the checks), the gate's log, the outer commands and runs, and the stage's notes 
   21:53:38Z and ci.yml's at 22:06:37Z (each record's `updated_at`); the checks at 21:56:59Z, 21:57:53Z and 22:03:54Z,
   while ci.yml's run was still in progress, and the check at 22:09:53Z, after both had concluded, each find the default
   branch at `56272150`, and a ref that is not force-pushed cannot come back to a commit it has left; every later check
-  up to the retention finds it there still.
+  up to the retention finds it there still. No check is logged under its own label before the CI import (the CI read
+  at 22:10:41Z-22:10:48Z and the artifacts' downloads at 22:11:03Z-22:11:10Z, [`ci/commands.txt`](ci/commands.txt)):
+  the check at 22:09:53Z, logged before the comparison and after both runs had concluded, stands for it, and the next,
+  at 22:12:11Z before the retention, finds the default branch at `56272150` still. That both runs had concluded at
+  22:09:53Z rests on a status read taken between 22:09:38Z and 22:09:53Z, whose output was not kept and which was
+  written into `logs/notes.log` at 22:12:11Z, and on each run record's `updated_at`, which the imported
+  [`ci/run-45707436823.json`](ci/run-45707436823.json) and [`ci/run-45707437312.json`](ci/run-45707437312.json) hold.
 
 ## The method's notes
 
