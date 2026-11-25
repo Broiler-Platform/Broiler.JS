@@ -635,14 +635,18 @@ are this repository's of 2026-11-24, recorded in `docs/roadmap/SharedLibraries.m
 (SJL-15)" (D-js-entry, D-js-default-off, D-js-instances, D-js-kinds, D-js-scope-shape, D-js-parameters,
 D-js-declaration-of, D-js-function-kind and D-js-names among them), and where this section differs from them or from the
 records that win (the header), it is corrected to match. Section 4 stays the sketch as restated at SJL-12.1. Stage 1 is
-the model's foundation; the members the sketch names beyond it (resolution, private names, the module record, named
-evaluation, captures and the early errors) are its later stages', and none is declared before its stage. Stage 2 adds
-the early errors of the function context (section 10.4), and stage 3 the jump targets with their early errors (section
-10.5); the early errors of private names and the module record stay their stages'. *(Revised 2026-11-25, at SJL-15.2
+the model's foundation; the members the sketch names beyond it (resolution, the module record, named evaluation,
+captures and the early errors) are its later stages', and none is declared before its stage. Stage 2 adds the early
+errors of the function context (section 10.4), stage 3 the jump targets with their early errors (section 10.5), and
+stage 4 the private-name environments with their early errors (section 10.6); the early errors of the module record stay
+their stage's. *(Revised 2026-11-25, at SJL-15.2
 stage 2; the paragraph ended at "and none is declared before its stage".)* *(Revised 2026-11-25, at SJL-15.2 stage 3,
 when the jump targets landed; it read "(resolution, jump targets, private names, the module record, named evaluation,
 captures and the early errors)" and "Stage 2 adds the early errors of the function context (section 10.4); the early
-errors of jump targets, private names and the module record stay their stages'".)*
+errors of jump targets, private names and the module record stay their stages'".)* *(Revised 2026-11-25, at SJL-15.2
+stage 4, when the private-name environments landed; it read "(resolution, private names, the module record, named
+evaluation, captures and the early errors)" and "and stage 3 the jump targets with their early errors (section 10.5); the
+early errors of private names and the module record stay their stages'".)*
 
 ### 10.1 The entry
 
@@ -657,18 +661,20 @@ errors of jump targets, private names and the module record stay their stages'".
 
 | Sketch | The library's | What |
 |---|---|---|
-| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)`; `TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)` (section 10.5) *(revised 2026-11-25, at SJL-15.2 stage 3; the cell ended at "`FactsOf(SyntaxNode)`")* |
+| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)`; `TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)` (section 10.5); `PrivateEnvironmentOf(ClassNode)` and `Resolve(PrivateIdentifier)` (section 10.6) *(revised 2026-11-25, at SJL-15.2 stage 3; the cell ended at "`FactsOf(SyntaxNode)`")* *(revised 2026-11-25, at SJL-15.2 stage 4; the cell ended at "`TargetOf(ContinueStatement)` (section 10.5)")* |
 | `Scope` | The tables' `Scope`, the same instances | The model's `Scopes` are a superset of `DeclarationTables.Scopes` in the same relative order, adding the kinds `With`, `ClassBody`, `FunctionName` and `Parameters`. Eval code is not a kind: its program's scope is a `Script` scope and its facts' kind `FunctionKind.EvalCode`; the separate variable environment is a function fact of a later stage |
 | `Declaration` | The tables' `Declaration`, the same instances | `BindingKind` gains `Parameter`, `FunctionName` (a named function expression's own name) and `ClassName` (a class's inner name), each with its three flags false, and `Declaration.IsMutable`, from the kind |
 | `FunctionFacts` | The tables' `FunctionFacts`, the same instances | `Kind` (`FunctionKind`), `IsAsync`, `IsGenerator`, `HasSimpleParameterList` and `HasParameterExpressions`, the same on every request; the model's `Functions` add one for every static block and every field with an initialiser |
-| `IdentifierReference`, `BreakOrContinue`, `PrivateNameReference`, `Diagnostic` | `Identifier`, `BreakStatement` and `ContinueStatement`, `PrivateIdentifier`, `SyntaxDiagnostic` | The tree's types, at the stages that read them; `LabelTarget` is stage 3's new type (section 10.5), and `Resolution`, `PrivateNameBinding` and `ModuleRecord` are new types of their stages *(revised 2026-11-25, at SJL-15.2 stage 3; it read "`Resolution`, `LabelTarget`, `PrivateNameBinding` and `ModuleRecord` are new types of those stages")* |
+| `IdentifierReference`, `BreakOrContinue`, `PrivateNameReference`, `Diagnostic` | `Identifier`, `BreakStatement` and `ContinueStatement`, `PrivateIdentifier`, `SyntaxDiagnostic` | The tree's types, at the stages that read them; `LabelTarget` is stage 3's new type (section 10.5), `PrivateNameBinding`, with `PrivateEnvironment` and `PrivateNameKind`, stage 4's (section 10.6), and `Resolution` and `ModuleRecord` are new types of their stages *(revised 2026-11-25, at SJL-15.2 stage 3; it read "`Resolution`, `LabelTarget`, `PrivateNameBinding` and `ModuleRecord` are new types of those stages")* *(revised 2026-11-25, at SJL-15.2 stage 4; it read "and `Resolution`, `PrivateNameBinding` and `ModuleRecord` are new types of their stages")* |
 
 Every collection is in source order: the scopes and the facts by the start of their node and, for one start, by the order
 the walk made them in, which puts a scope before the scopes inside it; every fact is keyed by node identity. A node
-that is not in the model's tree is a caller's error: `ScopeOf`, `DeclarationOf`, `FactsOf` and both `TargetOf`
-overloads throw `ArgumentException` for it, and `FactsOf` for a node of the tree that has no facts. *(Revised
+that is not in the model's tree is a caller's error: `ScopeOf`, `DeclarationOf`, `FactsOf`, both `TargetOf`
+overloads, `PrivateEnvironmentOf` and `Resolve(PrivateIdentifier)` throw `ArgumentException` for it, and `FactsOf` for a
+node of the tree that has no facts. *(Revised
 2026-11-25, at SJL-15.2 stage 3; it read "`ScopeOf`, `DeclarationOf` and `FactsOf` throw `ArgumentException` for
-it".)*
+it".)* *(Revised 2026-11-25, at SJL-15.2 stage 4; it read "`ScopeOf`, `DeclarationOf`, `FactsOf` and both `TargetOf`
+overloads throw".)*
 
 ### 10.3 Scopes and `ScopeOf`
 
@@ -829,6 +835,85 @@ and an outer label of a loop's or a `switch`'s label set (`A: B: while (1) break
 written directly on a loop or `switch`, where the library names the labelled item with its whole label set; in places,
 none known. The catalogue's notes on EE0166 and EE0176 read Broiler.JS as over-refusing `L1: L2: while (c) continue
 L1;`, which is stale since #1075.
+
+### 10.6 Private names
+
+*(Added 2026-11-25, at SJL-15.2 stage 4.)* Each class's private environment, each private name's binding, and the early
+errors of private names, as the library answers and reports them. Like the rest of this section it restates and decides
+nothing: the decisions are D-js-private-environments, D-js-private-rows and D-js-adapter-visible-names of 2026-11-25, in
+`docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)".
+
+**`PrivateEnvironmentOf`, `Resolve` and the types.** `SemanticModel.PrivateEnvironmentOf(ClassNode)` answers every class's
+`PrivateEnvironment`, empty or not: `Class`; `Outer`, the environment the class is evaluated in; and `Names`, its
+PrivateBoundIdentifiers as `PrivateNameBinding`s in source order, once each, `#constructor` among them where a class
+writes it. `SemanticModel.Resolve(PrivateIdentifier)`, the sketch's `Resolve(PrivateNameReference)` on the tree's
+`PrivateIdentifier` (D-js-names), answers a `PrivateNameBinding`: `Name`, the StringValue with its `#`; `Environment`;
+`Kind`, a `PrivateNameKind` (`Field`, `Method` or `Accessor`, an auto-accessor's too); `IsStatic`; and `Elements`, the
+`MethodDefinition`s and `FieldDefinition`s that declare it, a getter and setter of one name and placement being one
+binding with both elements. The types are public, the classes sealed with internal constructors. `Resolve` keeps the
+sketch's nullable `PrivateNameBinding?` (section 4), where stage 3's `TargetOf` departed from the sketch the other way:
+here a null occurs on accepted trees. It is the first of the sketch's `Resolve` overloads to land (section 4's
+`Resolve(IdentifierReference)` and `Resolve(PrivateNameReference)`); once the other lands at stage 5a, a caller passing a
+null literal names the overload by a cast. One instance per binding is shared by its keys and every reference to it. No
+brand member: a class's [[PrivateMethods]] brands are read from its names, a binding not of `Field`, instance or static.
+
+| `Resolve`'s node | Answer |
+|---|---|
+| A class element's key | The binding it declares in its class's environment |
+| A member's `.#x` (an optional link's among them) or `#x in o` | The binding of the innermost class whose environment holds the reference and whose names hold `#x`, whatever the placement of either |
+| Eval code's reference to a name its caller sees and no class of the eval code declares | Null |
+| Any reference under the `FormalParameters` and `FunctionBody` goals that no class of the unit declares | Null |
+| An object literal's private key | Null: it declares nothing; EE0016 refuses it, so that no model holds one |
+
+**The heritage in the environment around the class.** AllPrivateIdentifiersValid checks ClassHeritage with the names
+around the class, and ClassDefinitionEvaluation evaluates it in the outer private environment, as both engines do; the
+class's computed keys, field initialisers, static blocks, methods and element decorators are inside its own environment
+(the class's decorators outside). `ScopeOf` puts the heritage in the class's `ClassBody` scope (section 10.3), which
+stays true; so the private environment is a relation of its own, and a class in another class's heritage has that
+class's outer environment as its `Outer`, not that class's.
+
+**The rows**, each in `SemanticRows`, reported with the member on at the member or `in` expression, keyed at its
+offset, where Broiler.VM's binder places them, once per undeclared reference, with the name and its `#` as the argument:
+
+| Goal | Root names | Row |
+|---|---|---|
+| Script | None | EE0167 (AllPrivateIdentifiersValid of a Script's statements) |
+| Module | None | EE0177 (of a Module's items), moved here from stage 6, needing only the Module goal |
+| Eval, `InheritedContext.VisiblePrivateNames` a list | The list | EA0009 (EvalDeclarationInstantiation step 7) |
+| Eval, the list null | No check | None |
+| `FormalParameters`, `FunctionBody` | No check | None: the catalogue's EX0031 is an engine row |
+
+Eval code never takes EE0167: the request does not tell a direct eval from an indirect one, and a list implies a
+caller's private environment. The walk carries the names in its row context, innermost class first, and carries them,
+not resets them, through every function, parameter list, field initialiser and static block, the opposite of stage 3's
+jump state; it numbers nothing in the walk's sequence. With the member off nothing reads the row context or the
+request's visible names, although Broiler.JS's bridge sends a list while a direct eval runs; a Frontend test holds the off
+path's outcome, diagnostics and dump the same with no list, an empty one and one holding a name.
+
+**The order.** A row is keyed at its member or `in` expression and reported before the node's children are visited, so
+it comes before a `syntax` row a child reports at the same place: in `class C { m() { return implements.#y; } }` EE0167
+precedes the strict-reserved name row at `implements`. A scope's declared-name conflicts, keyed at its close, come before
+a row of a member written right after it (`{ let a; let a; }this.#x;`), by D11's sub-key. A chain of undeclared names
+(`this.#a.#b`) gives a row for each at one place, the outer reference's first, as the walk visits them. Against the
+specification's order for eval code: EA0009 is EvalDeclarationInstantiation's step 7, after every early error of ParseText
+and PerformEval's rows; under first error the library, ordering by place, can name EA0009 where the specification raises
+another SyntaxError first (`this.#y; let a; let a;` as eval code, whose ScriptBody conflict is keyed at its close, or
+`arguments.#y` with the field-initialiser context). The refusal is the same; only the code differs.
+
+**Eval code's visible names.** A null list leaves the check to the engine; a list is every name visible at the call. The
+library-level adapter passes one for every `DirectEval` vector, read from the Script's model as EvalDeclarationInstantiation
+builds it: the innermost class whose elements hold the call and the environments around it, innermost first, each name
+once, and an empty list where no class holds the call. Group `pn1` stays not implemented: `pn1/0004` and `pn1/0005` expect a value
+the Script computes after catching the eval code's refusal, which a reading at the parse cannot match.
+
+**Where the library differs from each engine**, named for SJL-15.3 and SJL-15.5, as `docs/roadmap/SharedLibraries.md`
+lists it: Broiler.JS throws a member form's refusal at the private name, the library at the member, as Broiler.VM's
+binder does (for `#x in o` the places coincide); Broiler.VM's binder skips eval code whose caller is in a class body and
+its executor refuses at run time, where the library refuses at the eval code's parse when the request carries the names
+(class T for row PN1); the library reports every undeclared reference, where Broiler.JS throws at the first; Broiler.JS's
+validator does not reach a `case` clause's references, which the library refuses; Broiler.JS passes no list where no
+name is in scope; an indirect eval given an empty list is refused with EA0009's code where the specification's is
+EE0167's; and under first error EA0009 can be named before a row the specification raises first.
 
 ## Corrections
 

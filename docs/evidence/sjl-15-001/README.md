@@ -375,3 +375,26 @@ the first model commit, does not arise here. The readings at `be6c4a5c` and at `
 the notes above of 2026-11-24 and 2026-11-25, stay as written. A NOT MET at any later model commit makes part B NOT MET.
 **Next:** SJL-15.2 stage 4, private-name environments, the fourth model commit. No rule file is added or edited, and no
 earlier output changes.
+
+*(Noted 2026-11-25, at SJL-15.2 stage 4, written before part B's run at it.)* **The fourth model commit.** This branch's
+merge will be the fourth model commit: SJL-15.2 stage 4, private-name environments, named here once it exists. Part B is
+taken after it, against its own first parent (decision D-js-part-b-method), with both workflows' push runs imported and
+decision D-js-part-b-attempt applying. The merge condition: both workflows are green on the PR; after the merge, nothing
+merges to `main` until both push runs at the merge have concluded. For ci.yml's run that includes the one re-run
+D-js-part-b-attempt allows (`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run
+(`.github/workflows/ci.yml:25-27`, :36-39). A later push never cancels Shared libraries' push run, because its push
+group carries the commit (`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1
+("Nothing merged to the default branch until both push runs at it had concluded",
+`docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken after the merge, against the merge's own first parent.
+Stage 3's part B records say the same of stage 3: "Nothing merged to the default branch until both push runs at it had
+concluded" (`docs/roadmap/SharedLibraries.md:3972-3973`). The reading at it will be limited to the model commits taken
+so far.
+
+From this change the library-level adapter, `runners/AlgorithmsLibrary.Semantics.cs`, also answers the vectors of
+stage 4's private-name rows, EE0167 and EA0009 (EE0177 has none), each read at the parse, the reading the owner ruled on
+2026-11-25 to keep ("Keep the reading at the parse (Recommended)"), as the note above at SJL-15.2 stage 2 records it. By
+decision D-js-adapter-visible-names in `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)", a
+`DirectEval` vector's eval code now inherits the private names visible at the call, read from its Script's model, and
+correspondence group `pn1` is not implemented: `pn1/0004` and `pn1/0005` expect a value the Script computes after
+catching the eval code's refusal, which a reading at the parse cannot match. No rule file is added or edited, and no
+earlier output changes. "What it will hold" above is left as written.

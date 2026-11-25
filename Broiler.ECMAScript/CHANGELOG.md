@@ -641,6 +641,46 @@ Not yet packed under a version of its own: the stream's next version is set when
   those of correspondence group `lb1`, judged at the parse. No observable change: no published version carries the
   member, and with it off nothing moves.
 
+- `Broiler.ECMAScript.Frontend`: **the semantic model's private-name environments and their early errors** (milestone
+  SJL-15.2, stage 4; the decisions of 2026-11-25, D-js-private-environments, D-js-private-rows and
+  D-js-adapter-visible-names, in `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)"; design
+  [`docs/frontend/design.md`](docs/frontend/design.md), section 10.6). A minor change under convention 16, which no
+  published version carries: nothing is removed, and with the new request member off the parse answers as before, its
+  tree, side tables and diagnostics unchanged. It adds, as rule SL6's `PublicAPI.txt` lists them:
+  - `Broiler.ECMAScript.Semantics.SemanticModel.PrivateEnvironmentOf(Broiler.ECMAScript.Syntax.ClassNode) method Broiler.ECMAScript.Semantics.PrivateEnvironment`:
+    every class's private environment, empty or not, whose outer one is the environment the class is evaluated in, so
+    that a class's heritage is resolved in the environment around the class;
+  - `Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.PrivateIdentifier) method Broiler.ECMAScript.Semantics.PrivateNameBinding`:
+    the binding a class element's key declares or a reference names, in the innermost class that declares it, whatever
+    the placement; null where no class of the unit declares the name (eval code's names its caller sees, and the dynamic
+    function's goals); one instance per binding. Both throw `ArgumentException` for a node that is not the model's;
+  - `Broiler.ECMAScript.Semantics.PrivateEnvironment sealed class`, its constructor internal, with
+    `Broiler.ECMAScript.Semantics.PrivateEnvironment.get_Class() method Broiler.ECMAScript.Syntax.ClassNode`,
+    `Broiler.ECMAScript.Semantics.PrivateEnvironment.get_Outer() method Broiler.ECMAScript.Semantics.PrivateEnvironment`
+    and
+    ``Broiler.ECMAScript.Semantics.PrivateEnvironment.get_Names() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.PrivateNameBinding>``,
+    the class's private names in source order, once each;
+  - `Broiler.ECMAScript.Semantics.PrivateNameBinding sealed class`, its constructor internal, with
+    `Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Name() method System.String`,
+    `Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Environment() method Broiler.ECMAScript.Semantics.PrivateEnvironment`,
+    `Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Kind() method Broiler.ECMAScript.Semantics.PrivateNameKind`,
+    `Broiler.ECMAScript.Semantics.PrivateNameBinding.get_IsStatic() method System.Boolean` and
+    ``Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Elements() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.SyntaxNode>``,
+    a getter and setter pair being one binding with two elements;
+  - `Broiler.ECMAScript.Semantics.PrivateNameKind enum`, with `Broiler.ECMAScript.Semantics.PrivateNameKind.Field = 0`,
+    `Broiler.ECMAScript.Semantics.PrivateNameKind.Method = 1`, `Broiler.ECMAScript.Semantics.PrivateNameKind.Accessor = 2`
+    and `Broiler.ECMAScript.Semantics.PrivateNameKind.value__ field System.Int32`.
+
+  With `ParseRequest.BuildSemanticModel` on, the parse also reports the private-name rows, each at its member or `in`
+  expression, once per undeclared reference, with the name and its `#` as the argument: AllPrivateIdentifiersValid of a
+  Script (EE0167) and of a Module (EE0177) with no names, and of eval code against the private names its caller sees
+  (EA0009), only where the request's `InheritedContext.VisiblePrivateNames` gives them; the dynamic function's goals
+  check none. The canonical dump's model section (`runners/SyntaxDump.cs`) writes each class's private environment with
+  its names and each private name's binding, and the Native AOT probe and the conformance runner's library-level adapter
+  answer the private-name rows' vectors, the adapter passing the private names visible at a direct `eval`, judged at the
+  parse; group `pn1` stays not implemented. No observable change: no published version carries the member, and with it
+  off nothing moves.
+
 ### Changed
 
 - `Broiler.ECMAScript.Intl`'s `NumberFormatter`, over data that carries them (the owner's decision of 2026-11-08, "Keep + fix

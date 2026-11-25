@@ -3990,6 +3990,85 @@ for the owner, in the notes of 2026-11-24 and 2026-11-25 above, stay as written.
 environments, the fourth model commit, judged by its part B against its own first parent. None of it is accepted: no
 second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
 
+*(Noted 2026-11-25, at SJL-15.2 stage 4, whose merge is the fourth model commit.)* The note above reads "Next: SJL-15.2
+stage 4, private-name environments, the fourth model commit, judged by its part B against its own first parent." The
+change before this one is stage 3's part B records, Broiler-Platform/Broiler.JS#1138 (`9ae6aee0`), after stage 3's
+merge, Broiler-Platform/Broiler.JS#1137 (`d87044c9`). This change is stage 4: private-name environments. With
+`ParseRequest.BuildSemanticModel` on, the semantic model holds each class's private environment and the binding each
+private name names: `SemanticModel.PrivateEnvironmentOf` answers a class's `PrivateEnvironment`, a new public type
+holding the class, the environment the class is evaluated in and its private names; `SemanticModel.Resolve`, its
+`PrivateIdentifier` overload, answers the `PrivateNameBinding`, a new public type holding the name, its environment, its
+kind (`PrivateNameKind`, a new public enum), whether it is static and its elements; and the declarations walk reports
+the private-name rows, AllPrivateIdentifiersValid of a Script (EE0167) and of a Module (EE0177), EE0177 moved here from
+stage 6, and of eval code against the private names its caller sees (EA0009), each at its member or `in` expression. The
+library-level adapter answers their vectors, read at the parse, passing the private names visible at a direct `eval`;
+correspondence group `pn1` stays not implemented; the canonical dump's model section writes each class's private
+environment and each private name's binding. With the member off nothing moves: Broiler.JS's bridge passes visible
+private names today, while a direct eval runs, but only the on path reads them. Rule SL6's `PublicAPI.txt` gains these
+lines and loses none:
+- `Broiler.ECMAScript.Semantics.PrivateEnvironment sealed class`
+- `Broiler.ECMAScript.Semantics.PrivateEnvironment.get_Class() method Broiler.ECMAScript.Syntax.ClassNode`
+- ``Broiler.ECMAScript.Semantics.PrivateEnvironment.get_Names() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.PrivateNameBinding>``
+- `Broiler.ECMAScript.Semantics.PrivateEnvironment.get_Outer() method Broiler.ECMAScript.Semantics.PrivateEnvironment`
+- `Broiler.ECMAScript.Semantics.PrivateNameBinding sealed class`
+- ``Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Elements() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.SyntaxNode>``
+- `Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Environment() method Broiler.ECMAScript.Semantics.PrivateEnvironment`
+- `Broiler.ECMAScript.Semantics.PrivateNameBinding.get_IsStatic() method System.Boolean`
+- `Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Kind() method Broiler.ECMAScript.Semantics.PrivateNameKind`
+- `Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Name() method System.String`
+- `Broiler.ECMAScript.Semantics.PrivateNameKind enum`
+- `Broiler.ECMAScript.Semantics.PrivateNameKind.Accessor = 2`
+- `Broiler.ECMAScript.Semantics.PrivateNameKind.Field = 0`
+- `Broiler.ECMAScript.Semantics.PrivateNameKind.Method = 1`
+- `Broiler.ECMAScript.Semantics.PrivateNameKind.value__ field System.Int32`
+- `Broiler.ECMAScript.Semantics.SemanticModel.PrivateEnvironmentOf(Broiler.ECMAScript.Syntax.ClassNode) method Broiler.ECMAScript.Semantics.PrivateEnvironment`
+- `Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.PrivateIdentifier) method Broiler.ECMAScript.Semantics.PrivateNameBinding`
+
+**The merge condition.** Both workflows are green on the PR; after the merge, nothing merges to `main` until both push
+runs at the merge have concluded. For ci.yml's run that includes the one re-run D-js-part-b-attempt allows
+(`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run (`.github/workflows/ci.yml:25-27`,
+:36-39). A later push never cancels Shared libraries' push run, because its push group carries the commit
+(`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1 ("Nothing merged to the
+default branch until both push runs at it had concluded", `docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken
+after the merge, against the merge's own first parent. Stage 3's part B records say the same of stage 3: "Nothing merged
+to the default branch until both push runs at it had concluded" (`docs/roadmap/SharedLibraries.md:3972-3973`).
+
+**This stage's decisions of 2026-11-25**, each taken as recommended under the owner's direction and recorded as the
+owner's decision of 2026-11-25. Their authority is the direction quoted above, which leaves out only "the start ...;
+decision D-census ...; and each publication of the shared stream (JSD-0083's decision D30)"; none below is one of those.
+Every later stage's decisions are recorded when that stage lands (the note of 2026-11-24 above); these are stage 4's.
+
+| Decision | Taken | Not taken, and why |
+|---|---|---|
+| D-js-private-environments | **`SemanticModel.PrivateEnvironmentOf(ClassNode)` answers each class's `PrivateEnvironment`**: the class, the environment the class is evaluated in as its outer one, and its private names as `PrivateNameBinding`s in source order, once each, each with its name and its `#`, its kind (`PrivateNameKind`: field, method or accessor), whether it is static and its elements, a getter and setter pair being one binding. **`SemanticModel.Resolve(PrivateIdentifier)` answers the binding a class element's key declares or a reference names**: the innermost class whose environment holds the reference and declares the name, whatever the placement. A class's heritage is resolved in the environment around the class, as AllPrivateIdentifiersValid and ClassDefinitionEvaluation read it and as both engines do, although `ScopeOf` puts the heritage in the class's scope; its computed keys, initialisers, static blocks and methods are resolved in its own. `Resolve` answers null only where no class of the unit declares the name: in eval code for a name the caller sees, under the dynamic function's goals, and for an object literal's private key; the sketch's nullable binding is kept. One instance per binding. No brand member: the brand is read from the names. A node not in the model's tree is refused as `ScopeOf` refuses it. The types are sealed, their constructors internal | (a) A non-null `Resolve` with a synthetic binding for the caller's names: the request carries no kind or placement for them. (b) `PrivateNameBinding` alone, its environment read from `ScopeOf`: wrong for a class's heritage. (c) The environment hung on the shared `Scope` type: against D-js-instances, the tables' types being the same instances with the model on or off. (d) Brand flags: back-end facts the lowering already computes |
+| D-js-private-rows | **The private-name rows in `SemanticRows`**: AllPrivateIdentifiersValid of a Script (EE0167) and of a Module (EE0177) with no names, and of eval code against the caller's visible private names (EA0009), reported only when the request carries a list. Each is placed at the member or `in` expression Broiler.VM's binder names, once per undeclared reference, with the name and its `#` as its argument. EE0177 comes here from stage 6, needing only the Module goal. Eval code never takes EE0167, since the request does not tell a direct eval from an indirect one. The dynamic function's goals take no row: the catalogue's EX0031 is an engine row. `#constructor` is in the environment, so EE0132 alone refuses its use. An object literal's private key declares nothing. The rows' state rides in the model's row context and is carried, not reset, through every function, parameter list, field initialiser and static block, unlike the jump rows'; it numbers nothing in the walk's sequence. A null list is read nowhere, and with the member off nothing reads the list | (a) EE0177 left to stage 6: no fact it needs is stage 6's. (b) Once per unit, at the first undeclared reference: the binder reports each. (c) The state as a member of the walk's own context: every `with` would copy it on the off path too. (d) EE0167 for eval code given an empty list: the request does not say the eval is indirect. (e) The rows at the private name, where Broiler.JS throws: it departs from the binder's place. (f) A sub-key at the name for a chain of private references: it departs from the binder's order |
+| D-js-adapter-visible-names | **A `DirectEval` vector's request carries the private names visible at the call**, read from the Script's model: the names of the innermost class whose elements hold the call and of its outer environments, innermost first, each once, and an empty list where no class holds it, as EvalDeclarationInstantiation builds them. **Group `pn1` stays not implemented**: `pn1/0004` and `pn1/0005` expect a value the Script computes after catching the eval code's refusal, which a reading at the parse cannot match | (a) The flags alone, with no list: `ea0009/0002` and `ea0009/0003` would be accepted against their refusal. (b) A list only where a class holds the call: `ea0009/0002` could not be answered. (c) `pn1` answered as a group: `pn1/0004` and `pn1/0005` cannot match at the parse. (d) `pn1` answered for the vectors that match: a hand-picked subset shapes the expectations |
+
+The places where the library differs from either engine, named for SJL-15.3 and SJL-15.5. In places: for a member form
+Broiler.JS throws at the private name (`Broiler.JS/Broiler.JavaScript.Compiler/SyntaxValidation.cs`,
+`VisitMemberExpression`), where the library reports at the member, as Broiler.VM's binder does; for `#x in o` the places
+coincide. In timing, class T: Broiler.VM's binder skips eval code whose caller is in a class body (`ResolvePrivate`, in
+`VMC/JsBinder.EarlyErrors.cs`) and its executor refuses at run time
+(`src/Broiler.VM.Profile.JavaScript/JsEngine.Eval.cs` in Broiler.VM), where the library refuses at the eval code's parse
+when the request carries the names; that is Broiler.VM's finding F6 and class T for row PN1 at Broiler.VM's window
+(its `docs/evidence/sjl-15-001/correspondence.md` and `decision-rule-area.md`), and Broiler.JS's class T row is EA0009
+(bundle [`sjl-15-001`](../evidence/sjl-15-001/README.md)'s `corrections/class-t.tsv`). In what each refuses: the library
+reports every undeclared reference, where Broiler.JS throws at the first; Broiler.JS's validator does not reach a `case`
+clause's references (`Broiler.JS/Broiler.JavaScript.Ast/AstVisitor.cs`, `VisitCase`), where the library refuses them (an
+inference by reading); and Broiler.JS passes no list where no name is in scope
+(`Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitCallExpression.cs`), so SJL-15.5 must pass an
+empty list there or keep its own check. In codes: an indirect eval given an empty list is refused with EA0009's code,
+where the specification's is EE0167's; under first error the library can name EA0009 before a row the specification
+raises first, an early error of ParseText placed later in the eval code or a PerformEval row, and Broiler.VM's executor
+also checks private names before EvalDeclarationInstantiation's conflicts. The stale site cells: the stage table's
+`vm_site` and `js_site` and the catalogue's `vm_wide_site` and `js_site` for EE0167, EE0177, EA0009 and EX0031, and
+Broiler.JS's correspondence row PN1 (`correspondence-broiler-js.md` in the bundle), name lines that have moved. The
+probes T112 to T114, T117 and V034 to V038 all agree (the bundle's `probes/answers.tsv`), and show neither the binder's
+place nor the timing. The comment in `Broiler.JS/Broiler.JavaScript.Parser.Tests/SharedSyntaxBridgeTests.cs` that reads
+the bridge's list as checked by the library is false on the bridge's path, where the member is off; it is left for
+SJL-15.5. None of it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in both
+repositories.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
