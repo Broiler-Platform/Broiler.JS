@@ -652,8 +652,9 @@ Not yet packed under a version of its own: the stream's next version is set when
     that a class's heritage is resolved in the environment around the class;
   - `Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.PrivateIdentifier) method Broiler.ECMAScript.Semantics.PrivateNameBinding`:
     the binding a class element's key declares or a reference names, in the innermost class that declares it, whatever
-    the placement; null where no class of the unit declares the name (eval code's names its caller sees, and the dynamic
-    function's goals); one instance per binding. Both throw `ArgumentException` for a node that is not the model's;
+    the placement; null where no class of the unit declares the name (eval code's names its caller sees, the dynamic
+    function's goals, and an object literal's private key, which declares nothing: EE0016 refuses every such key, so that
+    no model holds one); one instance per binding. Both throw `ArgumentException` for a node that is not the model's;
   - `Broiler.ECMAScript.Semantics.PrivateEnvironment sealed class`, its constructor internal, with
     `Broiler.ECMAScript.Semantics.PrivateEnvironment.get_Class() method Broiler.ECMAScript.Syntax.ClassNode`,
     `Broiler.ECMAScript.Semantics.PrivateEnvironment.get_Outer() method Broiler.ECMAScript.Semantics.PrivateEnvironment`
