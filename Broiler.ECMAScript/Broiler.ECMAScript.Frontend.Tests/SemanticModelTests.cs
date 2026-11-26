@@ -22,7 +22,10 @@ namespace Broiler.ECMAScript.Syntax.Tests;
 /// <see cref="SemanticModel.Resolve(Identifier)"/> and its <c>BindingIdentifier</c> overload, and the environment facts,
 /// <see cref="SemanticModel.EnvironmentOf"/> and <see cref="FunctionFacts.HasSeparateVariableEnvironment"/>, on the probes'
 /// and vectors' sources, on fixtures and over the same population, with an oracle of the test's own. <i>(Added 2026-11-26,
-/// at SJL-15.2 stage 5a.)</i>
+/// at SJL-15.2 stage 5a.)</i> From stage 5b, Annex B's block-function aliases, <see cref="SemanticModel.AnnexBAlias"/>,
+/// and the resolution of the names they bind, on the vectors' and probes' sources, on fixtures and over the same
+/// population, with an oracle of the tree, and against the model's own answers with Annex B off. <i>(Added 2026-11-26, at
+/// SJL-15.2 stage 5b.)</i>
 /// </summary>
 /// <remarks>
 /// The off/on identity is written so that stage 2 narrows it mechanically: equality wherever the on path accepts, and,
@@ -907,7 +910,9 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     /// <summary>
     /// Every binding kind's mutability and flags, each kind seen. <i>(Added 2026-11-26, at SJL-15.2 stage 5a, when
     /// <see cref="BindingKind.Arguments"/>, which no scope holds, joined the kinds: it is read from
-    /// <see cref="SemanticModel.EnvironmentOf"/>, and its node answers no declaration.)</i>
+    /// <see cref="SemanticModel.EnvironmentOf"/>, and its node answers no declaration.)</i> <i>(Added 2026-11-26, at SJL-15.2
+    /// stage 5b, when <see cref="BindingKind.BlockFunctionAlias"/>, which no scope holds either, joined them: it is read from
+    /// <see cref="SemanticModel.AnnexBAlias"/>, and its node answers the block function's own declaration.)</i>
     /// </summary>
     [Fact]
     public void Every_binding_kind_s_mutability_and_flags()
@@ -926,6 +931,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
             [BindingKind.FunctionName] = (false, false),
             [BindingKind.ClassName] = (false, false),
             [BindingKind.Arguments] = (true, false),
+            [BindingKind.BlockFunctionAlias] = (true, false),
         };
         const string script = "var v; let l; const c = 1; { using u = null; } async function f(p) { await using w = null; } class K {} try {} catch (e) {} x = function n() {};";
         var seen = new HashSet<BindingKind>();
@@ -949,6 +955,16 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
                 seen.Add(declaration.Kind);
             }
         }
+
+        // The Annex B alias, which no scope holds, read from AnnexBAlias (added 2026-11-26, at SJL-15.2 stage 5b).
+        var aliasModel = Model("function h() { { function z() {} } }").Model;
+        var blockFunction = aliasModel.Scopes.Single(static s => s.Kind == ScopeKind.Block).Declarations.Single();
+        var alias = aliasModel.AnnexBAlias(blockFunction)!;
+        Assert.Equal(expected[alias.Kind], (alias.IsMutable, alias.IsLexical));
+        Assert.False(alias.IsBlockFunction);
+        Assert.False(alias.IsIfClauseFunction);
+        Assert.Same(blockFunction, aliasModel.DeclarationOf(alias.Node));
+        seen.Add(alias.Kind);
 
         Assert.Equal(Enum.GetValues<BindingKind>().OrderBy(static k => k), seen.OrderBy(static k => k));
     }
@@ -2003,7 +2019,9 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
 
     // One accepted tree's resolutions and environment facts, each as the lookup over the model's scopes and an oracle of the
     // test's own require, with the off path's tables beside them: the check the population and every fixture pass through.
-    // It returns the references, bindings, dynamic answers and facts nodes it checked.
+    // It returns the references, bindings, dynamic answers and facts nodes it checked. From stage 5b it also puts the tree
+    // through CompleteAliases, and its lookup counts the aliases a variable scope binds and the per-name gain of arguments.
+    // (Added 2026-11-26, at SJL-15.2 stage 5b.)
     private static (int References, int Bindings, int Dynamic, int Functions) Complete(string name, ParseResult on, ParseResult off)
     {
         var (refs, binds, dyn, fns) = (0, 0, 0, 0);
@@ -2124,12 +2142,38 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
                 gaining.Add(parameters);
         }
 
-        // What a scope binds, the test's own reading.
+        // The Annex B aliases a sloppy function's or sloppy eval code's variable scope binds, and the scopes that may gain
+        // arguments by a block function's evaluation, from the model's answers, which CompleteAliases checks against an
+        // oracle of the tree. (Added 2026-11-26, at SJL-15.2 stage 5b.)
+        CompleteAliases(name, on, off);
+        var aliasBinds = new Dictionary<(Scope, string), Declaration>();
+        var argumentsGains = new HashSet<Scope>(ReferenceEqualityComparer.Instance);
+        foreach (var scope in model.Scopes)
+        {
+            foreach (var declaration in scope.Declarations)
+            {
+                if (model.AnnexBAlias(declaration) is not { Kind: BindingKind.BlockFunctionAlias } alias)
+                    continue;
+                var varScope = VarScopeOf(model, scope);
+                var facts = model.FactsOf(varScope.Node);
+                if (facts.Kind is FunctionKind.Script)
+                    continue;
+                if (facts.Kind is not FunctionKind.EvalCode && alias.Name == "arguments")
+                    argumentsGains.Add(facts.HasSeparateVariableEnvironment ? varScope : scopeByKind[(ScopeKind.Parameters, varScope.Node)]);
+                else
+                    aliasBinds[(varScope, alias.Name)] = alias;
+            }
+        }
+
+        // What a scope binds, the test's own reading. (Revised 2026-11-26, at SJL-15.2 stage 5b, when a variable scope's
+        // aliases joined it; it ended "return first;" after the arguments binding.)
         Declaration? Binds(Scope scope, string n)
         {
             var first = scope.Declarations.FirstOrDefault(d => d.Name == n);
             if (first is null && n == "arguments" && scope.Kind is ScopeKind.Parameters or ScopeKind.StaticBlock && factsNodes.Contains(scope.Node))
                 first = model.EnvironmentOf(scope.Node).Arguments;
+            if (first is null && aliasBinds.TryGetValue((scope, n), out var alias))
+                first = alias;
             return first;
         }
 
@@ -2157,12 +2201,19 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
                     break;
                 if (gaining.Contains(chain[i]))
                     expected.Add(chain[i]);
+                else if (n == "arguments" && argumentsGains.Contains(chain[i]))
+                    expected.Add(chain[i]);
             }
 
             if (answer.Kind == ResolutionKind.Dynamic)
             {
+                // The innermost entry's reason: With, then a sloppy direct eval's gain, then a block function's
+                // arguments. (Revised 2026-11-26, at SJL-15.2 stage 5b, when BlockFunction joined the reasons; it read
+                // "(answer.Reason == DynamicReason.With) == (answer.DynamicScopes[0].Kind == ScopeKind.With)".)
                 Assert.True(expected.Count > 0 && expected.SequenceEqual(answer.DynamicScopes, ReferenceEqualityComparer.Instance), at + ": the dynamic scopes");
-                Assert.True((answer.Reason == DynamicReason.With) == (answer.DynamicScopes[0].Kind == ScopeKind.With), at + ": the reason");
+                var innermost = answer.DynamicScopes[0];
+                var reason = innermost.Kind == ScopeKind.With ? DynamicReason.With : gaining.Contains(innermost) ? DynamicReason.SloppyDirectEval : DynamicReason.BlockFunction;
+                Assert.True(answer.Reason == reason, at + ": the reason");
                 Assert.True(answer.Scope is null && answer.Declaration is null && answer.Fallback is { Kind: not ResolutionKind.Dynamic }, at + ": a dynamic answer's members");
                 end = answer.Fallback!;
             }
@@ -2314,4 +2365,806 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         output.WriteLine("resolved: references " + references.ToString(CultureInfo.InvariantCulture) + ", bindings " + bindings.ToString(CultureInfo.InvariantCulture)
             + ", dynamic " + dynamic.ToString(CultureInfo.InvariantCulture) + "; environments " + functions.ToString(CultureInfo.InvariantCulture));
     }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // Annex B's block-function aliases (SJL-15.2 stage 5b; the session's decision D-js-annexb-aliases; ECMA-262 Annex B.3.2,
+    // which row AB1 names by an earlier edition's number, B.3.3). (Added 2026-11-26, at SJL-15.2 stage 5b.)
+
+    // A request with Annex B on or off, the rest as given.
+    private static ParseRequest WithAnnexB(ParseRequest request, bool annexB)
+    {
+        var copy = new ParseRequest(request.Source, request.Goal, request.UnicodeTables, request.RegularExpressions)
+        {
+            Switches = request.Switches with { AnnexB = annexB },
+            Proposals = request.Proposals,
+            Extensions = request.Extensions,
+            Limits = request.Limits,
+            RetainTokens = request.RetainTokens,
+            BuildSemanticModel = request.BuildSemanticModel,
+        };
+        if (request.Goal == ParseGoal.Eval)
+            copy = new ParseRequest(request.Source, request.Goal, request.UnicodeTables, request.RegularExpressions)
+            {
+                Switches = request.Switches with { AnnexB = annexB },
+                Context = request.Context,
+                Proposals = request.Proposals,
+                Extensions = request.Extensions,
+                Limits = request.Limits,
+                RetainTokens = request.RetainTokens,
+                BuildSemanticModel = request.BuildSemanticModel,
+            };
+        return copy;
+    }
+
+    // The n-th block function of a name, in the model's scopes' and declarations' order.
+    private static Declaration BlockFn(SemanticModel model, string name, int index = 0) =>
+        model.Scopes.SelectMany(static s => s.Declarations).Where(d => d.IsBlockFunction && d.Name == name).ElementAt(index);
+
+    // The first scope on the chain from a scope that holds its function's, script's, module's or static block's var-scoped
+    // names.
+    private static Scope VarScopeOf(SemanticModel model, Scope scope)
+    {
+        for (Scope? s = scope; ; s = model.ParentOf(s!))
+        {
+            if (s!.Kind is ScopeKind.Function or ScopeKind.Script or ScopeKind.StaticBlock or ScopeKind.Module)
+                return s;
+        }
+    }
+
+    // An answer that is a model-only alias of the function's name: its members, in no scope, answering null itself, and
+    // its node one admitted block function's name, whose declaration DeclarationOf answers.
+    private static Declaration IsAlias(SemanticModel model, Declaration function)
+    {
+        var alias = model.AnnexBAlias(function);
+        Assert.NotNull(alias);
+        Assert.Equal(BindingKind.BlockFunctionAlias, alias!.Kind);
+        Assert.Equal(function.Name, alias.Name);
+        Assert.False(alias.IsLexical || alias.IsBlockFunction || alias.IsIfClauseFunction);
+        Assert.True(alias.IsMutable);
+        Assert.DoesNotContain(model.Scopes.SelectMany(static s => s.Declarations), d => ReferenceEquals(d, alias));
+        Assert.Null(model.AnnexBAlias(alias));
+        Assert.True(model.DeclarationOf(alias.Node) is { IsBlockFunction: true, Kind: BindingKind.Function } own && own.Name == alias.Name);
+        return alias;
+    }
+
+    private static (ParseResult Result, SemanticModel Model) AnnexBOff(string text)
+    {
+        var result = SyntaxParser.Parse(WithAnnexB(new ParseRequest(new SourceText(text), ParseGoal.Script, UnicodeDataHome.Tables, NoValidator.Instance) { Switches = ParseSwitches.For(ParseGoal.Script), BuildSemanticModel = true }, annexB: false));
+        Assert.True(result.Outcome == ParseOutcome.Accepted, text);
+        OnDocumentedStack(() => CompleteAliases("fixture (Annex B off) \"" + text + "\"", result, result, annexB: false));
+        return (result, result.Model!);
+    }
+
+    /// <summary>
+    /// Row AB1's vectors (ab1/0001 to ab1/0013) and probes (V023 to V030): each block function's alias answer and the
+    /// resolution of every reference to its name; the probes, which ran as indirect-eval code, both as a Script and as eval
+    /// code.
+    /// </summary>
+    [Fact]
+    public void The_annex_b_vectors_and_probes_answer_each_block_function_s_alias()
+    {
+        // ab1/0001, V023: a Script's alias; the reference stays global.
+        var (r, m) = Resolved("{ function g() { return 1; } } g()");
+        IsAlias(m, BlockFn(m, "g"));
+        IsGlobal(m.Resolve(Reference(r, "g")));
+
+        // ab1/0002, V024: a function's alias, which the reference names.
+        (r, m) = Resolved("function f() { { function g() { return 5; } } return g(); } f()");
+        var alias = IsAlias(m, BlockFn(m, "g"));
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "f")), alias);
+
+        // ab1/0003, V025: before the block, the same alias, undefined until the block runs.
+        (r, m) = Resolved("function f() { var t = g; { function g() {} } return t; } f()");
+        alias = IsAlias(m, BlockFn(m, "g"));
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "f")), alias);
+
+        // ab1/0004: the inner source under e, a reference added after the block, inherited with the alias.
+        (r, m) = SloppyEvalModel("{ function g() { return 4; } } g;");
+        alias = IsAlias(m, BlockFn(m, "g"));
+        IsInherited(m.Resolve(Reference(r, "g")), alias);
+
+        // ab1/0005, V028: a block function named arguments writes f's arguments binding.
+        (r, m) = Resolved("function f() { { function arguments() {} } return typeof arguments; } f()");
+        var f = Fn(r, "f");
+        var arguments = m.EnvironmentOf(f).Arguments!;
+        Assert.Same(arguments, m.AnnexBAlias(BlockFn(m, "arguments")));
+        IsStatic(m.Resolve(Reference(r, "arguments")), Of(m, ScopeKind.Parameters, f), arguments);
+
+        // ab1/0006: a case clause's function in a Script.
+        (r, m) = Resolved("switch (1) { case 1: function g() { return 6; } } g()");
+        IsAlias(m, BlockFn(m, "g"));
+        IsGlobal(m.Resolve(Reference(r, "g")));
+
+        // ab1/0007: two blocks' functions, one alias, its node the first.
+        (r, m) = Resolved("function f() { { function g() { return 1; } } { function g() { return 2; } } return g(); } f()");
+        alias = IsAlias(m, BlockFn(m, "g"));
+        Assert.Same(alias, m.AnnexBAlias(BlockFn(m, "g", 1)));
+        Assert.Same(Binding(r, "g"), alias.Node);
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "f")), alias);
+
+        // ab1/0008, V027: a parameter of the name withholds it.
+        (r, m) = Resolved("function f(g) { { function g() { return 3; } } return typeof g; } f(1)");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Parameters, Fn(r, "f")), Of(m, ScopeKind.Parameters, Fn(r, "f")).Declarations[0]);
+
+        // ab1/0009, V029: an enclosing let withholds it.
+        (r, m) = Resolved("function f() { { let g = 1; { function g() {} } } return typeof g; } f()");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        IsGlobal(m.Resolve(Reference(r, "g")));
+
+        // ab1/0010: the Script's let withholds it.
+        (r, m) = Resolved("let g = 0; { function g() {} } typeof g");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        IsStatic(m.Resolve(Reference(r, "g")), m.Scopes[0], Decl(m.Scopes[0], "g"));
+
+        // ab1/0011, V030: strict code has none.
+        (r, m) = Resolved("'use strict'; { function g() {} } typeof g");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        IsGlobal(m.Resolve(Reference(r, "g")));
+
+        // ab1/0012: the inner source under e, an enclosing let in its function.
+        (r, m) = SloppyEvalModel("function f() { { let g = 1; { function g() {} } } return typeof g; } f()");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        IsInherited(m.Resolve(Reference(r, "g")), null);
+
+        // ab1/0013: the inner source under e, strict by its directive and by the forced switch.
+        (r, m) = SloppyEvalModel("'use strict'; { function g() {} } typeof g");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        IsInherited(m.Resolve(Reference(r, "g")), null);
+        (r, m) = SloppyEvalModel("{ function g() {} } typeof g", strict: true);
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        IsInherited(m.Resolve(Reference(r, "g")), null);
+
+        // The probes' programs as eval code under e (they ran as indirect-eval code).
+        (r, m) = SloppyEvalModel("__reached = true; { function g() { return 1; } } g()");
+        IsInherited(m.Resolve(Reference(r, "g")), IsAlias(m, BlockFn(m, "g")));
+        (r, m) = SloppyEvalModel("__reached = true; function f() { { function g() { return 5; } } return g(); } f()");
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "f")), IsAlias(m, BlockFn(m, "g")));
+        (r, m) = SloppyEvalModel("__reached = true; function f() { var t = g; { function g() {} } return t; } f()");
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "f")), IsAlias(m, BlockFn(m, "g")));
+        (r, m) = SloppyEvalModel("__reached = true; eval('{ function g() { return 4; } }'); g()");
+        Assert.DoesNotContain(m.Scopes.SelectMany(static s => s.Declarations), static d => d.IsBlockFunction);
+        IsInherited(m.Resolve(Reference(r, "g")), null);
+        (r, m) = SloppyEvalModel("__reached = true; function f(g) { { function g() { return 3; } } return typeof g; } f(1)");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        (r, m) = SloppyEvalModel("__reached = true; function f() { { function arguments() {} } return typeof arguments; } f()");
+        Assert.Same(m.EnvironmentOf(Fn(r, "f")).Arguments, m.AnnexBAlias(BlockFn(m, "arguments")));
+        (r, m) = SloppyEvalModel("__reached = true; function f() { { let g = 1; { function g() {} } } return typeof g; } f()");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        IsInherited(m.Resolve(Reference(r, "g")), null);
+        (r, m) = SloppyEvalModel("'use strict'; __reached = true; { function g() {} } typeof g");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        IsInherited(m.Resolve(Reference(r, "g")), null);
+
+        // The probes as Scripts, beside the vectors above.
+        (r, m) = Resolved("__reached = true; { function g() { return 1; } } g()");
+        IsAlias(m, BlockFn(m, "g"));
+        IsGlobal(m.Resolve(Reference(r, "g")));
+        (r, m) = Resolved("__reached = true; function f() { { function arguments() {} } return typeof arguments; } f()");
+        Assert.Same(m.EnvironmentOf(Fn(r, "f")).Arguments, m.AnnexBAlias(BlockFn(m, "arguments")));
+        (r, m) = Resolved("'use strict'; __reached = true; { function g() {} } typeof g");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+    }
+
+    /// <summary>
+    /// Stage 5a's interim, closed: a name only a block function's alias binds now answers that alias, not the scopes' outer
+    /// binding.
+    /// </summary>
+    [Fact]
+    public void A_name_only_an_alias_binds_answers_the_alias_not_an_outer_binding()
+    {
+        var (r, m) = Resolved("function f() { { function g() {} } return g; }");
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "f")), IsAlias(m, BlockFn(m, "g")));
+        (r, m) = Resolved("var g; function f() { { function g() {} } return g; }");
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "f")), IsAlias(m, BlockFn(m, "g")));
+        Assert.NotSame(Decl(m.Scopes[0], "g"), m.Resolve(Reference(r, "g")).Declaration);
+    }
+
+    /// <summary>
+    /// The constructs: what withholds an alias, what a block function writes instead, each kind of code, the readings of
+    /// duplicates and labels, and the <c>arguments</c> cases.
+    /// </summary>
+    [Fact]
+    public void Each_construct_admits_or_withholds_the_alias_as_the_pinned_edition_says()
+    {
+        // Nested blocks of one name: the outer admitted, the inner withheld by it (test262's nested-blocks file).
+        var (r, m) = Resolved("function f() { { function g() { return 1; } { function g() { return 2; } } } return g(); }");
+        var alias = IsAlias(m, BlockFn(m, "g"));
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g", 1)));
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "f")), alias);
+
+        // An enclosing block's lexical declaration after the block, and the body's: withheld.
+        foreach (var declared in new[] { "let g;", "const g = 1;", "class g {}" })
+        {
+            (r, m) = Resolved("function f() { { { function g() {} } " + declared + " } return g; }");
+            Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+            IsGlobal(m.Resolve(Reference(r, "g")));
+        }
+
+        (r, m) = Resolved("function f() { { function g() {} } let g; return g; }");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "f")), Decl(Of(m, ScopeKind.Function, Fn(r, "f")), "g"));
+        (r, m) = Resolved("function f() { let arguments; { function arguments() {} } }");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "arguments")));
+
+        // Lexical for heads withhold it; a var head is the binding written.
+        foreach (var loop in new[] { "for (let g;;) { { function g() {} } break; }", "for (let g of x) { { function g() {} } }", "for (let g in x) { { function g() {} } }" })
+        {
+            (r, m) = Resolved("function f(x) { " + loop + " }");
+            Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        }
+
+        (r, m) = Resolved("function f(x) { for (var g of x) { { function g() {} } } return g; }");
+        var head = Decl(Of(m, ScopeKind.Function, Fn(r, "f")), "g");
+        Assert.Equal(BindingKind.Var, head.Kind);
+        Assert.Same(head, m.AnnexBAlias(BlockFn(m, "g")));
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "f")), head);
+
+        // A simple catch parameter does not withhold it (Annex B.3.4) and still shadows it inside; a pattern does.
+        (r, m) = Resolved("function f() { try {} catch (g) { { function g() {} } g; } return g; }");
+        alias = IsAlias(m, BlockFn(m, "g"));
+        var @catch = Only(m, ScopeKind.Catch);
+        IsStatic(m.Resolve(Reference(r, "g")), @catch, @catch.Declarations[0]);
+        IsStatic(m.Resolve(Reference(r, "g", 1)), Of(m, ScopeKind.Function, Fn(r, "f")), alias);
+        (r, m) = Resolved("function f() { try {} catch ({ g }) { { function g() {} } } return g; }");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        IsGlobal(m.Resolve(Reference(r, "g")));
+
+        // An existing var or top-level function is the binding written; Resolve names it as before.
+        (r, m) = Resolved("function f() { var g; { function g() {} } return g; }");
+        var body = Of(m, ScopeKind.Function, Fn(r, "f"));
+        Assert.Same(Decl(body, "g"), m.AnnexBAlias(BlockFn(m, "g")));
+        IsStatic(m.Resolve(Reference(r, "g")), body, Decl(body, "g"));
+        (r, m) = Resolved("function f() { function g() {} { function g() {} } return g; }");
+        body = Of(m, ScopeKind.Function, Fn(r, "f"));
+        Assert.Equal(BindingKind.Function, Decl(body, "g").Kind);
+        Assert.Same(Decl(body, "g"), m.AnnexBAlias(BlockFn(m, "g")));
+        IsStatic(m.Resolve(Reference(r, "g")), body, Decl(body, "g"));
+
+        // Generators and async functions have none; a plain one inside a sloppy generator or async function does.
+        (r, m) = Resolved("function f() { { function* g() {} async function h() {} async function* k() {} } }");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "h")));
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "k")));
+        foreach (var head2 in new[] { "function* f()", "async function f()", "async function* f()" })
+        {
+            (r, m) = Resolved(head2 + " { { function g() {} } return g; }");
+            IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "f")), IsAlias(m, BlockFn(m, "g")));
+        }
+
+        // A block function in a function nested in f's block is that function's.
+        (r, m) = Resolved("function f() { { function h() { { function g() {} } return g; } } return g; }");
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "h")), IsAlias(m, BlockFn(m, "g")));
+        IsGlobal(m.Resolve(Reference(r, "g", 1)));
+        IsAlias(m, BlockFn(m, "h"));
+
+        // An if clause's function; one whose name is a parameter; both clauses, one alias.
+        (r, m) = Resolved("function f(a) { if (a) function g() {} return g; }");
+        Assert.True(BlockFn(m, "g").IsIfClauseFunction);
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "f")), IsAlias(m, BlockFn(m, "g")));
+        (r, m) = Resolved("function f(g) { if (g) function g() {} }");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        (r, m) = Resolved("function f(a) { if (a) function g() {} else function g() {} return g; }");
+        alias = IsAlias(m, BlockFn(m, "g"));
+        Assert.Same(alias, m.AnnexBAlias(BlockFn(m, "g", 1)));
+        Assert.Same(Binding(r, "g"), alias.Node);
+
+        // A labelled block function (reading n9): admitted.
+        (r, m) = Resolved("function f() { { l: function g() {} } return g; }");
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "f")), IsAlias(m, BlockFn(m, "g")));
+
+        // Duplicates in one block and in one switch (reading n8): both admitted, one alias, as the syntax vector
+        // syntax/annex-b/eg0004/0001 records; that vector's source as a Script.
+        (r, m) = Resolved("function f() { { function g() {} function g() {} } return g; }");
+        alias = IsAlias(m, BlockFn(m, "g"));
+        Assert.Same(alias, m.AnnexBAlias(BlockFn(m, "g", 1)));
+        Assert.Same(Binding(r, "g"), alias.Node);
+        (r, m) = Resolved("function f(x) { switch (x) { case 1: function g() {} case 2: function g() {} } return g; }");
+        alias = IsAlias(m, BlockFn(m, "g"));
+        Assert.Same(alias, m.AnnexBAlias(BlockFn(m, "g", 1)));
+        (r, m) = Resolved("{ function f() { return 1; } function f() { return 2; } } f()");
+        alias = IsAlias(m, BlockFn(m, "f"));
+        Assert.Same(alias, m.AnnexBAlias(BlockFn(m, "f", 1)));
+        IsGlobal(m.Resolve(Reference(r, "f")));
+
+        // An arrow's body is the arrow's; an arrow parameter of the name withholds it.
+        (r, m) = Resolved("var a = () => { { function g() {} } return g; };");
+        var arrow = First<FunctionNode>(r, static n => n.IsArrow);
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, arrow), IsAlias(m, BlockFn(m, "g")));
+        (r, m) = Resolved("var a = (g) => { { function g() {} } };");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+
+        // A named function expression's own name: the alias, in the body's scope, comes first.
+        (r, m) = Resolved("var x = function g() { { function g() {} } return g; };");
+        var expression = First<FunctionNode>(r, static n => n.Name?.Name == "g" && n.Body.Count > 1);
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, expression), IsAlias(m, BlockFn(m, "g")));
+
+        // A sloppy object-literal method has one; a class method, a static block and a module have none.
+        (r, m) = Resolved("var o = { m() { { function g() {} } return g; } };");
+        IsAlias(m, BlockFn(m, "g"));
+        foreach (var text in new[] { "class C { m() { { function g() {} } } }", "class C { static { { function g() {} } } }" })
+        {
+            (r, m) = Resolved(text);
+            Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        }
+
+        (r, m) = Resolved("{ function g() {} } export { g };", ParseGoal.Module);
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+
+        // With Annex B off, none.
+        (r, m) = AnnexBOff("function f() { { function g() {} } return g; } { function h() {} }");
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "h")));
+        IsGlobal(m.Resolve(Reference(r, "g")));
+
+        // Inside a with statement the object comes first, the alias after it; a closure reads the alias.
+        (r, m) = Resolved("function f(o) { with (o) { { function g() {} } g; } return g; }");
+        alias = IsAlias(m, BlockFn(m, "g"));
+        IsStatic(IsDynamic(m.Resolve(Reference(r, "g")), DynamicReason.With, Only(m, ScopeKind.With)), Of(m, ScopeKind.Function, Fn(r, "f")), alias);
+        IsStatic(m.Resolve(Reference(r, "g", 1)), Of(m, ScopeKind.Function, Fn(r, "f")), alias);
+        (r, m) = Resolved("function f() { { function g() {} } return () => g; }");
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, Fn(r, "f")), IsAlias(m, BlockFn(m, "g")));
+
+        // The dynamic function's body goal: admitted, its parameters unseen; arguments, the program's binding.
+        (r, m) = Resolved("{ function g() {} } return g;", ParseGoal.FunctionBody);
+        Assert.Equal(ScopeKind.Function, VarScopeOf(m, m.ScopeOf(Binding(r, "g"))).Kind);
+        IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.Function, r.Tree!), IsAlias(m, BlockFn(m, "g")));
+        (r, m) = Resolved("{ function arguments() {} } return arguments;", ParseGoal.FunctionBody);
+        Assert.NotNull(m.EnvironmentOf(r.Tree!).Arguments);
+        Assert.Same(m.EnvironmentOf(r.Tree!).Arguments, m.AnnexBAlias(BlockFn(m, "arguments")));
+
+        // arguments in a Script and in eval code: an alias of its own; the Script's reference global, eval code's inherited.
+        (r, m) = Resolved("{ function arguments() {} } arguments;");
+        IsAlias(m, BlockFn(m, "arguments"));
+        IsGlobal(m.Resolve(Reference(r, "arguments")));
+        (r, m) = SloppyEvalModel("{ function arguments() {} } arguments;");
+        IsInherited(m.Resolve(Reference(r, "arguments")), IsAlias(m, BlockFn(m, "arguments")));
+        (r, m) = SloppyEvalModel("{ function g() {} } g;", strict: true);
+        Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
+
+        // An arguments binding the evaluation creates: the variable environment's scope may gain the name, and only it.
+        (r, m) = Resolved("function f(a = 0) { { function arguments() {} } return arguments + a; }");
+        var f = Fn(r, "f");
+        alias = IsAlias(m, BlockFn(m, "arguments"));
+        IsStatic(IsDynamic(m.Resolve(Reference(r, "arguments")), DynamicReason.BlockFunction, Of(m, ScopeKind.Function, f)), Of(m, ScopeKind.Parameters, f), m.EnvironmentOf(f).Arguments!);
+        IsStatic(m.Resolve(Reference(r, "a")), Of(m, ScopeKind.Parameters, f), Of(m, ScopeKind.Parameters, f).Declarations[0]);
+        Assert.True(m.EnvironmentOf(f).ArgumentsNeeded);
+        (r, m) = Resolved("(() => { { function arguments() {} } return arguments; });");
+        arrow = First<FunctionNode>(r, static n => n.IsArrow);
+        IsAlias(m, BlockFn(m, "arguments"));
+        IsGlobal(IsDynamic(m.Resolve(Reference(r, "arguments")), DynamicReason.BlockFunction, Of(m, ScopeKind.Parameters, arrow)));
+        (r, m) = Resolved("function f(o) { with (o) { (() => { { function arguments() {} } eval(\"\"); return arguments; })(); } }");
+        arrow = First<FunctionNode>(r, static n => n.IsArrow);
+        var both = IsDynamic(m.Resolve(Reference(r, "arguments")), DynamicReason.SloppyDirectEval, Of(m, ScopeKind.Parameters, arrow), Only(m, ScopeKind.With));
+        IsStatic(both, Of(m, ScopeKind.Parameters, Fn(r, "f")), m.EnvironmentOf(Fn(r, "f")).Arguments!);
+        (r, m) = Resolved("function f(a = 0) { var arguments; { function arguments() {} } }");
+        f = Fn(r, "f");
+        Assert.Same(Decl(Of(m, ScopeKind.Function, f), "arguments"), m.AnnexBAlias(BlockFn(m, "arguments")));
+    }
+
+    /// <summary>
+    /// Every declaration's answer, and refusals: a null declaration, a declaration of another tree; the model's own
+    /// declarations answer null.
+    /// </summary>
+    [Fact]
+    public void Every_declaration_answers_and_a_null_or_foreign_declaration_is_refused()
+    {
+        var (result, model) = Resolved("function f(a) { { function g() {} } return arguments; } var v;");
+        var (other, otherModel) = Resolved("function f(a) { { function g() {} } return arguments; } var v;");
+        Assert.Throws<ArgumentNullException>(() => model.AnnexBAlias(null!));
+        Assert.Throws<ArgumentException>(() => model.AnnexBAlias(BlockFn(otherModel, "g")));
+        Assert.Throws<ArgumentException>(() => model.AnnexBAlias(otherModel.AnnexBAlias(BlockFn(otherModel, "g"))!));
+        Assert.Throws<ArgumentException>(() => model.AnnexBAlias(otherModel.EnvironmentOf(Fn(other, "f")).Arguments!));
+        foreach (var declaration in model.Scopes.SelectMany(static s => s.Declarations))
+            Assert.True(declaration.IsBlockFunction || model.AnnexBAlias(declaration) is null);
+        Assert.Null(model.AnnexBAlias(model.EnvironmentOf(Fn(result, "f")).Arguments!));
+        Assert.Null(model.AnnexBAlias(model.AnnexBAlias(BlockFn(model, "g"))!));
+    }
+
+    // Accepted sources for the aliases, beside the population, the fixtures and the resolution sources.
+    private static readonly (ParseGoal Goal, string Text)[] AnnexBSources =
+    [
+        (ParseGoal.Script, "{ function g() { return 1; } } g()"), (ParseGoal.Script, "function f() { { function g() { return 5; } } return g(); } f()"),
+        (ParseGoal.Script, "function f() { var t = g; { function g() {} } return t; } f()"), (ParseGoal.Script, "eval('{ function g() { return 4; } }'); g()"),
+        (ParseGoal.Script, "function f() { { function arguments() {} } return typeof arguments; } f()"), (ParseGoal.Script, "switch (1) { case 1: function g() { return 6; } } g()"),
+        (ParseGoal.Script, "function f() { { function g() { return 1; } } { function g() { return 2; } } return g(); } f()"),
+        (ParseGoal.Script, "function f(g) { { function g() { return 3; } } return typeof g; } f(1)"),
+        (ParseGoal.Script, "function f() { { let g = 1; { function g() {} } } return typeof g; } f()"), (ParseGoal.Script, "let g = 0; { function g() {} } typeof g"),
+        (ParseGoal.Script, "'use strict'; { function g() {} } typeof g"), (ParseGoal.Eval, "function f() { { let g = 1; { function g() {} } } return typeof g; } f()"),
+        (ParseGoal.Eval, "'use strict'; { function g() {} } typeof g"), (ParseGoal.Eval, "{ function g() { return 4; } } g;"),
+        (ParseGoal.Script, "function f(a = 0) { { function arguments() {} } return arguments; }"), (ParseGoal.Script, "(() => { { function arguments() {} } return arguments; })"),
+        (ParseGoal.Script, "function f() { { function g() {} { function g() {} } } try {} catch (h) { { function h() {} } } }"),
+        (ParseGoal.Script, "function f(o) { with (o) { { function g() {} } g; } { l: function k() {} } if (o) function m() {} else function m() {} return g + k + m; }"),
+        (ParseGoal.Script, "var x = function g() { { function g() {} } return g; }; var o = { m() { { function g() {} } return g; } };"),
+        (ParseGoal.FunctionBody, "{ function g() {} } { function arguments() {} } return g + arguments;"),
+        (ParseGoal.Script, "if (true) { function test262Fn() {} }"), (ParseGoal.Script, "label: function g() {} label1: label2: function f() {}"),
+        (ParseGoal.Script, "(function() { { function arguments() {} } }()); (function(x) { { function arguments() {} } }()); (function(..._) { { function arguments() {} } }());"),
+    ];
+
+    // One tree's alias answers, checked against an oracle of the tree's own: the null list's clauses and the answers'
+    // kinds recomputed from the syntax nodes through a parent map, iteratively, with only the facts' strictness, parameter
+    // names, separate variable environment and arguments binding read from the model. With annexB false every answer is
+    // null. It returns the block functions, the admitted ones and the aliases made.
+    private static (int Functions, int Admitted, int Aliases) CompleteAliases(string name, ParseResult on, ParseResult off, bool annexB = true)
+    {
+        if (on.Model is not { } model)
+            return default;
+        var tree = on.Tree!;
+        var nodes = Nodes(tree);
+        var parents = new Dictionary<SyntaxNode, SyntaxNode>(ReferenceEqualityComparer.Instance);
+        var children = new List<SyntaxNode>();
+        foreach (var node in nodes)
+        {
+            children.Clear();
+            node.AddChildren(children);
+            foreach (var child in children)
+                parents[child] = node;
+        }
+
+        // No alias in any scope, on or off; every declaration of the model answers.
+        Assert.DoesNotContain(on.Declarations!.Scopes.SelectMany(static s => s.Declarations), static d => d.Kind == BindingKind.BlockFunctionAlias);
+        Assert.DoesNotContain(off.Declarations!.Scopes.SelectMany(static s => s.Declarations), static d => d.Kind == BindingKind.BlockFunctionAlias);
+        Assert.DoesNotContain(model.Scopes.SelectMany(static s => s.Declarations), static d => d.Kind == BindingKind.BlockFunctionAlias);
+        foreach (var declaration in model.Scopes.SelectMany(static s => s.Declarations))
+            Assert.True(declaration.IsBlockFunction || model.AnnexBAlias(declaration) is null, name + ": an answer for a declaration that is no block function");
+        foreach (var facts in model.Functions)
+        {
+            if (model.EnvironmentOf(facts.Node).Arguments is { } arguments)
+                Assert.Null(model.AnnexBAlias(arguments));
+        }
+
+        static void BoundNames(SyntaxNode? pattern, List<BindingIdentifier> into)
+        {
+            var pending = new Stack<SyntaxNode>();
+            if (pattern is not null)
+                pending.Push(pattern);
+            while (pending.Count > 0)
+            {
+                switch (pending.Pop())
+                {
+                    case BindingIdentifier binding:
+                        into.Add(binding);
+                        break;
+                    case ArrayPattern array:
+                        foreach (var element in array.Elements)
+                        {
+                            if (element is not null)
+                                pending.Push(element);
+                        }
+
+                        break;
+                    case ObjectPattern @object:
+                        foreach (var property in @object.Properties)
+                            pending.Push(property);
+                        break;
+                    case PatternProperty property:
+                        pending.Push(property.Value);
+                        break;
+                    case RestElement rest:
+                        pending.Push(rest.Argument);
+                        break;
+                    case AssignmentPattern assignment:
+                        pending.Push(assignment.Target);
+                        break;
+                }
+            }
+        }
+
+        // A statement list's lexically declared names, labels looked through.
+        static HashSet<string> LexicalNames(IEnumerable<Statement> statements, bool top)
+        {
+            var names = new HashSet<string>(StringComparer.Ordinal);
+            var bound = new List<BindingIdentifier>();
+            foreach (var statement in statements)
+            {
+                var inner = statement;
+                while (inner is LabelledStatement labelled)
+                    inner = labelled.Body;
+                switch (inner)
+                {
+                    case VariableDeclaration { DeclarationKind: not DeclarationKind.Var } declaration:
+                        foreach (var declarator in declaration.Declarations)
+                            BoundNames(declarator.Target, bound);
+                        break;
+                    case ClassDeclaration { Class.Name: { } className }:
+                        names.Add(className.Name);
+                        break;
+                    case FunctionDeclaration { Function.Name: { } functionName } when !top:
+                        names.Add(functionName.Name);
+                        break;
+                }
+            }
+
+            foreach (var binding in bound)
+                names.Add(binding.Name);
+            return names;
+        }
+
+        // The var-declared binding identifiers of a body, down to the next function, class or static block: its vars, and
+        // at its top level its function declarations.
+        static List<BindingIdentifier> VarNames(IReadOnlyList<Statement> body)
+        {
+            var found = new List<BindingIdentifier>();
+            foreach (var statement in body)
+            {
+                var inner = statement;
+                while (inner is LabelledStatement labelled)
+                    inner = labelled.Body;
+                if (inner is FunctionDeclaration { Function.Name: { } name })
+                    found.Add(name);
+            }
+
+            var pending = new Stack<SyntaxNode>(body.Reverse());
+            var kids = new List<SyntaxNode>();
+            while (pending.Count > 0)
+            {
+                var node = pending.Pop();
+                if (node is FunctionNode or ClassNode or StaticBlock)
+                    continue;
+                if (node is VariableDeclaration { DeclarationKind: DeclarationKind.Var } declaration)
+                {
+                    foreach (var declarator in declaration.Declarations)
+                        BoundNames(declarator.Target, found);
+                }
+
+                kids.Clear();
+                node.AddChildren(kids);
+                for (var i = kids.Count - 1; i >= 0; i--)
+                    pending.Push(kids[i]);
+            }
+
+            return found;
+        }
+
+        var (functions, admittedCount) = (0, 0);
+        var aliasNode = new Dictionary<(SyntaxNode, string), BindingIdentifier>();
+        var answers = new List<(Declaration Function, SyntaxNode Owner, Declaration? Answer)>();
+        foreach (var node in nodes)
+        {
+            if (node is not FunctionDeclaration { Function.Name: { } fname } declarationNode)
+                continue;
+            var own = model.DeclarationOf(fname)!;
+            SyntaxNode at = declarationNode;
+            var container = parents[at];
+            while (container is LabelledStatement)
+            {
+                at = container;
+                container = parents[at];
+            }
+
+            var inBlock = container is BlockStatement or SwitchCase || container is IfStatement && ReferenceEquals(at, declarationNode);
+            var here = name + ": " + fname.Name + " at " + fname.Span.Offset.ToString(CultureInfo.InvariantCulture);
+            Assert.True(inBlock == own.IsBlockFunction, here + ": IsBlockFunction");
+            var answer = model.AnnexBAlias(own);
+            if (!inBlock)
+            {
+                Assert.Null(answer);
+                continue;
+            }
+
+            functions++;
+
+            // The owner of the function's code and its strictness, a class's parts being strict.
+            SyntaxNode owner = container;
+            var inClass = false;
+            while (owner is not (FunctionNode or StaticBlock or ProgramNode))
+            {
+                if (owner is ClassNode)
+                    inClass = true;
+                owner = parents[owner];
+            }
+
+            var facts = model.FactsOf(owner);
+            var f = fname.Name;
+            var functionCode = owner is FunctionNode or StaticBlock || owner is ProgramNode { Goal: ParseGoal.FormalParameters or ParseGoal.FunctionBody };
+            var withheld = !annexB || declarationNode.Function.IsAsync || declarationNode.Function.IsGenerator || inClass || facts.IsStrict
+                || (functionCode && facts.ParameterNames.Contains(f));
+
+            // Each construct between the function's own block and its code's owner that declares the name.
+            var next = container switch
+            {
+                SwitchCase => parents[parents[container]],
+                _ => parents[container],
+            };
+            for (var n = next; !withheld && !ReferenceEquals(n, owner); n = parents[n])
+            {
+                var bound = new List<BindingIdentifier>();
+                switch (n)
+                {
+                    case BlockStatement block:
+                        withheld = LexicalNames(block.Body, top: false).Contains(f);
+                        break;
+                    case SwitchStatement @switch:
+                        withheld = LexicalNames(@switch.Cases.SelectMany(static c => c.Consequent), top: false).Contains(f);
+                        break;
+                    case ForStatement { Init: VariableDeclaration { DeclarationKind: not DeclarationKind.Var } init }:
+                        foreach (var declarator in init.Declarations)
+                            BoundNames(declarator.Target, bound);
+                        break;
+                    case ForInStatement { Left: VariableDeclaration { DeclarationKind: not DeclarationKind.Var } left }:
+                        foreach (var declarator in left.Declarations)
+                            BoundNames(declarator.Target, bound);
+                        break;
+                    case ForOfStatement { Left: VariableDeclaration { DeclarationKind: not DeclarationKind.Var } left }:
+                        foreach (var declarator in left.Declarations)
+                            BoundNames(declarator.Target, bound);
+                        break;
+                    case CatchClause { Parameter: { } parameter } when parameter is not BindingIdentifier:
+                        BoundNames(parameter, bound);
+                        break;
+                }
+
+                withheld = withheld || bound.Exists(b => b.Name == f);
+            }
+
+            var top = owner switch
+            {
+                FunctionNode function => function.Body,
+                StaticBlock block => block.Body,
+                _ => ((ProgramNode)owner).Body,
+            };
+            withheld = withheld || LexicalNames(top, top: true).Contains(f);
+            if (withheld)
+            {
+                Assert.True(answer is null, here + ": admitted where the oracle withholds it");
+                continue;
+            }
+
+            admittedCount++;
+            Assert.True(answer is not null && answer.Name == f, here + ": withheld where the oracle admits it");
+            var existing = VarNames(top).Where(b => b.Name == f).OrderBy(static b => b.Span.Offset).FirstOrDefault();
+            var arguments = model.EnvironmentOf(owner).Arguments;
+            if (existing is not null)
+            {
+                Assert.True(answer!.Kind is BindingKind.Var or BindingKind.Function && ReferenceEquals(answer.Node, existing) && !answer.IsLexical, here + ": not the first var-scoped declaration");
+            }
+            else if (functionCode && f == "arguments" && arguments is not null && !facts.HasSeparateVariableEnvironment)
+            {
+                Assert.Same(arguments, answer);
+            }
+            else
+            {
+                Assert.True(answer!.Kind == BindingKind.BlockFunctionAlias, here + ": not an alias");
+                if (!aliasNode.TryGetValue((owner, f), out var first) || fname.Span.Offset < first.Span.Offset)
+                    aliasNode[(owner, f)] = fname;
+            }
+
+            answers.Add((own, owner, answer));
+        }
+
+        // One alias per owner and name, its node the earliest admitted block function's name.
+        var aliases = new Dictionary<(SyntaxNode, string), Declaration>();
+        foreach (var (function, owner, answer) in answers)
+        {
+            if (answer is not { Kind: BindingKind.BlockFunctionAlias })
+                continue;
+            if (aliases.TryGetValue((owner, function.Name), out var made))
+                Assert.Same(made, answer);
+            else
+                aliases[(owner, function.Name)] = answer;
+            Assert.Same(aliasNode[(owner, function.Name)], answer.Node);
+            Assert.True(model.DeclarationOf(answer.Node) is { IsBlockFunction: true } blockFunction && blockFunction.Name == answer.Name, name + ": the alias's node answers no block function");
+            Assert.Null(model.AnnexBAlias(answer));
+            Assert.True(answer.IsMutable && !answer.IsLexical && !answer.IsBlockFunction && !answer.IsIfClauseFunction, name + ": the alias's flags");
+        }
+
+        return (functions, admittedCount, aliases.Count);
+    }
+
+    /// <summary>
+    /// Over the determinism tests' population, the resolution sources and the Annex B sources: every block function's
+    /// alias answer as an oracle of the tree recomputes it; and, for each source accepted with Annex B both on and off, the
+    /// resolutions with Annex B on against the model's own with it off: each difference is a name a function's or sloppy
+    /// eval code's alias binds, or an <c>arguments</c> binding a block function's evaluation creates; none in a Script's
+    /// variable scope; none where the alias answer is an existing binding; no binding identifier's; and eval code's only in
+    /// the declaration it carries.
+    /// </summary>
+    [Fact]
+    public void Every_block_function_s_alias_and_every_moved_resolution_hold_over_the_population()
+    {
+        var items = DeterminismTests.Population.Value;
+        var (functions, admitted, aliases, compared, moved, movedByKind) = OnDocumentedStack(() =>
+        {
+            var (fns, adm, als, cmp, mov) = (0, 0, 0, 0, 0);
+            var byKind = new SortedDictionary<string, int>(StringComparer.Ordinal);
+            void One(string name, ParseRequest request, ParseRequest offRequest)
+            {
+                var on = SyntaxParser.Parse(request);
+                if (on.Outcome != ParseOutcome.Accepted)
+                    return;
+                var (f, a, l) = CompleteAliases(name, on, SyntaxParser.Parse(offRequest));
+                (fns, adm, als) = (fns + f, adm + a, als + l);
+                var without = SyntaxParser.Parse(WithAnnexB(request, annexB: false));
+                if (without.Outcome != ParseOutcome.Accepted)
+                    return;
+                CompleteAliases(name + " (Annex B off)", without, without, annexB: false);
+                cmp++;
+                var model = on.Model!;
+                var baseline = without.Model!;
+                var onNodes = Nodes(on.Tree!);
+                var offNodes = Nodes(without.Tree!);
+                Assert.Equal(onNodes.Count, offNodes.Count);
+
+                for (var i = 0; i < onNodes.Count; i++)
+                {
+                    if (onNodes[i] is BindingIdentifier binding)
+                    {
+                        Same(model.Resolve(binding), baseline.Resolve((BindingIdentifier)offNodes[i]), model, baseline, name + ": a binding moved at " + binding.Span.Offset.ToString(CultureInfo.InvariantCulture));
+                        continue;
+                    }
+
+                    if (onNodes[i] is not Identifier reference)
+                        continue;
+                    var withAlias = model.Resolve(reference);
+                    var withoutAlias = baseline.Resolve((Identifier)offNodes[i]);
+                    if (Equivalent(withAlias, withoutAlias, model, baseline))
+                        continue;
+                    mov++;
+                    var at = name + ": " + reference.Name + " at " + reference.Span.Offset.ToString(CultureInfo.InvariantCulture);
+                    var end = withAlias.Kind == ResolutionKind.Dynamic ? withAlias.Fallback! : withAlias;
+                    string kind;
+                    if (withAlias.Kind == ResolutionKind.Dynamic && withAlias.Reason == DynamicReason.BlockFunction || withAlias.DynamicScopes.Count > withoutAlias.DynamicScopes.Count)
+                    {
+                        Assert.Equal("arguments", reference.Name);
+                        kind = "arguments gain";
+                    }
+                    else if (end.Declaration is { Kind: BindingKind.BlockFunctionAlias } alias)
+                    {
+                        var facts = model.FactsOf(end.Kind == ResolutionKind.Inherited ? model.Scopes[0].Node : end.Scope!.Node);
+                        Assert.True(facts.Kind is not FunctionKind.Script, at + ": a Script's reference moved");
+                        Assert.Equal(reference.Name, alias.Name);
+                        if (end.Kind == ResolutionKind.Inherited)
+                        {
+                            var other = withoutAlias.Kind == ResolutionKind.Dynamic ? withoutAlias.Fallback! : withoutAlias;
+                            Assert.True(other.Kind == ResolutionKind.Inherited && other.Declaration is null, at + ": eval code's difference is not the declaration alone");
+                        }
+
+                        kind = facts.Kind.ToString();
+                    }
+                    else
+                    {
+                        Assert.Fail(at + ": a moved answer that names no alias");
+                        return;
+                    }
+
+                    byKind[kind] = byKind.TryGetValue(kind, out var count) ? count + 1 : 1;
+                }
+            }
+
+            foreach (var item in items)
+                One(Name(item), DeterminismTests.Request(item, model: true), DeterminismTests.Request(item));
+            foreach (var (goal, text) in ResolutionSources.Concat(AnnexBSources))
+            {
+                ParseRequest Request(bool model) => goal == ParseGoal.Eval
+                    ? new ParseRequest(new SourceText(text), goal, UnicodeDataHome.Tables, NoValidator.Instance) { BuildSemanticModel = model, Context = new InheritedContext { InFunction = true } }
+                    : new ParseRequest(new SourceText(text), goal, UnicodeDataHome.Tables, NoValidator.Instance) { Switches = ParseSwitches.For(goal), BuildSemanticModel = model };
+                Assert.True(SyntaxParser.Parse(Request(true)).Outcome == ParseOutcome.Accepted, text);
+                One("source \"" + text + "\"", Request(true), Request(false));
+            }
+
+            return (fns, adm, als, cmp, mov, byKind);
+        });
+        Assert.True(functions > AnnexBSources.Length && admitted > AnnexBSources.Length && aliases > 0 && compared > 1_000 && moved > 0);
+        output.WriteLine("block functions " + functions.ToString(CultureInfo.InvariantCulture) + ", admitted " + admitted.ToString(CultureInfo.InvariantCulture)
+            + ", aliases " + aliases.ToString(CultureInfo.InvariantCulture) + "; sources compared with Annex B off " + compared.ToString(CultureInfo.InvariantCulture)
+            + ", references moved " + moved.ToString(CultureInfo.InvariantCulture) + " (" + string.Join(", ", movedByKind.Select(static p => p.Key + " " + p.Value.ToString(CultureInfo.InvariantCulture))) + ")");
+    }
+
+    // Whether two resolutions of one node, in two models of one source, are the same: kinds, scopes and declarations by
+    // their place in their model.
+    private static bool Equivalent(Resolution a, Resolution b, SemanticModel ma, SemanticModel mb)
+    {
+        static string Key(Resolution r, SemanticModel m)
+        {
+            string Scope(Scope? s) => s is null ? "-" : m.Scopes.ToList().FindIndex(x => ReferenceEquals(x, s)).ToString(CultureInfo.InvariantCulture);
+            string Declared(Declaration? d) => d is null ? "-" : d.Kind + ":" + d.Name + ":" + d.Node.Span.Offset.ToString(CultureInfo.InvariantCulture);
+            var text = r.Kind + " " + Scope(r.Scope) + " " + Declared(r.Declaration) + " " + (r.Reason?.ToString() ?? "-") + " " + string.Join(",", r.DynamicScopes.Select(Scope));
+            return r.Fallback is { } fallback ? text + " / " + Key(fallback, m) : text;
+        }
+
+        return Key(a, ma) == Key(b, mb);
+    }
+
+    private static void Same(Resolution a, Resolution b, SemanticModel ma, SemanticModel mb, string at) =>
+        Assert.True(Equivalent(a, b, ma, mb), at);
 }

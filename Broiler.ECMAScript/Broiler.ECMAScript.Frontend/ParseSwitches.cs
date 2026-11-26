@@ -63,6 +63,10 @@ public readonly record struct ParseSwitches
     /// <see cref="ParseGoal.Module"/> goal included, which is the library's own choice beyond D17's words: ECMA-262
     /// applies Annex B's regular-expression grammar (B.1.2) in every goal, and the strict-only exclusions follow from
     /// strictness, whatever the switch.
+    /// With the semantic model built (<see cref="ParseRequest.BuildSemanticModel"/>), the switch also decides
+    /// <see cref="Semantics.SemanticModel.AnnexBAlias"/>, the block functions' var-scoped aliases (Annex B.3.2), Annex B.3.4's
+    /// exemption for a simple <c>catch</c> parameter among them: with it off, no block function has one. <i>(Added
+    /// 2026-11-26, at SJL-15.2 stage 5b.)</i>
     /// </summary>
     public bool AnnexB { get; init; }
 
