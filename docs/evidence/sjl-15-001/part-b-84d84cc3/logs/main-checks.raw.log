@@ -1,0 +1,12 @@
+2026-11-26T15:55:08Z
+step 0 start
+3332375435e554124c16307ff3f6ff32c2de3ca1	refs/heads/claude/busy-lamport-m3yprr
+84d84cc3f68e3120299eb9faa44c6b9f0f2e7b8b	refs/heads/main
+2026-11-26T15:55:27Z
+step 1 worktree
+84d84cc3f68e3120299eb9faa44c6b9f0f2e7b8b	refs/heads/main
+2026-11-26T15:57:00Z before base run d3e64b4d: 84d84cc3f68e3120299eb9faa44c6b9f0f2e7b8b	refs/heads/main
+2026-11-26T15:58:44Z before CI import: 84d84cc3f68e3120299eb9faa44c6b9f0f2e7b8b	refs/heads/main
+2026-11-26T16:03:16Z before after run 84d84cc3: 84d84cc3f68e3120299eb9faa44c6b9f0f2e7b8b	refs/heads/main
+2026-11-26T16:09:39Z step 2 (after both runs, before the comparison; both CI runs concluded): 84d84cc3f68e3120299eb9faa44c6b9f0f2e7b8b	refs/heads/main
+2026-11-26T16:10:05Z before step 4 (retain): 84d84cc3f68e3120299eb9faa44c6b9f0f2e7b8b	refs/heads/main
