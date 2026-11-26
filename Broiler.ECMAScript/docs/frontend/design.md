@@ -1134,9 +1134,11 @@ reference answers f's alias, not the Script's `var g`; in sloppy eval code `Inhe
 `Global`; and an `arguments` binding a block function's evaluation creates is a dynamic entry, reason `BlockFunction`.
 Eval code's alias is decided when the request carries the caller's records (`InheritedContext.CallerScopes`), a Catch
 clause's record exempt. Without them the request does not describe the caller, and the eval body alone decides, as
-`CallerScopes`' contract says. A global variable environment's checks remain run-time conditions that no stage closes,
-as a Script's alias's GlobalDeclarationInstantiation checks do. *(Revised 2026-11-26, at SJL-15.2 stage 5c, when the
-caller's records joined the request; it read "What remains: the interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on GlobalDeclarationInstantiation-like checks.")* *(Revised 2026-11-26, at SJL-15.2 stage 5b, when the aliases joined the model; it
+`CallerScopes`' contract says. *(Revised 2026-11-26, at SJL-15.2 stage 5c, when the caller's records joined the request,
+closing the interim; it read "What remains: the interim, eval code's alias conditional on its caller's environments until
+stage 5c describes them; and" before the run-time conditions, which stay as written.)* What remains:
+the run-time conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and
+eval code with a global variable environment on GlobalDeclarationInstantiation-like checks. *(Revised 2026-11-26, at SJL-15.2 stage 5b, when the aliases joined the model; it
 read "**Annex B.3.3's aliases until stage 5b.** The tables hold no block function's var alias (FunctionDeclarationInstantiation
 step 32.a), only `IsBlockFunction`. With Annex B on (`ParseSwitches.AnnexB`), a name that only a block function's Annex
 B.3.3 alias binds is answered as the scopes alone answer it until stage 5b: `Global`, or a `Static` or `Dynamic` answer
@@ -1277,15 +1279,18 @@ lexical declaration of the name then throws (test262's `annexB/language/global-c
 Eval code's alias is decided when the request carries the caller's records (`InheritedContext.CallerScopes`), a Catch
 clause's record exempt: a caller's record that binds the name between the eval and its variable environment, and is not
 a Catch clause's, withholds it (step 13.b.ii.4), and an object record never does (section 10.9). Without them the
-request does not describe the caller, and the eval body alone decides, as `CallerScopes`' contract says. With a global
-variable environment, for an indirect eval or a direct eval at a Script's top level, GlobalDeclarationInstantiation-like
-checks apply (step 13.b.ii.5): a run-time condition no parse-time input can close, which stays after stage 5c (an
-inference). A global variable environment's checks remain run-time conditions that no stage closes, as a Script's
-alias's GlobalDeclarationInstantiation checks do. *(Revised 2026-11-26, at SJL-15.2 stage 5c, when the caller's records
-joined the request; it read "Eval code's alias depends on its caller's environments, which the request does not
-describe: a caller's lexical binding of the name between the eval and its variable environment, a Catch clause's
-excepted, withholds it (step 13.b.ii.4). That is the interim stage 5c's caller scopes narrow, by a dated revision." and,
-after the sentence on step 13.b.ii.5, "What remains: the interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on GlobalDeclarationInstantiation-like checks.")* In eval code the binding the
+request does not describe the caller, and the eval body alone decides, as `CallerScopes`' contract says. *(Revised
+2026-11-26, at SJL-15.2 stage 5c, when the caller's records joined the request, closing the interim; it read "Eval code's
+alias depends on its caller's environments, which the request does not describe: a caller's lexical binding of the name
+between the eval and its variable environment, a Catch clause's excepted, withholds it (step 13.b.ii.4). That is the
+interim stage 5c's caller scopes narrow, by a dated revision.")* With a global variable environment, for an indirect
+eval or a direct eval at a Script's top level, GlobalDeclarationInstantiation-like checks apply (step 13.b.ii.5): a
+run-time condition no parse-time input can close, which stays after stage 5c (an inference). *(Revised 2026-11-26, at
+SJL-15.2 stage 5c, closing the interim; it read "What remains: the interim, eval code's alias conditional on its
+caller's environments until stage 5c describes them; and" before the run-time conditions, which stay as written.)* What
+remains: the run-time conditions,
+which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code with a global
+variable environment on GlobalDeclarationInstantiation-like checks. In eval code the binding the
 alias writes can be the caller's parameter or `arguments` binding (step 13.b.ii.7.a), which the model does not see. Under
 the `FunctionBody` goal the body is answered with the parameters empty, so an alias a real parameter would withhold is
 answered as admitted, and `Resolve` then names it where the real function binds the parameter: an extension of section
@@ -1384,6 +1389,10 @@ varEnv, the variable environment itself never checked; step 3.d.i skips object r
 HasBinding of each name of varNames; a host that supports Annex B.3.4 throws at step 3.d.i.2.a.i.1 unless thisEnv is a
 Catch clause's record (EA0007), and any other host throws at step 3.d.i.2.a.ii.1 (EA0008). Step 13.b.ii.4, the alias
 walk from lexEnv to varEnv, skips object records and exempts a Catch clause's record at step 13.b.ii.4.a.i.1.a.
+Both exemptions follow the steps' text, which asks only whether thisEnv is the Environment Record for a Catch clause, so
+they hold for every call whose chain meets that record, a call in the catch parameter's own initialisers included:
+`try {} catch ({ a = eval('var a') }) {}` is accepted with Annex B on. Annex B.3.4's prose names only "direct eval calls
+contained within the Block of a Catch clause"; the library reads the steps (an inference).
 
 **The rows.** EA0007 (`JSE1907`) and EA0008 (`JSE1908`), `eval.var.lexical-collision`, join `SemanticRows`. With the
 member on, for sloppy eval code whose request gives the caller's records, the walk reports each var-declared name of the
