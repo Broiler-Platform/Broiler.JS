@@ -677,12 +677,13 @@ the walk made them in, which puts a scope before the scopes inside it; every fac
 that is not in the model's tree is a caller's error: `ScopeOf`, `DeclarationOf`, `FactsOf`, both `TargetOf` overloads,
 `PrivateEnvironmentOf`, the `Resolve` overloads of `Identifier`, `BindingIdentifier` and `PrivateIdentifier`, and
 `EnvironmentOf` throw `ArgumentException` for it, and `FactsOf` and `EnvironmentOf` for a node of the tree that has no
-facts. `AnnexBAlias` throws it for a declaration whose node is not in the model's tree. *(Added 2026-11-26, at SJL-15.2
-stage 5b.)* *(Revised 2026-11-25, at SJL-15.2 stage 3; it read "`ScopeOf`, `DeclarationOf` and `FactsOf`
+facts. *(Revised 2026-11-25, at SJL-15.2 stage 3; it read "`ScopeOf`, `DeclarationOf` and `FactsOf`
 throw `ArgumentException` for it".)* *(Revised 2026-11-25, at SJL-15.2 stage 4; it read "`ScopeOf`, `DeclarationOf`,
 `FactsOf` and both `TargetOf` overloads throw".)* *(Revised 2026-11-26, at SJL-15.2 stage 5a; it read
 "`PrivateEnvironmentOf` and `Resolve(PrivateIdentifier)` throw `ArgumentException` for it, and `FactsOf` for a node of
 the tree that has no facts".)*
+`AnnexBAlias` throws `ArgumentException` for a declaration whose node is not in the model's tree. *(Added 2026-11-26,
+at SJL-15.2 stage 5b.)*
 
 ### 10.3 Scopes and `ScopeOf`
 

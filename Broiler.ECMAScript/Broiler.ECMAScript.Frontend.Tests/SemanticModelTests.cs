@@ -22,7 +22,8 @@ namespace Broiler.ECMAScript.Syntax.Tests;
 /// <see cref="SemanticModel.Resolve(Identifier)"/> and its <c>BindingIdentifier</c> overload, and the environment facts,
 /// <see cref="SemanticModel.EnvironmentOf"/> and <see cref="FunctionFacts.HasSeparateVariableEnvironment"/>, on the probes'
 /// and vectors' sources, on fixtures and over the same population, with an oracle of the test's own. <i>(Added 2026-11-26,
-/// at SJL-15.2 stage 5a.)</i> From stage 5b, Annex B's block-function aliases, <see cref="SemanticModel.AnnexBAlias"/>,
+/// at SJL-15.2 stage 5a.)</i>
+/// From stage 5b, Annex B's block-function aliases, <see cref="SemanticModel.AnnexBAlias"/>,
 /// and the resolution of the names they bind, on the vectors' and probes' sources, on fixtures and over the same
 /// population, with an oracle of the tree, and against the model's own answers with Annex B off. <i>(Added 2026-11-26, at
 /// SJL-15.2 stage 5b.)</i>
@@ -910,8 +911,8 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     /// <summary>
     /// Every binding kind's mutability and flags, each kind seen. <i>(Added 2026-11-26, at SJL-15.2 stage 5a, when
     /// <see cref="BindingKind.Arguments"/>, which no scope holds, joined the kinds: it is read from
-    /// <see cref="SemanticModel.EnvironmentOf"/>, and its node answers no declaration.)</i> <i>(Added 2026-11-26, at SJL-15.2
-    /// stage 5b, when <see cref="BindingKind.BlockFunctionAlias"/>, which no scope holds either, joined them: it is read from
+    /// <see cref="SemanticModel.EnvironmentOf"/>, and its node answers no declaration.)</i>
+    /// <i>(Added 2026-11-26, at SJL-15.2 stage 5b, when <see cref="BindingKind.BlockFunctionAlias"/>, which no scope holds either, joined them: it is read from
     /// <see cref="SemanticModel.AnnexBAlias"/>, and its node answers the block function's own declaration.)</i>
     /// </summary>
     [Fact]
@@ -2019,9 +2020,9 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
 
     // One accepted tree's resolutions and environment facts, each as the lookup over the model's scopes and an oracle of the
     // test's own require, with the off path's tables beside them: the check the population and every fixture pass through.
-    // It returns the references, bindings, dynamic answers and facts nodes it checked. From stage 5b it also puts the tree
-    // through CompleteAliases, and its lookup counts the aliases a variable scope binds and the per-name gain of arguments.
-    // (Added 2026-11-26, at SJL-15.2 stage 5b.)
+    // It returns the references, bindings, dynamic answers and facts nodes it checked.
+    // From stage 5b it also puts the tree through CompleteAliases, and its lookup counts the aliases a variable scope binds
+    // and the per-name gain of arguments. (Added 2026-11-26, at SJL-15.2 stage 5b.)
     private static (int References, int Bindings, int Dynamic, int Functions) Complete(string name, ParseResult on, ParseResult off)
     {
         var (refs, binds, dyn, fns) = (0, 0, 0, 0);
@@ -2165,8 +2166,9 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
             }
         }
 
-        // What a scope binds, the test's own reading. (Revised 2026-11-26, at SJL-15.2 stage 5b, when a variable scope's
-        // aliases joined it; it ended "return first;" after the arguments binding.)
+        // What a scope binds, the test's own reading.
+        // (Revised 2026-11-26, at SJL-15.2 stage 5b, when a variable scope's aliases joined it; it ended "return first;"
+        // after the arguments binding.)
         Declaration? Binds(Scope scope, string n)
         {
             var first = scope.Declarations.FirstOrDefault(d => d.Name == n);

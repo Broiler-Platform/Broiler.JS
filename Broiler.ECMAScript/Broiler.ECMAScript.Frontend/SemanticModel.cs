@@ -107,8 +107,8 @@ public enum FunctionKind
 /// resolution (<see cref="Resolve(Identifier)"/>, <see cref="Resolve(BindingIdentifier)"/>) and the environment facts of
 /// the program, every function, every static block and every initialised field (<see cref="EnvironmentOf"/>), and from
 /// stage 5b each block function's Annex B alias (<see cref="AnnexBAlias"/>, Annex B.3.2, which row AB1 names by an
-/// earlier edition's number, B.3.3); the caller's names of eval code, the module record, named evaluation, captures and
-/// the early errors that are not purely grammatical are later stages'. From stage 2 the walk that builds it also reports its
+/// earlier edition's number, B.3.3); the caller's names of eval code, the module record, named evaluation, captures and the early
+/// errors that are not purely grammatical are later stages'. From stage 2 the walk that builds it also reports its
 /// early errors of the function context (the super rows, ContainsArguments, eval code's from the caller's context, and
 /// three of expressions') among the parse's diagnostics, so that a source they refuse has no model, from stage 3 those
 /// of jump targets (a <c>break</c> or a <c>continue</c> with no target, and an undefined break or continue target), and
@@ -125,8 +125,8 @@ public enum FunctionKind
 /// and "the early errors of private names and the module record are later stages'.")</i> <i>(Revised 2026-11-26, at
 /// SJL-15.2 stage 5a, when resolution and the environment facts joined the model; it read "(<see
 /// cref="PrivateEnvironmentOf"/>, <see cref="Resolve(PrivateIdentifier)"/>); resolution, the module record, named
-/// evaluation, captures and the early errors that are not purely grammatical are later stages'.")</i> <i>(Revised
-/// 2026-11-26, at SJL-15.2 stage 5b, when the Annex B aliases joined the model; it read "(<see cref="EnvironmentOf"/>);
+/// evaluation, captures and the early errors that are not purely grammatical are later stages'.")</i>
+/// <i>(Revised 2026-11-26, at SJL-15.2 stage 5b, when the Annex B aliases joined the model; it read "(<see cref="EnvironmentOf"/>);
 /// Annex B.3.3's aliases, the caller's names of eval code, the module record, named evaluation, captures and the early
 /// errors that are not purely grammatical are later stages'.")</i>
 /// </summary>
@@ -792,11 +792,11 @@ public enum ResolutionKind
 
 /// <summary>
 /// Why a <see cref="ResolutionKind.Dynamic"/> resolution is dynamic: the reason of its innermost
-/// <see cref="Resolution.DynamicScopes"/> entry. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i> An entry's own reason is
-/// <see cref="With"/> for a <see cref="ScopeKind.With"/> scope, <see cref="SloppyDirectEval"/> for a scope a sloppy direct
-/// <c>eval</c> may add to, and <see cref="BlockFunction"/> for one that may gain only <c>arguments</c>, by a block
-/// function's evaluation; a scope that may gain both ways has <see cref="SloppyDirectEval"/>, the wider gain. <i>(Added
-/// 2026-11-26, at SJL-15.2 stage 5b.)</i>
+/// <see cref="Resolution.DynamicScopes"/> entry. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
+/// An entry's own reason is <see cref="With"/> for a <see cref="ScopeKind.With"/> scope, <see cref="SloppyDirectEval"/> for a
+/// scope a sloppy direct <c>eval</c> may add to, and <see cref="BlockFunction"/> for one that may gain only
+/// <c>arguments</c>, by a block function's evaluation; a scope that may gain both ways has <see cref="SloppyDirectEval"/>,
+/// the wider gain. <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
 /// </summary>
 /// <remarks>The numbers are stable; a later member takes a new number.</remarks>
 // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14.11.2 with statement NewObjectEnvironment, s19.2.1.1 PerformEval step 16.b, JSD-0080 dynamic markers; IP=Low; Security=Low; Resources=0; Fingerprint=2AD202
