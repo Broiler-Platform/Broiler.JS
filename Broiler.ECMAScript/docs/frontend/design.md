@@ -1081,13 +1081,21 @@ nested direct `eval` can read its bindings by name: in `function f() { var x; ((
 `DirectEvalInBody` is false, yet the arrow's call reaches f's `x` at run time. That reach is stage 7's, with captures
 and the rebuild of Broiler.JS's `FreeNameScan.Dynamic`, which is transitive and ignores strictness.
 
+**An unknown: a class decorator's candidate.** A direct-`eval` candidate in a class's own decorators is read at the
+enclosing code's strictness, as the walk reads decorators: it visits them in the enclosing context, and the class's
+heritage, keys and elements in strict code. Decorators are a proposal outside the pinned edition, behind a proposal
+flag; whether the proposal makes them strict code is not settled here, and the stage that settles proposal decorators
+decides it. Until then such a candidate in a sloppy function's own code counts towards its `DirectEvalInBody` or
+`DirectEvalInParameters`.
+
 **Annex B.3.3's aliases until stage 5b.** The tables hold no block function's var alias
-(FunctionDeclarationInstantiation step 32.a), only `IsBlockFunction`. Until stage 5b, with Annex B on, a name only such
-an alias binds is answered as the scopes alone answer it: `Global`, or a `Static` or `Dynamic` answer naming an outer
-binding that the alias shadows at run time, as in `var g; function f() { { function g() {} } return g; }`, where the
-scopes answer the Script's `var g` and the alias is f's. Nothing reads `Resolve` before stage 5b (an inference: no
-engine reads the model or sets the member, and publication is stage 8's); no test pins such an answer. A Script-level
-alias is a run-time global `var`, so `Global` is already right there.
+(FunctionDeclarationInstantiation step 32.a), only `IsBlockFunction`. With Annex B on (`ParseSwitches.AnnexB`), a name
+that only a block function's Annex B.3.3 alias binds is answered as the scopes alone answer it until stage 5b: `Global`,
+or a `Static` or `Dynamic` answer naming an outer binding, which the alias shadows at run time. So in
+`var g; function f() { { function g() {} } return g; }` the scopes answer the Script's `var g`, and the alias is f's.
+Nothing reads `Resolve` before stage 5b (an inference: no engine reads the model or sets the member, and publication is
+stage 8's); no test pins such an answer. A Script-level alias is a run-time global `var`, so `Global` is already right
+there.
 
 **The vectors left unanswered.** The value vectors of rows FF3, FF4, FF5 and RS2, groups `ff3`, `ff4`, `ff5` and `rs2`,
 stay not implemented, as group `pn1` does (section 10.6): they name no catalogue row, and read at the parse each would
@@ -1095,7 +1103,9 @@ match by acceptance alone, showing nothing of resolution. The Frontend tests cov
 
 **The dump.** The canonical dump's model section writes, after section 10.6's lines, one `model-environment` line per
 facts entry and one `model-resolution` line per `Identifier` and per `BindingIdentifier`, an `arguments` binding named
-by its node; a dump without a model is unchanged, and no corpus runner or probe requests the model before stage 8.
+by its node; a dump without a model is unchanged, and no corpus runner or probe requests the model before stage 8. It
+writes a line for every `BindingIdentifier`, not only for those the language resolves when it runs: the model does not
+say which bindings those are, and the dump computes no fact of its own.
 
 **Where the library differs from each engine**, named for SJL-15.3 and SJL-15.5, as `docs/roadmap/SharedLibraries.md`
 lists it. FF4: Broiler.JS separates the environment only where a sloppy function holds a direct `eval`, so a closure in
@@ -1109,6 +1119,7 @@ correspondence files' "FunctionDeclarationInstantiation's step 28" is step 30 in
 
 **For part F's checklist** (stage 8): "reference resolution with dynamic markers" is `Resolve` and `Resolution`;
 "per-function flags" are `EnvironmentOf`, `EnvironmentFacts` and `FunctionFacts.HasSeparateVariableEnvironment`.
+
 ## Corrections
 
 *(Revised 2026-10-26, at SJL-13.1; it read "None.")* Each revision of 2026-10-26 above quotes what it replaced:

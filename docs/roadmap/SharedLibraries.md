@@ -4192,7 +4192,7 @@ detector (`Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.Visit
 a direct call is unknown. Row FF3: Broiler.JS materialises the arguments object on reference, and eagerly for a direct
 `eval` (`Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateFunction.cs`); Broiler.VM's need is a
 mention of `arguments` or `eval` (`VMC/JsBinder.cs`), wider than the model's for `let arguments` and
-`function arguments(){}`, which Broiler.VM's to judge against class P's examples (an inference); and Broiler.VM's search
+`function arguments(){}`, which is Broiler.VM's to judge against class P's examples (an inference); and Broiler.VM's search
 does not enter an arrow's parameters (`VMC/JsCompiler.Walk.cs`), where the model's need is wider, for an `arguments`
 reference and for an `eval` candidate (an inference, not probed). Rows RS1 to RS4: both engines are the same
 (`correspondence-broiler-js.md`; Broiler.VM's `correspondence.md`), Broiler.VM's slice refusals of RS3 and RS4 being its
