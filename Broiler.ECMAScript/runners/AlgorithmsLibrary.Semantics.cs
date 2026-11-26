@@ -44,11 +44,14 @@ namespace Broiler.ECMAScript.Runners;
 /// builds them (steps 4 to 6): the names of the innermost class whose elements hold the call and of the environments
 /// around it, innermost first, each once, and an empty list where no class holds the call (the session's decision
 /// D-js-adapter-visible-names). The eval code is then parsed
-/// under <see cref="ParseGoal.Eval"/> with that context, forced strict where the caller is strict, the member on. Whether a
-/// name <c>eval</c> is the intrinsic one is not resolved: resolution is a later stage's. A Script the on path refuses, or
+/// under <see cref="ParseGoal.Eval"/> with that context, forced strict where the caller is strict, the member on. Which
+/// binding the name <c>eval</c> resolves to is the model's <c>Resolve</c> (stage 5a); whether its value is %eval% is a
+/// run-time fact, which the adapter does not decide. A Script the on path refuses, or
 /// one with no such call or more than one <c>eval</c>, is not implemented. <i>(Revised 2026-11-25, at SJL-15.2 stage 4,
 /// when the visible private names joined the context; it read "the nearest that is not an arrow the inherited context
-/// (PerformEval step 10). The eval code is then parsed".)</i>
+/// (PerformEval step 10). The eval code is then parsed".)</i> <i>(Revised 2026-11-26, at SJL-15.2 stage 5a, when
+/// resolution joined the model; it read "Whether a name <c>eval</c> is the intrinsic one is not resolved: resolution is a
+/// later stage's.")</i>
 /// </para>
 /// <para>
 /// <b>What it answers</b> is the syntax area's rendering (<see cref="RenderParse"/>): <c>error: SyntaxError</c> for a

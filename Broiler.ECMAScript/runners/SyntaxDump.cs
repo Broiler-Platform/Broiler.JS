@@ -41,6 +41,15 @@ namespace Broiler.ECMAScript.Runners;
 /// holds its binding, or none (decision D-js-part-g). A parse without a model is dumped as before. <i>(Added 2026-11-25,
 /// at SJL-15.2 stage 4.)</i>
 /// </para>
+/// <para>
+/// From SJL-15.2 stage 5a it also holds, after those lines, per facts entry in the model's order, its environment facts
+/// (whether it has an <c>arguments</c> binding, whether it is needed and mapped, direct <c>eval</c> in its parameters and
+/// in its body, <c>with</c>, and the separate variable environment); then per <c>Identifier</c> and per
+/// <c>BindingIdentifier</c> in tree order, its resolution: its kind, scope, declaration and reason, its dynamic scopes,
+/// and its fallback's kind, scope and declaration (decision D-js-part-g). An <c>arguments</c> binding, which no scope
+/// holds, is named by its node. A parse without a model is dumped as before. <i>(Added 2026-11-26, at SJL-15.2 stage
+/// 5a.)</i>
+/// </para>
 /// </remarks>
 internal static class SyntaxDump
 {
@@ -230,6 +239,51 @@ internal static class SyntaxDump
                 continue;
             text.Append("model-private ").Append(Reference(order, name)).Append(' ')
                 .Append(model.Resolve(name) is { } binding ? Reference(order, binding.Environment.Class) : "-").Append('\n');
+        }
+
+        // Each facts entry's environment facts in the model's order, then each reference's and each binding identifier's
+        // resolution in tree order, by the nodes' own references (SJL-15.2 stage 5a); never the model's maps.
+        foreach (var function in model.Functions)
+        {
+            var environment = model.EnvironmentOf(function.Node);
+            text.Append("model-environment ").Append(Reference(order, function.Node)).Append(' ')
+                .Append(Flag(environment.Arguments is not null)).Append(Flag(environment.ArgumentsNeeded)).Append(Flag(environment.ArgumentsMapped))
+                .Append(Flag(environment.DirectEvalInParameters)).Append(Flag(environment.DirectEvalInBody)).Append(Flag(environment.ContainsWith))
+                .Append(Flag(function.HasSeparateVariableEnvironment)).Append('\n');
+        }
+
+        string Declared(Declaration? declaration) => declaration is null ? "-"
+            : declaration.Kind == BindingKind.Arguments ? "args:" + Reference(order, declaration.Node)
+            : declarationIndex[declaration];
+
+        for (var i = 0; i < nodes.Count; i++)
+        {
+            var resolution = nodes[i] switch
+            {
+                Identifier reference => model.Resolve(reference),
+                BindingIdentifier binding => model.Resolve(binding),
+                _ => null,
+            };
+            if (resolution is null)
+                continue;
+            text.Append("model-resolution ").Append(Number(i)).Append(' ').Append(Number((int)resolution.Kind)).Append(' ')
+                .Append(resolution.Scope is { } scope ? Number(scopeIndex[scope]) : "-").Append(' ').Append(Declared(resolution.Declaration)).Append(' ')
+                .Append(resolution.Reason is { } reason ? Number((int)reason) : "-").Append(' ')
+                .Append(resolution.DynamicScopes.Count == 0 ? "-" : "");
+            for (var d = 0; d < resolution.DynamicScopes.Count; d++)
+                text.Append(d == 0 ? "" : ",").Append(Number(scopeIndex[resolution.DynamicScopes[d]]));
+            text.Append(' ');
+            if (resolution.Fallback is { } fallback)
+            {
+                text.Append(Number((int)fallback.Kind)).Append(' ').Append(fallback.Scope is { } fallbackScope ? Number(scopeIndex[fallbackScope]) : "-").Append(' ')
+                    .Append(Declared(fallback.Declaration));
+            }
+            else
+            {
+                text.Append('-');
+            }
+
+            text.Append('\n');
         }
     }
 

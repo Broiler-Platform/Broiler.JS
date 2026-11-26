@@ -1476,6 +1476,32 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         Assert.DoesNotContain("model-private", System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(off)), StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// The model section of the canonical dump holds the environment facts and the resolutions (decision D-js-part-g; SJL-15.2
+    /// stage 5a): one <c>model-environment</c> line per facts entry, one <c>model-resolution</c> line per reference and per
+    /// binding identifier, an <c>arguments</c> binding named by its node; a dump without the model is the dump with it off.
+    /// <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
+    /// </summary>
+    [Fact]
+    public void The_dump_s_model_section_holds_the_environments_and_the_resolutions()
+    {
+        const string text = "function f(a) { with (a) { return arguments; } }";
+        var (on, model) = Model(text);
+        var lines = System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(on)).Split('\n');
+        var nodes = Nodes(on.Tree!);
+        string Index(SyntaxNode node) => nodes.FindIndex(n => ReferenceEquals(n, node)).ToString(CultureInfo.InvariantCulture);
+        string ScopeIndex(Scope scope) => model.Scopes.ToList().FindIndex(s => ReferenceEquals(s, scope)).ToString(CultureInfo.InvariantCulture);
+        var f = First<FunctionNode>(on);
+        Assert.Equal(new[] { "model-environment " + Index(on.Tree!) + " 0000000", "model-environment " + Index(f) + " 1110010" }, lines.Where(static l => l.StartsWith("model-environment ", StringComparison.Ordinal)));
+        var resolutions = lines.Where(static l => l.StartsWith("model-resolution ", StringComparison.Ordinal)).ToList();
+        Assert.Equal(nodes.Count(static n => n is Identifier or BindingIdentifier), resolutions.Count);
+        var arguments = Reference(on, "arguments");
+        Assert.Contains("model-resolution " + Index(arguments) + " 1 - - 0 " + ScopeIndex(Only(model, ScopeKind.With)) + " 0 " + ScopeIndex(Of(model, ScopeKind.Parameters, f)) + " args:" + Index(f), resolutions);
+        var off = Parse(text, model: false);
+        Assert.True(SyntaxDump.Dump(off).AsSpan().SequenceEqual(SyntaxDump.Dump(on, model: false)));
+        Assert.DoesNotContain("model-resolution", System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(off)), StringComparison.Ordinal);
+    }
+
     // -----------------------------------------------------------------------------------------------------------------
     // Resolution and the environment facts (SJL-15.2 stage 5a; the session's decisions D-js-resolution,
     // D-js-environment-facts and D-js-arguments-binding). (Added 2026-11-26, at SJL-15.2 stage 5a.)
