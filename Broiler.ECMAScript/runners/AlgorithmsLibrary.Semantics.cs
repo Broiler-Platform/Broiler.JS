@@ -249,7 +249,10 @@ internal sealed partial class AlgorithmsLibrary
     /// <summary>
     /// The parse a <c>DirectEval</c> vector is answered by (SJL-15.2 stage 5c; the session's decision
     /// D-js-adapter-caller-scopes): the outer eval request's, and while the accepted eval code holds exactly one <c>eval</c>
-    /// of a string literal, the inner eval code's in the context its model gives it; the innermost parse.
+    /// of a string literal, the inner eval code's in the context its model gives it; the innermost parse. It takes only a
+    /// request that <c>DirectEvalRequest</c> or <c>EvalRequestAt</c> builds: each parse copies the members those set (the
+    /// source, the tables, the switches, the context and the limits), so a request with proposals, extensions, a dynamic
+    /// function's kind or a meter would be parsed without them.
     /// </summary>
     internal static ParseResult DirectEvalParse(ParseRequest request)
     {

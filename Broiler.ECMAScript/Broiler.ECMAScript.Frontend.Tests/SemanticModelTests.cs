@@ -2026,7 +2026,14 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     // It returns the references, bindings, dynamic answers and facts nodes it checked.
     // From stage 5b it also puts the tree through CompleteAliases, and its lookup counts the aliases a variable scope binds
     // and the per-name gain of arguments. (Added 2026-11-26, at SJL-15.2 stage 5b.)
-    private static (int References, int Bindings, int Dynamic, int Functions) Complete(string name, ParseResult on, ParseResult off)
+    // From stage 5c it takes the request's caller's records, for eval code: where a record binds the name, an eval-code
+    // variable's answer for a reference, a binding resolved when it runs or a dynamic answer's fallback carries no
+    // declaration, every other binding keeping the eval body's; and CompleteAliases withholds an alias a record that is not
+    // a Catch clause's binds. Null, the default, is every earlier stage's check. (Added 2026-11-26, at SJL-15.2 stage 5c.)
+    // (Revised 2026-11-26, at SJL-15.2 stage 5c, when the eval-var case gained a caller's record of the name; the
+    // signature ended "ParseResult off)", the alias call read "CompleteAliases(name, on, off);", and the eval-var check
+    // began "if (EvalVar(chain[i], declaration))".)
+    private static (int References, int Bindings, int Dynamic, int Functions) Complete(string name, ParseResult on, ParseResult off, IReadOnlyList<CallerScope>? callers = null)
     {
         var (refs, binds, dyn, fns) = (0, 0, 0, 0);
         if (on.Model is not { } model)
@@ -2149,7 +2156,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         // The Annex B aliases a sloppy function's or sloppy eval code's variable scope binds, and the scopes that may gain
         // arguments by a block function's evaluation, from the model's answers, which CompleteAliases checks against an
         // oracle of the tree. (Added 2026-11-26, at SJL-15.2 stage 5b.)
-        CompleteAliases(name, on, off);
+        CompleteAliases(name, on, off, callers: callers);
         var aliasBinds = new Dictionary<(Scope, string), Declaration>();
         var argumentsGains = new HashSet<Scope>(ReferenceEqualityComparer.Instance);
         foreach (var scope in model.Scopes)
@@ -2184,6 +2191,10 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
 
         var sloppyEval = unit.Kind == FunctionKind.EvalCode && !unit.IsStrict;
         bool EvalVar(Scope scope, Declaration declaration) => sloppyEval && ReferenceEquals(scope, model.Scopes[0]) && !declaration.IsLexical;
+
+        // The names a caller's record the request gives binds, which the lookup of an eval-code variable reaches first.
+        // (Added 2026-11-26, at SJL-15.2 stage 5c.)
+        var held = new HashSet<string>(callers is null ? Enumerable.Empty<string>() : callers.SelectMany(static c => c.Names), StringComparer.Ordinal);
 
         // The answer the lookup requires, checked member by member.
         void Check(SyntaxNode node, string n, Resolution answer, string at)
@@ -2231,7 +2242,9 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
             if (i < chain.Count)
             {
                 var declaration = Binds(chain[i], n)!;
-                if (EvalVar(chain[i], declaration))
+                if (EvalVar(chain[i], declaration) && held.Contains(n))
+                    Assert.True(end.Kind == ResolutionKind.Inherited && end.Scope is null && end.Declaration is null, at + ": eval code's var under a caller's record of its name");
+                else if (EvalVar(chain[i], declaration))
                     Assert.True(end.Kind == ResolutionKind.Inherited && end.Scope is null && ReferenceEquals(end.Declaration, declaration), at + ": eval code's var");
                 else
                     Assert.True(end.Kind == ResolutionKind.Static && ReferenceEquals(end.Scope, chain[i]) && ReferenceEquals(end.Declaration, declaration), at + ": not the first binding scope's first declaration");
@@ -2834,7 +2847,10 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     // variable environment and arguments binding read from the model, which the function facts' and environment facts'
     // own tests check; the parameters' names are read from the tree and checked against the facts. With annexB false every
     // answer is null. It returns the block functions, the admitted ones and the aliases made.
-    private static (int Functions, int Admitted, int Aliases) CompleteAliases(string name, ParseResult on, ParseResult off, bool annexB = true)
+    // From stage 5c, with the request's caller's records given, a record that is not a Catch clause's and binds the name
+    // also withholds sloppy eval code's own alias (EvalDeclarationInstantiation step 13.b.ii.4). (Added 2026-11-26, at
+    // SJL-15.2 stage 5c.) (Revised 2026-11-26, at SJL-15.2 stage 5c; the signature ended "bool annexB = true)".)
+    private static (int Functions, int Admitted, int Aliases) CompleteAliases(string name, ParseResult on, ParseResult off, bool annexB = true, IReadOnlyList<CallerScope>? callers = null)
     {
         if (on.Model is not { } model)
             return default;
@@ -3061,6 +3077,8 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
                 _ => ((ProgramNode)owner).Body,
             };
             withheld = withheld || LexicalNames(top, top: true).Contains(f);
+            withheld = withheld || (callers is not null && owner is ProgramNode && facts.Kind == FunctionKind.EvalCode
+                && callers.Any(c => !c.IsCatch && c.Names.Contains(f)));
             if (withheld)
             {
                 Assert.True(answer is null, here + ": admitted where the oracle withholds it");
@@ -3711,6 +3729,110 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         Assert.True(calls > CallerSources.Length && nulls > 0 && units > 1_000);
         output.WriteLine("candidates " + calls.ToString(CultureInfo.InvariantCulture) + ", of them null " + nulls.ToString(CultureInfo.InvariantCulture) + ", over units " + units.ToString(CultureInfo.InvariantCulture));
     }
+
+    /// <summary>
+    /// The population check under the caller's records: stage 5a's completeness clause for eval code's variables, as stage 5b
+    /// extended it, gains the case of a caller's record that binds the name. Each eval-code item of the determinism tests'
+    /// population and further eval sources go through Complete under a list whose Catch clause's record binds every name
+    /// the source holds, which with Annex B on refuses nothing: every eval-code variable's reference, binding resolved when
+    /// it runs and dynamic answer's fallback carries no declaration, and every other binding keeps the eval body's. They go
+    /// through it again under a list whose record that is not a Catch clause's binds each name an eval-code alias would
+    /// bind, which refuses only where a var-declared name collides (EA0007) and otherwise withholds those aliases.
+    /// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    [Fact]
+    public void Every_reference_and_binding_resolves_under_the_caller_s_records_over_the_population()
+    {
+        static ParseRequest Under(ParseRequest request, IReadOnlyList<CallerScope> list, bool model) =>
+            new(request.Source, ParseGoal.Eval, request.UnicodeTables, request.RegularExpressions)
+            {
+                Switches = request.Switches,
+                Context = new InheritedContext { InFunction = request.Context!.InFunction, CallerScopes = list },
+                Limits = request.Limits,
+                BuildSemanticModel = model,
+            };
+
+        // The declaration an answer carries, through a dynamic answer's fallback.
+        static Declaration? Carried(Resolution answer) => (answer.Kind == ResolutionKind.Dynamic ? answer.Fallback! : answer).Declaration;
+
+        var requests = DeterminismTests.Population.Value.Where(static i => i.Variant[0] == 'E')
+            .Select(static i => (Name: Name(i), Request: DeterminismTests.Request(i, model: true)))
+            .Concat(CallerSources.Concat(EvalVariableSources).Select(static t => (Name: "eval source \"" + t + "\"", Request: CallerRequest(t, null))))
+            .ToList();
+        var (catchUnits, nulled, aliasUnits, withheld, collided) = OnDocumentedStack(() =>
+        {
+            var (cu, nd, au, wh, co) = (0, 0, 0, 0, 0);
+            foreach (var (name, request) in requests)
+            {
+                var baseline = SyntaxParser.Parse(request);
+                if (baseline.Model is not { } model)
+                    continue;
+                var baseNodes = Nodes(baseline.Tree!);
+                var names = baseNodes.Select(static n => n switch { Identifier i => i.Name, BindingIdentifier b => b.Name, _ => null })
+                    .OfType<string>().Distinct(StringComparer.Ordinal).ToArray();
+                if (names.Length == 0)
+                    continue;
+
+                // Every name in a Catch clause's record, an empty record inside it.
+                CallerScope[] catchList = [new CallerScope(), new CallerScope { Names = names, IsCatch = true }];
+                var on = SyntaxParser.Parse(Under(request, catchList, model: true));
+                Assert.True(on.Outcome == baseline.Outcome, name + ": refused under a Catch clause's record");
+                Complete(name + " under a Catch clause's record", on, SyntaxParser.Parse(Under(request, catchList, model: false)), catchList);
+                cu++;
+                var onNodes = Nodes(on.Tree!);
+                Assert.Equal(baseNodes.Count, onNodes.Count);
+                for (var k = 0; k < baseNodes.Count; k++)
+                {
+                    if (baseNodes[k] is Identifier reference && Carried(model.Resolve(reference)) is not null && Carried(on.Model!.Resolve((Identifier)onNodes[k])) is null)
+                        nd++;
+                }
+
+                // Each name an eval-code alias binds, in a record that is not a Catch clause's.
+                var aliased = model.Scopes.SelectMany(scope => scope.Declarations.Where(d => d.IsBlockFunction && model.AnnexBAlias(d) is { Kind: BindingKind.BlockFunctionAlias }
+                        && ReferenceEquals(VarScopeOf(model, scope), model.Scopes[0])))
+                    .Select(static d => d.Name).Distinct(StringComparer.Ordinal).ToArray();
+                if (aliased.Length == 0)
+                    continue;
+                CallerScope[] lexicalList = [new CallerScope { Names = aliased }];
+                var under = SyntaxParser.Parse(Under(request, lexicalList, model: true));
+                if (under.Outcome != ParseOutcome.Accepted)
+                {
+                    Assert.True(under.Diagnostics.All(static d => d.Code == "JSE1907"), name + ": refused otherwise than by EA0007");
+                    co++;
+                    continue;
+                }
+
+                Complete(name + " under a record that is not a Catch clause's", under, SyntaxParser.Parse(Under(request, lexicalList, model: false)), lexicalList);
+                au++;
+                var m = under.Model!;
+                foreach (var scope in m.Scopes)
+                {
+                    if (!ReferenceEquals(VarScopeOf(m, scope), m.Scopes[0]))
+                        continue;
+                    foreach (var declaration in scope.Declarations.Where(d => d.IsBlockFunction && aliased.Contains(d.Name)))
+                    {
+                        Assert.True(m.AnnexBAlias(declaration) is null, name + ": an alias kept that a record withholds, " + declaration.Name);
+                        wh++;
+                    }
+                }
+            }
+
+            return (cu, nd, au, wh, co);
+        });
+        Assert.True(catchUnits > CallerSources.Length && nulled > 0 && aliasUnits > 0 && withheld > 0);
+        output.WriteLine("under a Catch clause's record: units " + catchUnits.ToString(CultureInfo.InvariantCulture) + ", references carrying none " + nulled.ToString(CultureInfo.InvariantCulture)
+            + "; under a record that is not a Catch clause's: units " + aliasUnits.ToString(CultureInfo.InvariantCulture) + ", block functions " + withheld.ToString(CultureInfo.InvariantCulture)
+            + ", refused by EA0007 " + collided.ToString(CultureInfo.InvariantCulture));
+    }
+
+    // Eval sources whose variables, run-time bindings, fallbacks and aliases the population check reads under the caller's
+    // records. (Added 2026-11-26, at SJL-15.2 stage 5c.)
+    private static readonly string[] EvalVariableSources =
+    [
+        "var x = 2; x; var x; function x() {}", "var x; with (o) { x; }", "{ function g() {} } g;", "for (var k in o) k; for (var v of o) v; var [d = 1] = o; d;",
+        "{ function g() {} } var h; { function h() {} } g; h;", "switch (0) { case 0: function s() {} } s;", "if (1) function i() {} i;",
+        "function inner() { { function g() {} } return g; } { function g() {} } g;", "{ function g() {} } with (o) { g; } eval('');",
+    ];
 
     private static readonly string[] CallerSources =
     [

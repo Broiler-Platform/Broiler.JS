@@ -440,10 +440,13 @@ public sealed class SemanticModel
     /// function's evaluation creates makes the variable environment's scope a dynamic entry for that name alone, with reason
     /// <see cref="DynamicReason.BlockFunction"/>. Eval code's alias is decided when the request carries the caller's records
     /// (<see cref="InheritedContext.CallerScopes"/>), a Catch clause's record exempt. Without them the request does not
-    /// describe the caller, and the eval body alone decides, as <c>CallerScopes</c>' contract says. A global variable
-    /// environment's checks remain run-time conditions that no stage closes, as a Script's alias's
-    /// GlobalDeclarationInstantiation checks do. <i>(Revised 2026-11-26, at SJL-15.2 stage 5c, when the caller's records
-    /// joined the request; it read "What remains: the interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on GlobalDeclarationInstantiation-like checks.")</i> <i>(Revised 2026-11-26, at SJL-15.2
+    /// describe the caller, and the eval body alone decides, as <c>CallerScopes</c>' contract says. <i>(Revised 2026-11-26,
+    /// at SJL-15.2 stage 5c, when the caller's records joined the request, closing the interim; it read "What remains: the
+    /// interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and" before the
+    /// run-time conditions, which stay as written.)</i> What remains: the run-time conditions, which no stage closes: a
+    /// Script's alias
+    /// depends on GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on
+    /// GlobalDeclarationInstantiation-like checks. <i>(Revised 2026-11-26, at SJL-15.2
     /// stage 5b, when the aliases joined the model; it read "With Annex B on (<see cref="ParseSwitches.AnnexB"/>), a name that
     /// only a block function's Annex B.3.3 alias binds is answered as the scopes alone answer it until stage 5b:
     /// <see cref="ResolutionKind.Global"/>, or a <see cref="ResolutionKind.Static"/> or <see cref="ResolutionKind.Dynamic"/>
@@ -579,15 +582,19 @@ public sealed class SemanticModel
     /// HasLexicalDeclaration, which an earlier script's lexical declaration of the name fails, and CanDeclareGlobalVar), and
     /// no binding is made where either fails. Eval code's alias is decided when the request carries the caller's records
     /// (<see cref="InheritedContext.CallerScopes"/>), a Catch clause's record exempt: a caller's record that binds the name
-    /// between the eval and its variable environment, and is not a Catch clause's, withholds it (EvalDeclarationInstantiation
-    /// step 13.b.ii.4), and an object record never does. Without them the request
-    /// does not describe the caller, and the eval body alone decides, as <c>CallerScopes</c>' contract says. A global
-    /// variable environment's checks remain run-time conditions that no stage closes (step 13.b.ii.5). <i>(Revised 2026-11-26,
-    /// at SJL-15.2 stage 5c, when the caller's records joined the request; it read "A Script's and eval code's answers are
-    /// what the source alone decides." and "Eval code's alias depends on its caller's environments, which the request does
-    /// not describe: a caller's lexical binding of the name between the eval and its variable environment, a Catch clause's
-    /// excepted, withholds it (EvalDeclarationInstantiation step 13.b.ii.4); and with a global variable environment,
-    /// GlobalDeclarationInstantiation-like checks can withhold it at run time (step 13.b.ii.5). What remains: the interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on GlobalDeclarationInstantiation-like checks.")</i> In eval
+    /// between the eval and its variable environment, and is not a Catch clause's, withholds it
+    /// (EvalDeclarationInstantiation step 13.b.ii.4), and an object record never does; and with a global variable
+    /// environment, GlobalDeclarationInstantiation-like checks can withhold it at run time (step 13.b.ii.5). Without the
+    /// caller's records the request does not describe the caller, and the eval body alone decides, as
+    /// <c>CallerScopes</c>' contract says. <i>(Revised 2026-11-26, at SJL-15.2 stage 5c, when the caller's records joined
+    /// the request, closing the interim; it read "A Script's and eval code's answers are what the source alone decides.",
+    /// "Eval code's alias depends on its caller's environments, which the request does not describe: a caller's lexical
+    /// binding of the name between the eval and its variable environment, a Catch clause's excepted, withholds it
+    /// (EvalDeclarationInstantiation step 13.b.ii.4); and" and "What remains: the interim, eval code's alias conditional on
+    /// its caller's environments until stage 5c describes them; and", the sentence on step 13.b.ii.5 and the run-time
+    /// conditions staying as written.)</i> What remains: the run-time
+    /// conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code
+    /// with a global variable environment on GlobalDeclarationInstantiation-like checks. In eval
     /// code the binding it writes can be the caller's parameter or <c>arguments</c> binding (step 13.b.ii.7.a), which the
     /// model does not see, and the answer is the alias. Under <see cref="ParseGoal.FunctionBody"/> the body is answered with
     /// the parameters empty, as <see cref="Resolution"/> says, so an alias a real parameter would withhold is answered as
@@ -1033,10 +1040,13 @@ public enum DynamicReason
 /// to f's <see cref="ScopeKind.Function"/> scope and its alias, not the Script's <c>var g</c>; a Script's references stay
 /// <see cref="ResolutionKind.Global"/>. Eval code's alias is decided when the request carries the caller's records
 /// (<see cref="InheritedContext.CallerScopes"/>), a Catch clause's record exempt. Without them the request does not
-/// describe the caller, and the eval body alone decides, as <c>CallerScopes</c>' contract says. A global variable
-/// environment's checks remain run-time conditions that no stage closes, as a Script's alias's
-/// GlobalDeclarationInstantiation checks do. <i>(Revised 2026-11-26, at SJL-15.2 stage 5c, when the caller's records
-/// joined the request; it read "What remains: the interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on GlobalDeclarationInstantiation-like checks.")</i> <i>(Revised 2026-11-26, at SJL-15.2 stage 5b, when the aliases joined the
+/// describe the caller, and the eval body alone decides, as <c>CallerScopes</c>' contract says. <i>(Revised 2026-11-26,
+/// at SJL-15.2 stage 5c, when the caller's records joined the request, closing the interim; it read "What remains: the
+/// interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and" before the
+/// run-time conditions, which stay as written.)</i> What remains: the run-time conditions, which no stage closes: a
+/// Script's alias
+/// depends on GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on
+/// GlobalDeclarationInstantiation-like checks. <i>(Revised 2026-11-26, at SJL-15.2 stage 5b, when the aliases joined the
 /// model; it read "<b>Annex B.3.3's aliases</b> are stage 5b's: until then, with Annex B on, a name only a block
 /// function's alias binds is answered as the scopes alone answer it, which may be a <see cref="ResolutionKind.Static"/>
 /// answer naming an outer binding that the alias shadows at run time, as in
