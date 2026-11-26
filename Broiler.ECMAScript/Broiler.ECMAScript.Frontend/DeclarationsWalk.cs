@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   119
-// Annotated:        119/119
-// Exempt:           73
-// Human-reviewed:   0/119
+// Relevant units:   133
+// Annotated:        133/133
+// Exempt:           81
+// Human-reviewed:   0/133
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       119
+// Unverified:       133
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -51,6 +51,11 @@ namespace Broiler.ECMAScript.Semantics;
 /// reports the model's rows (below). <i>(Revised 2026-11-25, at SJL-15.2 stage 2, when the model's rows joined the
 /// diagnostics; it read "so that the walk's sequence, which orders the diagnostics and the tables, is the same on or off.
 /// Only <see cref="Run"/> builds it; a partial walk before a grammar refusal never does.")</i>
+/// From stage 5a the same visit also records, in visit order, every reference and every binding the language resolves
+/// when it runs, every direct-<c>eval</c> candidate and every <c>with</c> statement with the function whose code holds
+/// it, each function's enclosing function, and each function's <c>arguments</c> binding, which no scope holds; after the
+/// walk, the model resolves every reference and computes the environment facts from those lists, a pass over them and not
+/// a second walk, numbering nothing. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
 /// </para>
 /// <para>
 /// <b>No <c>request</c> or <c>engine</c> row is reported, and a <c>semantics</c> row only with the member on</b>: with it
@@ -113,6 +118,9 @@ internal sealed class DeclarationsWalk
     // model's own sequence, the scope of every node, every model scope's parent, and the facts by node; from stage 3, each
     // jump's target. (Added 2026-11-25, at SJL-15.2 stage 3.) From stage 4, each private name's binding and each class's
     // private environment. (Added 2026-11-25, at SJL-15.2 stage 4.)
+    // From stage 5a, the references and the bindings resolved when they run, the direct-eval candidates, the functions
+    // whose own code holds a with statement, each function's arguments binding and each function's enclosing function.
+    // (Added 2026-11-26, at SJL-15.2 stage 5a.)
     private readonly bool model;
     private readonly List<(int Start, int Sequence, Scope Scope)>? modelScopes;
     private readonly List<(int Start, int Sequence, FunctionFacts Facts)>? modelFunctions;
@@ -140,6 +148,21 @@ internal sealed class DeclarationsWalk
     // Hairs-AI:           Origin=AI; Spec=ECMA-262 PrivateEnvironment Records, s15.7.14 ClassDefinitionEvaluation, JSD-0080 private names; IP=Low; Security=Medium; Resources=1; Fingerprint=F74F37
     // Hairs-Human:        PENDING
     private readonly Dictionary<ClassNode, PrivateEnvironment>? privateEnvironmentOf;
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, JSD-0080 reference resolution; IP=Low; Security=Medium; Resources=1; Fingerprint=D3CA39
+    // Hairs-Human:        PENDING
+    private readonly List<SyntaxNode>? references;
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 call evaluation direct eval, s19.2.1.1 PerformEval, JSD-0080 per-function facts; IP=Low; Security=Medium; Resources=1; Fingerprint=89781C
+    // Hairs-Human:        PENDING
+    private readonly List<(CallExpression Call, SyntaxNode Owner, bool InParameters, bool Strict)>? candidates;
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s14.11.2 with statement, JSD-0080 per-function facts; IP=Low; Security=Medium; Resources=1; Fingerprint=C4E9A6
+    // Hairs-Human:        PENDING
+    private readonly HashSet<SyntaxNode>? withOwners;
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s10.2.11 FunctionDeclarationInstantiation steps 15-22, JSD-0080 per-function facts; IP=Low; Security=Medium; Resources=1; Fingerprint=45C1EA
+    // Hairs-Human:        PENDING
+    private readonly Dictionary<SyntaxNode, Declaration>? argumentsOf;
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s10.2.11 FunctionDeclarationInstantiation, JSD-0080 per-function facts; IP=Low; Security=Medium; Resources=1; Fingerprint=B11955
+    // Hairs-Human:        PENDING
+    private readonly Dictionary<SyntaxNode, SyntaxNode?>? enclosingOf;
     private int modelSequence;
 
     // Each class constructor's kind, on every request (the functions' facts are the same with the model on or off).
@@ -159,7 +182,7 @@ internal sealed class DeclarationsWalk
     // Hairs-Human:        PENDING
     private readonly LexicalRefusal? undeclaredPrivateRow;
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=01B720
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=F5E04B
     // Hairs-Human:        PENDING
     private DeclarationsWalk(ParseRequest request, bool buildModel, bool semantics)
     {
@@ -179,6 +202,11 @@ internal sealed class DeclarationsWalk
             targetOf = new(ReferenceEqualityComparer.Instance);
             privateOf = new(ReferenceEqualityComparer.Instance);
             privateEnvironmentOf = new(ReferenceEqualityComparer.Instance);
+            references = new();
+            candidates = new();
+            withOwners = new(ReferenceEqualityComparer.Instance);
+            argumentsOf = new(ReferenceEqualityComparer.Instance);
+            enclosingOf = new(ReferenceEqualityComparer.Instance);
         }
 
         this.semantics = semantics;
@@ -321,7 +349,7 @@ internal sealed class DeclarationsWalk
     /// sequence; each declaration by its node, the tables' first, so that a class declaration's name answers its outer
     /// declaration (the session's decision D-js-declaration-of).
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=3AD55B
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=D47045
     // Hairs-Human:        PENDING
     private SemanticModel Model(Scope[] tableScopes)
     {
@@ -347,7 +375,304 @@ internal sealed class DeclarationsWalk
                 declarationOf.TryAdd(declaration.Node, declaration);
         }
 
-        return new SemanticModel(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), scopeOf!, parentOf!, declarationOf, factsOf!, targetOf!, privateOf!, privateEnvironmentOf!);
+        // The resolutions and the environment facts (SJL-15.2 stage 5a), from the lists the walk recorded.
+        var (resolutionOf, environmentOf) = Resolutions(scopeList, functionList, declarationOf);
+        return new SemanticModel(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), scopeOf!, parentOf!, declarationOf, factsOf!, targetOf!, privateOf!, privateEnvironmentOf!, resolutionOf, environmentOf);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // Resolution and the environment facts (SJL-15.2 stage 5a), finished after the walk from the lists it recorded.
+
+    /// <summary>
+    /// The resolutions and the environment facts (the session's decisions D-js-resolution and D-js-environment-facts): each
+    /// facts node's direct-eval candidates and <c>with</c> flag; the scopes a sloppy direct <c>eval</c> may add to; every
+    /// recorded reference and binding resolved, in the references' order, and every other binding identifier answered at
+    /// the scope that holds its declaration; the arguments object's need; and one <see cref="EnvironmentFacts"/> per facts
+    /// entry. Every map and set here is only looked up; every order comes from the walk's lists or the model's.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, s10.2.11 FunctionDeclarationInstantiation steps 15-30, s19.2.1.1 PerformEval steps 16-18, JSD-0080 reference resolution; IP=Low; Security=Medium; Resources=1; Fingerprint=C1D341
+    // Hairs-Human:        PENDING
+    private (Dictionary<SyntaxNode, Resolution> Resolutions, Dictionary<SyntaxNode, EnvironmentFacts> Environments) Resolutions(Scope[] scopeList, FunctionFacts[] functionList, Dictionary<SyntaxNode, Declaration> declarationOf)
+    {
+        // Each facts node's own candidates, by where they stand, and the owners of the arguments object they may read: the
+        // innermost facts node past arrows (an arrow has no arguments of its own).
+        var inParameters = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
+        var inBody = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
+        var evalReaders = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
+        foreach (var candidate in candidates!)
+        {
+            if (!candidate.Strict)
+                (candidate.InParameters ? inParameters : inBody).Add(candidate.Owner);
+            evalReaders.Add(ArgumentsOwner(candidate.Owner));
+        }
+
+        // Each facts node's parameters' and body's scopes.
+        var parametersOf = new Dictionary<SyntaxNode, Scope>(ReferenceEqualityComparer.Instance);
+        var bodyOf = new Dictionary<SyntaxNode, Scope>(ReferenceEqualityComparer.Instance);
+        foreach (var scope in scopeList)
+        {
+            if (scope.Kind == ScopeKind.Parameters)
+                parametersOf[scope.Node] = scope;
+            else if (scope.Kind is ScopeKind.Function or ScopeKind.StaticBlock)
+                bodyOf[scope.Node] = scope;
+        }
+
+        // The scopes a sloppy direct eval may add to (PerformEval step 16.b): a function's own variable environment, its
+        // Function scope where it is separate (FunctionDeclarationInstantiation step 30) and its Parameters scope where it
+        // is not (step 29.d), and for a call in its parameters its calleeEnv, which its Parameters scope stands for (step
+        // 20). A Script's, a Module's, eval code's, a static block's and a field initialiser's add nothing that matters.
+        var gaining = new HashSet<Scope>(ReferenceEqualityComparer.Instance);
+        foreach (var facts in functionList)
+        {
+            if (!parametersOf.TryGetValue(facts.Node, out var parameters))
+                continue;
+            if (inBody.Contains(facts.Node))
+                gaining.Add(facts.HasSeparateVariableEnvironment ? bodyOf[facts.Node] : parameters);
+            if (inParameters.Contains(facts.Node))
+                gaining.Add(parameters);
+        }
+
+        var program = factsOf![scopeList[0].Node];
+        var isEval = program.Kind == FunctionKind.EvalCode;
+        var pass = new ResolutionPass(parentOf!, gaining, argumentsOf!, isEval, isEval && !program.IsStrict ? scopeList[0] : null);
+
+        // The references and the bindings resolved when they run, in the walk's order; the arguments objects a reference
+        // reads, by its binding or by a top-level var of its name (FunctionDeclarationInstantiation steps 29 and 30).
+        var resolutionOf = new Dictionary<SyntaxNode, Resolution>(ReferenceEqualityComparer.Instance);
+        var read = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
+        foreach (var node in references!)
+        {
+            var answer = pass.Lookup(scopeOf![node], node is Identifier reference ? reference.Name : ((BindingIdentifier)node).Name);
+            resolutionOf[node] = answer;
+            if (node is Identifier && (answer.Kind == ResolutionKind.Dynamic ? answer.Fallback! : answer) is { Kind: ResolutionKind.Static, Declaration: { } declaration, Scope: { } scope })
+            {
+                if (declaration.Kind == BindingKind.Arguments)
+                    read.Add(declaration.Node);
+                else if (declaration.Kind == BindingKind.Var && declaration.Name == "arguments" && scope.Kind is (ScopeKind.Function or ScopeKind.StaticBlock))
+                    read.Add(scope.Node);
+            }
+        }
+
+        // Every other binding identifier: as a reference would answer where the lookup reaches the scope that holds its
+        // declaration.
+        foreach (var scope in scopeList)
+        {
+            foreach (var declaration in scope.Declarations)
+            {
+                if (declaration.Node is BindingIdentifier binding && !resolutionOf.ContainsKey(binding)
+                    && declarationOf.TryGetValue(binding, out var own) && ReferenceEquals(own, declaration))
+                    resolutionOf[binding] = pass.At(scope, declaration.Name);
+            }
+        }
+
+        // One environment's facts per facts entry.
+        var environmentOf = new Dictionary<SyntaxNode, EnvironmentFacts>(ReferenceEqualityComparer.Instance);
+        foreach (var facts in functionList)
+        {
+            var node = facts.Node;
+            var arguments = argumentsOf!.TryGetValue(node, out var binding) ? binding : null;
+            var needed = arguments is not null && (read.Contains(node) || evalReaders.Contains(node));
+            environmentOf[node] = new EnvironmentFacts(node, arguments, needed, needed && !facts.IsStrict && facts.HasSimpleParameterList,
+                inParameters.Contains(node), inBody.Contains(node), withOwners!.Contains(node));
+        }
+
+        return (resolutionOf, environmentOf);
+    }
+
+    /// <summary>The facts node whose arguments object code of <paramref name="owner"/> reads: the owner, or past every arrow the innermost function around it.</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s10.2.11 FunctionDeclarationInstantiation step 15 ThisMode lexical, JSD-0080 per-function facts; IP=Low; Security=Low; Resources=1; Fingerprint=5934F8
+    // Hairs-Human:        PENDING
+    private SyntaxNode ArgumentsOwner(SyntaxNode owner)
+    {
+        while (owner is FunctionNode { IsArrow: true } && enclosingOf!.TryGetValue(owner, out var outer) && outer is not null)
+            owner = outer;
+        return owner;
+    }
+
+    /// <summary>
+    /// The <c>arguments</c> binding FunctionDeclarationInstantiation creates (ECMA-262 clause 10.2.11, steps 15 to 18), or
+    /// null: none where a parameter is named <c>arguments</c>, nor, without parameter expressions, where a top-level
+    /// function declaration or a lexical declaration of the body is. The caller excludes an arrow, whose [[ThisMode]] is
+    /// lexical, and every field initialiser, whose evaluation calls no FunctionDeclarationInstantiation.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s10.2.11 FunctionDeclarationInstantiation steps 15-18 argumentsObjectNeeded; IP=Low; Security=Low; Resources=1; Fingerprint=FDF699
+    // Hairs-Human:        PENDING
+    private static Declaration? ArgumentsBinding(SyntaxNode node, IReadOnlyList<string> parameterNames, bool hasParameterExpressions, List<Declaration> lexical, List<Declaration> vars)
+    {
+        foreach (var name in parameterNames)
+        {
+            if (name == "arguments")
+                return null;
+        }
+
+        if (!hasParameterExpressions)
+        {
+            foreach (var declaration in lexical)
+            {
+                if (declaration.Name == "arguments")
+                    return null;
+            }
+
+            foreach (var declaration in vars)
+            {
+                if (declaration.Name == "arguments" && declaration.Kind == BindingKind.Function)
+                    return null;
+            }
+        }
+
+        return new Declaration("arguments", BindingKind.Arguments, node, false, false, false);
+    }
+
+    /// <summary>The BoundNames of a <c>var</c> declaration's declarators with an initialiser, or without one, as references to resolve.</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding, VariableDeclaration evaluation, ForIn/OfBodyEvaluation, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=A4D96A
+    // Hairs-Human:        PENDING
+    private void RecordResolvedBindings(VariableDeclaration declaration, bool initialised)
+    {
+        var nodes = new List<BindingIdentifier>();
+        foreach (var declarator in declaration.Declarations)
+        {
+            if ((declarator.Initializer is not null) == initialised)
+                BoundNames(declarator.Target, null, nodes);
+        }
+
+        foreach (var node in nodes)
+            references!.Add(node);
+    }
+
+    /// <summary>
+    /// Whether a call may be a direct <c>eval</c>: not optional, and its callee, through any parentheses, the name
+    /// <c>eval</c> (the call's evaluation reads a Reference named <c>"eval"</c>, and the grouping operator keeps one).
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 call evaluation direct eval, grouping operator evaluation; IP=Low; Security=Low; Resources=0; Fingerprint=25A674
+    // Hairs-Human:        PENDING
+    internal static bool IsDirectEvalCandidate(CallExpression call)
+    {
+        if (call.IsOptional)
+            return false;
+        var callee = call.Callee;
+        while (callee is ParenthesizedExpression parenthesized)
+            callee = parenthesized.Expression;
+        return callee is Identifier { Name: "eval" };
+    }
+
+    /// <summary>
+    /// The lookup (the session's decision D-js-resolution), iterative and memoised by its starting scope and name: outward
+    /// from a scope, a <c>with</c> scope and a scope a sloppy direct <c>eval</c> may add to being dynamic entries, a scope
+    /// that binds the name ending it, and the chain's end being inherited for eval code and global otherwise.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, s14.11.2 with statement, s19.2.1.1 PerformEval step 16.b, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=CA896C
+    // Hairs-Human:        PENDING
+    private sealed class ResolutionPass(Dictionary<Scope, Scope?> parentOf, HashSet<Scope> gaining, Dictionary<SyntaxNode, Declaration> argumentsOf, bool inherited, Scope? sloppyEvalScope)
+    {
+        // Hairs-AI:           Origin=AI; Spec=JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=4DB646
+        // Hairs-Human:        PENDING
+        private readonly Dictionary<(Scope Scope, string Name), Resolution> memo = new(ScopeNameComparer.Instance);
+        // Hairs-AI:           Origin=AI; Spec=JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=B55B13
+        // Hairs-Human:        PENDING
+        private readonly Dictionary<Scope, Dictionary<string, Declaration>> byName = new(ReferenceEqualityComparer.Instance);
+
+        /// <summary>The resolution of a name standing in a scope.</summary>
+        // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=9BA618
+        // Hairs-Human:        PENDING
+        internal Resolution Lookup(Scope start, string name)
+        {
+            if (memo.TryGetValue((start, name), out var known))
+                return known;
+            List<Scope>? dynamic = null;
+            Resolution? end = null;
+            for (var scope = start; scope is not null; scope = parentOf[scope])
+            {
+                if (scope.Kind == ScopeKind.With)
+                {
+                    (dynamic ??= new()).Add(scope);
+                    continue;
+                }
+
+                if (Binding(scope, name) is { } declaration)
+                {
+                    end = Bound(scope, declaration);
+                    break;
+                }
+
+                if (gaining.Contains(scope))
+                    (dynamic ??= new()).Add(scope);
+            }
+
+            end ??= new Resolution(inherited ? ResolutionKind.Inherited : ResolutionKind.Global, null, null, Array.Empty<Scope>(), null, null);
+            var answer = dynamic is null
+                ? end
+                : new Resolution(ResolutionKind.Dynamic, null, null, Array.AsReadOnly(dynamic.ToArray()),
+                    dynamic[0].Kind == ScopeKind.With ? DynamicReason.With : DynamicReason.SloppyDirectEval, end);
+            memo[(start, name)] = answer;
+            return answer;
+        }
+
+        /// <summary>The resolution of a name a scope binds, as a lookup that reaches the scope answers it.</summary>
+        // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=7885B2
+        // Hairs-Human:        PENDING
+        internal Resolution At(Scope scope, string name) => Bound(scope, Binding(scope, name)!);
+
+        // Sloppy eval code's own var-scoped declaration is inherited (PerformEval step 16.b); every other bound name static.
+        // Hairs-AI:           Origin=AI; Spec=ECMA-262 s19.2.1.1 PerformEval step 16.b, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=D41C05
+        // Hairs-Human:        PENDING
+        private Resolution Bound(Scope scope, Declaration declaration) =>
+            ReferenceEquals(scope, sloppyEvalScope) && !declaration.IsLexical
+                ? new Resolution(ResolutionKind.Inherited, null, declaration, Array.Empty<Scope>(), null, null)
+                : new Resolution(ResolutionKind.Static, scope, declaration, Array.Empty<Scope>(), null, null);
+
+        // The first declaration of a name in a scope, or its arguments binding (FunctionDeclarationInstantiation step 22).
+        // Hairs-AI:           Origin=AI; Spec=ECMA-262 s10.2.11 FunctionDeclarationInstantiation step 22, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=BDCBB9
+        // Hairs-Human:        PENDING
+        private Declaration? Binding(Scope scope, string name)
+        {
+            var declarations = scope.Declarations;
+            Declaration? found = null;
+            if (declarations.Count <= 8)
+            {
+                foreach (var declaration in declarations)
+                {
+                    if (declaration.Name == name)
+                    {
+                        found = declaration;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                if (!byName.TryGetValue(scope, out var index))
+                {
+                    index = new Dictionary<string, Declaration>(declarations.Count, StringComparer.Ordinal);
+                    foreach (var declaration in declarations)
+                        index.TryAdd(declaration.Name, declaration);
+                    byName[scope] = index;
+                }
+
+                index.TryGetValue(name, out found);
+            }
+
+            if (found is null && name == "arguments" && scope.Kind is (ScopeKind.Parameters or ScopeKind.StaticBlock) && argumentsOf.TryGetValue(scope.Node, out var arguments))
+                found = arguments;
+            return found;
+        }
+    }
+
+    /// <summary>A key of a scope by identity and a name by ordinal comparison.</summary>
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 reference resolution; IP=Low; Security=Low; Resources=0; Fingerprint=B99755
+    // Hairs-Human:        PENDING
+    private sealed class ScopeNameComparer : IEqualityComparer<(Scope Scope, string Name)>
+    {
+        // Hairs-AI:           Origin=AI; Spec=JSD-0080 reference resolution; IP=Low; Security=Low; Resources=0; Fingerprint=43FFCC
+        // Hairs-Human:        PENDING
+        internal static readonly ScopeNameComparer Instance = new();
+
+        // Hairs-AI:           Origin=AI; Spec=JSD-0080 reference resolution; IP=Low; Security=Low; Resources=0; Fingerprint=560B6D
+        // Hairs-Human:        PENDING
+        public bool Equals((Scope Scope, string Name) x, (Scope Scope, string Name) y) => ReferenceEquals(x.Scope, y.Scope) && string.Equals(x.Name, y.Name, StringComparison.Ordinal);
+
+        // Hairs-AI:           Origin=AI; Spec=JSD-0080 reference resolution; IP=Low; Security=Low; Resources=0; Fingerprint=1ED875
+        // Hairs-Human:        PENDING
+        public int GetHashCode((Scope Scope, string Name) key) => HashCode.Combine(System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(key.Scope), StringComparer.Ordinal.GetHashCode(key.Name));
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -470,7 +795,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // The program.
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=87BEB8
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=CB34EC
     // Hairs-Human:        PENDING
     private void WalkProgram(ProgramNode program, IReadOnlyList<Statement> body, bool closed)
     {
@@ -525,7 +850,12 @@ internal sealed class DeclarationsWalk
         if (model)
         {
             Record(program, programParameters ?? programScope);
-            context = context with { ModelScope = programScope };
+            context = context with { ModelScope = programScope, ModelFunction = program };
+
+            // The model's (SJL-15.2 stage 5a): the dynamic function's arguments binding, its parameters' and body's being
+            // the two goals' pieces, each with the other empty.
+            if (isDynamic && ArgumentsBinding(program, parameterNames, !simpleProgram && ContainsExpression(program.Parameters), lexical, vars) is { } programArguments)
+                argumentsOf![program] = programArguments;
         }
 
         if (closed)
@@ -724,7 +1054,7 @@ internal sealed class DeclarationsWalk
     // The visit: each node's own rules, then its children under their context, pushed in reverse so that they are
     // visited in source order.
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=48A9F3
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=D7FB05
     // Hairs-Human:        PENDING
     private void Visit(SyntaxNode node, Context context)
     {
@@ -732,6 +1062,10 @@ internal sealed class DeclarationsWalk
         {
             case Identifier identifier:
                 CheckName(identifier.Name, identifier.IsEscaped, identifier, NameUse.Reference, context);
+
+                // The model's (SJL-15.2 stage 5a): every reference, resolved after the walk.
+                if (model)
+                    references!.Add(identifier);
 
                 // The model's rows: ContainsArguments of each member whose initialiser or block holds the reference, once
                 // per member (EE0130, EE0138), and of eval code a field initialiser evaluates, at the reference (EA0005).
@@ -832,6 +1166,11 @@ internal sealed class DeclarationsWalk
                 return;
             case VariableDeclaration declaration:
                 CheckDeclaration(declaration, inForInOfHead: false);
+
+                // The model's (SJL-15.2 stage 5a): a var declarator's bindings with an initialiser, which its evaluation
+                // resolves (ResolveBinding), a for-in or for-of head's among them.
+                if (model && declaration.DeclarationKind == DeclarationKind.Var)
+                    RecordResolvedBindings(declaration, initialised: true);
                 PushChildren(node, context);
                 return;
             case ForStatement @for:
@@ -860,6 +1199,9 @@ internal sealed class DeclarationsWalk
                 CheckLabelledFunctionBody(with.Body, Rows.EE0061);
                 if (model)
                 {
+                    // The model's (SJL-15.2 stage 5a): the function whose own code holds it.
+                    withOwners!.Add(context.ModelFunction!);
+
                     // The model's: the body in the object environment, the object outside it (clause 14.11.2).
                     var withScope = AddModelScope(with.Span.Offset, new Scope(ScopeKind.With, with, Array.Empty<Declaration>()), context.ModelScope);
                     Push(with.Body, context with { ModelScope = withScope });
@@ -958,6 +1300,14 @@ internal sealed class DeclarationsWalk
                 return;
             case PrivateInExpression privateIn when semantics:
                 CheckPrivateReference(privateIn.Name, privateIn, context);
+                PushChildren(node, context);
+                return;
+
+            // The model's fact (SJL-15.2 stage 5a): a direct-eval candidate, with the function whose own code holds it,
+            // whether it stands in that function's parameters, and its strictness. With the member off it falls to the
+            // default, as before.
+            case CallExpression call when model && IsDirectEvalCandidate(call):
+                candidates!.Add((call, context.ModelFunction!, context.ParamsOf is not null, context.Strict));
                 PushChildren(node, context);
                 return;
             default:
@@ -1093,7 +1443,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Functions (clauses 15.1 to 15.9).
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=D84F48
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=59B9A3
     // Hairs-Human:        PENDING
     private void VisitFunction(FunctionNode function, Context outer)
     {
@@ -1125,6 +1475,9 @@ internal sealed class DeclarationsWalk
             if (function.Name is { } recorded)
                 Record(recorded, nameScope ?? outer.ModelScope!);
             parameterScope = AddModelScope(function.Span.Offset, new Scope(ScopeKind.Parameters, function, ParameterDeclarations(parameterNodes)), nameScope ?? outer.ModelScope);
+
+            // The model's (SJL-15.2 stage 5a): the function whose code holds this one.
+            enclosingOf![function] = outer.ModelFunction;
         }
 
         // The name: a declaration's binds in the enclosing context, an expression's in its own (clauses 15.2 to 15.8).
@@ -1161,6 +1514,10 @@ internal sealed class DeclarationsWalk
         var vars = new List<Declaration>();
         CollectList(body, top: true, module: false, lexical, vars);
         var bodyScope = AddScope(function.Span.Offset, new Scope(ScopeKind.Function, function, Merge(lexical, vars)), parameterScope);
+
+        // The model's (SJL-15.2 stage 5a): the arguments binding of a function that is not an arrow.
+        if (model && !function.IsArrow && ArgumentsBinding(function, parameterNames, !simple && ContainsExpression(function.Parameters), lexical, vars) is { } functionArguments)
+            argumentsOf![function] = functionArguments;
         var end = End(function);
         CheckConflicts(lexical, vars, end, Rows.EE0078, Rows.EE0079);
         if (ParameterCollisionRow(shape, function) is { } collisionRow)
@@ -1188,6 +1545,7 @@ internal sealed class DeclarationsWalk
             Labels = null,
             LabelOwner = LabelOwner.Function,
             ModelScope = parameterScope,
+            ModelFunction = model ? function : null,
 
             // The model's rows: an arrow's parameters and body are its enclosing code's for Contains and ContainsArguments,
             // but, as every function's, a boundary for jumps (added 2026-11-25, at SJL-15.2 stage 3); every function's carry
@@ -1451,7 +1809,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // Classes (clause 15.7) and object literals' methods (clause 13.2.5).
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=7E8ABA
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=88C4D2
     // Hairs-Human:        PENDING
     private void VisitClass(ClassNode @class, Context outer)
     {
@@ -1555,6 +1913,10 @@ internal sealed class DeclarationsWalk
                         Record(field, classScope!);
                         if (field.Key is not ComputedPropertyName)
                             RecordSubtree(field.Key, classScope!);
+
+                        // The model's (SJL-15.2 stage 5a): an initialiser's enclosing function.
+                        if (field.Value is not null)
+                            enclosingOf![field] = elementContext.ModelFunction;
                     }
 
                     // A field's initialiser is read under [~Yield, ~Await] (design section 9.3), inside a function boundary.
@@ -1566,6 +1928,7 @@ internal sealed class DeclarationsWalk
                         ParamsOf = null,
                         Labels = null,
                         LabelOwner = LabelOwner.Function,
+                        ModelFunction = model ? field : null,
 
                         // The model's rows: an initialiser admits a SuperProperty, not a SuperCall (EE0131), and anchors
                         // ContainsArguments (EE0130) at the field, inside every member that encloses it.
@@ -1594,7 +1957,7 @@ internal sealed class DeclarationsWalk
         PushAll(@class.Decorators, outer);
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=233DB0
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=1DE5A1
     // Hairs-Human:        PENDING
     private void VisitStaticBlock(StaticBlock block, Context outer)
     {
@@ -1603,7 +1966,15 @@ internal sealed class DeclarationsWalk
         CollectList(block.Body, top: true, module: false, lexical, vars);
         var blockScope = AddScope(block.Span.Offset, new Scope(ScopeKind.StaticBlock, block, Merge(lexical, vars)), outer.ModelScope);
         if (model)
+        {
             Record(block, outer.ModelScope!);
+
+            // The model's (SJL-15.2 stage 5a): the block's enclosing function, and its arguments binding, its body being
+            // instantiated with no parameters (clause 15.7.11).
+            enclosingOf![block] = outer.ModelFunction;
+            if (ArgumentsBinding(block, Array.Empty<string>(), false, lexical, vars) is { } blockArguments)
+                argumentsOf![block] = blockArguments;
+        }
         CheckConflicts(lexical, vars, End(block), Rows.EE0133, Rows.EE0134);
         var context = outer with
         {
@@ -1615,6 +1986,7 @@ internal sealed class DeclarationsWalk
             Labels = null,
             LabelOwner = LabelOwner.StaticBlock,
             ModelScope = model ? blockScope : null,
+            ModelFunction = model ? block : null,
 
             // The model's rows: a static block admits a SuperProperty, not a SuperCall (EE0139), and anchors
             // ContainsArguments (EE0138) at the block, inside every member that encloses it.
@@ -2073,7 +2445,7 @@ internal sealed class DeclarationsWalk
         PushChildren(@for, forContext);
     }
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=629473
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=5897C5
     // Hairs-Human:        PENDING
     private void VisitForInOf(Statement statement, SyntaxNode left, Statement body, Context context)
     {
@@ -2120,6 +2492,10 @@ internal sealed class DeclarationsWalk
         }
         else
         {
+            // The model's (SJL-15.2 stage 5a): a var head's bindings without an initialiser, which ForIn/OfBodyEvaluation
+            // resolves (ResolveBinding); the VariableDeclaration arm records those with one.
+            if (model && left is VariableDeclaration { DeclarationKind: DeclarationKind.Var } varHead)
+                RecordResolvedBindings(varHead, initialised: false);
             PushChildren(statement, semantics ? Inside(context, BreakableKind.Iteration, statement) : context);
         }
 
@@ -2846,6 +3222,13 @@ internal sealed class DeclarationsWalk
 
         /// <summary>The semantic model's scope where the node stands; null unless the request asks for the model.</summary>
         public Scope? ModelScope { get; init; }
+
+        /// <summary>
+        /// The facts node whose own code holds the node, the one whose VariableEnvironment it runs in: the program, a
+        /// function (an arrow's among them), a static block or an initialised field; null unless the request asks for the
+        /// model (SJL-15.2 stage 5a). <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
+        /// </summary>
+        public SyntaxNode? ModelFunction { get; init; }
 
         /// <summary>What the model's rows read where the node stands; null unless the request asks for the model.</summary>
         public SemanticContext? Semantic { get; init; }

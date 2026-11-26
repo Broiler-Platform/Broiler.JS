@@ -4096,6 +4096,111 @@ project passed" is read on both workflows' push runs, each as it concluded in it
 model commit, judged by its part B against its own first parent. None of it is accepted: no second holder exists to
 review it. Every SJL-15 clause is unmet, in both repositories.
 
+*(Noted 2026-11-26, at SJL-15.2 stage 5a, whose merge is the fifth model commit.)* The note above reads "Next: SJL-15.2
+stage 5a, resolution and the function environment facts, the fifth model commit, judged by its part B against its own
+first parent." The change before this one is stage 4's part B records, Broiler-Platform/Broiler.JS#1140 (`746591d2`),
+after stage 4's merge, Broiler-Platform/Broiler.JS#1139 (`56272150`). This change is stage 5a: resolution and the
+function environment facts. With `ParseRequest.BuildSemanticModel` on, the semantic model holds each reference's and
+each binding identifier's resolution: `SemanticModel.Resolve`, its `Identifier` and `BindingIdentifier` overloads,
+answers a `Resolution`, a new public type, of a `ResolutionKind` (static, dynamic, global or inherited, a new public
+enum) with the scope and declaration, the scopes that may bind the name at run time and their reason (`DynamicReason`, a
+new public enum), and the answer when none of them binds it; and each function's environment facts:
+`SemanticModel.EnvironmentOf` answers an `EnvironmentFacts`, a new public type, with the `arguments` binding
+(`BindingKind.Arguments`, held in no scope's declarations), whether it is needed and mapped, and direct `eval` and
+`with` in the node's own code. `FunctionFacts.HasSeparateVariableEnvironment`, computed, is on the shared type and the
+same with the member on or off. The canonical dump's model section writes each facts entry's environment and each
+reference's and binding identifier's resolution. No row is added and no vector is newly answered. It fulfils decision
+D-js-kinds' "the separate variable environment is a function fact (row FF4), stage 5a's", and Broiler.VM's finding F7,
+whose note reads "The separate variable environment's fact is still to come, at that stage". A sloppy function's one
+`Function` scope stands for its lexical environment over its variable environment, its declarations' `IsLexical` saying
+which, the variable environment being also the parameters' where it is not separate; a strict function's is one
+environment; for resolution the split cannot be observed. The members that answer each row, for Broiler.VM's class P
+listing to cite: FF3, `EnvironmentFacts.ArgumentsNeeded` and `ArgumentsMapped`; FF4,
+`FunctionFacts.HasSeparateVariableEnvironment`; FF5, `EnvironmentFacts.DirectEvalInParameters` and `DirectEvalInBody`;
+RS1 to RS3, `Resolve`; RS4, `Resolve` with `Declaration.IsMutable`. Where this departs from JSD-0080's resolution forms
+("static, to a scope and declaration; dynamic, with its reason ...; or global"), named for Broiler.VM's catch-up as an
+inference: the inherited form, for eval code, and the `BindingIdentifier` overload. With the member off nothing moves.
+Rule SL6's `PublicAPI.txt` gains these lines and loses none:
+- `Broiler.ECMAScript.Semantics.BindingKind.Arguments = 13`
+- `Broiler.ECMAScript.Semantics.DynamicReason enum`
+- `Broiler.ECMAScript.Semantics.DynamicReason.SloppyDirectEval = 1`
+- `Broiler.ECMAScript.Semantics.DynamicReason.With = 0`
+- `Broiler.ECMAScript.Semantics.DynamicReason.value__ field System.Int32`
+- `Broiler.ECMAScript.Semantics.EnvironmentFacts sealed class`
+- `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_Arguments() method Broiler.ECMAScript.Semantics.Declaration`
+- `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_ArgumentsMapped() method System.Boolean`
+- `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_ArgumentsNeeded() method System.Boolean`
+- `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_ContainsWith() method System.Boolean`
+- `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_DirectEvalInBody() method System.Boolean`
+- `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_DirectEvalInParameters() method System.Boolean`
+- `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_Node() method Broiler.ECMAScript.Syntax.SyntaxNode`
+- `Broiler.ECMAScript.Semantics.FunctionFacts.get_HasSeparateVariableEnvironment() method System.Boolean`
+- `Broiler.ECMAScript.Semantics.Resolution sealed class`
+- `Broiler.ECMAScript.Semantics.Resolution.get_Declaration() method Broiler.ECMAScript.Semantics.Declaration`
+- ``Broiler.ECMAScript.Semantics.Resolution.get_DynamicScopes() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.Scope>``
+- `Broiler.ECMAScript.Semantics.Resolution.get_Fallback() method Broiler.ECMAScript.Semantics.Resolution`
+- `Broiler.ECMAScript.Semantics.Resolution.get_Kind() method Broiler.ECMAScript.Semantics.ResolutionKind`
+- ``Broiler.ECMAScript.Semantics.Resolution.get_Reason() method System.Nullable`1<Broiler.ECMAScript.Semantics.DynamicReason>``
+- `Broiler.ECMAScript.Semantics.Resolution.get_Scope() method Broiler.ECMAScript.Semantics.Scope`
+- `Broiler.ECMAScript.Semantics.ResolutionKind enum`
+- `Broiler.ECMAScript.Semantics.ResolutionKind.Dynamic = 1`
+- `Broiler.ECMAScript.Semantics.ResolutionKind.Global = 2`
+- `Broiler.ECMAScript.Semantics.ResolutionKind.Inherited = 3`
+- `Broiler.ECMAScript.Semantics.ResolutionKind.Static = 0`
+- `Broiler.ECMAScript.Semantics.ResolutionKind.value__ field System.Int32`
+- `Broiler.ECMAScript.Semantics.SemanticModel.EnvironmentOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.EnvironmentFacts`
+- `Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.BindingIdentifier) method Broiler.ECMAScript.Semantics.Resolution`
+- `Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.Identifier) method Broiler.ECMAScript.Semantics.Resolution`
+
+**The merge condition.** Both workflows are green on the PR; after the merge, nothing merges to `main` until both push
+runs at the merge have concluded. For ci.yml's run that includes the one re-run D-js-part-b-attempt allows
+(`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run (`.github/workflows/ci.yml:25-27`,
+:36-39). A later push never cancels Shared libraries' push run, because its push group carries the commit
+(`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1 ("Nothing merged to the
+default branch until both push runs at it had concluded", `docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken
+after the merge, against the merge's own first parent. Stage 4's part B records say the same of stage 4: "Nothing merged
+to the default branch until both push runs at it had concluded" (`docs/roadmap/SharedLibraries.md:4077-4078`).
+
+**This stage's decisions of 2026-11-26**, each taken as recommended under the owner's direction and recorded as the
+owner's decision of 2026-11-26. Their authority is the direction quoted above, which leaves out only "the start ...;
+decision D-census ...; and each publication of the shared stream (JSD-0083's decision D30)"; none below is one of those.
+Every later stage's decisions are recorded when that stage lands (the note of 2026-11-24 above); these are stage 5a's.
+Broiler.VM's decision D-precision ("Window 1 reads the model's precise facts", JSD-0088) is the reason the facts are
+precise; it is Broiler.VM's, not among the decisions that bind this repository above, and is not taken here.
+
+| Decision | Taken | Not taken, and why |
+|---|---|---|
+| D-js-resolution | **`SemanticModel.Resolve(Identifier)` answers every reference, and `Resolve(BindingIdentifier)` every binding, with a `Resolution`.** The answer is one of: static, to the scope whose environment holds the binding and its declaration; dynamic, with the scopes that may bind the name at run time innermost first (a `with` statement's object, or a function's environment a sloppy direct `eval` may add to), the innermost's reason, and the answer when none of them does; global; or inherited, for eval code, whose caller's environments the request does not describe. Resolution is finished after the walk, over the references the walk recorded, since a later `eval` makes an earlier reference dynamic. Several declarations of one name answer the first, which names the binding, not its value. A `var` or a top-level function of a parameter's name answers its own declaration, which where the body shares the parameters' environment is that parameter's binding. A Script's own declarations are static. The dynamic function's goals are answered with the other piece empty, so a name only the other piece binds is global. A binding the language resolves when it runs (a `var` with an initialiser, a `for`-`in` or `for`-`of` `var` head) is looked up as a reference; every other answers as a reference reaching its own scope would. Until stage 5b, a name that only an Annex B.3.3 alias binds is answered as the scopes alone answer it, which may name an outer binding. JSD-0080's resolution forms are not among the decisions that bind this repository (`docs/roadmap/SharedLibraries.md`, "The decisions that bind this repository"), and the inherited form and the binding overload go beyond them | (a) The sketch's `Dynamic(reason)` alone: an engine needs the scopes searched and the fallback. (b) `Global` for eval code: wrong for a direct eval whose caller binds the name. (c) No binding overload: the lowerings would recompute where a `var` initialiser writes. (d) Stage 5b's alias first, or folded in here: it revises D-js-stages, and stage 5b's eval-code aliases wait for stage 5c either way. (e) A union of subclasses: more types, the same facts. (f) The last function declaration of a name: it makes the declaration mean the value for functions alone. (g) The inherited form for the dynamic body goal's free names: the dynamic function's scope is the global environment |
+| D-js-environment-facts | **`SemanticModel.EnvironmentOf` answers each facts node's `EnvironmentFacts`:** the `arguments` binding where FunctionDeclarationInstantiation creates one; whether it is needed, by a reference that resolves to it or to a top-level `var` of its name, or by a direct-`eval` candidate in the function's own code or its arrows; whether it is mapped; and direct `eval` in the parameters and in the body, and `with`, in sloppy own code, an arrow's call being the arrow's. These say whether the node's own environments may gain bindings, not whether a nested `eval` reads them; that reach is stage 7's. A candidate is a call, not optional, whose callee is the name `eval`, parentheses unwrapped. **`FunctionFacts.HasSeparateVariableEnvironment`**, computed from the parameter expressions, and for eval code from strictness, is on the shared type and filled on both paths. A sloppy function's one `Function` scope stands for its lexical environment over its variable environment, the declarations' `IsLexical` saying which. The facts are attributed by a model-only member of the walk's context, as the model's scope is | (a) FunctionDeclarationInstantiation's literal flag for the need: wider than Broiler.VM's base for almost every function, so its window's moves would fall outside class P (an inference). (b) A mention of `eval`: Broiler.VM's approximation, which the model replaces. (c) Arrows' calls counted as the enclosing function's: the specification gives an arrow its own variable environment. (d) The separate variable environment on the model member: it does not depend on the member (D-js-instances). (e) A scope kind or a member for the lexical environment: a second kind for one scope, or a fact derivable from strictness. (f) Attribution by span containment at the model's end: a containment test at every class body |
+| D-js-arguments-binding | **The `arguments` binding is a model-only `Declaration` of `BindingKind.Arguments`**, its node the function's, the static block's or the dynamic function's program, held by `EnvironmentFacts.Arguments` and in no scope's declarations. A resolution to it names the parameters' scope, or the static block's. A field initialiser has none, since its evaluation omits FunctionDeclarationInstantiation. It is mutable by kind, its strict immutability being unobservable | (a) In the parameters' scope's declarations: `DeclarationOf` would answer a function node, and D-js-parameters' "one per BoundNames entry" would be revised. (b) A resolution with no declaration: stage 7's captures return declarations. (c) Mutability by strictness: it revises "It follows from Kind alone". (d) A binding for field initialisers: the specification omits FunctionDeclarationInstantiation there |
+| D-js-environment-vectors | **The value vectors of rows FF3, FF4, FF5 and RS2 (groups `ff3`, `ff4`, `ff5`, `rs2`) stay not implemented**, as group `pn1` does under D-js-adapter-visible-names: they name no catalogue row, and read at the parse each would match by acceptance alone, showing nothing of resolution | (a) Listing them as groups: vacuous matches. (b) Reading their values: part F's to decide, not this stage's |
+
+In the table, R is bundle [`sjl-15-001`](../evidence/sjl-15-001/decision-rule.md)'s rule and `VMC/` is Broiler.VM's
+`src/Broiler.VM.Profile.JavaScript.Compiler/`. The places where the library differs from either engine, named for
+SJL-15.3 and SJL-15.5. Row FF4: Broiler.JS separates a function's environment only where a sloppy function holds a
+direct `eval` (bundle [`sjl-15-001`](../evidence/sjl-15-001/README.md)'s `correspondence-broiler-js.md`), so that probe
+V010 answers `"2,2"` where the specification gives `"2,1"` (the bundle's `probes/answers.tsv`), the library's
+`HasSeparateVariableEnvironment` being the specification's; Broiler.VM's body environment is narrower than
+FunctionDeclarationInstantiation's step 30 (`VMC/JsBinder.Walks.cs`), its cell allowing the skip "only if no artifact
+moves; else class P" (Broiler.VM's `docs/evidence/sjl-15-001/correspondence.md`). Row FF5: an arrow's direct `eval`
+declares its `var` in Broiler.JS's enclosing function (`correspondence-broiler-js.md`), so that probe V015 answers `2`
+where the specification gives `1`, the library's `DirectEvalInBody` being the arrow's; Broiler.VM counts a mention of
+`eval`, arrows included (`VMC/JsBinder.cs`), which also covers the reach of an arrow's `eval` to the enclosing
+function's names that the model leaves to stage 7, so that FF5 moves for Broiler.VM where an arrow's direct call stands
+and class P's "a mention of eval that is not a direct call" does not cover it (an inference); whether Broiler.JS's
+detector (`Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitIdentifier.cs`) reads `(eval)(...)` as
+a direct call is unknown. Row FF3: Broiler.JS materialises the arguments object on reference, and eagerly for a direct
+`eval` (`Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateFunction.cs`); Broiler.VM's need is a
+mention of `arguments` or `eval` (`VMC/JsBinder.cs`), wider than the model's for `let arguments` and
+`function arguments(){}`, which is Broiler.VM's to judge against class P's examples (an inference); and Broiler.VM's search
+does not enter an arrow's parameters (`VMC/JsCompiler.Walk.cs`), where the model's need is wider, for an `arguments`
+reference and for an `eval` candidate (an inference, not probed). Rows RS1 to RS4: both engines are the same
+(`correspondence-broiler-js.md`; Broiler.VM's `correspondence.md`), Broiler.VM's slice refusals of RS3 and RS4 being its
+admission policy; eval code's free names are inherited, beyond JSD-0080's three forms. The correspondence files'
+"FunctionDeclarationInstantiation's step 28" (`correspondence-broiler-js.md`, row FF4, and Broiler.VM's
+`correspondence.md`, row FF4) is step 30 in the pinned ES2026; neither file is edited here. None of it is accepted: no
+second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
