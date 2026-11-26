@@ -421,10 +421,12 @@ public sealed class SemanticModel
     /// (<see cref="ParseSwitches.AnnexB"/>), a name that only a block function's Annex B alias binds (<see cref="AnnexBAlias"/>)
     /// is answered by that alias: in function code <see cref="ResolutionKind.Static"/>, to the function's
     /// <see cref="ScopeKind.Function"/> scope and the alias; in sloppy eval code <see cref="ResolutionKind.Inherited"/>,
-    /// carrying the alias, whose binding the caller's environments can still withhold until a later stage describes them; in
-    /// a Script <see cref="ResolutionKind.Global"/>, as before, since the realm's checks can withhold the binding at run time;
-    /// and an <c>arguments</c> binding a block function's evaluation creates makes the variable environment's scope a dynamic
-    /// entry for that name alone, with reason <see cref="DynamicReason.BlockFunction"/>. <i>(Revised 2026-11-26, at SJL-15.2
+    /// carrying the alias; in a Script <see cref="ResolutionKind.Global"/>, as before; and an <c>arguments</c> binding a block
+    /// function's evaluation creates makes the variable environment's scope a dynamic entry for that name alone, with reason
+    /// <see cref="DynamicReason.BlockFunction"/>. What remains: the interim, eval code's alias conditional on its caller's
+    /// environments until stage 5c describes them; and the run-time conditions, which no stage closes: a Script's alias
+    /// depends on GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on
+    /// GlobalDeclarationInstantiation-like checks. <i>(Revised 2026-11-26, at SJL-15.2
     /// stage 5b, when the aliases joined the model; it read "With Annex B on (<see cref="ParseSwitches.AnnexB"/>), a name that
     /// only a block function's Annex B.3.3 alias binds is answered as the scopes alone answer it until stage 5b:
     /// <see cref="ResolutionKind.Global"/>, or a <see cref="ResolutionKind.Static"/> or <see cref="ResolutionKind.Dynamic"/>
@@ -559,9 +561,12 @@ public sealed class SemanticModel
     /// Script's alias also depends on GlobalDeclarationInstantiation's run-time checks (step 12.b.ii.2.a:
     /// HasLexicalDeclaration, which an earlier script's lexical declaration of the name fails, and CanDeclareGlobalVar), and
     /// no binding is made where either fails. Eval code's alias depends on its caller's environments, which the request does
-    /// not describe until a later stage: a caller's lexical binding of the name between the eval and its variable
-    /// environment, a Catch clause's excepted, withholds it (EvalDeclarationInstantiation step 13.b.ii.4); and with a global
-    /// variable environment, GlobalDeclarationInstantiation-like checks can withhold it at run time (step 13.b.ii.5). In eval
+    /// not describe: a caller's lexical binding of the name between the eval and its variable environment, a Catch clause's
+    /// excepted, withholds it (EvalDeclarationInstantiation step 13.b.ii.4); and with a global variable environment,
+    /// GlobalDeclarationInstantiation-like checks can withhold it at run time (step 13.b.ii.5). What remains: the interim,
+    /// eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time
+    /// conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code
+    /// with a global variable environment on GlobalDeclarationInstantiation-like checks. In eval
     /// code the binding it writes can be the caller's parameter or <c>arguments</c> binding (step 13.b.ii.7.a), which the
     /// model does not see, and the answer is the alias. Under <see cref="ParseGoal.FunctionBody"/> the body is answered with
     /// the parameters empty, as <see cref="Resolution"/> says, so an alias a real parameter would withhold is answered as
@@ -769,8 +774,8 @@ public enum ResolutionKind
     /// To a binding one of <see cref="Resolution.DynamicScopes"/> may hold at run time, a <c>with</c> statement's object, a
     /// sloppy direct <c>eval</c>'s <c>var</c>, or the <c>arguments</c> binding a block function's evaluation creates, and
     /// otherwise to <see cref="Resolution.Fallback"/>. <i>(Revised 2026-11-26, at SJL-15.2 stage 5b; it read "To a binding
-    /// one of DynamicScopes may hold at run time, a with statement's object or a sloppy direct eval's var, and otherwise to
-    /// Fallback.")</i>
+    /// one of <see cref="Resolution.DynamicScopes"/> may hold at run time, a <c>with</c> statement's object or a sloppy
+    /// direct <c>eval</c>'s <c>var</c>, and otherwise to <see cref="Resolution.Fallback"/>.")</i>
     /// </summary>
     Dynamic = 1,
 
@@ -918,11 +923,14 @@ public enum DynamicReason
 /// only a block function's alias binds is answered by the alias as the paragraphs above say, so that in
 /// <c>var g; function f() { { function g() {} } return g; }</c> the reference answers <see cref="ResolutionKind.Static"/>
 /// to f's <see cref="ScopeKind.Function"/> scope and its alias, not the Script's <c>var g</c>; a Script's references stay
-/// <see cref="ResolutionKind.Global"/>, and eval code's alias stays conditional on its caller until a later stage
-/// describes the caller. <i>(Revised 2026-11-26, at SJL-15.2 stage 5b, when the aliases joined the model; it read
-/// "Annex B.3.3's aliases are stage 5b's: until then, with Annex B on, a name only a block function's alias binds is
-/// answered as the scopes alone answer it, which may be a ResolutionKind.Static answer naming an outer binding that the
-/// alias shadows at run time, as in var g; function f() { { function g() {} } return g; }.")</i>
+/// <see cref="ResolutionKind.Global"/>. What remains: the interim, eval code's alias conditional on its caller's
+/// environments until stage 5c describes them; and the run-time conditions, which no stage closes: a Script's alias
+/// depends on GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on
+/// GlobalDeclarationInstantiation-like checks. <i>(Revised 2026-11-26, at SJL-15.2 stage 5b, when the aliases joined the
+/// model; it read "<b>Annex B.3.3's aliases</b> are stage 5b's: until then, with Annex B on, a name only a block
+/// function's alias binds is answered as the scopes alone answer it, which may be a <see cref="ResolutionKind.Static"/>
+/// answer naming an outer binding that the alias shadows at run time, as in
+/// <c>var g; function f() { { function g() {} } return g; }</c>.")</i>
 /// </para>
 /// <para>
 /// Whether a reference writes is not the model's: <see cref="Declaration.IsMutable"/> of the answer's declaration is the
@@ -956,11 +964,12 @@ public sealed class Resolution
     /// For <see cref="ResolutionKind.Static"/>, the binding's first declaration in <see cref="Scope"/>, its
     /// <see cref="EnvironmentFacts.Arguments"/>, or the Annex B alias of a function's <see cref="ScopeKind.Function"/>
     /// scope; for <see cref="ResolutionKind.Inherited"/>, sloppy eval code's own var-scoped declaration of the name, the
-    /// first, or, where it has none, its Annex B alias of the name, which the caller's environments can still withhold, or
-    /// null for a name eval code neither declares nor aliases; null otherwise. <i>(Revised 2026-11-26, at SJL-15.2 stage
-    /// 5b; it read "For ResolutionKind.Static, the binding's first declaration in Scope, or its EnvironmentFacts.Arguments;
-    /// for ResolutionKind.Inherited, sloppy eval code's own var-scoped declaration of the name, the first, or null for a
-    /// name eval code does not declare; null otherwise.")</i>
+    /// first, or, where it has none, its Annex B alias of the name, conditional on its caller's environments until stage 5c
+    /// describes them, or null for a name eval code neither declares nor aliases; null otherwise. <i>(Revised 2026-11-26, at
+    /// SJL-15.2 stage 5b; it read "For <see cref="ResolutionKind.Static"/>, the binding's first declaration in
+    /// <see cref="Scope"/>, or its <see cref="EnvironmentFacts.Arguments"/>; for <see cref="ResolutionKind.Inherited"/>,
+    /// sloppy eval code's own var-scoped declaration of the name, the first, or null for a name eval code does not declare;
+    /// null otherwise.")</i>
     /// </summary>
     public Declaration? Declaration { get; }
 
@@ -969,8 +978,9 @@ public sealed class Resolution
     /// <see cref="ScopeKind.With"/> scope, every scope a sloppy direct <c>eval</c> may add to, and, for the name
     /// <c>arguments</c>, every scope a block function's evaluation may give that binding, between the node and
     /// <see cref="Fallback"/>'s scope, or the end of the chain; empty otherwise. Never empty for a dynamic resolution.
-    /// <i>(Revised 2026-11-26, at SJL-15.2 stage 5b; it read "every With scope and every scope a sloppy direct eval may add
-    /// to between the node and Fallback's scope, or the end of the chain".)</i>
+    /// <i>(Revised 2026-11-26, at SJL-15.2 stage 5b; it read "every <see cref="ScopeKind.With"/> scope and every scope a
+    /// sloppy direct <c>eval</c> may add to between the node and <see cref="Fallback"/>'s scope, or the end of the
+    /// chain".)</i>
     /// </summary>
     public IReadOnlyList<Scope> DynamicScopes { get; }
 

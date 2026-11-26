@@ -2372,7 +2372,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     // Annex B's block-function aliases (SJL-15.2 stage 5b; the session's decision D-js-annexb-aliases; ECMA-262 Annex B.3.2,
     // which row AB1 names by an earlier edition's number, B.3.3). (Added 2026-11-26, at SJL-15.2 stage 5b.)
 
-    // A request with Annex B on or off, the rest as given.
+    // A request with Annex B on or off, the rest as given, its dynamic function's kind and meter included.
     private static ParseRequest WithAnnexB(ParseRequest request, bool annexB)
     {
         var copy = new ParseRequest(request.Source, request.Goal, request.UnicodeTables, request.RegularExpressions)
@@ -2383,6 +2383,8 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
             Limits = request.Limits,
             RetainTokens = request.RetainTokens,
             BuildSemanticModel = request.BuildSemanticModel,
+            FunctionKind = request.FunctionKind,
+            Meter = request.Meter,
         };
         if (request.Goal == ParseGoal.Eval)
             copy = new ParseRequest(request.Source, request.Goal, request.UnicodeTables, request.RegularExpressions)
@@ -2394,6 +2396,8 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
                 Limits = request.Limits,
                 RetainTokens = request.RetainTokens,
                 BuildSemanticModel = request.BuildSemanticModel,
+                FunctionKind = request.FunctionKind,
+                Meter = request.Meter,
             };
         return copy;
     }
@@ -2823,9 +2827,10 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     ];
 
     // One tree's alias answers, checked against an oracle of the tree's own: the null list's clauses and the answers'
-    // kinds recomputed from the syntax nodes through a parent map, iteratively, with only the facts' strictness, parameter
-    // names, separate variable environment and arguments binding read from the model. With annexB false every answer is
-    // null. It returns the block functions, the admitted ones and the aliases made.
+    // kinds recomputed from the syntax nodes through a parent map, iteratively, with only the facts' strictness, separate
+    // variable environment and arguments binding read from the model, which the function facts' and environment facts'
+    // own tests check; the parameters' names are read from the tree and checked against the facts. With annexB false every
+    // answer is null. It returns the block functions, the admitted ones and the aliases made.
     private static (int Functions, int Admitted, int Aliases) CompleteAliases(string name, ParseResult on, ParseResult off, bool annexB = true)
     {
         if (on.Model is not { } model)
@@ -2998,8 +3003,16 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
             var facts = model.FactsOf(owner);
             var f = fname.Name;
             var functionCode = owner is FunctionNode or StaticBlock || owner is ProgramNode { Goal: ParseGoal.FormalParameters or ParseGoal.FunctionBody };
+
+            // The parameters' names, the BoundNames of the owner's FormalParameters, read from the tree and checked
+            // against the facts.
+            var parameters = new List<BindingIdentifier>();
+            foreach (var parameter in owner switch { FunctionNode function => function.Parameters, ProgramNode program => program.Parameters, _ => Array.Empty<Pattern>() })
+                BoundNames(parameter, parameters);
+            var parameterNames = parameters.Select(static x => x.Name).ToList();
+            Assert.True(parameterNames.SequenceEqual(facts.ParameterNames), here + ": the parameters' names");
             var withheld = !annexB || declarationNode.Function.IsAsync || declarationNode.Function.IsGenerator || inClass || facts.IsStrict
-                || (functionCode && facts.ParameterNames.Contains(f));
+                || (functionCode && parameterNames.Contains(f));
 
             // Each construct between the function's own block and its code's owner that declares the name.
             var next = container switch
@@ -3096,9 +3109,11 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     /// Over the determinism tests' population, the resolution sources and the Annex B sources: every block function's
     /// alias answer as an oracle of the tree recomputes it; and, for each source accepted with Annex B both on and off, the
     /// resolutions with Annex B on against the model's own with it off: each difference is a name a function's or sloppy
-    /// eval code's alias binds, or an <c>arguments</c> binding a block function's evaluation creates; none in a Script's
+    /// eval code's alias binds, or an <c>arguments</c> binding a block function's evaluation creates, which adds the
+    /// variable environment's scope to the answer with Annex B off as a dynamic entry, with reason
+    /// <see cref="DynamicReason.BlockFunction"/> where it is the innermost, that answer its fallback; none in a Script's
     /// variable scope; none where the alias answer is an existing binding; no binding identifier's; and eval code's only in
-    /// the declaration it carries.
+    /// the declaration it carries. Each difference is counted by its variable scope's function kind.
     /// </summary>
     [Fact]
     public void Every_block_function_s_alias_and_every_moved_resolution_hold_over_the_population()
@@ -3125,6 +3140,26 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
                 var onNodes = Nodes(on.Tree!);
                 var offNodes = Nodes(without.Tree!);
                 Assert.Equal(onNodes.Count, offNodes.Count);
+                Assert.Equal(model.Scopes.Count, baseline.Scopes.Count);
+                int IndexOf(SemanticModel m, Scope scope) => m.Scopes.ToList().FindIndex(x => ReferenceEquals(x, scope));
+
+                // The scopes that may gain the name arguments by a block function's evaluation, read from the alias
+                // answers: a function's variable scope where its variable environment is separate, and otherwise its
+                // Parameters scope.
+                var argumentsGains = new HashSet<Scope>(ReferenceEqualityComparer.Instance);
+                foreach (var scope in model.Scopes)
+                {
+                    foreach (var declaration in scope.Declarations)
+                    {
+                        if (model.AnnexBAlias(declaration) is not { Kind: BindingKind.BlockFunctionAlias, Name: "arguments" })
+                            continue;
+                        var varScope = VarScopeOf(model, scope);
+                        var varFacts = model.FactsOf(varScope.Node);
+                        if (varFacts.Kind is FunctionKind.Script or FunctionKind.EvalCode)
+                            continue;
+                        argumentsGains.Add(varFacts.HasSeparateVariableEnvironment ? varScope : model.Scopes.Single(x => x.Kind == ScopeKind.Parameters && ReferenceEquals(x.Node, varScope.Node)));
+                    }
+                }
 
                 for (var i = 0; i < onNodes.Count; i++)
                 {
@@ -3146,8 +3181,22 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
                     string kind;
                     if (withAlias.Kind == ResolutionKind.Dynamic && withAlias.Reason == DynamicReason.BlockFunction || withAlias.DynamicScopes.Count > withoutAlias.DynamicScopes.Count)
                     {
+                        // The per-name gain: the answer with Annex B off, with the gaining scope added among its dynamic
+                        // scopes in chain order, the reason BlockFunction where that scope is the innermost entry, and the
+                        // fallback the answer with Annex B off.
                         Assert.Equal("arguments", reference.Name);
-                        kind = "arguments gain";
+                        Assert.True(withAlias.Kind == ResolutionKind.Dynamic, at + ": the arguments gain is not dynamic");
+                        var before = withoutAlias.Kind == ResolutionKind.Dynamic ? withoutAlias.DynamicScopes : Array.Empty<Scope>();
+                        var beforeIndices = before.Select(x => IndexOf(baseline, x)).ToList();
+                        var extra = withAlias.DynamicScopes.Where(x => !beforeIndices.Contains(IndexOf(model, x))).ToList();
+                        Assert.True(extra.Count == 1 && argumentsGains.Contains(extra[0]), at + ": not one entry of a scope a block function's arguments gains");
+                        var gainFacts = model.FactsOf(extra[0].Node);
+                        Assert.True(extra[0].Kind == (gainFacts.HasSeparateVariableEnvironment ? ScopeKind.Function : ScopeKind.Parameters) && gainFacts.Kind is not (FunctionKind.Script or FunctionKind.EvalCode), at + ": the gaining scope is not the variable environment's");
+                        Assert.True(withAlias.DynamicScopes.Where(x => !ReferenceEquals(x, extra[0])).Select(x => IndexOf(model, x)).SequenceEqual(beforeIndices), at + ": the other dynamic scopes moved");
+                        var reason = ReferenceEquals(withAlias.DynamicScopes[0], extra[0]) ? DynamicReason.BlockFunction : withoutAlias.Reason;
+                        Assert.True(withAlias.Reason == reason, at + ": the reason");
+                        Assert.True(Equivalent(withAlias.Fallback!, withoutAlias.Kind == ResolutionKind.Dynamic ? withoutAlias.Fallback! : withoutAlias, model, baseline), at + ": the fallback is not the answer with Annex B off");
+                        kind = "arguments gain, " + gainFacts.Kind.ToString();
                     }
                     else if (end.Declaration is { Kind: BindingKind.BlockFunctionAlias } alias)
                     {
