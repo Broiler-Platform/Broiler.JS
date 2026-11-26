@@ -4,6 +4,7 @@
 Broiler.ECMAScript.Semantics.BindingKind enum
 Broiler.ECMAScript.Semantics.BindingKind.Arguments = 13
 Broiler.ECMAScript.Semantics.BindingKind.AwaitUsing = 4
+Broiler.ECMAScript.Semantics.BindingKind.BlockFunctionAlias = 14
 Broiler.ECMAScript.Semantics.BindingKind.CatchParameter = 8
 Broiler.ECMAScript.Semantics.BindingKind.Class = 6
 Broiler.ECMAScript.Semantics.BindingKind.ClassName = 12
@@ -29,6 +30,7 @@ Broiler.ECMAScript.Semantics.DeclarationTables sealed class
 Broiler.ECMAScript.Semantics.DeclarationTables.get_Functions() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.FunctionFacts>
 Broiler.ECMAScript.Semantics.DeclarationTables.get_Scopes() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.Scope>
 Broiler.ECMAScript.Semantics.DynamicReason enum
+Broiler.ECMAScript.Semantics.DynamicReason.BlockFunction = 2
 Broiler.ECMAScript.Semantics.DynamicReason.SloppyDirectEval = 1
 Broiler.ECMAScript.Semantics.DynamicReason.With = 0
 Broiler.ECMAScript.Semantics.DynamicReason.value__ field System.Int32
@@ -115,6 +117,7 @@ Broiler.ECMAScript.Semantics.ScopeKind.Switch = 4
 Broiler.ECMAScript.Semantics.ScopeKind.With = 8
 Broiler.ECMAScript.Semantics.ScopeKind.value__ field System.Int32
 Broiler.ECMAScript.Semantics.SemanticModel sealed class
+Broiler.ECMAScript.Semantics.SemanticModel.AnnexBAlias(Broiler.ECMAScript.Semantics.Declaration) method Broiler.ECMAScript.Semantics.Declaration
 Broiler.ECMAScript.Semantics.SemanticModel.DeclarationOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.Declaration
 Broiler.ECMAScript.Semantics.SemanticModel.EnvironmentOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.EnvironmentFacts
 Broiler.ECMAScript.Semantics.SemanticModel.FactsOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.FunctionFacts

@@ -538,3 +538,29 @@ the first model commit, does not arise here. The readings at `be6c4a5c`, at `6c6
 `56272150`, and the first one's flag, in the notes above of 2026-11-24 and 2026-11-25, stay as written. A NOT MET at any
 later model commit makes part B NOT MET. **Next:** SJL-15.2 stage 5b, Annex B block-function aliases, the sixth model
 commit. No rule file is added or edited, and no earlier output changes.
+
+*(Noted 2026-11-26, at SJL-15.2 stage 5b, written before part B's run at it.)* **The sixth model commit.** This branch's
+merge will be the sixth model commit: SJL-15.2 stage 5b, Annex B's block-function aliases, named here once it exists.
+Part B is taken after it, against its own first parent (decision D-js-part-b-method), with both workflows' push runs
+imported and decision D-js-part-b-attempt applying. The merge condition: both workflows are green on the PR; after the
+merge, nothing merges to `main` until both push runs at the merge have concluded. For ci.yml's run that includes the one
+re-run D-js-part-b-attempt allows (`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run
+(`.github/workflows/ci.yml:25-27`, :36-39). A later push never cancels Shared libraries' push run, because its push
+group carries the commit (`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1
+("Nothing merged to the default branch until both push runs at it had concluded",
+`docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken after the merge, against the merge's own first parent.
+Stage 5a's part B records say the same of stage 5a: "Nothing merged to the default branch until both push runs at it had
+concluded" (`docs/roadmap/SharedLibraries.md:4209-4210`). The reading at it will be limited to the model commits taken
+so far.
+
+From this change the semantic model answers each block function's Annex B alias, row AB1 ("Annex B.3.3 block-function
+aliases", an earlier edition's number for the pinned edition's Annex B.3.2), and resolution answers the names the
+aliases bind (decisions D-js-annexb-aliases and D-js-annexb-vectors in `docs/roadmap/SharedLibraries.md`'s section
+"Shared static semantics (SJL-15)"), and no row is added. The library-level adapter, `runners/AlgorithmsLibrary.Semantics.cs`,
+answers no new vector: by decision D-js-annexb-vectors the value vectors of correspondence group `ab1` stay not
+implemented, since they rest on no `semantics` row and read at the parse, the reading the owner ruled on 2026-11-25 to
+keep ("Keep the reading at the parse (Recommended)"), as the note above at SJL-15.2 stage 2 records it, each would match
+by acceptance alone. Row AB1 has no row in the corrections' C1: Broiler.JS gives the specification's answers on the
+probes ([`correspondence-broiler-js.md`](correspondence-broiler-js.md), row AB1), and `corrections.md` and its tables
+are unchanged. No rule file is added or edited, and no earlier output changes. "What it will hold" above is left as
+written.

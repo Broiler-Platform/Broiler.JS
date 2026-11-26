@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   133
-// Annotated:        133/133
+// Relevant units:   136
+// Annotated:        136/136
 // Exempt:           81
-// Human-reviewed:   0/133
+// Human-reviewed:   0/136
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       133
+// Unverified:       136
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -56,6 +56,9 @@ namespace Broiler.ECMAScript.Semantics;
 /// it, each function's enclosing function, and each function's <c>arguments</c> binding, which no scope holds; after the
 /// walk, the model resolves every reference and computes the environment facts from those lists, a pass over them and not
 /// a second walk, numbering nothing. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
+/// From stage 5b the model also decides, after the walk and before resolution, each block function's Annex B alias from
+/// the model's scopes and facts and the walk's record of plain functions, adding no statement to the visit and numbering
+/// nothing; with Annex B off it decides none. <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
 /// </para>
 /// <para>
 /// <b>No <c>request</c> or <c>engine</c> row is reported, and a <c>semantics</c> row only with the member on</b>: with it
@@ -349,7 +352,7 @@ internal sealed class DeclarationsWalk
     /// sequence; each declaration by its node, the tables' first, so that a class declaration's name answers its outer
     /// declaration (the session's decision D-js-declaration-of).
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=D47045
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=DB1189
     // Hairs-Human:        PENDING
     private SemanticModel Model(Scope[] tableScopes)
     {
@@ -375,9 +378,10 @@ internal sealed class DeclarationsWalk
                 declarationOf.TryAdd(declaration.Node, declaration);
         }
 
-        // The resolutions and the environment facts (SJL-15.2 stage 5a), from the lists the walk recorded.
-        var (resolutionOf, environmentOf) = Resolutions(scopeList, functionList, declarationOf);
-        return new SemanticModel(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), scopeOf!, parentOf!, declarationOf, factsOf!, targetOf!, privateOf!, privateEnvironmentOf!, resolutionOf, environmentOf);
+        // The resolutions and the environment facts (SJL-15.2 stage 5a), from the lists the walk recorded, and the Annex B
+        // aliases (SJL-15.2 stage 5b), from the model's scopes and facts.
+        var (resolutionOf, environmentOf, annexBAliasOf) = Resolutions(scopeList, functionList, declarationOf);
+        return new SemanticModel(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), scopeOf!, parentOf!, declarationOf, factsOf!, targetOf!, privateOf!, privateEnvironmentOf!, resolutionOf, environmentOf, annexBAliasOf);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -390,9 +394,9 @@ internal sealed class DeclarationsWalk
     /// the scope that holds its declaration; the arguments object's need; and one <see cref="EnvironmentFacts"/> per facts
     /// entry. Every map and set here is only looked up; every order comes from the walk's lists or the model's.
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, s10.2.11 FunctionDeclarationInstantiation steps 15-30, s19.2.1.1 PerformEval steps 16-18, JSD-0080 reference resolution; IP=Low; Security=Medium; Resources=1; Fingerprint=C1D341
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, s10.2.11 FunctionDeclarationInstantiation steps 15-30, s19.2.1.1 PerformEval steps 16-18, JSD-0080 reference resolution; IP=Low; Security=Medium; Resources=1; Fingerprint=AD4C29
     // Hairs-Human:        PENDING
-    private (Dictionary<SyntaxNode, Resolution> Resolutions, Dictionary<SyntaxNode, EnvironmentFacts> Environments) Resolutions(Scope[] scopeList, FunctionFacts[] functionList, Dictionary<SyntaxNode, Declaration> declarationOf)
+    private (Dictionary<SyntaxNode, Resolution> Resolutions, Dictionary<SyntaxNode, EnvironmentFacts> Environments, Dictionary<Declaration, Declaration> AnnexBAliases) Resolutions(Scope[] scopeList, FunctionFacts[] functionList, Dictionary<SyntaxNode, Declaration> declarationOf)
     {
         // Each facts node's own candidates, by where they stand, and the owners of the arguments object they may read: the
         // innermost facts node past arrows (an arrow has no arguments of its own).
@@ -417,6 +421,10 @@ internal sealed class DeclarationsWalk
                 bodyOf[scope.Node] = scope;
         }
 
+        // The Annex B aliases (SJL-15.2 stage 5b), before the scopes that may gain bindings, which they join only for the
+        // name arguments.
+        var aliases = AnnexBAliases(scopeList, parametersOf);
+
         // The scopes a sloppy direct eval may add to (PerformEval step 16.b): a function's own variable environment, its
         // Function scope where it is separate (FunctionDeclarationInstantiation step 30) and its Parameters scope where it
         // is not (step 29.d), and for a call in its parameters its calleeEnv, which its Parameters scope stands for (step
@@ -434,7 +442,7 @@ internal sealed class DeclarationsWalk
 
         var program = factsOf![scopeList[0].Node];
         var isEval = program.Kind == FunctionKind.EvalCode;
-        var pass = new ResolutionPass(parentOf!, gaining, argumentsOf!, isEval, isEval && !program.IsStrict ? scopeList[0] : null);
+        var pass = new ResolutionPass(parentOf!, gaining, argumentsOf!, isEval, isEval && !program.IsStrict ? scopeList[0] : null, aliases.Bound, aliases.ArgumentsGains);
 
         // The references and the bindings resolved when they run, in the walk's order; the arguments objects a reference
         // reads, by its binding or by a top-level var of its name (FunctionDeclarationInstantiation steps 29 and 30).
@@ -476,7 +484,159 @@ internal sealed class DeclarationsWalk
                 inParameters.Contains(node), inBody.Contains(node), withOwners!.Contains(node));
         }
 
-        return (resolutionOf, environmentOf);
+        return (resolutionOf, environmentOf, aliases.AliasOf);
+    }
+
+    /// <summary>
+    /// The Annex B aliases (SJL-15.2 stage 5b; the session's decision D-js-annexb-aliases; ECMA-262 Annex B.3.2,
+    /// FunctionDeclarationInstantiation step 32.a, GlobalDeclarationInstantiation step 12, EvalDeclarationInstantiation step
+    /// 13): for each block function, in the model's scopes' order and each scope's declarations' order, the declaration that
+    /// names the var-scoped binding its evaluation sets, or none; one alias declaration per variable scope and name, its node
+    /// the earliest admitted block function's by its start; the aliases the resolution binds, keyed by their variable scope
+    /// and name; and the scopes that may gain <c>arguments</c> by a block function's evaluation. Every map and set here is only
+    /// looked up. Empty with Annex B off.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Annex B.3.2, s10.2.11 FunctionDeclarationInstantiation step 32.a, GlobalDeclarationInstantiation step 12, EvalDeclarationInstantiation step 13, JSD-0080 Annex B aliases; IP=Low; Security=Medium; Resources=1; Fingerprint=C3B584
+    // Hairs-Human:        PENDING
+    private (Dictionary<Declaration, Declaration> AliasOf, Dictionary<(Scope Scope, string Name), Declaration> Bound, HashSet<Scope> ArgumentsGains) AnnexBAliases(Scope[] scopeList, Dictionary<SyntaxNode, Scope> parametersOf)
+    {
+        var aliasOf = new Dictionary<Declaration, Declaration>(ReferenceEqualityComparer.Instance);
+        var bound = new Dictionary<(Scope Scope, string Name), Declaration>(ScopeNameComparer.Instance);
+        var argumentsGains = new HashSet<Scope>(ReferenceEqualityComparer.Instance);
+        if (!annexB)
+            return (aliasOf, bound, argumentsGains);
+
+        // Each admitted block function's answer, an existing declaration or the variable scope that makes an alias; each
+        // alias's node, the earliest admitted block function's of its variable scope and name.
+        var admitted = new List<(Declaration Function, Scope VarScope, Declaration? Existing)>();
+        var earliest = new Dictionary<(Scope Scope, string Name), SyntaxNode>(ScopeNameComparer.Instance);
+        foreach (var scope in scopeList)
+        {
+            foreach (var declaration in scope.Declarations)
+            {
+                if (!declaration.IsBlockFunction || AnnexBVarScope(scope, declaration) is not { } varScope)
+                    continue;
+                var existing = AnnexBExisting(varScope, declaration.Name);
+                admitted.Add((declaration, varScope, existing));
+                if (existing is null && (!earliest.TryGetValue((varScope, declaration.Name), out var first) || declaration.Node.Span.Offset < first.Span.Offset))
+                    earliest[(varScope, declaration.Name)] = declaration.Node;
+            }
+        }
+
+        var made = new Dictionary<(Scope Scope, string Name), Declaration>(ScopeNameComparer.Instance);
+        foreach (var (function, varScope, existing) in admitted)
+        {
+            if (existing is not null)
+            {
+                aliasOf[function] = existing;
+                continue;
+            }
+
+            var key = (varScope, function.Name);
+            if (!made.TryGetValue(key, out var alias))
+            {
+                alias = new Declaration(function.Name, BindingKind.BlockFunctionAlias, earliest[key], false, false, false);
+                made[key] = alias;
+                var facts = factsOf![varScope.Node];
+                var functionCode = facts.Kind is not (FunctionKind.Script or FunctionKind.EvalCode);
+                if (functionCode && function.Name == "arguments")
+                {
+                    // An arguments binding the evaluation creates (FunctionDeclarationInstantiation step 32.a.i.2.c, where
+                    // the VariableEnvironment holds none): the scope that stands for that environment may gain the name.
+                    argumentsGains.Add(facts.HasSeparateVariableEnvironment ? varScope : parametersOf[varScope.Node]);
+                }
+                else if (facts.Kind != FunctionKind.Script)
+                {
+                    bound[key] = alias;
+                }
+            }
+
+            aliasOf[function] = alias;
+        }
+
+        return (aliasOf, bound, argumentsGains);
+    }
+
+    /// <summary>
+    /// The variable scope of a block function the pinned edition gives a var-scoped binding, or null where it gives none: a
+    /// generator or an async function; strict code; in function code, a parameter of the name; a Block, Switch or For scope
+    /// between the function's scope and the variable scope that declares the name, or a Catch scope there that does and whose
+    /// parameter is not a lone BindingIdentifier (Annex B.3.4); a lexical declaration of the name at the variable scope's top
+    /// level. Each is a replacing <c>var</c>'s early error, or FunctionDeclarationInstantiation's own parameter test.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Annex B.3.2, s10.2.11 FunctionDeclarationInstantiation step 32.a.i.2, GlobalDeclarationInstantiation step 12.b.ii.2, EvalDeclarationInstantiation step 13.b.ii, Annex B.3.4, JSD-0080 Annex B aliases; IP=Low; Security=Medium; Resources=1; Fingerprint=7E6435
+    // Hairs-Human:        PENDING
+    private Scope? AnnexBVarScope(Scope scope, Declaration function)
+    {
+        if (!sloppyPlainFunctions.Contains(function.Node))
+            return null;
+        var name = function.Name;
+        for (var outer = parentOf![scope]; outer is not null; outer = parentOf[outer])
+        {
+            switch (outer.Kind)
+            {
+                case ScopeKind.Function or ScopeKind.Script or ScopeKind.StaticBlock or ScopeKind.Module:
+                {
+                    var facts = factsOf![outer.Node];
+                    if (facts.IsStrict)
+                        return null;
+                    if (facts.Kind is not (FunctionKind.Script or FunctionKind.EvalCode))
+                    {
+                        foreach (var parameter in facts.ParameterNames)
+                        {
+                            if (parameter == name)
+                                return null;
+                        }
+                    }
+
+                    foreach (var declaration in outer.Declarations)
+                    {
+                        if (declaration.IsLexical && declaration.Name == name)
+                            return null;
+                    }
+
+                    return outer;
+                }
+
+                case ScopeKind.With:
+                    continue;
+                case ScopeKind.Catch when ((CatchClause)outer.Node).Parameter is BindingIdentifier:
+                    continue;
+                default:
+                    foreach (var declaration in outer.Declarations)
+                    {
+                        if (declaration.Name == name)
+                            return null;
+                    }
+
+                    continue;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// The binding an admitted block function writes where its variable scope already makes one: the first <c>var</c> or
+    /// top-level function declaration of the name there, or, for <c>arguments</c> in function code whose VariableEnvironment
+    /// is its parameters' environment, the function's arguments binding (FunctionDeclarationInstantiation steps 29.d and
+    /// 32.a.i.2); null where the block function's alias is a binding of its own.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Annex B.3.2, s10.2.11 FunctionDeclarationInstantiation steps 22 29.d 32.a.i.2, JSD-0080 Annex B aliases; IP=Low; Security=Medium; Resources=1; Fingerprint=71E56C
+    // Hairs-Human:        PENDING
+    private Declaration? AnnexBExisting(Scope varScope, string name)
+    {
+        foreach (var declaration in varScope.Declarations)
+        {
+            if (!declaration.IsLexical && declaration.Name == name)
+                return declaration;
+        }
+
+        var facts = factsOf![varScope.Node];
+        if (name == "arguments" && facts.Kind is not (FunctionKind.Script or FunctionKind.EvalCode) && !facts.HasSeparateVariableEnvironment
+            && argumentsOf!.TryGetValue(varScope.Node, out var arguments))
+            return arguments;
+        return null;
     }
 
     /// <summary>The facts node whose arguments object code of <paramref name="owner"/> reads: the owner, or past every arrow the innermost function around it.</summary>
@@ -560,9 +720,10 @@ internal sealed class DeclarationsWalk
     /// from a scope, a <c>with</c> scope and a scope a sloppy direct <c>eval</c> may add to being dynamic entries, a scope
     /// that binds the name ending it, and the chain's end being inherited for eval code and global otherwise.
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, s14.11.2 with statement, s19.2.1.1 PerformEval step 16.b, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=CA896C
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, s14.11.2 with statement, s19.2.1.1 PerformEval step 16.b, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=FA5680
     // Hairs-Human:        PENDING
-    private sealed class ResolutionPass(Dictionary<Scope, Scope?> parentOf, HashSet<Scope> gaining, Dictionary<SyntaxNode, Declaration> argumentsOf, bool inherited, Scope? sloppyEvalScope)
+    private sealed class ResolutionPass(Dictionary<Scope, Scope?> parentOf, HashSet<Scope> gaining, Dictionary<SyntaxNode, Declaration> argumentsOf, bool inherited, Scope? sloppyEvalScope,
+        Dictionary<(Scope Scope, string Name), Declaration> aliases, HashSet<Scope> argumentsGains)
     {
         // Hairs-AI:           Origin=AI; Spec=JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=4DB646
         // Hairs-Human:        PENDING
@@ -572,19 +733,21 @@ internal sealed class DeclarationsWalk
         private readonly Dictionary<Scope, Dictionary<string, Declaration>> byName = new(ReferenceEqualityComparer.Instance);
 
         /// <summary>The resolution of a name standing in a scope.</summary>
-        // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=9BA618
+        // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=77ACB9
         // Hairs-Human:        PENDING
         internal Resolution Lookup(Scope start, string name)
         {
             if (memo.TryGetValue((start, name), out var known))
                 return known;
             List<Scope>? dynamic = null;
+            DynamicReason? reason = null;
             Resolution? end = null;
             for (var scope = start; scope is not null; scope = parentOf[scope])
             {
                 if (scope.Kind == ScopeKind.With)
                 {
                     (dynamic ??= new()).Add(scope);
+                    reason ??= DynamicReason.With;
                     continue;
                 }
 
@@ -595,14 +758,22 @@ internal sealed class DeclarationsWalk
                 }
 
                 if (gaining.Contains(scope))
+                {
                     (dynamic ??= new()).Add(scope);
+                    reason ??= DynamicReason.SloppyDirectEval;
+                }
+                else if (name == "arguments" && argumentsGains.Contains(scope))
+                {
+                    // An arguments binding a block function's evaluation may create (SJL-15.2 stage 5b), for this name alone.
+                    (dynamic ??= new()).Add(scope);
+                    reason ??= DynamicReason.BlockFunction;
+                }
             }
 
             end ??= new Resolution(inherited ? ResolutionKind.Inherited : ResolutionKind.Global, null, null, Array.Empty<Scope>(), null, null);
             var answer = dynamic is null
                 ? end
-                : new Resolution(ResolutionKind.Dynamic, null, null, Array.AsReadOnly(dynamic.ToArray()),
-                    dynamic[0].Kind == ScopeKind.With ? DynamicReason.With : DynamicReason.SloppyDirectEval, end);
+                : new Resolution(ResolutionKind.Dynamic, null, null, Array.AsReadOnly(dynamic.ToArray()), reason, end);
             memo[(start, name)] = answer;
             return answer;
         }
@@ -621,7 +792,7 @@ internal sealed class DeclarationsWalk
                 : new Resolution(ResolutionKind.Static, scope, declaration, Array.Empty<Scope>(), null, null);
 
         // The first declaration of a name in a scope, or its arguments binding (FunctionDeclarationInstantiation step 22).
-        // Hairs-AI:           Origin=AI; Spec=ECMA-262 s10.2.11 FunctionDeclarationInstantiation step 22, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=BDCBB9
+        // Hairs-AI:           Origin=AI; Spec=ECMA-262 s10.2.11 FunctionDeclarationInstantiation step 22, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=24246D
         // Hairs-Human:        PENDING
         private Declaration? Binding(Scope scope, string name)
         {
@@ -653,6 +824,10 @@ internal sealed class DeclarationsWalk
 
             if (found is null && name == "arguments" && scope.Kind is (ScopeKind.Parameters or ScopeKind.StaticBlock) && argumentsOf.TryGetValue(scope.Node, out var arguments))
                 found = arguments;
+
+            // A sloppy function's, or sloppy eval code's, Annex B alias of the name (SJL-15.2 stage 5b).
+            if (found is null && aliases.TryGetValue((scope, name), out var alias))
+                found = alias;
             return found;
         }
     }

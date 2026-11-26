@@ -470,5 +470,44 @@ public sealed class LimitsTests
         }
     }
 
+    /// <summary>
+    /// The Annex B aliases at the supported maximum on the documented stack (SJL-15.2 stage 5b): nested blocks each holding a
+    /// block function of a distinct name, the longest chains the alias pass walks, every one aliased in the function; and
+    /// nested blocks of one name, only the outermost aliased. The same parse with the model on and off, as above.
+    /// <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void The_annex_b_aliases_at_the_supported_maximum(bool distinct)
+    {
+        string Text(int levels)
+        {
+            var text = new StringBuilder("function f() { ");
+            for (var i = 0; i < levels; i++)
+                text.Append("{ function ").Append(distinct ? "g" + i.ToString(CultureInfo.InvariantCulture) : "g").Append("() {} ");
+            return text.Append('}', levels).Append(" }").ToString();
+        }
+
+        var bound = ParseLimits.MaximumSupportedNestingDepth;
+        var (low, high) = (0, bound + 1);
+        while (high - low > 1)
+        {
+            var middle = (low + high) / 2;
+            if (ParseV(Text(middle), bound).Outcome == ParseOutcome.Refused)
+                high = middle;
+            else
+                low = middle;
+        }
+
+        Assert.True(low >= bound / 4, "accepted at " + low.ToString(CultureInfo.InvariantCulture) + " levels");
+        AssertSameWithTheModel(ParseV(Text(low), bound), Text(low), bound, distinct ? "distinct names" : "one name");
+        var model = ParseV(Text(low), bound, model: true).Model!;
+        var functions = model.Scopes.SelectMany(static s => s.Declarations).Where(static d => d.IsBlockFunction).ToList();
+        Assert.Equal(low, functions.Count);
+        var aliased = functions.Count(d => model.AnnexBAlias(d) is { Kind: Semantics.BindingKind.BlockFunctionAlias });
+        Assert.Equal(distinct ? low : 1, aliased);
+    }
+
     private const string ManyReferences = "v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v";
 }

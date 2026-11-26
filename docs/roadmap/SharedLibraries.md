@@ -4170,7 +4170,7 @@ precise; it is Broiler.VM's, not among the decisions that bind this repository a
 
 | Decision | Taken | Not taken, and why |
 |---|---|---|
-| D-js-resolution | **`SemanticModel.Resolve(Identifier)` answers every reference, and `Resolve(BindingIdentifier)` every binding, with a `Resolution`.** The answer is one of: static, to the scope whose environment holds the binding and its declaration; dynamic, with the scopes that may bind the name at run time innermost first (a `with` statement's object, or a function's environment a sloppy direct `eval` may add to), the innermost's reason, and the answer when none of them does; global; or inherited, for eval code, whose caller's environments the request does not describe. Resolution is finished after the walk, over the references the walk recorded, since a later `eval` makes an earlier reference dynamic. Several declarations of one name answer the first, which names the binding, not its value. A `var` or a top-level function of a parameter's name answers its own declaration, which where the body shares the parameters' environment is that parameter's binding. A Script's own declarations are static. The dynamic function's goals are answered with the other piece empty, so a name only the other piece binds is global. A binding the language resolves when it runs (a `var` with an initialiser, a `for`-`in` or `for`-`of` `var` head) is looked up as a reference; every other answers as a reference reaching its own scope would. Until stage 5b, a name that only an Annex B.3.3 alias binds is answered as the scopes alone answer it, which may name an outer binding. JSD-0080's resolution forms are not among the decisions that bind this repository (`docs/roadmap/SharedLibraries.md`, "The decisions that bind this repository"), and the inherited form and the binding overload go beyond them | (a) The sketch's `Dynamic(reason)` alone: an engine needs the scopes searched and the fallback. (b) `Global` for eval code: wrong for a direct eval whose caller binds the name. (c) No binding overload: the lowerings would recompute where a `var` initialiser writes. (d) Stage 5b's alias first, or folded in here: it revises D-js-stages, and stage 5b's eval-code aliases wait for stage 5c either way. (e) A union of subclasses: more types, the same facts. (f) The last function declaration of a name: it makes the declaration mean the value for functions alone. (g) The inherited form for the dynamic body goal's free names: the dynamic function's scope is the global environment |
+| D-js-resolution | **`SemanticModel.Resolve(Identifier)` answers every reference, and `Resolve(BindingIdentifier)` every binding, with a `Resolution`.** The answer is one of: static, to the scope whose environment holds the binding and its declaration; dynamic, with the scopes that may bind the name at run time innermost first (a `with` statement's object, or a function's environment a sloppy direct `eval` may add to), the innermost's reason, and the answer when none of them does; global; or inherited, for eval code, whose caller's environments the request does not describe. Resolution is finished after the walk, over the references the walk recorded, since a later `eval` makes an earlier reference dynamic. Several declarations of one name answer the first, which names the binding, not its value. A `var` or a top-level function of a parameter's name answers its own declaration, which where the body shares the parameters' environment is that parameter's binding. A Script's own declarations are static. The dynamic function's goals are answered with the other piece empty, so a name only the other piece binds is global. A binding the language resolves when it runs (a `var` with an initialiser, a `for`-`in` or `for`-`of` `var` head) is looked up as a reference; every other answers as a reference reaching its own scope would. Until stage 5b, a name that only an Annex B.3.3 alias binds is answered as the scopes alone answer it, which may name an outer binding. JSD-0080's resolution forms are not among the decisions that bind this repository (`docs/roadmap/SharedLibraries.md`, "The decisions that bind this repository"), and the inherited form and the binding overload go beyond them *(noted 2026-11-26, at SJL-15.2 stage 5b: the cell reads "Until stage 5b, a name that only an Annex B.3.3 alias binds is answered as the scopes alone answer it, which may name an outer binding"; decision D-js-annexb-aliases closes that interim, a function's reference to a name only its alias binds answering that alias and sloppy eval code's carrying it, a Script's staying global. The cell's dynamic answer, "(a `with` statement's object, or a function's environment a sloppy direct `eval` may add to)", is widened by D-js-annexb-aliases too: a variable environment may also gain `arguments` by a block function's evaluation, with the reason `DynamicReason.BlockFunction`. The cell is left as written)* | (a) The sketch's `Dynamic(reason)` alone: an engine needs the scopes searched and the fallback. (b) `Global` for eval code: wrong for a direct eval whose caller binds the name. (c) No binding overload: the lowerings would recompute where a `var` initialiser writes. (d) Stage 5b's alias first, or folded in here: it revises D-js-stages, and stage 5b's eval-code aliases wait for stage 5c either way. (e) A union of subclasses: more types, the same facts. (f) The last function declaration of a name: it makes the declaration mean the value for functions alone. (g) The inherited form for the dynamic body goal's free names: the dynamic function's scope is the global environment |
 | D-js-environment-facts | **`SemanticModel.EnvironmentOf` answers each facts node's `EnvironmentFacts`:** the `arguments` binding where FunctionDeclarationInstantiation creates one; whether it is needed, by a reference that resolves to it or to a top-level `var` of its name, or by a direct-`eval` candidate in the function's own code or its arrows; whether it is mapped; and direct `eval` in the parameters and in the body, and `with`, in sloppy own code, an arrow's call being the arrow's. These say whether the node's own environments may gain bindings, not whether a nested `eval` reads them; that reach is stage 7's. A candidate is a call, not optional, whose callee is the name `eval`, parentheses unwrapped. **`FunctionFacts.HasSeparateVariableEnvironment`**, computed from the parameter expressions, and for eval code from strictness, is on the shared type and filled on both paths. A sloppy function's one `Function` scope stands for its lexical environment over its variable environment, the declarations' `IsLexical` saying which. The facts are attributed by a model-only member of the walk's context, as the model's scope is | (a) FunctionDeclarationInstantiation's literal flag for the need: wider than Broiler.VM's base for almost every function, so its window's moves would fall outside class P (an inference). (b) A mention of `eval`: Broiler.VM's approximation, which the model replaces. (c) Arrows' calls counted as the enclosing function's: the specification gives an arrow its own variable environment. (d) The separate variable environment on the model member: it does not depend on the member (D-js-instances). (e) A scope kind or a member for the lexical environment: a second kind for one scope, or a fact derivable from strictness. (f) Attribution by span containment at the model's end: a containment test at every class body |
 | D-js-arguments-binding | **The `arguments` binding is a model-only `Declaration` of `BindingKind.Arguments`**, its node the function's, the static block's or the dynamic function's program, held by `EnvironmentFacts.Arguments` and in no scope's declarations. A resolution to it names the parameters' scope, or the static block's. A field initialiser has none, since its evaluation omits FunctionDeclarationInstantiation. It is mutable by kind, its strict immutability being unobservable | (a) In the parameters' scope's declarations: `DeclarationOf` would answer a function node, and D-js-parameters' "one per BoundNames entry" would be revised. (b) A resolution with no declaration: stage 7's captures return declarations. (c) Mutability by strictness: it revises "It follows from Kind alone". (d) A binding for field initialisers: the specification omits FunctionDeclarationInstantiation there |
 | D-js-environment-vectors | **The value vectors of rows FF3, FF4, FF5 and RS2 (groups `ff3`, `ff4`, `ff5`, `rs2`) stay not implemented**, as group `pn1` does under D-js-adapter-visible-names: they name no catalogue row, and read at the parse each would match by acceptance alone, showing nothing of resolution | (a) Listing them as groups: vacuous matches. (b) Reading their values: part F's to decide, not this stage's |
@@ -4228,6 +4228,104 @@ runs, each as it concluded in its first attempt. The readings at `be6c4a5c`, at 
 Next: SJL-15.2 stage 5b, Annex B block-function aliases, the sixth model commit, judged by its part B against its own
 first parent. None of it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in both
 repositories.
+
+*(Noted 2026-11-26, at SJL-15.2 stage 5b, whose merge is the sixth model commit.)* The note above reads "Next: SJL-15.2
+stage 5b, Annex B block-function aliases, the sixth model commit, judged by its part B against its own first parent."
+The change before this one is stage 5a's part B records, Broiler-Platform/Broiler.JS#1142 (`d3e64b4d`), after stage 5a's
+merge, Broiler-Platform/Broiler.JS#1141 (`4d8aa93a`). This change is stage 5b: Annex B's block-function aliases, row AB1
+("Annex B.3.3 block-function aliases"). The pinned ES2026 numbers the feature Annex B.3.2, whose steps stand in the main
+text, each marked normative-optional (FunctionDeclarationInstantiation step 32.a, GlobalDeclarationInstantiation step
+12, EvalDeclarationInstantiation step 13, and BlockDeclarationInstantiation steps 3.a.ii.1 and 3.b.iii); row AB1's
+"Annex B.3.3", like the rule's "Annex B.3.3 aliases" above and in bundle
+[`sjl-15-001`](../evidence/sjl-15-001/decision-rule.md)'s rule, is an earlier edition's number for the same feature,
+quoted as written. With `ParseRequest.BuildSemanticModel` on, `SemanticModel.AnnexBAlias` answers, for each block
+function the pinned edition gives a var-scoped binding, the declaration that names the binding its evaluation sets: an
+existing `var` or top-level function of the name in its variable scope, the function's `arguments` binding, or a
+model-only declaration of the new `BindingKind.BlockFunctionAlias`, held in no scope's declarations; and `Resolve`
+answers the names the aliases bind, with the new reason `DynamicReason.BlockFunction` for an `arguments` binding a
+block function's evaluation creates. The bundle's rule lists "Annex B.3.3 aliases" among the facts part F checks, and
+part F is met only if "every fact has a public member and no public type names an engine type", so the member is
+public, beyond the sketch, which has no member for the aliases, and beyond decision D-js-names, which names no type for
+them. The canonical dump's model section writes each block function's answer, an alias named `alias:` and its node. No
+row is added and no vector is newly answered; with the member off nothing moves. Rule SL6's `PublicAPI.txt` gains these
+lines and loses none:
+- `Broiler.ECMAScript.Semantics.BindingKind.BlockFunctionAlias = 14`
+- `Broiler.ECMAScript.Semantics.DynamicReason.BlockFunction = 2`
+- `Broiler.ECMAScript.Semantics.SemanticModel.AnnexBAlias(Broiler.ECMAScript.Semantics.Declaration) method Broiler.ECMAScript.Semantics.Declaration`
+
+test262 at the pin asserts what each reading rests on, by path under `test/annexB/language/`:
+`function-code/function-redeclaration-block.js` and `function-code/function-redeclaration-switch.js` hold only duplicate plain
+functions of a name in a block and in a `switch`, and assert acceptance alone;
+`function-code/block-decl-nested-blocks-with-fun-decl.js` asserts that of nested block functions of a name the outer
+is admitted and the inner is not, "because replacing it with |var f| would result in a SyntaxError";
+`statements/labeled/function-declaration.js` holds labelled functions at the top level only, and asserts acceptance
+alone; `function-code/block-decl-func-skip-arguments.js` asserts that the arguments object survives a block
+`function arguments(){}`, an earlier edition's reading, which the model does not follow; and
+`global-code/script-decl-lex-collision.js` asserts that a later script's `let` of a Script alias's name throws a
+SyntaxError. The duplicates reading follows the syntax vector `syntax/annex-b/eg0004/0001`, whose Script gives the
+later function's value for both engines where the literal reading would make the reference throw a ReferenceError.
+
+Stage 5a's interim is closed. Decision D-js-resolution's cell reads "Until stage 5b, a name that only an Annex B.3.3
+alias binds is answered as the scopes alone answer it, which may name an outer binding."; from this change such a name
+answers the alias in function code and in sloppy eval code, and a Script's reference stays global. What remains: the
+interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time
+conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code
+with a global variable environment on GlobalDeclarationInstantiation-like checks. Stage 5a's CHANGELOG entry and its PR's
+description state the interim; they stay as written, and this note and this stage's CHANGELOG entry say it is closed.
+
+**The merge condition.** Both workflows are green on the PR; after the merge, nothing merges to `main` until both push
+runs at the merge have concluded. For ci.yml's run that includes the one re-run D-js-part-b-attempt allows
+(`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run (`.github/workflows/ci.yml:25-27`,
+:36-39). A later push never cancels Shared libraries' push run, because its push group carries the commit
+(`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1 ("Nothing merged to the
+default branch until both push runs at it had concluded", `docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken
+after the merge, against the merge's own first parent. Stage 5a's part B records say the same of stage 5a: "Nothing
+merged to the default branch until both push runs at it had concluded" (`docs/roadmap/SharedLibraries.md:4209-4210`).
+
+**This stage's decisions of 2026-11-26**, each taken as recommended under the owner's direction and recorded as the
+owner's decision of 2026-11-26. Their authority is the direction quoted above, which leaves out only "the start ...;
+decision D-census ...; and each publication of the shared stream (JSD-0083's decision D30)"; none below is one of those.
+Every later stage's decisions are recorded when that stage lands (the note of 2026-11-24 above); these are stage 5b's.
+Broiler.VM's decision D-ab1 (JSD-0088) is Broiler.VM's, not among the decisions that bind this repository above, and is
+cited, not taken, here.
+
+| Decision | Taken | Not taken, and why |
+|---|---|---|
+| D-js-annexb-aliases | **`SemanticModel.AnnexBAlias(Declaration)` answers, for a block function the pinned edition gives a var-scoped binding (Annex B.3.2: FunctionDeclarationInstantiation step 32.a, GlobalDeclarationInstantiation step 12, EvalDeclarationInstantiation step 13), the declaration naming the binding its evaluation sets**: an existing `var` or top-level function of the name; the function's `arguments` binding, for a block function named `arguments` where the function's variable environment holds it; or a model-only declaration of the new `BindingKind.BlockFunctionAlias`, shared by the block functions of its name in its variable scope and in no scope's declarations. It is null for every other declaration: a generator or async function, a block function in strict code or with Annex B off, one whose name a parameter binds in function code, and one under a lexical declaration of its name in any scope between it and its variable scope (a simple catch parameter excepted) or at that scope's top level. A Script's answer and eval code's are what the source alone decides. The realm's checks can still withhold the alias at run time, and so can eval code's caller until stage 5c describes it. `Resolve` answers a function's reference to a name only its alias binds with that alias. A Script's reference stays global. Eval code's stays inherited and carries the alias. An `arguments` binding that a block function's evaluation creates makes the variable environment's scope one that may gain that name at run time, with the new reason `DynamicReason.BlockFunction`; dynamic answers thus also cover that gain. The interim of D-js-resolution is closed. The readings: duplicate block functions of a name in a block are each aliased, as the syntax vectors record; a labelled block function is aliased | (a) Null for a block function named `arguments`, as the plan words it: the pinned edition's evaluation step still sets the variable environment's binding, which Broiler.VM's decision D-ab1 reads. (b) A node-keyed member: the plan's name and a caller iterating declarations favour the declaration. (c) A status type: each status follows from the variable scope's function kind and the answer's kind. (d) `BindingKind.Var` for the alias: indistinguishable from a written `var`. (e) A Script's references static to the alias: the alias may silently not exist. (f) Null for all eval code until stage 5c: it loses the aliases every caller admits. (g) The literal reading of duplicates, neither aliased: it contradicts the syntax vectors. (h) A labelled block function not aliased, the literal reading of "directly contained" |
+| D-js-annexb-vectors | **The value vectors of row AB1 (group `ab1`) stay not implemented**, as group `pn1` does under D-js-adapter-visible-names and the groups of D-js-environment-vectors: they rest on no `semantics` row, and read at the parse each would match by acceptance alone | (a) Listing the group: vacuous matches. (b) Reading their values: part F's to decide, not this stage's |
+
+Decision D-js-resolution's cell above gains a dated note of 2026-11-26, and the cell is left as written.
+
+The places where the library differs from either engine, named for SJL-15.3 and SJL-15.5. Broiler.VM decides membership
+by declaration (`VMC/JsBinder.Walks.cs`, its `ScanAnnexB`, where `VMC/` is Broiler.VM's
+`src/Broiler.VM.Profile.JavaScript.Compiler/`) and differs from the model on the inputs its decision D-ab1 names
+(Broiler.VM's `docs/evidence/sjl-15-001/correspondence.md`, row AB1; the bundle's `probes/answers.tsv`): on probe V028,
+a block function named `arguments`, it keeps the arguments object, its blocking set always taking `arguments` for an
+earlier edition's reason, that FunctionDeclarationInstantiation appends it to parameterNames, where the pinned edition
+appends it to parameterBindings (step 22.f); and on probes V029 and V030 in eval code, a block function under an
+intermediate lexical declaration of its name and one in strict eval code, which it aliases; the revision-44 `DirectEval`
+vectors show neither, because the probes ran as indirect-eval code (the bundle's README; Broiler.VM's
+`correspondence.md`). An arrow's block function named `arguments` falls under D-ab1's "a block function named
+arguments" (an inference). The model meets each case D-ab1 names: the `arguments` case by the `arguments` binding it
+answers, the intermediate-lexical case by the scopes between, and the strict-eval case by strictness (an inference);
+D-ab1 is Broiler.VM's and is not reserved. Broiler.JS decides membership by name (bundle
+[`sjl-15-001`](../evidence/sjl-15-001/README.md)'s `correspondence-broiler-js.md`, row AB1;
+`Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs`, `RegisterAnnexB`), and its row records the
+specification's answer on V023 to V030. Where its rule may differ from the pinned text, each an inference not probed on
+Broiler.JS, for SJL-15.5: an arrow's parameter does not withhold the alias, an arrow's frame holding no parameters
+(`Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.Functions.cs`, `BridgeScopes.cs`); an arrow with
+non-simple parameters skips `eval` and `arguments` (`Broiler.JS/Broiler.JavaScript.Compiler/FastCompiler.cs`,
+`AppendAnnexBOuterBindingAssignments`); a lexical declaration of the name later in an enclosing block withholds only the
+copy-out, not the binding (`BridgeScopes.cs`;
+`Broiler.JS/Broiler.JavaScript.Compiler/Statements/FastCompiler.VisitBlock.cs`; `FastCompiler.cs`), so that the name
+likely reads undefined where the specification gives a ReferenceError; test262's
+`annexB/language/global-code/script-decl-lex-collision.js` fails at W2's base
+(`docs/evidence/sjl-14-001/base/local/t262-off/shards/test262-full-shard-6.log`), the likely cause being that the global
+alias is not recorded as a var declaration; the nested same-name case is unknown; and the dynamic function's body is not
+examined. test262 at `ccaac100` asserts an earlier edition's reading for `block-decl-func-skip-arguments.js`
+(`docs/compliance/known-gaps.md`; the semantics vector `ab1/0005`); the model follows the pinned edition there, as both
+correspondence files and D-ab1 do. None of it is accepted: no second holder exists to review it. Every SJL-15 clause is
+unmet, in both repositories.
 
 ## Invariants
 

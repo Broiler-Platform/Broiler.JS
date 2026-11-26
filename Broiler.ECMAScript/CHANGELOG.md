@@ -733,6 +733,35 @@ Not yet packed under a version of its own: the stream's next version is set when
   entry and a `model-resolution` line per reference and binding identifier. No observable change: no published version
   carries the member, and with it off nothing moves.
 
+- `Broiler.ECMAScript.Frontend`: **the semantic model's Annex B block-function aliases** (milestone SJL-15.2, stage 5b,
+  row AB1, "Annex B.3.3 block-function aliases", an earlier edition's number for the pinned edition's Annex B.3.2; the
+  decisions of 2026-11-26, D-js-annexb-aliases and D-js-annexb-vectors, in `docs/roadmap/SharedLibraries.md`'s section
+  "Shared static semantics (SJL-15)"; design [`docs/frontend/design.md`](docs/frontend/design.md), section 10.8). A minor
+  change under convention 16, which no published version carries: nothing is removed, and with the new request member
+  off the parse answers as before, its tree, side tables and diagnostics unchanged. It adds, as rule SL6's
+  `PublicAPI.txt` lists them:
+  - `Broiler.ECMAScript.Semantics.SemanticModel.AnnexBAlias(Broiler.ECMAScript.Semantics.Declaration) method Broiler.ECMAScript.Semantics.Declaration`:
+    for a block function the pinned edition gives a var-scoped binding (FunctionDeclarationInstantiation step 32.a,
+    GlobalDeclarationInstantiation step 12, EvalDeclarationInstantiation step 13), the declaration naming the binding
+    its evaluation sets: an existing `var` or top-level function of the name, the function's `arguments` binding, or a
+    model-only alias; null for every other declaration, a generator, an async function, strict code, Annex B off, a
+    parameter of the name in function code and a lexical declaration of the name in the way among them. It throws
+    `ArgumentException` for a declaration whose node is not the model's;
+  - `Broiler.ECMAScript.Semantics.BindingKind.BlockFunctionAlias = 14`: the model-only alias, one per variable scope and
+    name, in no scope's declarations, its node the earliest admitted block function's name;
+  - `Broiler.ECMAScript.Semantics.DynamicReason.BlockFunction = 2`: a scope that may gain the name `arguments` alone, by a
+    block function's evaluation that creates the binding.
+
+  `Resolve` answers a function's reference to a name only an alias binds with that alias, and sloppy eval code's with
+  `Inherited` carrying it; a Script's reference stays global. The interim that stage 5a's entry above states, "Until
+  stage 5b a name only an Annex B.3.3 alias binds is answered as the scopes alone answer it", is closed. What remains: the
+  interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time
+  conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code
+  with a global variable environment on GlobalDeclarationInstantiation-like checks. No row is added and no vector is newly
+  answered: the value vectors of group `ab1` stay not implemented. The canonical dump's model section (`runners/SyntaxDump.cs`) writes a
+  `model-annexb` line per block function, and names an alias `alias:` and its node there and in the `model-resolution`
+  lines. No observable change: no published version carries the member, and with it off nothing moves.
+
 ### Changed
 
 - `Broiler.ECMAScript.Intl`'s `NumberFormatter`, over data that carries them (the owner's decision of 2026-11-08, "Keep + fix

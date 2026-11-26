@@ -5,7 +5,7 @@
 // --------------------
 // Relevant units:   8
 // Annotated:        8/8
-// Exempt:           50
+// Exempt:           51
 // Human-reviewed:   0/8
 // IP risk:          Low
 // Security risk:    Low
@@ -59,6 +59,9 @@ public enum ScopeKind
     /// one environment (step 31.a). For resolution the split cannot be observed: a reference meets the LexicalEnvironment
     /// first, and a direct <c>eval</c>'s <c>var</c> beside one of its names is EvalDeclarationInstantiation's SyntaxError.
     /// <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
+    /// For resolution, a sloppy function's scope also binds the name of each Annex B alias of its block functions
+    /// (<see cref="SemanticModel.AnnexBAlias"/>, a <see cref="BindingKind.BlockFunctionAlias"/> declaration), which no
+    /// scope's <see cref="Scope.Declarations"/> holds. <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
     /// </summary>
     Function = 2,
 
@@ -133,8 +136,10 @@ public enum ScopeKind
 /// mutability"); <see cref="Arguments"/> is the semantic model's alone too, and in no scope's
 /// <see cref="Scope.Declarations"/>. <i>(Revised 2026-11-26, at SJL-15.2 stage 5a, when <c>Arguments</c> was added; it
 /// read "are the semantic model's alone, in its own scopes".)</i>
+/// <see cref="BlockFunctionAlias"/> is the semantic model's alone too, and in no scope's <see cref="Scope.Declarations"/>.
+/// <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
 /// </summary>
-// Hairs-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk, JSD-0080 semantic model declarations; IP=Low; Security=Low; Resources=0; Fingerprint=232701
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk, JSD-0080 semantic model declarations; IP=Low; Security=Low; Resources=0; Fingerprint=FBEE46
 // Hairs-Human:        PENDING
 public enum BindingKind
 {
@@ -200,6 +205,20 @@ public enum BindingKind
     /// flags are false, as a parameter's are. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
     /// </summary>
     Arguments = 13,
+
+    /// <summary>
+    /// The var-scoped binding Annex B.3.2 gives a block function (ECMA-262 Annex B.3.2, the web legacy compatibility
+    /// semantics of block-level function declarations: FunctionDeclarationInstantiation step 32.a,
+    /// GlobalDeclarationInstantiation step 12 and EvalDeclarationInstantiation step 13), where no <c>var</c>, top-level
+    /// function or <c>arguments</c> binding of the name already stands in the variable scope:
+    /// the semantic model's alone, answered by <see cref="SemanticModel.AnnexBAlias"/>, one per variable scope and name, and
+    /// in no scope's <see cref="Scope.Declarations"/>. Its declaration's <see cref="Declaration.Node"/> is the
+    /// <see cref="BindingIdentifier"/> of the admitted block function of that name that starts first in the source, for
+    /// which <see cref="SemanticModel.DeclarationOf"/> answers the block function's own declaration, and its three flags
+    /// are false, as a parameter's are. Row AB1's name, "Annex B.3.3 block-function aliases", is an earlier edition's
+    /// number for the same feature. <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
+    /// </summary>
+    BlockFunctionAlias = 14,
 }
 
 /// <summary>One declared name, as the declarations walk finds it (decision D10).</summary>
@@ -229,6 +248,10 @@ public sealed class Declaration
     /// <see cref="StaticBlock"/> or the dynamic function's <see cref="ProgramNode"/> whose <c>arguments</c> it is, for which
     /// <see cref="SemanticModel.DeclarationOf"/> answers null. <i>(Revised 2026-11-26, at SJL-15.2 stage 5a; it read "The
     /// node that binds it: a BindingIdentifier, or the declaration of a name no identifier spells (*default*).")</i>
+    /// For a <see cref="BindingKind.BlockFunctionAlias"/> declaration, the <see cref="BindingIdentifier"/> of the admitted
+    /// block function of its name and variable scope that starts first in the source, for which
+    /// <see cref="SemanticModel.DeclarationOf"/> answers that block function's own declaration. <i>(Added 2026-11-26, at
+    /// SJL-15.2 stage 5b.)</i>
     /// </summary>
     public SyntaxNode Node { get; }
 
@@ -240,13 +263,24 @@ public sealed class Declaration
     /// (LexicallyDeclaredNames), rather than var-scoped (VarDeclaredNames).")</i> False also for a
     /// <see cref="BindingKind.Arguments"/> declaration, which is in neither. <i>(Added 2026-11-26, at SJL-15.2 stage
     /// 5a.)</i>
+    /// False also for a <see cref="BindingKind.BlockFunctionAlias"/> declaration, whose binding is var-scoped but which
+    /// neither list holds. <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
     /// </summary>
     public bool IsLexical { get; }
 
-    /// <summary>Whether it is a function declaration directly in a block, a <c>switch</c>'s CaseBlock or an <c>if</c> clause (Annex B.3.2's block-level function).</summary>
+    /// <summary>
+    /// Whether it is a function declaration directly in a block, a <c>switch</c>'s CaseBlock or an <c>if</c> clause (Annex B.3.2's block-level function).
+    /// It is true for a generator, an async function and an async generator there too; whether the language also gives
+    /// one a var-scoped binding is answered by <see cref="SemanticModel.AnnexBAlias"/>. <i>(Added 2026-11-26, at SJL-15.2
+    /// stage 5b.)</i>
+    /// </summary>
     public bool IsBlockFunction { get; }
 
-    /// <summary>Whether it is a function declaration that is the whole of an <c>if</c> clause (Annex B.3.3), which the scope of an implicit block declares.</summary>
+    /// <summary>
+    /// Whether it is a function declaration that is the whole of an <c>if</c> clause (Annex B.3.3), which the scope of an implicit block declares.
+    /// Whether the language also gives it a var-scoped binding is answered by <see cref="SemanticModel.AnnexBAlias"/>.
+    /// <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
+    /// </summary>
     public bool IsIfClauseFunction { get; }
 
     /// <summary>
@@ -259,6 +293,10 @@ public sealed class Declaration
     /// <see cref="BindingKind.Arguments"/> binding is true too: strict FunctionDeclarationInstantiation creates it immutable,
     /// but "In strict mode code early errors prevent attempting to assign to this binding, so its mutability is not
     /// observable" (clause 10.2.11, step 22.c.ii's note). <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
+    /// A <see cref="BindingKind.BlockFunctionAlias"/> binding is true too: FunctionDeclarationInstantiation's
+    /// CreateMutableBinding, GlobalDeclarationInstantiation's CreateGlobalVarBinding and EvalDeclarationInstantiation's
+    /// CreateMutableBinding each make a mutable binding. Whether it can be deleted differs by clause and is not a model
+    /// fact. <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
     /// </summary>
     // Hairs-AI:           Origin=AI; Spec=ECMA-262 s9.1.1.1.3 CreateImmutableBinding, s8.2.3 IsConstantDeclaration, JSD-0080 semantic model mutability; IP=Low; Security=Low; Resources=1; Fingerprint=43F5A5
     // Hairs-Human:        PENDING
