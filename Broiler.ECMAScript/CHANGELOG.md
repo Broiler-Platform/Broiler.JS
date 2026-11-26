@@ -682,6 +682,57 @@ Not yet packed under a version of its own: the stream's next version is set when
   parse; group `pn1` stays not implemented. No observable change: no published version carries the member, and with it
   off nothing moves.
 
+- `Broiler.ECMAScript.Frontend`: **the semantic model's resolution and function environment facts** (milestone SJL-15.2,
+  stage 5a; the decisions of 2026-11-26, D-js-resolution, D-js-environment-facts, D-js-arguments-binding and
+  D-js-environment-vectors, in `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)"; design
+  [`docs/frontend/design.md`](docs/frontend/design.md), section 10.7). A minor change under convention 16, which no
+  published version carries: nothing is removed, and with the new request member off the parse answers as before, its
+  tree, side tables and diagnostics unchanged. It adds, as rule SL6's `PublicAPI.txt` lists them:
+  - `Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.Identifier) method Broiler.ECMAScript.Semantics.Resolution`
+    and `Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.BindingIdentifier) method Broiler.ECMAScript.Semantics.Resolution`:
+    every reference's and every binding identifier's resolution, never null: static, to the scope whose environment
+    holds the binding and the name's first declaration there; dynamic, where a `with` object or a sloppy direct `eval`
+    may bind the name at run time; global; or, for eval code, inherited. A binding the language resolves when it runs
+    (a `var` declarator with an initialiser, a `for`-`in` or `for`-`of` `var` head) is looked up as a reference, so that
+    the two overloads agree. Until stage 5b a name only an Annex B.3.3 alias binds is answered as the scopes alone
+    answer it;
+  - `Broiler.ECMAScript.Semantics.SemanticModel.EnvironmentOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.EnvironmentFacts`:
+    the environment facts of the nodes `FactsOf` accepts. Each of the three throws `ArgumentException` for a node that
+    is not the model's, `EnvironmentOf` also for a node without facts;
+  - `Broiler.ECMAScript.Semantics.Resolution sealed class`, its constructor internal, with
+    `Broiler.ECMAScript.Semantics.Resolution.get_Kind() method Broiler.ECMAScript.Semantics.ResolutionKind`,
+    `Broiler.ECMAScript.Semantics.Resolution.get_Scope() method Broiler.ECMAScript.Semantics.Scope`,
+    `Broiler.ECMAScript.Semantics.Resolution.get_Declaration() method Broiler.ECMAScript.Semantics.Declaration`,
+    ``Broiler.ECMAScript.Semantics.Resolution.get_DynamicScopes() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.Scope>``,
+    ``Broiler.ECMAScript.Semantics.Resolution.get_Reason() method System.Nullable`1<Broiler.ECMAScript.Semantics.DynamicReason>``
+    and `Broiler.ECMAScript.Semantics.Resolution.get_Fallback() method Broiler.ECMAScript.Semantics.Resolution`;
+  - `Broiler.ECMAScript.Semantics.ResolutionKind enum`, with `Broiler.ECMAScript.Semantics.ResolutionKind.Static = 0`,
+    `Broiler.ECMAScript.Semantics.ResolutionKind.Dynamic = 1`, `Broiler.ECMAScript.Semantics.ResolutionKind.Global = 2`,
+    `Broiler.ECMAScript.Semantics.ResolutionKind.Inherited = 3` and
+    `Broiler.ECMAScript.Semantics.ResolutionKind.value__ field System.Int32`;
+  - `Broiler.ECMAScript.Semantics.DynamicReason enum`, with `Broiler.ECMAScript.Semantics.DynamicReason.With = 0`,
+    `Broiler.ECMAScript.Semantics.DynamicReason.SloppyDirectEval = 1` and
+    `Broiler.ECMAScript.Semantics.DynamicReason.value__ field System.Int32`;
+  - `Broiler.ECMAScript.Semantics.EnvironmentFacts sealed class`, its constructor internal, with
+    `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_Node() method Broiler.ECMAScript.Syntax.SyntaxNode`,
+    `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_Arguments() method Broiler.ECMAScript.Semantics.Declaration`,
+    `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_ArgumentsNeeded() method System.Boolean`,
+    `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_ArgumentsMapped() method System.Boolean`,
+    `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_DirectEvalInParameters() method System.Boolean`,
+    `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_DirectEvalInBody() method System.Boolean` and
+    `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_ContainsWith() method System.Boolean`: the `arguments` binding,
+    none for an arrow or a field initialiser; its observable need and its mapping; direct `eval` in the node's own
+    parameters and body, an arrow's call being the arrow's; and `with` in its own code;
+  - `Broiler.ECMAScript.Semantics.BindingKind.Arguments = 13`: the `arguments` binding, the model's alone and in no
+    scope's declarations;
+  - `Broiler.ECMAScript.Semantics.FunctionFacts.get_HasSeparateVariableEnvironment() method System.Boolean`: computed from
+    the parameter expressions, and for eval code from strictness, so the same with the member on or off.
+
+  No row is added and no vector is newly answered: the value vectors of groups `ff3`, `ff4`, `ff5` and `rs2` stay not
+  implemented. The canonical dump's model section (`runners/SyntaxDump.cs`) writes a `model-environment` line per facts
+  entry and a `model-resolution` line per reference and binding identifier. No observable change: no published version
+  carries the member, and with it off nothing moves.
+
 ### Changed
 
 - `Broiler.ECMAScript.Intl`'s `NumberFormatter`, over data that carries them (the owner's decision of 2026-11-08, "Keep + fix

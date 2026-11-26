@@ -455,3 +455,29 @@ which attempt decides, flagged for the owner at the first model commit, does not
 `be6c4a5c`, at `6c61879b` and at `d87044c9`, and the first one's flag, in the notes above of 2026-11-24 and 2026-11-25,
 stay as written. A NOT MET at any later model commit makes part B NOT MET. **Next:** SJL-15.2 stage 5a, resolution and
 the function environment facts, the fifth model commit. No rule file is added or edited, and no earlier output changes.
+
+*(Noted 2026-11-26, at SJL-15.2 stage 5a, written before part B's run at it.)* **The fifth model commit.** This branch's
+merge will be the fifth model commit: SJL-15.2 stage 5a, resolution and the function environment facts, named here once
+it exists. Part B is taken after it, against its own first parent (decision D-js-part-b-method), with both workflows'
+push runs imported and decision D-js-part-b-attempt applying. The merge condition: both workflows are green on the PR;
+after the merge, nothing merges to `main` until both push runs at the merge have concluded. For ci.yml's run that
+includes the one re-run D-js-part-b-attempt allows (`docs/roadmap/SharedLibraries.md:3808`). A later push cancels
+ci.yml's push run (`.github/workflows/ci.yml:25-27`, :36-39). A later push never cancels Shared libraries' push run,
+because its push group carries the commit (`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported
+too, as at stage 1 ("Nothing merged to the default branch until both push runs at it had concluded",
+`docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken after the merge, against the merge's own first parent.
+Stage 4's part B records say the same of stage 4: "Nothing merged to the default branch until both push runs at it had
+concluded" (`docs/roadmap/SharedLibraries.md:4077-4078`). The reading at it will be limited to the model commits taken
+so far.
+
+From this change the semantic model resolves every reference and binding identifier and answers each function's
+environment facts (decisions D-js-resolution, D-js-environment-facts and D-js-arguments-binding in
+`docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)"), and no row is added. The library-level
+adapter, `runners/AlgorithmsLibrary.Semantics.cs`, answers no new vector: by decision D-js-environment-vectors the value
+vectors of correspondence groups `ff3`, `ff4`, `ff5` and `rs2` stay not implemented, since they name no row and read at
+the parse, the reading the owner ruled on 2026-11-25 to keep ("Keep the reading at the parse (Recommended)"), as the note
+above at SJL-15.2 stage 2 records it, each would match by acceptance alone. As a proposal, the model's FF4 and FF5 facts
+(`FunctionFacts.HasSeparateVariableEnvironment`, `EnvironmentFacts.DirectEvalInParameters` and `DirectEvalInBody`) are
+the specification's answers that the corrections C1's rows FF4 and FF5 name (`corrections/corrections.tsv`); SJL-15.5
+applies them, and `corrections.md` and its tables are unchanged. No rule file is added or edited, and no earlier output
+changes. "What it will hold" above is left as written.

@@ -635,17 +635,21 @@ are this repository's of 2026-11-24, recorded in `docs/roadmap/SharedLibraries.m
 (SJL-15)" (D-js-entry, D-js-default-off, D-js-instances, D-js-kinds, D-js-scope-shape, D-js-parameters,
 D-js-declaration-of, D-js-function-kind and D-js-names among them), and where this section differs from them or from the
 records that win (the header), it is corrected to match. Section 4 stays the sketch as restated at SJL-12.1. Stage 1 is
-the model's foundation; the members the sketch names beyond it (resolution, the module record, named evaluation,
-captures and the early errors) are its later stages', and none is declared before its stage. Stage 2 adds the early
-errors of the function context (section 10.4), stage 3 the jump targets with their early errors (section 10.5), and
-stage 4 the private-name environments with their early errors (section 10.6); the early errors of the module record stay
-their stage's. *(Revised 2026-11-25, at SJL-15.2 stage 2; the paragraph ended at "and none is declared before its
+the model's foundation; the members the sketch names beyond it (the module record, named evaluation, captures and the
+early errors) are its later stages', and none is declared before its stage. Stage 2 adds the early errors of the
+function context (section 10.4), stage 3 the jump targets with their early errors (section 10.5), stage 4 the
+private-name environments with their early errors (section 10.6), and stage 5a resolution and the function environment
+facts (section 10.7); the early errors of the module record stay their stage's.
+*(Revised 2026-11-25, at SJL-15.2 stage 2; the paragraph ended at "and none is declared before its
 stage".)* *(Revised 2026-11-25, at SJL-15.2 stage 3, when the jump targets landed; it read "(resolution, jump targets,
 private names, the module record, named evaluation, captures and the early errors)" and "Stage 2 adds the early errors
 of the function context (section 10.4); the early errors of jump targets, private names and the module record stay their
 stages'".)* *(Revised 2026-11-25, at SJL-15.2 stage 4, when the private-name environments landed; it read "(resolution,
 private names, the module record, named evaluation, captures and the early errors)" and "and stage 3 the jump targets
 with their early errors (section 10.5); the early errors of private names and the module record stay their stages'".)*
+*(Revised 2026-11-26, at SJL-15.2 stage 5a, when resolution landed; it read "(resolution, the module record, named
+evaluation, captures and the early errors)" and "and stage 4 the private-name environments with their early errors
+(section 10.6); the early errors of the module record stay their stage's".)*
 
 ### 10.1 The entry
 
@@ -660,19 +664,22 @@ with their early errors (section 10.5); the early errors of private names and th
 
 | Sketch | The library's | What |
 |---|---|---|
-| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)`; `TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)` (section 10.5); `PrivateEnvironmentOf(ClassNode)` and `Resolve(PrivateIdentifier)` (section 10.6) *(revised 2026-11-25, at SJL-15.2 stage 3; the cell ended at "`FactsOf(SyntaxNode)`")* *(revised 2026-11-25, at SJL-15.2 stage 4; the cell ended at "`TargetOf(ContinueStatement)` (section 10.5)")* |
-| `Scope` | The tables' `Scope`, the same instances | The model's `Scopes` are a superset of `DeclarationTables.Scopes` in the same relative order, adding the kinds `With`, `ClassBody`, `FunctionName` and `Parameters`. Eval code is not a kind: its program's scope is a `Script` scope and its facts' kind `FunctionKind.EvalCode`; the separate variable environment is a function fact of a later stage |
-| `Declaration` | The tables' `Declaration`, the same instances | `BindingKind` gains `Parameter`, `FunctionName` (a named function expression's own name) and `ClassName` (a class's inner name), each with its three flags false, and `Declaration.IsMutable`, from the kind |
-| `FunctionFacts` | The tables' `FunctionFacts`, the same instances | `Kind` (`FunctionKind`), `IsAsync`, `IsGenerator`, `HasSimpleParameterList` and `HasParameterExpressions`, the same on every request; the model's `Functions` add one for every static block and every field with an initialiser |
-| `IdentifierReference`, `BreakOrContinue`, `PrivateNameReference`, `Diagnostic` | `Identifier`, `BreakStatement` and `ContinueStatement`, `PrivateIdentifier`, `SyntaxDiagnostic` | The tree's types, at the stages that read them; `LabelTarget` is stage 3's new type (section 10.5), `PrivateNameBinding`, with `PrivateEnvironment` and `PrivateNameKind`, stage 4's (section 10.6), and `Resolution` and `ModuleRecord` are new types of their stages *(revised 2026-11-25, at SJL-15.2 stage 3; it read "`Resolution`, `LabelTarget`, `PrivateNameBinding` and `ModuleRecord` are new types of those stages")* *(revised 2026-11-25, at SJL-15.2 stage 4; it read "and `Resolution`, `PrivateNameBinding` and `ModuleRecord` are new types of their stages")* |
+| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)`; `TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)` (section 10.5); `PrivateEnvironmentOf(ClassNode)` and `Resolve(PrivateIdentifier)` (section 10.6); `Resolve(Identifier)`, `Resolve(BindingIdentifier)` and `EnvironmentOf(SyntaxNode)` (section 10.7) *(revised 2026-11-25, at SJL-15.2 stage 3; the cell ended at "`FactsOf(SyntaxNode)`")* *(revised 2026-11-25, at SJL-15.2 stage 4; the cell ended at "`TargetOf(ContinueStatement)` (section 10.5)")* *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Resolve(PrivateIdentifier)` (section 10.6)")* |
+| `Scope` | The tables' `Scope`, the same instances | The model's `Scopes` are a superset of `DeclarationTables.Scopes` in the same relative order, adding the kinds `With`, `ClassBody`, `FunctionName` and `Parameters`. Eval code is not a kind: its program's scope is a `Script` scope and its facts' kind `FunctionKind.EvalCode`; the separate variable environment is a function fact, `FunctionFacts.HasSeparateVariableEnvironment` (section 10.7) *(revised 2026-11-26, at SJL-15.2 stage 5a; it read "the separate variable environment is a function fact of a later stage")* |
+| `Declaration` | The tables' `Declaration`, the same instances | `BindingKind` gains `Parameter`, `FunctionName` (a named function expression's own name) and `ClassName` (a class's inner name), each with its three flags false, and `Declaration.IsMutable`, from the kind; and `Arguments`, the `arguments` binding, the model's alone and in no scope's declarations (section 10.7) *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Declaration.IsMutable`, from the kind")* |
+| `FunctionFacts` | The tables' `FunctionFacts`, the same instances | `Kind` (`FunctionKind`), `IsAsync`, `IsGenerator`, `HasSimpleParameterList` and `HasParameterExpressions`, the same on every request; the model's `Functions` add one for every static block and every field with an initialiser; and `HasSeparateVariableEnvironment`, computed from them, the same on every request (section 10.7) *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "every field with an initialiser")* |
+| `IdentifierReference`, `BreakOrContinue`, `PrivateNameReference`, `Diagnostic` | `Identifier`, `BreakStatement` and `ContinueStatement`, `PrivateIdentifier`, `SyntaxDiagnostic` | The tree's types, at the stages that read them; `LabelTarget` is stage 3's new type (section 10.5), `PrivateNameBinding`, with `PrivateEnvironment` and `PrivateNameKind`, stage 4's (section 10.6), `Resolution`, with `ResolutionKind`, `DynamicReason` and `EnvironmentFacts`, stage 5a's (section 10.7), and `ModuleRecord` is a new type of its stage *(revised 2026-11-25, at SJL-15.2 stage 3; it read "`Resolution`, `LabelTarget`, `PrivateNameBinding` and `ModuleRecord` are new types of those stages")* *(revised 2026-11-25, at SJL-15.2 stage 4; it read "and `Resolution`, `PrivateNameBinding` and `ModuleRecord` are new types of their stages")* *(revised 2026-11-26, at SJL-15.2 stage 5a; it read "and `Resolution` and `ModuleRecord` are new types of their stages")* |
 
 Every collection is in source order: the scopes and the facts by the start of their node and, for one start, by the order
 the walk made them in, which puts a scope before the scopes inside it; every fact is keyed by node identity. A node
 that is not in the model's tree is a caller's error: `ScopeOf`, `DeclarationOf`, `FactsOf`, both `TargetOf` overloads,
-`PrivateEnvironmentOf` and `Resolve(PrivateIdentifier)` throw `ArgumentException` for it, and `FactsOf` for a node of
-the tree that has no facts. *(Revised 2026-11-25, at SJL-15.2 stage 3; it read "`ScopeOf`, `DeclarationOf` and `FactsOf`
+`PrivateEnvironmentOf`, the `Resolve` overloads of `Identifier`, `BindingIdentifier` and `PrivateIdentifier`, and
+`EnvironmentOf` throw `ArgumentException` for it, and `FactsOf` and `EnvironmentOf` for a node of the tree that has no
+facts. *(Revised 2026-11-25, at SJL-15.2 stage 3; it read "`ScopeOf`, `DeclarationOf` and `FactsOf`
 throw `ArgumentException` for it".)* *(Revised 2026-11-25, at SJL-15.2 stage 4; it read "`ScopeOf`, `DeclarationOf`,
-`FactsOf` and both `TargetOf` overloads throw".)*
+`FactsOf` and both `TargetOf` overloads throw".)* *(Revised 2026-11-26, at SJL-15.2 stage 5a; it read
+"`PrivateEnvironmentOf` and `Resolve(PrivateIdentifier)` throw `ArgumentException` for it, and `FactsOf` for a node of
+the tree that has no facts".)*
 
 ### 10.3 Scopes and `ScopeOf`
 
@@ -851,8 +858,10 @@ writes it. `SemanticModel.Resolve(PrivateIdentifier)`, the sketch's `Resolve(Pri
 binding with both elements. The types are public, the classes sealed with internal constructors. `Resolve` keeps the
 sketch's nullable `PrivateNameBinding?` (section 4), where stage 3's `TargetOf` departed from the sketch the other way:
 here a null occurs on accepted trees. It is the first of the sketch's `Resolve` overloads to land (section 4's
-`Resolve(IdentifierReference)` and `Resolve(PrivateNameReference)`); once the other lands at stage 5a, a caller passing
-a null literal names the overload by a cast. One instance per binding is shared by its keys and every reference to it.
+`Resolve(IdentifierReference)` and `Resolve(PrivateNameReference)`); with stage 5a's `Resolve(Identifier)` and
+`Resolve(BindingIdentifier)` beside it (section 10.7), a caller passing a null literal names the overload by a cast
+*(revised 2026-11-26, at SJL-15.2 stage 5a; it read "once the other lands at stage 5a, a caller passing a null literal
+names the overload by a cast")*. One instance per binding is shared by its keys and every reference to it.
 No brand member: a class's [[PrivateMethods]] brands are read from its names, a binding not of `Field`, instance or
 static.
 
@@ -919,6 +928,187 @@ Broiler.JS's validator does not reach a `case` clause's references, which the li
 where no name is in scope; an indirect eval given an empty list is refused with EA0009's code where the specification's
 is EE0167's; and under first error EA0009 can be named before a row the specification raises first.
 
+### 10.7 Resolution and the function environment
+
+*(Added 2026-11-26, at SJL-15.2 stage 5a.)* Each reference's and each binding identifier's resolution, and each
+function's environment facts, as the library answers them. Like the rest of this section it restates and decides
+nothing: the decisions are D-js-resolution, D-js-environment-facts, D-js-arguments-binding and D-js-environment-vectors
+of 2026-11-26, in `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)". No row is added: no
+`semantics` row of the stage table names resolution, and with the member off nothing moves.
+
+**The members and types.** `SemanticModel.Resolve(Identifier)` answers every reference and
+`SemanticModel.Resolve(BindingIdentifier)` every binding identifier with a `Resolution`, never null: `Kind`, a
+`ResolutionKind` (`Static`, `Dynamic`, `Global` or `Inherited`); `Scope` and `Declaration`; `DynamicScopes`, innermost
+first; `Reason`, a `DynamicReason` (`With` or `SloppyDirectEval`); and `Fallback`.
+`SemanticModel.EnvironmentOf(SyntaxNode)` accepts the nodes `FactsOf` accepts and answers `EnvironmentFacts`: `Node`,
+`Arguments`, `ArgumentsNeeded`, `ArgumentsMapped`, `DirectEvalInParameters`, `DirectEvalInBody` and `ContainsWith`.
+`BindingKind` gains `Arguments`, and `FunctionFacts` gains the computed `HasSeparateVariableEnvironment`. The types are
+public, the classes sealed with internal constructors; every answer is computed when the model is built and is
+immutable, and no instance is shared by guarantee. With stage 4's `Resolve(PrivateIdentifier)`, `Resolve` has overloads
+for `Identifier`, `BindingIdentifier` and `PrivateIdentifier`, so a caller passing a null literal names the overload by
+a cast.
+
+**Against the sketch.** Section 4's `Resolve(IdentifierReference)` answers "Static(scope, declaration) | Dynamic(reason)
+| Global". The library's `Dynamic` also carries the scopes searched and the answer when none of them binds the name,
+which an engine's lowering needs (a search with a bound, then a static fallback); `Inherited` is eval code's, whose
+caller's environments the request does not describe; and the `BindingIdentifier` overload answers where a binding the
+language resolves when it runs writes. JSD-0080's resolution forms are not among the decisions that bind this
+repository, and these go beyond them.
+
+**The lookup**, finished after the walk over the references it recorded in visit order, since a later direct `eval`
+makes an earlier reference dynamic (`function f() { x; eval("var x"); }`); it is a pass over a list, not a second walk.
+From the reference's `ScopeOf`, outward by `ParentOf`:
+
+| At a scope | The lookup |
+|---|---|
+| `With` | A dynamic entry, reason `With` (the statement's evaluation, NewObjectEnvironment): an object environment may bind any name |
+| A scope that binds the name | Ends: `Static` with the scope and the name's first declaration in it, or for sloppy eval code's own var-scoped declaration `Inherited` with it and no scope |
+| A scope a sloppy direct `eval` may add to | A dynamic entry, reason `SloppyDirectEval`, after its own declarations miss |
+| The chain's end | `Inherited` for eval code, `Global` for a Script, a Module and the dynamic function's goals |
+
+A non-empty list of dynamic entries makes the answer `Dynamic`, its `Reason` the innermost entry's and its `Fallback`
+the answer the lookup ended with, never itself dynamic. The lookup is iterative and memoised by its starting scope and
+name, the memo only looked up; the chain's depth is bounded by a small constant times the request's nesting bound, a
+named function expression adding its `FunctionName`, `Parameters` and `Function` scopes and a class its `ClassBody`.
+
+**What a scope binds.** Its `Declarations` by name, and several declarations of one name make one binding: the answer
+names the first in source order, so that `Declaration` names the binding, not its value. Where several function
+declarations share a name the value is the last one's (FunctionDeclarationInstantiation step 14.a.iii.2, as
+GlobalDeclarationInstantiation and EvalDeclarationInstantiation note too). A `Parameters` scope also binds its
+function's `arguments`, where `EnvironmentOf(...).Arguments` is non-null (step 22), and a `StaticBlock` scope its
+block's. A top-level `var` or function declaration of a parameter's name, or of `arguments`, in a function's `Function`
+scope answers its own declaration: where the variable environment is not separate it is the parameter's binding (steps
+29.b and 29.c, and step 37 for a function's object), and otherwise a binding of its own, a `var` initialised from the
+parameter (steps 30.e.i.4 and 30.e.i.6) and a function declaration to undefined first (step 30.e.i.3). A Script's
+declarations are `Static` to its scope, lexical ones in the global declarative record and the others in the object
+record (GlobalDeclarationInstantiation); storage stays each engine's. A Module's imports are `Static` to its scope.
+
+**The constructs.** A parameter's initialiser or computed key is in the `Parameters` scope, whose chain skips the body's
+`Function` scope (step 30's note: closures in the formal parameter list do not see the body's declarations); a body
+reference meets `Function`, then `Parameters`, then a named function expression's `FunctionName`, then the scopes
+outside. A class's heritage, keys and initialisers see its inner name in its `ClassBody` scope. A `catch` parameter's
+`Catch` scope is outside its block, so that with Annex B.3.4 `catch (e) { var e; e }` resolves `e` to the parameter.
+`for`, `for`-`in`/`of`, `switch` and `with` follow section 10.3's table.
+
+**The scopes a sloppy direct `eval` may add to.** A direct-`eval` candidate in non-strict code declares its `var`s in
+the running VariableEnvironment (PerformEval step 16.b); strict eval code has its own (step 18). For each function, an
+arrow's among them, and the dynamic function's goals:
+
+| Where the candidate stands | The entry |
+|---|---|
+| In the body, the variable environment separate | The `Function` scope: the function's own VariableEnvironment (FunctionDeclarationInstantiation step 30) |
+| In the body, the variable environment shared | The `Parameters` scope: the parameters' environment is the VariableEnvironment (step 29.d); a name `Parameters` binds stays `Static`, the eval's `var` of it being the same binding |
+| In the parameters | The `Parameters` scope, standing for calleeEnv, just outside the parameters' environment (step 20 and its note) |
+
+The two `Parameters` cases never meet in one entry: a call in the parameters implies parameter expressions, so a
+separate variable environment, and a call in the body then makes the `Function` scope gain. A caller tells which
+environment a `Parameters` entry stands for by `EnvironmentOf(entry.Node).DirectEvalInParameters`. A Script's top level,
+a Module, eval code's own program scope, a static block and a field initialiser gain nothing that matters: a Script's
+eval adds to the object record `Global` consults, and the others are strict or inherit already. An arrow's call makes
+the arrow's scopes gain, not its enclosing function's.
+
+**The lexical and variable environments of one function.** A sloppy function's one `Function` scope stands for its
+LexicalEnvironment over its VariableEnvironment (step 32.b): its `IsLexical` declarations are the LexicalEnvironment's,
+the others the VariableEnvironment's, which where `HasSeparateVariableEnvironment` is false is also the `Parameters`
+scope's environment; a strict function's scope is one environment (step 31.a); sloppy eval code's program scope holds
+its own LexicalEnvironment's declarations, its `var`s going to the caller's. For resolution the split cannot be
+observed: a reference meets the LexicalEnvironment first, and a direct `eval`'s `var` beside one of its names is
+EvalDeclarationInstantiation's SyntaxError. Stage 5c's caller scopes read the `IsLexical` split.
+
+**Eval code.** The request does not tell a direct `eval` from an indirect one and carries no caller's names, so a name
+eval code does not declare is `Inherited`, with no declaration; sloppy eval code's own var-scoped declarations are
+`Inherited` with the declaration and no scope, the binding being created in the caller's VariableEnvironment, before
+which a caller's `with` object or `catch` parameter of the name can stand; strict eval code's declarations and sloppy
+eval code's lexical ones are `Static`. Stage 5c's caller scopes may narrow `Inherited`.
+
+**The dynamic function's goals.** CreateDynamicFunction's function has the realm's global environment as its scope, so
+an undeclared name is `Global`. Each goal is answered with the other piece empty: under the `FunctionBody` goal `return
+a` in the body of `new Function("a", "return a")` answers `Global`, although the real function's parameter binds `a`, so
+that `Global` there means "bound neither by this piece nor known to the parse"; `Arguments`, `ArgumentsMapped` and
+`HasSeparateVariableEnvironment` are computed with the parameters empty too.
+
+**The binding overload.** A binding the language resolves when it runs is looked up as a reference standing there: each
+BoundName of a `var` declarator with an initialiser (VariableDeclaration evaluation's ResolveBinding, a pattern's
+PutValue with an undefined environment repeating it) and of a `for`-`in` or `for`-`of` statement's `var` head, with or
+without an initialiser, so that `with (o) { var x = 2 }` writes `o.x` and `catch (e) { var e = 1 }` writes the
+parameter. Duplicate sloppy parameters are resolved at run time too (step 25.a), but a simple sloppy list leaves no
+expression, `with` or `eval` between a parameter and its environment, so the lookup ends there on the first declaration
+of the name. Every other binding answers as a reference would where the lookup reaches the scope that holds its
+`DeclarationOf`. So the overloads agree: in `var v; var v = 1; v` both bindings and the reference answer the first
+`var`.
+
+**The facts**, each a member, with its clause:
+
+| Fact | Member | Clause |
+|---|---|---|
+| The `arguments` binding | `EnvironmentFacts.Arguments`, a `BindingKind.Arguments` declaration whose node is the function's, the static block's or the dynamic function's program, in no scope's declarations, so that `DeclarationOf` of its node stays null | FunctionDeclarationInstantiation steps 15 to 18 and 22: not for an arrow, nor where a parameter is named `arguments`, nor, without parameter expressions, where a top-level function or a lexical declaration of the body is; a static block's body is instantiated with no parameters; a field initialiser has none, its evaluation calling no FunctionDeclarationInstantiation ("Even though field initializers constitute a function boundary, calling FunctionDeclarationInstantiation does not have any observable effect and so is omitted") |
+| Its mutability | `Declaration.IsMutable`, true by kind | Step 22.c.ii's note: strict code's early errors make its immutability unobservable |
+| The need (row FF3) | `ArgumentsNeeded` | The observable need, below |
+| The mapping (row FF3) | `ArgumentsMapped`: needed, not strict and a simple parameter list | Steps 22.a and 22.b |
+| The separate variable environment (row FF4) | `FunctionFacts.HasSeparateVariableEnvironment`: `HasParameterExpressions` for every function kind, the dynamic goals' included, and `IsStrict` for eval code | Step 30; PerformEval step 18 |
+| Direct `eval` (row FF5) | `DirectEvalInParameters`, `DirectEvalInBody` | A candidate in non-strict own code: the call's evaluation, "direct eval" |
+| `with` | `ContainsWith` | A `WithStatement` in own code, arrows excluded |
+| Resolution (rows RS1 to RS3) | `Resolve` | ResolveBinding, GetIdentifierReference |
+| A constant's assignment (row RS4) | `Resolve` with `Declaration.IsMutable` | Whether a reference writes is not the model's |
+
+A separate parameter environment (steps 19 and 20) is `!IsStrict && HasParameterExpressions`, and a separate
+LexicalEnvironment `!IsStrict` for a function (steps 31 and 32) and always present for eval code (PerformEval steps 16.a
+and 17.a); neither is a member.
+
+**The candidate and own code.** A direct-`eval` candidate is a call that is not optional whose callee, through any
+parentheses, is the name `eval`: the call's evaluation reads a Reference named `"eval"` and the grouping operator keeps
+one, so `(eval)(s)` counts, and `eval?.(s)`, `(0, eval)(s)`, `new eval()`, a tagged template and a member call do not.
+Each only may be direct, SameValue with %eval% deciding at run time; its strictness is the call's own. Own code is
+outside every nested function, arrow, method, field initialiser and static block, and class code is strict; the walk
+attributes each call and each `with` by a model-only member of its context naming the function whose code holds it, as
+stage 1's model scope is carried.
+
+**The precise need.** `ArgumentsNeeded` is true where `Arguments` is non-null and a reference resolves to it, or to a
+top-level `var` named `arguments` in the function's own `Function` scope (the binding itself or initialised from it), as
+`Static` or as a `Dynamic` answer's `Fallback`; or a direct-`eval` candidate of any strictness stands in the function's
+own code, in an arrow's parameters or body within it, or in a nested class's heritage, computed keys or decorators,
+since eval code may name `arguments`. Only references count, and it is reference-based, not flow-sensitive. It is not
+FunctionDeclarationInstantiation's argumentsObjectNeeded, which is wider than Broiler.VM's base binder for almost every
+function: Broiler.VM's decision D-precision reads the model's precise facts in its window 1, and its class P admits only
+moves where the model's fact is narrower than the base's approximation (an inference). Against Broiler.VM's
+`UsesArguments`, a mention of `arguments` or `eval` in a non-arrow function no parameter of which binds the name, the
+model's need is narrower for `var e = eval; e(...)` and for `let arguments` and `function arguments(){}` without
+parameter expressions, and wider where an arrow's parameters name `arguments` or hold a candidate, which Broiler.VM's
+search, entering an arrow's body only, misses (an inference, not probed).
+
+**What `DirectEvalIn*` does not say.** They say whether a node's own environments may gain bindings, not whether a
+nested direct `eval` can read its bindings by name: in `function f() { var x; (() => eval("x = 1"))(); }` f's
+`DirectEvalInBody` is false, yet the arrow's call reaches f's `x` at run time. That reach is stage 7's, with captures
+and the rebuild of Broiler.JS's `FreeNameScan.Dynamic`, which is transitive and ignores strictness.
+
+**Annex B.3.3's aliases until stage 5b.** The tables hold no block function's var alias
+(FunctionDeclarationInstantiation step 32.a), only `IsBlockFunction`. Until stage 5b, with Annex B on, a name only such
+an alias binds is answered as the scopes alone answer it: `Global`, or a `Static` or `Dynamic` answer naming an outer
+binding that the alias shadows at run time, as in `var g; function f() { { function g() {} } return g; }`, where the
+scopes answer the Script's `var g` and the alias is f's. Nothing reads `Resolve` before stage 5b (an inference: no
+engine reads the model or sets the member, and publication is stage 8's); no test pins such an answer. A Script-level
+alias is a run-time global `var`, so `Global` is already right there.
+
+**The vectors left unanswered.** The value vectors of rows FF3, FF4, FF5 and RS2, groups `ff3`, `ff4`, `ff5` and `rs2`,
+stay not implemented, as group `pn1` does (section 10.6): they name no catalogue row, and read at the parse each would
+match by acceptance alone, showing nothing of resolution. The Frontend tests cover their sources instead.
+
+**The dump.** The canonical dump's model section writes, after section 10.6's lines, one `model-environment` line per
+facts entry and one `model-resolution` line per `Identifier` and per `BindingIdentifier`, an `arguments` binding named
+by its node; a dump without a model is unchanged, and no corpus runner or probe requests the model before stage 8.
+
+**Where the library differs from each engine**, named for SJL-15.3 and SJL-15.5, as `docs/roadmap/SharedLibraries.md`
+lists it. FF4: Broiler.JS separates the environment only where a sloppy function holds a direct `eval`, so a closure in
+the parameters reads the body's `var` (probe V010), and Broiler.VM's body environment is narrower than step 30. FF5:
+Broiler.JS declares an arrow's direct `eval`'s `var` in the enclosing function (probe V015), and Broiler.VM counts a
+mention of `eval`, arrows included, which covers the reach the model leaves to stage 7; whether Broiler.JS's detector
+reads `(eval)(...)` as a direct call is unknown. FF3: Broiler.JS materialises the object on reference and eagerly for a
+direct `eval`; Broiler.VM's need is the mention above. RS1 to RS4: both engines are the same, Broiler.VM's slice
+refusals being its admission policy, and eval code's free names are inherited, beyond JSD-0080's three forms. The
+correspondence files' "FunctionDeclarationInstantiation's step 28" is step 30 in the pinned edition.
+
+**For part F's checklist** (stage 8): "reference resolution with dynamic markers" is `Resolve` and `Resolution`;
+"per-function flags" are `EnvironmentOf`, `EnvironmentFacts` and `FunctionFacts.HasSeparateVariableEnvironment`.
 ## Corrections
 
 *(Revised 2026-10-26, at SJL-13.1; it read "None.")* Each revision of 2026-10-26 above quotes what it replaced:
