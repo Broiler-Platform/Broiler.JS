@@ -12,12 +12,12 @@
 $ git diff --stat d3e64b4d 84d84cc3 -- Broiler.JS docs/evidence/sjl-12-001
 (exit 0)
 
-$ git grep -n -e model-annexb -e "alias:" 84d84cc3 -- Broiler.ECMAScript/runners
+$ git grep -n -e model-annexb -e '"alias:"' 84d84cc3 -- Broiler.ECMAScript/runners
 84d84cc3:Broiler.ECMAScript/runners/SyntaxDump.cs:264:            : declaration.Kind == BindingKind.BlockFunctionAlias ? "alias:" + Reference(order, declaration.Node)
 84d84cc3:Broiler.ECMAScript/runners/SyntaxDump.cs:304:                    text.Append("model-annexb ").Append(declarationIndex[declaration]).Append(' ').Append(Declared(model.AnnexBAlias(declaration))).Append('\n');
 (exit 0)
 
-$ git grep -n -e model-annexb -e "alias:" d3e64b4d -- Broiler.ECMAScript/runners
+$ git grep -n -e model-annexb -e '"alias:"' d3e64b4d -- Broiler.ECMAScript/runners
 (exit 1)
 
 $ git grep -n 'if (model && result.Model is' 84d84cc3 -- Broiler.ECMAScript/runners/SyntaxDump.cs

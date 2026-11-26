@@ -89,8 +89,8 @@ invariant culture, the time zone `UTC`, the runtime, the system, the processors,
 version and module version id. [`logs/`](logs/runs.tsv) holds the stage's logs: the checks of the default branch logged
 during the stage up to the retention (`main-checks.log`, with its own note on the times of the merge, the push runs and
 the checks, and the stage's raw log of those checks it was rewritten from, `main-checks.raw.log`), the gate's log, the
-outer commands and runs, the status read of the push runs as the API answered it (`status-*.tsv`), and the stage's notes
-(`notes.log`).
+outer commands and runs, the status read of the push runs as the API answered it (`status-*.tsv`), GitHub's activity
+list of the default branch read at the review (`activity-main-*.tsv`), and the stage's notes (`notes.log`).
 
 ## What the runs say
 
@@ -157,12 +157,14 @@ outer commands and runs, the status read of the push runs as the API answered it
     kept here, as the first five model commits' `ci/` kept none.
 - **The default branch** stayed at `84d84cc3` from the merge until after both CI runs had concluded
   ([`logs/main-checks.log`](logs/main-checks.log)): the merge was made at 14:55:42Z; Shared libraries' run concluded at
-  15:03:02Z and ci.yml's at 15:10:42Z (each record's `updated_at`); the stage's first check, at 15:55:08Z, after both had
-  concluded, finds the default branch at `84d84cc3`, and a ref that is not force-pushed cannot come back to a commit it
-  has left; every later check up to the retention finds it there still, among them the check at 15:58:44Z logged before
-  the CI import (the CI read at 15:58:44Z-15:58:51Z and the artifacts' downloads at 15:58:59Z-15:59:05Z,
-  [`ci/commands.txt`](ci/commands.txt)). That both runs had concluded rests on each run record's `updated_at`, which the
-  imported [`ci/run-45843920047.json`](ci/run-45843920047.json) and
+  15:03:02Z and ci.yml's at 15:10:42Z (each record's `updated_at`); the stage's first check, at 15:55:08Z, after both
+  had concluded, finds the default branch at `84d84cc3`, and a ref that is not force-pushed cannot come back to a commit
+  it has left; GitHub's activity list of the default branch, read at the review at 16:25:07Z
+  ([`logs/activity-main-20261126T162507Z.tsv`](logs/activity-main-20261126T162507Z.tsv)), has as its newest entry the
+  merge from `d3e64b4d` to `84d84cc3` at 14:55:42Z and nothing after it; every later check up to the retention finds it
+  there still, among them the check at 15:58:44Z logged before the CI import (the CI read at 15:58:44Z-15:58:51Z and the
+  artifacts' downloads at 15:58:59Z-15:59:05Z, [`ci/commands.txt`](ci/commands.txt)). That both runs had concluded rests
+  on each run record's `updated_at`, which the imported [`ci/run-45843920047.json`](ci/run-45843920047.json) and
   [`ci/run-45843919956.json`](ci/run-45843919956.json) hold, and on the status read at 16:03:48Z, whose answer is kept
   ([`logs/status-20261126T160348Z.tsv`](logs/status-20261126T160348Z.tsv)).
 
@@ -177,13 +179,16 @@ outer commands and runs, the status read of the push runs as the API answered it
 - `identity/model-annexb.txt` answers the question this commit raises (stage 5b's Annex B lines in the canonical dump,
   and the aliases the walk now computes), as `../part-b-4d8aa93a/identity/model-resolution.txt` answered stage 5a's; it
   is no part of the comparison's method, which is unchanged. It was written by a scratch script that runs each command
-  it shows and writes its output and exit; the script is not kept.
-- Kept as at the fifth model commit: in `logs/main-checks.log`, one labelled line per check, its first two lines
-  rewritten from the stage's raw log with the same times and values (its note says which lines), and that raw log
-  itself, as it was written (`logs/main-checks.raw.log`). The fifth model commit's folder kept two status reads; this one
-  keeps one, taken through the API during the after run: the first read of both runs, at 15:55Z before the stage's
-  worktree, was by a GitHub tool whose answers are not kept, and found both already concluded `success` in their first
-  attempts (`logs/notes.log`).
+  it shows and writes its output and exit; the script is not kept. At the review the script's printer was made to quote
+  an argument holding a double quote and the file was written again: the second and third commands' pattern is
+  `"alias:"` with its double quotes, which the first printing showed unquoted; only those two printed lines changed.
+- Kept as at the fifth model commit: in `logs/main-checks.log`, one labelled line per check, its first five lines
+  (15:55:08Z to 16:03:16Z) rewritten from the stage's raw log with the same times and values, the third to fifth in
+  their labels only (its note says which lines; the first wording of that note named only the first two, and is quoted
+  in its note at the review), and that raw log itself, as it was written (`logs/main-checks.raw.log`). The fifth model
+  commit's folder kept two status reads; this one keeps one, taken through the API during the after run: the first read
+  of both runs, at 15:55Z before the stage's worktree, was by a GitHub tool whose answers are not kept, and found both
+  already concluded `success` in their first attempts (`logs/notes.log`).
 - Nothing was set aside at this commit: no run was stopped or re-taken, and no CI job was re-run.
 
 [`../hashes.txt`](../hashes.txt) gives the SHA-256 of every file here.

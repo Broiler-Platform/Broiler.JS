@@ -331,7 +331,7 @@ d7951c758ddf90bbc5ac42e20005c72769e2bdf2d3ccb178de84a7ffdf46f269  ./part-b-84d84
 91da62ed03c6fd34f8eef35d08c871c995a397d31dff3f8fd0709fb2f0d8e255  ./part-b-84d84cc3/84d84cc3/parse-corpus-c.tsv.gz
 973cec0ea6af5147dd43cd5b27f1639b93a26669d294a8791d443cae2d7fa373  ./part-b-84d84cc3/84d84cc3/parse-corpus-d1.tsv.gz
 b80c7636f8563f03a2d4c8a433d85caa68e58a1179633eda69677f263d88f1d4  ./part-b-84d84cc3/84d84cc3/reports.sha256.txt
-dfe609df4ccc8339e4d3f019e5da0912b003733df960350eeb416df0cb7b93de  ./part-b-84d84cc3/README.md
+834d295a3bde75d27aa16d36071a29e62c8bbb94d76d11bcecfdf437f7d0e911  ./part-b-84d84cc3/README.md
 82293e6c1762df3840c02fa3515a20ae232575e9a64e19bd9edd4994685998d6  ./part-b-84d84cc3/ci/artifact-digests.tsv
 39768fb3269adc90a3f2446a8bab0e0e24243fc6b975601a1b2ef9f174fc5db0  ./part-b-84d84cc3/ci/artifacts-45843919956.json
 a5001cd78b3d5744cfb4f21090e00377c5cfb84ec2858321aa69511faa85258a  ./part-b-84d84cc3/ci/artifacts-45843920047.json
@@ -375,7 +375,7 @@ b24913b723a86dc3f5062d70e2dfc2bda3195dc8dccfbe5479f4635f2c197245  ./part-b-84d84
 a6fa95b8cbe3fe01509a37b6fbc27effdef42f907bd5ae502884085884d9d27d  ./part-b-84d84cc3/identity/commands.txt
 55017337fd8df22d0c5b4156eacf340bdd02d87fef3e20dad17c859aedf262d1  ./part-b-84d84cc3/identity/completeness.txt
 d1ccab1899b0441f24df5ae98ca8c80afaa5e4926aa22d4b135762f3e5a54794  ./part-b-84d84cc3/identity/inputs.txt
-521afb7bbab543c426cdeb0779de8312937cf3b050bc7240e6185aeafc549975  ./part-b-84d84cc3/identity/model-annexb.txt
+c9b2350057307b972425ce1cd4734b8609cf71911650ab6019abcec5f5a55648  ./part-b-84d84cc3/identity/model-annexb.txt
 bb9bca4adab76445a53c69ece7f0a58850bc7748c091bb2849290740627c0792  ./part-b-84d84cc3/identity/rows-c.txt
 6faba50af38d9dea819e0bac0ed3edc54b52c4d295a90e58a30a87a6cbb00f9b  ./part-b-84d84cc3/identity/rows-d1.txt
 48b7f09d46ef4205c44c6bd14ed58c6ee9b11e8c554e25ac1e3c787ff340d668  ./part-b-84d84cc3/identity/two-builds-d3e64b4d/commands.txt
@@ -383,11 +383,12 @@ bb9bca4adab76445a53c69ece7f0a58850bc7748c091bb2849290740627c0792  ./part-b-84d84
 c4390b78e8c7de0dc74a9c90ef1ebac2e27d0c96e9b42e91c0d9d3bd546b8c16  ./part-b-84d84cc3/identity/two-builds-d3e64b4d/rehearsal-d3e64b4d-reports.sha256.txt
 4574695dfcb52c58c355c3f2c762aaa736116f4832558c689442d49e126a1c36  ./part-b-84d84cc3/identity/two-builds-d3e64b4d/rows-c.txt
 ef6bf5b8bdaa08d3e08de305b5ccc58a68dfc343fc7c656fd200ca09651203d7  ./part-b-84d84cc3/identity/two-builds-d3e64b4d/rows-d1.txt
+0c9349a0de49a42b8476193e2c25970d657c5b324ba2a4eb59c9cfb25436f5cf  ./part-b-84d84cc3/logs/activity-main-20261126T162507Z.tsv
 95a090972605b6d171b51400634f4d3eace11874c304cc25c027b109b3c78782  ./part-b-84d84cc3/logs/commands.log
 4a3dbe2509d9b87b662d9881ba4d7ce47d338aa2ca8ed7c83a0c5537edb91160  ./part-b-84d84cc3/logs/gate.log
-b03306395aff49b7263f23f59dde39de3111de6de180ff90a4b87b710e4d3458  ./part-b-84d84cc3/logs/main-checks.log
+3db13a48326af75ef374f2f886fd65006a8dcd392cc49936ce343d565586e88c  ./part-b-84d84cc3/logs/main-checks.log
 cb8c8d5b778b7e19f37045363b05d986b538bffdd5df84c0eccc226c41579c6a  ./part-b-84d84cc3/logs/main-checks.raw.log
-968a1d50cffc6927cfcf29a73005df8ca6cc5bfff500c754ab47d1486e3b6c15  ./part-b-84d84cc3/logs/notes.log
+3b3ef34f3b403cf265c9132427d6c2784ba832b97968ecf7bd2c0c3cc84e323e  ./part-b-84d84cc3/logs/notes.log
 7938b8aa8b3d236c836be53568fbf9a6cef66513b84bb8bece841096c342fc03  ./part-b-84d84cc3/logs/runs.tsv
 0150e38f38628bbf3b7442caa52155257c926d99c0c292d09e7a9ddcf45d97fa  ./part-b-84d84cc3/logs/status-20261126T160348Z.tsv
 168cb664f28b3b2c60620c4e5b43bee4a23b91cade5e95d60fcd244d7ac5d86f  ./part-b-84d84cc3/scripts/completeness.py
