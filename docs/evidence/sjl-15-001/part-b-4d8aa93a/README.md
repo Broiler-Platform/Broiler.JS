@@ -88,8 +88,9 @@ and rows, the order, one thread and its stack, the environment (`TZ=UTC`, `LANG`
 invariant culture, the time zone `UTC`, the runtime, the system, the processors, and each engine assembly's name,
 version and module version id. [`logs/`](logs/runs.tsv) holds the stage's logs: the checks of the default branch logged
 during the stage up to the retention (`main-checks.log`, with its own note on the times of the merge, the push runs and
-the checks), the gate's log, the outer commands and runs, the two status reads of the push runs as the API answered them
-(`status-*.tsv`), and the stage's notes (`notes.log`).
+the checks, and the stage's raw log of those checks it was rewritten from, `main-checks.raw.log`), the gate's log, the
+outer commands and runs, the two status reads of the push runs as the API answered them (`status-*.tsv`), and the stage's
+notes (`notes.log`).
 
 ## What the runs say
 
@@ -143,8 +144,10 @@ the checks), the gate's log, the outer commands and runs, the two status reads o
     engine corpus (`Category=EngineCorpus` of `Broiler.JavaScript.Vectors.Tests`) in the two engine vectors jobs, each
     passed ([`ci/test-projects.tsv`](ci/test-projects.tsv)). No `Broiler.ECMAScript` test project is in ci.yml's jobs.
     Two vectors jobs raised the warnings the workflow raises without failing: engine vectors (ubuntu-24.04) the
-    vectors' timing, and engine vectors (Windows against Linux) the Windows report against the Linux one; engine
-    vectors (windows-latest) raised none. The logs hold them.
+    vectors' timing, which also says that the slowest vector, `semantics/super/ee0131/0003`, took 5.000 s of the 5 s
+    limit and was the one vector run again alone after finding no completion in the parallel pass (the fourth model
+    commit's run 45707436823 warned the same of the same vector), and engine vectors (Windows against Linux) the
+    Windows report against the Linux one; engine vectors (windows-latest) raised none. The logs hold them.
   - **The artifacts**, every one both runs list, downloaded and checked against the API's digest and size, every one
     matching ([`ci/artifact-digests.tsv`](ci/artifact-digests.tsv)): CI's `engine-vectors-ubuntu-24.04` 15105487325,
     `engine-vectors-windows-latest` 15105453162 and `nuget-packages` 15105228193; Shared libraries' `shared-packages`
@@ -175,9 +178,10 @@ the checks), the gate's log, the outer commands and runs, the two status reads o
   `../part-b-56272150/identity/model-private.txt` answered stage 4's; it is no part of the comparison's method, which is
   unchanged. It was written by a scratch script that runs each command it shows and writes its output and exit; the
   script is not kept.
-- Two things are kept here that the fourth model commit's folder did not keep: the answers of the two status reads of
-  the push runs (`logs/status-*.tsv`), and, in `logs/main-checks.log`, one labelled line per check rewritten from the
-  stage's raw log of two lines per check, with the same times and values (its note says which lines).
+- Three things are kept here that the fourth model commit's folder did not keep: the answers of the two status reads of
+  the push runs (`logs/status-*.tsv`); in `logs/main-checks.log`, one labelled line per check rewritten from the stage's
+  raw log of two lines per check, with the same times and values (its note says which lines); and that raw log itself,
+  as it was written (`logs/main-checks.raw.log`, its checks from 09:58:59Z to 10:10:44Z).
 - Nothing was set aside at this commit: no run was stopped or re-taken, and no CI job was re-run.
 
 [`../hashes.txt`](../hashes.txt) gives the SHA-256 of every file here.
