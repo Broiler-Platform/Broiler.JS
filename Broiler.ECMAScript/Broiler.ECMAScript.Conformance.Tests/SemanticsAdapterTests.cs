@@ -20,7 +20,9 @@ namespace Broiler.ECMAScript.Conformance.Tests;
 /// parses".)</i> From stage 4 a <c>DirectEval</c> vector's eval code also inherits the private names visible at the call,
 /// read from its Script's model, and group <c>pn1</c> stays not implemented. <i>(Revised 2026-11-25, at SJL-15.2 stage 4;
 /// it read "D-js-adapter-form, and from stage 3 D-js-adapter-groups): it answers" and ended "Every other semantics vector is
-/// not implemented.")</i>
+/// not implemented.")</i> From stage 5c (D-js-adapter-caller-scopes) the eval code also receives its caller's records, read
+/// from the Script's model, and a direct eval the eval code holds is followed; the vectors of EA0007 are answered, those of
+/// EA0006 stay not implemented. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
 /// </summary>
 public class SemanticsAdapterTests
 {
@@ -105,7 +107,9 @@ public class SemanticsAdapterTests
     /// The Script request is the library's default for its goal plus the member; each answered DirectEval vector's context,
     /// its visible private names and its strictness by id. <i>(Revised 2026-11-25, at SJL-15.2 stage 4, when the visible
     /// private names joined the context; it read "each answered DirectEval vector's context and strictness by id", and held
-    /// every context's names null.)</i>
+    /// every context's names null.)</i> From stage 5c each context's caller's records too, by id, compared entry by entry,
+    /// innermost first, as <c>{names}</c> or <c>{c:names}</c> for a Catch clause's: an empty list, never null, for every
+    /// entry not named. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
     /// </summary>
     [Fact]
     public void The_Script_request_is_the_default_plus_the_member_and_the_eval_code_inherits_its_caller_s_context()
@@ -178,6 +182,29 @@ public class SemanticsAdapterTests
             ["semantics/private-names/ea0009/0001"] = (method, true),
             ["semantics/private-names/ea0009/0002"] = (InheritedContext.TopLevel, false),
             ["semantics/private-names/ea0009/0003"] = (method, true),
+
+            // Stage 5c: eval code's var against its caller's records; ea0007/0005's outer eval code, at a sloppy Script's top
+            // level. (Added 2026-11-26, at SJL-15.2 stage 5c.)
+            ["semantics/scopes/ea0007/0001"] = (new InheritedContext { InFunction = true }, false),
+            ["semantics/scopes/ea0007/0002"] = (new InheritedContext { InFunction = true }, false),
+            ["semantics/scopes/ea0007/0003"] = (InheritedContext.TopLevel, false),
+            ["semantics/scopes/ea0007/0004"] = (InheritedContext.TopLevel, false),
+            ["semantics/scopes/ea0007/0005"] = (InheritedContext.TopLevel, false),
+        };
+
+        // The caller's records, by id (SJL-15.2 stage 5c; SCRATCH's expected-callers.tsv): a sloppy function's body gives its
+        // record, a block or a Catch clause theirs; a strict holder, a field initialiser and a Script's top level an empty
+        // list. (Added 2026-11-26, at SJL-15.2 stage 5c.)
+        var records = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["semantics/super/ee0162/0003"] = "{}",
+            ["semantics/super/ea0003/0001"] = "{}",
+            ["semantics/super/ea0003/0003"] = "{}",
+            ["semantics/super/ea0004/0003"] = "{}",
+            ["semantics/scopes/ea0007/0001"] = "{}{x}",
+            ["semantics/scopes/ea0007/0002"] = "{}{x}",
+            ["semantics/scopes/ea0007/0003"] = "{x}",
+            ["semantics/scopes/ea0007/0004"] = "{}{c:x}",
         };
 
         // The visible private names, by id: an empty list for every other entry, never null. (Added 2026-11-25, at SJL-15.2
@@ -208,6 +235,8 @@ public class SemanticsAdapterTests
                     == (actual.InFunction, actual.InMethod, actual.InDerivedConstructor, actual.InClassFieldInitializer),
                 id + ": " + (actual.InFunction, actual.InMethod, actual.InDerivedConstructor, actual.InClassFieldInitializer));
             Assert.Equal(visible.GetValueOrDefault(id, []), actual.VisiblePrivateNames);
+            Assert.NotNull(actual.CallerScopes);
+            Assert.True(records.GetValueOrDefault(id, "") == Written(actual.CallerScopes), id + ": " + Written(actual.CallerScopes));
         }
 
         // ea0005/0001: the function is inside the eval code, so the eval code's own function resets ContainsArguments.
@@ -307,6 +336,47 @@ public class SemanticsAdapterTests
         var lb1 = Answered.Where(static v => AlgorithmsLibrary.SemanticsGroup(v) == "lb1").ToList();
         Assert.NotEmpty(lb1);
         Assert.All(LibraryRun.Run(lb1, new AlgorithmsLibrary()), static r => Assert.Equal(AlgorithmsLibrary.SyntaxAccepted, r.Rendered));
+    }
+
+    // A list of the caller's records as the tests write it (SJL-15.2 stage 5c).
+    private static string Written(IReadOnlyList<CallerScope>? list) =>
+        list is null ? "null" : string.Concat(list.Select(static s => "{" + (s.IsCatch ? "c:" : "") + string.Join(",", s.Names) + "}"));
+
+    /// <summary>
+    /// A direct eval the eval code holds (SJL-15.2 stage 5c; D-js-adapter-caller-scopes): <c>ea0007/0005</c>'s outer eval
+    /// code, accepted with an empty list, holds one, whose records are the outer eval code's own lexical declarations, and the
+    /// inner parse refuses with EA0007, the answer. The flags and the private names of an eval code's own holder come from
+    /// the outer request. The vectors of EA0006 stay not implemented, and no EA0008 vector exists. <i>(Added 2026-11-26, at
+    /// SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    [Fact]
+    public void A_direct_eval_in_eval_code_is_followed_and_the_innermost_parse_answers()
+    {
+        var vector = Answered.Single(static v => v.Id == "semantics/scopes/ea0007/0005");
+        var outer = AlgorithmsLibrary.DirectEvalRequest(LibraryRun.Inputs(vector)[0].Chars)!;
+        Assert.Equal("let x; eval('var x;')", outer.Source.Text);
+        Assert.Empty(outer.Context!.CallerScopes!);
+        Assert.Equal(ParseOutcome.Accepted, SyntaxParser.Parse(outer).Outcome);
+        var model = SyntaxParser.Parse(outer).Model!;
+        Assert.Equal("{x}", Written(model.CallerScopesOf(model.DirectEvalCalls.Single())));
+        var answer = AlgorithmsLibrary.DirectEvalParse(outer);
+        Assert.Equal(ParseOutcome.Refused, answer.Outcome);
+        Assert.Equal("JSE1907", answer.Diagnostics[0].Code);
+        Assert.Equal(AlgorithmsLibrary.SyntaxRefused, LibraryRun.Run([vector], new AlgorithmsLibrary()).Single().Rendered);
+
+        // An eval code's flags, private names and strictness at a nested call: a method's outer request, a class of the eval
+        // code, and a level that holds two eval names answered itself.
+        var inMethod = AlgorithmsLibrary.DirectEvalRequest("class C { #a; m() { return eval(\"class D { #b; n() { return eval('this.#a + this.#b'); } }\"); } }")!;
+        Assert.Equal(ParseOutcome.Accepted, AlgorithmsLibrary.DirectEvalParse(inMethod).Outcome);
+        var refused = AlgorithmsLibrary.DirectEvalRequest("class C { #a; m() { return eval(\"(function () { return eval('this.#c'); })\"); } }")!;
+        Assert.Equal(ParseOutcome.Refused, AlgorithmsLibrary.DirectEvalParse(refused).Outcome);
+        var sloppy = AlgorithmsLibrary.DirectEvalRequest("eval(\"let y; { eval('var y'); eval('1'); }\")")!;
+        Assert.Equal(ParseOutcome.Accepted, AlgorithmsLibrary.DirectEvalParse(sloppy).Outcome);
+        var arrow = AlgorithmsLibrary.DirectEvalRequest("function f() { return eval(\"(() => eval('new.target'))\"); }")!;
+        Assert.Equal(ParseOutcome.Accepted, AlgorithmsLibrary.DirectEvalParse(arrow).Outcome);
+
+        Assert.All(SemanticsVectors.Where(static v => AlgorithmsLibrary.SemanticsRow(v) == "EA0006"), static v => Assert.False(AlgorithmsLibrary.IsLibrarySemantics(v), v.Id));
+        Assert.DoesNotContain(SemanticsVectors, static v => AlgorithmsLibrary.SemanticsRow(v) == "EA0008");
     }
 
     // The catalogue rows a note names, E[EAP] and four digits, in order.

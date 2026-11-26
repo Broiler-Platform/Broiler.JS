@@ -57,6 +57,14 @@ namespace Broiler.ECMAScript.Runners;
 /// resolution lines' declaration and fallback fields, as an <c>arguments</c> binding is named <c>args:</c> and its node. A
 /// parse without a model is dumped as before. <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
 /// </para>
+/// <para>
+/// From SJL-15.2 stage 5c it also holds, after those lines, one <c>model-eval-call</c> line per direct-eval candidate in the
+/// model's order: the call and the number of records a direct <c>eval</c> there receives, or <c>-</c> where the answer is
+/// null; and after each, one <c>model-caller-scope</c> line per record, innermost first: whether it is a <c>Catch</c>
+/// clause's, then its names (decision D-js-part-g). The call's strictness has no member of the model, and the dump computes
+/// no fact of its own, so the lines leave it out. A parse without a model is dumped as before. <i>(Added 2026-11-26, at
+/// SJL-15.2 stage 5c.)</i>
+/// </para>
 /// </remarks>
 internal static class SyntaxDump
 {
@@ -302,6 +310,26 @@ internal static class SyntaxDump
             {
                 if (declaration.IsBlockFunction)
                     text.Append("model-annexb ").Append(declarationIndex[declaration]).Append(' ').Append(Declared(model.AnnexBAlias(declaration))).Append('\n');
+            }
+        }
+
+        // Each direct-eval candidate's caller's records, in the model's order (SJL-15.2 stage 5c); never the model's map.
+        foreach (var call in model.DirectEvalCalls)
+        {
+            var records = model.CallerScopesOf(call);
+            text.Append("model-eval-call ").Append(Reference(order, call)).Append(' ').Append(records is null ? "-" : Number(records.Count)).Append('\n');
+            if (records is null)
+                continue;
+            foreach (var record in records)
+            {
+                text.Append("model-caller-scope ").Append(Flag(record.IsCatch));
+                foreach (var name in record.Names)
+                {
+                    text.Append(' ');
+                    Escaped(text, name);
+                }
+
+                text.Append('\n');
             }
         }
     }

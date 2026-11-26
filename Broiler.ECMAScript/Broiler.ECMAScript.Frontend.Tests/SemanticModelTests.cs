@@ -3766,4 +3766,25 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
             Assert.Equal(ra.Diagnostics.Select(static d => (d.Code, d.Span.Offset)), rb.Diagnostics.Select(static d => (d.Code, d.Span.Offset)));
         }
     }
+
+    /// <summary>
+    /// The dump's caller's-records lines (D-js-part-g): one <c>model-eval-call</c> line per candidate in order, with its
+    /// entries' count or <c>-</c>, and one <c>model-caller-scope</c> line per entry; a dump without a model is unchanged.
+    /// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    [Fact]
+    public void The_dump_s_model_section_holds_each_candidate_s_records()
+    {
+        const string text = "function f(a = eval('')) { let x; { try {} catch (e) { eval(''); } } }";
+        var lines = System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(Model(text).Result)).Split('\n');
+        var calls = lines.Where(static l => l.StartsWith("model-eval-call ", StringComparison.Ordinal)).ToList();
+        Assert.Equal(2, calls.Count);
+        Assert.EndsWith(" 1", calls[0], StringComparison.Ordinal);
+        Assert.EndsWith(" 4", calls[1], StringComparison.Ordinal);
+        var records = lines.Where(static l => l.StartsWith("model-caller-scope ", StringComparison.Ordinal)).ToList();
+        Assert.Equal(["model-caller-scope 0 \"a\" \"arguments\"", "model-caller-scope 0", "model-caller-scope 1 \"e\"", "model-caller-scope 0", "model-caller-scope 0 \"x\""], records);
+        Assert.DoesNotContain(System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(Parse(text, model: false))).Split('\n'), static l => l.StartsWith("model-", StringComparison.Ordinal));
+        var evalNull = System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(SyntaxParser.Parse(CallerRequest("eval('')", null)))).Split('\n');
+        Assert.EndsWith(" -", evalNull.Single(static l => l.StartsWith("model-eval-call ", StringComparison.Ordinal)), StringComparison.Ordinal);
+    }
 }
