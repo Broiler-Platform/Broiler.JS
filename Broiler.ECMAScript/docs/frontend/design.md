@@ -1053,8 +1053,8 @@ name eval code does not declare is `Inherited`, with no declaration; sloppy eval
 which a caller's `with` object or `catch` parameter of the name can stand; strict eval code's declarations and sloppy
 eval code's lexical ones are `Static`. Stage 5c's caller scopes may narrow `Inherited`.")*
 A name only an Annex B alias of sloppy eval code binds is `Inherited` too, carrying the alias, which the caller's
-environments can still withhold (section 10.8). *(Added 2026-11-26, at SJL-15.2 stage 5b.)* With the caller's records
-given, a record that is not a Catch clause's and binds the name withholds it, and under a Catch clause's record the
+environments can still withhold (section 10.8). *(Added 2026-11-26, at SJL-15.2 stage 5b.)*
+With the caller's records given, a record that is not a Catch clause's and binds the name withholds it, and under a Catch clause's record the
 alias is kept and the answer carries no declaration (section 10.9). *(Added 2026-11-26, at SJL-15.2 stage 5c.)*
 
 **The dynamic function's goals.** CreateDynamicFunction's function has the realm's global environment as its scope, so

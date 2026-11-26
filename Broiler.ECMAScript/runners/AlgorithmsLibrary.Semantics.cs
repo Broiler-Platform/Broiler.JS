@@ -95,7 +95,8 @@ internal sealed partial class AlgorithmsLibrary
     /// stage 3's, the rows of jump targets. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i> Stage 4's, the rows of private
     /// names; group <c>pn1</c> stays unanswered, its vectors naming no row and two of them expecting a value the Script
     /// computes after catching the eval code's refusal (the session's decision D-js-adapter-visible-names).
-    /// <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i> Stage 5c's, eval code's <c>var</c>s against its caller's records
+    /// <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+    /// Stage 5c's, eval code's <c>var</c>s against its caller's records
     /// (EvalDeclarationInstantiation step 3.d); the vectors of EA0006, a row only a run reaches, stay unanswered.
     /// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
     /// </summary>

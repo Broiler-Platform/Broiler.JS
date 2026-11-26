@@ -108,8 +108,8 @@ public enum FunctionKind
 /// the program, every function, every static block and every initialised field (<see cref="EnvironmentOf"/>), and from
 /// stage 5b each block function's Annex B alias (<see cref="AnnexBAlias"/>, Annex B.3.2, which row AB1 names by an
 /// earlier edition's number, B.3.3), and from stage 5c the calls that may be direct evals and the caller's records a direct
-/// <c>eval</c> at each receives (<see cref="DirectEvalCalls"/>, <see cref="CallerScopesOf"/>); the module record, named
-/// evaluation, captures and the early errors that are not purely grammatical are later stages'. From stage 2 the walk that builds it also reports its
+/// <c>eval</c> at each receives (<see cref="DirectEvalCalls"/>, <see cref="CallerScopesOf"/>); the module record, named evaluation, captures and the early
+/// errors that are not purely grammatical are later stages'. From stage 2 the walk that builds it also reports its
 /// early errors of the function context (the super rows, ContainsArguments, eval code's from the caller's context, and
 /// three of expressions') among the parse's diagnostics, so that a source they refuse has no model, from stage 3 those
 /// of jump targets (a <c>break</c> or a <c>continue</c> with no target, and an undefined break or continue target), and
@@ -1009,7 +1009,8 @@ public enum DynamicReason
 /// (EvalDeclarationInstantiation step 13.b.ii.7.a) unless a caller's non-Catch lexical binding of the name between them
 /// withholds it (step 13.b.ii.4), or, for a global variable environment, the global checks do (step 13.b.ii.5); a
 /// caller's <c>catch</c> parameter or <c>with</c> object can still stand before it, as for eval code's <c>var</c>s. Either
-/// way the binding lies outside the eval code. <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i> With the caller's records
+/// way the binding lies outside the eval code. <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
+/// With the caller's records
 /// given, a record that is not a Catch clause's and binds the name withholds the alias, so that the name answers
 /// <see cref="ResolutionKind.Inherited"/> with no declaration, and under a Catch clause's record of the name the alias is
 /// kept and the answer carries no declaration, the parameter standing first. <i>(Added 2026-11-26, at SJL-15.2 stage

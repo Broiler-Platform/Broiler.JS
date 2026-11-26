@@ -20,7 +20,8 @@ namespace Broiler.ECMAScript.Conformance.Tests;
 /// parses".)</i> From stage 4 a <c>DirectEval</c> vector's eval code also inherits the private names visible at the call,
 /// read from its Script's model, and group <c>pn1</c> stays not implemented. <i>(Revised 2026-11-25, at SJL-15.2 stage 4;
 /// it read "D-js-adapter-form, and from stage 3 D-js-adapter-groups): it answers" and ended "Every other semantics vector is
-/// not implemented.")</i> From stage 5c (D-js-adapter-caller-scopes) the eval code also receives its caller's records, read
+/// not implemented.")</i>
+/// From stage 5c (D-js-adapter-caller-scopes) the eval code also receives its caller's records, read
 /// from the Script's model, and a direct eval the eval code holds is followed; the vectors of EA0007 are answered, those of
 /// EA0006 stay not implemented. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
 /// </summary>
@@ -107,7 +108,8 @@ public class SemanticsAdapterTests
     /// The Script request is the library's default for its goal plus the member; each answered DirectEval vector's context,
     /// its visible private names and its strictness by id. <i>(Revised 2026-11-25, at SJL-15.2 stage 4, when the visible
     /// private names joined the context; it read "each answered DirectEval vector's context and strictness by id", and held
-    /// every context's names null.)</i> From stage 5c each context's caller's records too, by id, compared entry by entry,
+    /// every context's names null.)</i>
+    /// From stage 5c each context's caller's records too, by id, compared entry by entry,
     /// innermost first, as <c>{names}</c> or <c>{c:names}</c> for a Catch clause's: an empty list, never null, for every
     /// entry not named. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
     /// </summary>

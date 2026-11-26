@@ -26,14 +26,14 @@ namespace Broiler.ECMAScript.Syntax;
 /// <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when its rows joined the table; it
 /// read "(milestone SJL-15.2, stage 2; Broiler.VM's JSD-0080, one early-error stage)" and ended "gives them".)</i>
 /// <i>(Revised 2026-11-25, at SJL-15.2 stage 4, when its rows joined the table; it read "stage 2's rows of the function
-/// context and of expressions, and stage 3's rows of jump targets (the session's decision D-js-jump-rows).")</i>
-/// Stage 5c's rows of eval code's <c>var</c>s against its caller's records, EvalDeclarationInstantiation step 3.d
-/// (the session's decision D-js-caller-scope-rows), join them. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i> The declarations walk reports them only when the request sets
+/// context and of expressions, and stage 3's rows of jump targets (the session's decision D-js-jump-rows).")</i> The declarations walk reports them only when the request sets
 /// <see cref="ParseRequest.BuildSemanticModel"/>, through the same report as <see cref="Rows"/>' rows, in decision D11's
 /// order (the session's decisions D-js-channel and D-js-semantic-rows). EP0017 and EP0018 have no report of their own:
 /// no goal is ShadowRealm's, and EA0003, EA0004 or EE0162 refuses their source first. The Frontend tests hold this list a
 /// subset of the stage table's <c>semantics</c> rows, to be equal at stage 8 but for EA0006, and hold that no code here is
 /// one of <see cref="Rows"/>'.
+/// Stage 5c's rows of eval code's <c>var</c>s against its caller's records, EvalDeclarationInstantiation step 3.d
+/// (the session's decision D-js-caller-scope-rows), join them. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
 /// </summary>
 // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=92ED1E
 // Hairs-Human:        PENDING
