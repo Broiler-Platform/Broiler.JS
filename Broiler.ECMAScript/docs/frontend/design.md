@@ -650,6 +650,8 @@ with their early errors (section 10.5); the early errors of private names and th
 *(Revised 2026-11-26, at SJL-15.2 stage 5a, when resolution landed; it read "(resolution, the module record, named
 evaluation, captures and the early errors)" and "and stage 4 the private-name environments with their early errors
 (section 10.6); the early errors of the module record stay their stage's".)*
+Stage 5b adds Annex B's block-function aliases (section 10.8), which the model's fact list names ("Annex B's
+block-function aliases", section 4) and the sketch gives no member. *(Added 2026-11-26, at SJL-15.2 stage 5b.)*
 
 ### 10.1 The entry
 
@@ -664,9 +666,9 @@ evaluation, captures and the early errors)" and "and stage 4 the private-name en
 
 | Sketch | The library's | What |
 |---|---|---|
-| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)`; `TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)` (section 10.5); `PrivateEnvironmentOf(ClassNode)` and `Resolve(PrivateIdentifier)` (section 10.6); `Resolve(Identifier)`, `Resolve(BindingIdentifier)` and `EnvironmentOf(SyntaxNode)` (section 10.7) *(revised 2026-11-25, at SJL-15.2 stage 3; the cell ended at "`FactsOf(SyntaxNode)`")* *(revised 2026-11-25, at SJL-15.2 stage 4; the cell ended at "`TargetOf(ContinueStatement)` (section 10.5)")* *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Resolve(PrivateIdentifier)` (section 10.6)")* |
+| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)`; `TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)` (section 10.5); `PrivateEnvironmentOf(ClassNode)` and `Resolve(PrivateIdentifier)` (section 10.6); `Resolve(Identifier)`, `Resolve(BindingIdentifier)` and `EnvironmentOf(SyntaxNode)` (section 10.7); `AnnexBAlias(Declaration)` (section 10.8) *(revised 2026-11-25, at SJL-15.2 stage 3; the cell ended at "`FactsOf(SyntaxNode)`")* *(revised 2026-11-25, at SJL-15.2 stage 4; the cell ended at "`TargetOf(ContinueStatement)` (section 10.5)")* *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Resolve(PrivateIdentifier)` (section 10.6)")* *(revised 2026-11-26, at SJL-15.2 stage 5b; the cell ended at "`EnvironmentOf(SyntaxNode)` (section 10.7)")* |
 | `Scope` | The tables' `Scope`, the same instances | The model's `Scopes` are a superset of `DeclarationTables.Scopes` in the same relative order, adding the kinds `With`, `ClassBody`, `FunctionName` and `Parameters`. Eval code is not a kind: its program's scope is a `Script` scope and its facts' kind `FunctionKind.EvalCode`; the separate variable environment is a function fact, `FunctionFacts.HasSeparateVariableEnvironment` (section 10.7) *(revised 2026-11-26, at SJL-15.2 stage 5a; it read "the separate variable environment is a function fact of a later stage")* |
-| `Declaration` | The tables' `Declaration`, the same instances | `BindingKind` gains `Parameter`, `FunctionName` (a named function expression's own name) and `ClassName` (a class's inner name), each with its three flags false, and `Declaration.IsMutable`, from the kind; and `Arguments`, the `arguments` binding, the model's alone and in no scope's declarations (section 10.7) *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Declaration.IsMutable`, from the kind")* |
+| `Declaration` | The tables' `Declaration`, the same instances | `BindingKind` gains `Parameter`, `FunctionName` (a named function expression's own name) and `ClassName` (a class's inner name), each with its three flags false, and `Declaration.IsMutable`, from the kind; and `Arguments`, the `arguments` binding, the model's alone and in no scope's declarations (section 10.7); and `BlockFunctionAlias`, a block function's var-scoped alias, the model's alone and in no scope's declarations (section 10.8) *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Declaration.IsMutable`, from the kind")* *(revised 2026-11-26, at SJL-15.2 stage 5b; the cell ended at "in no scope's declarations (section 10.7)")* |
 | `FunctionFacts` | The tables' `FunctionFacts`, the same instances | `Kind` (`FunctionKind`), `IsAsync`, `IsGenerator`, `HasSimpleParameterList` and `HasParameterExpressions`, the same on every request; the model's `Functions` add one for every static block and every field with an initialiser; and `HasSeparateVariableEnvironment`, computed from them, the same on every request (section 10.7) *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "every field with an initialiser")* |
 | `IdentifierReference`, `BreakOrContinue`, `PrivateNameReference`, `Diagnostic` | `Identifier`, `BreakStatement` and `ContinueStatement`, `PrivateIdentifier`, `SyntaxDiagnostic` | The tree's types, at the stages that read them; `LabelTarget` is stage 3's new type (section 10.5), `PrivateNameBinding`, with `PrivateEnvironment` and `PrivateNameKind`, stage 4's (section 10.6), `Resolution`, with `ResolutionKind`, `DynamicReason` and `EnvironmentFacts`, stage 5a's (section 10.7), and `ModuleRecord` is a new type of its stage *(revised 2026-11-25, at SJL-15.2 stage 3; it read "`Resolution`, `LabelTarget`, `PrivateNameBinding` and `ModuleRecord` are new types of those stages")* *(revised 2026-11-25, at SJL-15.2 stage 4; it read "and `Resolution`, `PrivateNameBinding` and `ModuleRecord` are new types of their stages")* *(revised 2026-11-26, at SJL-15.2 stage 5a; it read "and `Resolution` and `ModuleRecord` are new types of their stages")* |
 
@@ -675,7 +677,8 @@ the walk made them in, which puts a scope before the scopes inside it; every fac
 that is not in the model's tree is a caller's error: `ScopeOf`, `DeclarationOf`, `FactsOf`, both `TargetOf` overloads,
 `PrivateEnvironmentOf`, the `Resolve` overloads of `Identifier`, `BindingIdentifier` and `PrivateIdentifier`, and
 `EnvironmentOf` throw `ArgumentException` for it, and `FactsOf` and `EnvironmentOf` for a node of the tree that has no
-facts. *(Revised 2026-11-25, at SJL-15.2 stage 3; it read "`ScopeOf`, `DeclarationOf` and `FactsOf`
+facts. `AnnexBAlias` throws it for a declaration whose node is not in the model's tree. *(Added 2026-11-26, at SJL-15.2
+stage 5b.)* *(Revised 2026-11-25, at SJL-15.2 stage 3; it read "`ScopeOf`, `DeclarationOf` and `FactsOf`
 throw `ArgumentException` for it".)* *(Revised 2026-11-25, at SJL-15.2 stage 4; it read "`ScopeOf`, `DeclarationOf`,
 `FactsOf` and both `TargetOf` overloads throw".)* *(Revised 2026-11-26, at SJL-15.2 stage 5a; it read
 "`PrivateEnvironmentOf` and `Resolve(PrivateIdentifier)` throw `ArgumentException` for it, and `FactsOf` for a node of
@@ -939,7 +942,9 @@ of 2026-11-26, in `docs/roadmap/SharedLibraries.md`'s section "Shared static sem
 **The members and types.** `SemanticModel.Resolve(Identifier)` answers every reference and
 `SemanticModel.Resolve(BindingIdentifier)` every binding identifier with a `Resolution`, never null: `Kind`, a
 `ResolutionKind` (`Static`, `Dynamic`, `Global` or `Inherited`); `Scope` and `Declaration`; `DynamicScopes`, innermost
-first; `Reason`, a `DynamicReason` (`With` or `SloppyDirectEval`); and `Fallback`.
+first; `Reason`, a `DynamicReason` (`With`, `SloppyDirectEval` or `BlockFunction`); and `Fallback`. *(Revised
+2026-11-26, at SJL-15.2 stage 5b, when `BlockFunction` joined the reasons (section 10.8); it read "`Reason`, a
+`DynamicReason` (`With` or `SloppyDirectEval`)".)*
 `SemanticModel.EnvironmentOf(SyntaxNode)` accepts the nodes `FactsOf` accepts and answers `EnvironmentFacts`: `Node`,
 `Arguments`, `ArgumentsNeeded`, `ArgumentsMapped`, `DirectEvalInParameters`, `DirectEvalInBody` and `ContainsWith`.
 `BindingKind` gains `Arguments`, and `FunctionFacts` gains the computed `HasSeparateVariableEnvironment`. The types are
@@ -964,6 +969,7 @@ From the reference's `ScopeOf`, outward by `ParentOf`:
 | `With` | A dynamic entry, reason `With` (the statement's evaluation, NewObjectEnvironment): an object environment may bind any name |
 | A scope that binds the name | Ends: `Static` with the scope and the name's first declaration in it, or for sloppy eval code's own var-scoped declaration `Inherited` with it and no scope |
 | A scope a sloppy direct `eval` may add to | A dynamic entry, reason `SloppyDirectEval`, after its own declarations miss |
+| A scope a block function's evaluation may give an `arguments` binding (section 10.8) | For the name `arguments` alone, a dynamic entry, reason `BlockFunction`, after its own declarations miss; a scope that may also gain by a sloppy direct `eval` is that row's, reason `SloppyDirectEval` *(added 2026-11-26, at SJL-15.2 stage 5b)* |
 | The chain's end | `Inherited` for eval code, `Global` for a Script, a Module and the dynamic function's goals |
 
 A non-empty list of dynamic entries makes the answer `Dynamic`, its `Reason` the innermost entry's and its `Fallback`
@@ -982,6 +988,9 @@ scope answers its own declaration: where the variable environment is not separat
 parameter (steps 30.e.i.4 and 30.e.i.6) and a function declaration to undefined first (step 30.e.i.3). A Script's
 declarations are `Static` to its scope, lexical ones in the global declarative record and the others in the object
 record (GlobalDeclarationInstantiation); storage stays each engine's. A Module's imports are `Static` to its scope.
+A sloppy function's `Function` scope also binds each Annex B alias of its block functions, and sloppy eval code's program
+scope its own, which answers `Inherited` carrying the alias; a Script's aliases bind no reference, which stays `Global`
+(section 10.8). *(Added 2026-11-26, at SJL-15.2 stage 5b.)*
 
 **The constructs.** A parameter's initialiser or computed key is in the `Parameters` scope, whose chain skips the body's
 `Function` scope (step 30's note: closures in the formal parameter list do not see the body's declarations); a body
@@ -1006,6 +1015,9 @@ environment a `Parameters` entry stands for by `EnvironmentOf(entry.Node).Direct
 a Module, eval code's own program scope, a static block and a field initialiser gain nothing that matters: a Script's
 eval adds to the object record `Global` consults, and the others are strict or inherit already. An arrow's call makes
 the arrow's scopes gain, not its enclosing function's.
+A block function named `arguments` whose evaluation creates the `arguments` binding makes the scope standing for the
+variable environment gain that name alone, kept apart from these scopes, which gain every name (section 10.8). *(Added
+2026-11-26, at SJL-15.2 stage 5b.)*
 
 **The lexical and variable environments of one function.** A sloppy function's one `Function` scope stands for its
 LexicalEnvironment over its VariableEnvironment (step 32.b): its `IsLexical` declarations are the LexicalEnvironment's,
@@ -1020,12 +1032,16 @@ eval code does not declare is `Inherited`, with no declaration; sloppy eval code
 `Inherited` with the declaration and no scope, the binding being created in the caller's VariableEnvironment, before
 which a caller's `with` object or `catch` parameter of the name can stand; strict eval code's declarations and sloppy
 eval code's lexical ones are `Static`. Stage 5c's caller scopes may narrow `Inherited`.
+A name only an Annex B alias of sloppy eval code binds is `Inherited` too, carrying the alias, which the caller's
+environments can still withhold (section 10.8). *(Added 2026-11-26, at SJL-15.2 stage 5b.)*
 
 **The dynamic function's goals.** CreateDynamicFunction's function has the realm's global environment as its scope, so
 an undeclared name is `Global`. Each goal is answered with the other piece empty: under the `FunctionBody` goal `return
 a` in the body of `new Function("a", "return a")` answers `Global`, although the real function's parameter binds `a`, so
 that `Global` there means "bound neither by this piece nor known to the parse"; `Arguments`, `ArgumentsMapped` and
 `HasSeparateVariableEnvironment` are computed with the parameters empty too.
+So under the `FunctionBody` goal a `Static` answer naming an Annex B alias can be wrong too, where the real parameters
+bind the name and withhold the alias (section 10.8). *(Added 2026-11-26, at SJL-15.2 stage 5b.)*
 
 **The binding overload.** A binding the language resolves when it runs is looked up as a reference standing there: each
 BoundName of a `var` declarator with an initialiser (VariableDeclaration evaluation's ResolveBinding, a pattern's
@@ -1088,14 +1104,21 @@ flag; whether the proposal makes them strict code is not settled here, and the s
 decides it. Until then such a candidate in a sloppy function's own code counts towards its `DirectEvalInBody` or
 `DirectEvalInParameters`.
 
-**Annex B.3.3's aliases until stage 5b.** The tables hold no block function's var alias
-(FunctionDeclarationInstantiation step 32.a), only `IsBlockFunction`. With Annex B on (`ParseSwitches.AnnexB`), a name
-that only a block function's Annex B.3.3 alias binds is answered as the scopes alone answer it until stage 5b: `Global`,
-or a `Static` or `Dynamic` answer naming an outer binding, which the alias shadows at run time. So in
-`var g; function f() { { function g() {} } return g; }` the scopes answer the Script's `var g`, and the alias is f's.
-Nothing reads `Resolve` before stage 5b (an inference: no engine reads the model or sets the member, and publication is
-stage 8's); no test pins such an answer. A Script-level alias is a run-time global `var`, so `Global` is already right
-there.
+**Annex B's block-function aliases.** The tables hold no block function's var alias (FunctionDeclarationInstantiation
+step 32.a), only `IsBlockFunction`; the model answers it, `SemanticModel.AnnexBAlias` (section 10.8). With Annex B on
+(`ParseSwitches.AnnexB`), a name that only a block function's alias binds answers that alias: in function code `Static`,
+to the function's `Function` scope and the alias, so that in `var g; function f() { { function g() {} } return g; }` the
+reference answers f's alias, not the Script's `var g`; in sloppy eval code `Inherited`, carrying the alias, which the
+caller's environments can still withhold until stage 5c; in a Script `Global`, since GlobalDeclarationInstantiation's
+run-time checks can leave the alias unmade; and an `arguments` binding a block function's evaluation creates is a
+dynamic entry, reason `BlockFunction`. *(Revised 2026-11-26, at SJL-15.2 stage 5b, when the aliases joined the model; it
+read "**Annex B.3.3's aliases until stage 5b.** The tables hold no block function's var alias (FunctionDeclarationInstantiation
+step 32.a), only `IsBlockFunction`. With Annex B on (`ParseSwitches.AnnexB`), a name that only a block function's Annex
+B.3.3 alias binds is answered as the scopes alone answer it until stage 5b: `Global`, or a `Static` or `Dynamic` answer
+naming an outer binding, which the alias shadows at run time. So in `var g; function f() { { function g() {} } return
+g; }` the scopes answer the Script's `var g`, and the alias is f's. Nothing reads `Resolve` before stage 5b (an
+inference: no engine reads the model or sets the member, and publication is stage 8's); no test pins such an answer. A
+Script-level alias is a run-time global `var`, so `Global` is already right there.")*
 
 **The vectors left unanswered.** The value vectors of rows FF3, FF4, FF5 and RS2, groups `ff3`, `ff4`, `ff5` and `rs2`,
 stay not implemented, as group `pn1` does (section 10.6): they name no catalogue row, and read at the parse each would
@@ -1119,6 +1142,144 @@ correspondence files' "FunctionDeclarationInstantiation's step 28" is step 30 in
 
 **For part F's checklist** (stage 8): "reference resolution with dynamic markers" is `Resolve` and `Resolution`;
 "per-function flags" are `EnvironmentOf`, `EnvironmentFacts` and `FunctionFacts.HasSeparateVariableEnvironment`.
+
+### 10.8 Annex B's block-function aliases
+
+*(Added 2026-11-26, at SJL-15.2 stage 5b.)* The var-scoped binding the pinned edition gives a block function, as the
+library answers it. Like the rest of this section it restates and decides nothing: the decisions are D-js-annexb-aliases
+and D-js-annexb-vectors of 2026-11-26, in `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics
+(SJL-15)". No row is added: the Annex B rows (EE0040, EE0062, EE0067, EG0004 to EG0006) are `syntax` rows, reported on
+both paths, and with the member off nothing moves.
+
+**The numbering.** The pinned ES2026 numbers the feature Annex B.3.2, "Block-Level Function Declarations Web Legacy
+Compatibility Semantics", which has no subclauses: its steps stand inline, each marked normative-optional, at
+FunctionDeclarationInstantiation step 32.a, BlockDeclarationInstantiation steps 3.a.ii.1 and 3.b.iii,
+GlobalDeclarationInstantiation step 12 and EvalDeclarationInstantiation step 13, with the early-error rules for Block and
+for SwitchStatement. Annex B.3.3 is the `if`-clause form, which reads the clause as the sole item of a block.
+Correspondence row AB1's name, "Annex B.3.3 block-function aliases", and the bundle rule's "Annex B.3.3 aliases" are an
+earlier edition's number for the same feature, and are quoted as written.
+
+**The member and the kind.** `SemanticModel.AnnexBAlias(Declaration)` answers, for a block function the pinned edition
+gives a var-scoped binding, the declaration that names the binding its evaluation sets (FunctionDeclarationInstantiation
+step 32.a.i.2.c, GlobalDeclarationInstantiation step 12.b.ii.2.a.ii.3, EvalDeclarationInstantiation step 13.b.ii.7.b),
+and null for every other declaration. The answer is per declaration, so a caller iterating `Scope.Declarations` needs
+no node lookup. It is one of:
+
+| Answer | When | Clause |
+|---|---|---|
+| An existing `var` or top-level function declaration | The variable scope's first var-scoped declaration of the name | Step 32.a.i.2.a's note, and GlobalDeclarationInstantiation's: the block function creates no binding and writes that one |
+| The function's `EnvironmentOf(...).Arguments` | A block function named `arguments` in function code, the VariableEnvironment holding the arguments binding (no separate variable environment) | Step 32.a.i.2.b makes no binding for `arguments`, but step 32.a.i.2.c still writes it |
+| A `BindingKind.BlockFunctionAlias` declaration | Otherwise: one per variable scope and name, shared by every admitted block function of that name there, its node the earliest admitted one's name by its start | One binding per name: instantiatedVarNames, and declaredFunctionOrVarNames |
+
+The alias kind belongs to the model alone, in no scope's declarations, as `Arguments` is, so that the tables stay
+byte-identical, `DeclarationOf` of its node keeps answering the block function's own declaration, and the bridge's reads
+of the tables' scopes are unchanged. Its `IsLexical`, `IsBlockFunction` and `IsIfClauseFunction` are false, and
+`IsMutable` true by kind; whether it can be deleted differs by clause and is not a model fact. The variable scope is the
+first `Function`, `Script`, `StaticBlock` or `Module` scope on `ParentOf`'s chain from the block function's scope; for
+eval code and the dynamic function's goals it is the program's scope, a `Script` scope for eval code and the `Function`
+scope keyed by the program for the dynamic goals. Every answer is computed when the model is built, in `Model()`, from the
+model's scopes and facts and the walk's record of plain functions; the maps are only looked up.
+
+**The null list**, an inference from the pinned text, since the only early errors a replacing `var` of the name can add
+are the lexical-against-var conflicts, and FunctionDeclarationInstantiation tests the parameters itself:
+
+| Withheld where | Clause |
+|---|---|
+| A generator, an async function or an async generator (`IsBlockFunction` is true for each) | The clauses iterate "each FunctionDeclaration"; BlockDeclarationInstantiation names the other forms apart |
+| Annex B is off | `ParseSwitches.AnnexB` |
+| Strict code, a Module's, a class's and a static block's included | FunctionDeclarationInstantiation steps 31 and 32, GlobalDeclarationInstantiation step 12.a, EvalDeclarationInstantiation step 13 |
+| In function code, a parameter binds the name, an arrow's among them | Step 32.a.i.2 |
+| A `Block`, `Switch` or `For` scope between the function's scope and the variable scope declares the name, before or after it in the source, an enclosing block's own block function of the name among them | The replacing `var` would break the Block, CaseBlock and `for` rules |
+| A `Catch` scope between them declares the name and its parameter is not a lone BindingIdentifier | The Catch rule, with Annex B.3.4's exemption for a simple parameter, which still shadows the binding inside the clause |
+| The variable scope's own lexical declarations hold the name | The FunctionStatementList and ScriptBody rules |
+
+A `with` scope adds no name. GlobalDeclarationInstantiation and EvalDeclarationInstantiation have no parameter test, and
+EvalDeclarationInstantiation no `arguments` exclusion.
+
+**The readings**, each the session's, recorded with the alternative not taken:
+- Duplicate plain block functions of one name in one block or CaseBlock are all admitted, sharing one alias, the block
+  binding's value being the last one's (BlockDeclarationInstantiation step 3.b.iii). Read literally, replacing either
+  with a `var` would conflict with the other, so neither would be aliased; but the syntax vector
+  `syntax/annex-b/eg0004/0001` expects the Script `{ function f() { return 1; } function f() { return 2; } } f()` to give
+  the later function's value for both engines, which the literal reading would turn into a ReferenceError, and both
+  engines admit the name.
+  test262's `annexB/language/function-code/function-redeclaration-block.js` and `function-redeclaration-switch.js` assert
+  acceptance alone.
+- A labelled block function is admitted, as the walk declares it in its block and Broiler.VM admits it. Read literally,
+  a LabelledStatement does not directly contain a FunctionDeclaration, so it would not be aliased. test262's
+  `annexB/language/statements/labeled/function-declaration.js` has labelled functions at the top level only and asserts
+  acceptance alone.
+- test262's `annexB/language/function-code/block-decl-nested-blocks-with-fun-decl.js` asserts, of nested block functions
+  of one name, the outer admitted and the inner withheld, which the null list gives.
+
+**When the binding is set.** Each admitted declaration's evaluation sets the binding to the block binding's value, so
+the last one evaluated wins. Before that, an alias exists from instantiation, undefined (step 32.a.i.2.b,
+GlobalDeclarationInstantiation's CreateGlobalVarBinding, EvalDeclarationInstantiation step 13.b.ii.7.a); an existing
+`var` holds what it holds; an existing top-level function starts as its object; an `Arguments` answer starts as the
+arguments object.
+
+**The `arguments` cases.** A block function named `arguments` in function code writes the arguments binding where the
+VariableEnvironment holds it: `function f() { { function arguments() {} } return typeof arguments; }` gives
+`"function"` (vector `ab1/0005`, probe V028), and the answer is f's `Arguments`. The plan's "null (a block function named
+`arguments` ...)" is not taken: the pinned edition's evaluation step still writes the binding, and Broiler.VM's decision
+D-ab1 reads it. Where the VariableEnvironment holds no `arguments` binding, an arrow's or a function's with parameter
+expressions, the answer is an alias whose binding the evaluation creates (a declarative record's SetMutableBinding
+creates a missing binding when S is false; an inference from the text). Before the block runs the name resolves to the
+parameters' `Arguments`, or outward for an arrow; after it, to the created binding. So the scope standing for the
+variable environment, the `Function` scope where it is separate and otherwise the `Parameters` scope, may gain the name
+`arguments` alone at run time: `Resolve` answers `Dynamic` with that scope, reason `DynamicReason.BlockFunction`, and the
+fallback the answer without it, as in `Dynamic([Function f], BlockFunction, Static(Parameters f, Arguments))`. The gain
+is per name, kept apart from section 10.7's scopes a sloppy direct `eval` may add to, which gain every name; a scope that
+may gain both ways has `SloppyDirectEval`. In a Script and in eval code a block function named `arguments` has an alias
+of its own. test262 at `ccaac100` asserts an earlier edition's reading in `block-decl-func-skip-arguments.js`, that the
+arguments object survives; the model follows the pinned edition there, as both correspondence files and D-ab1 do.
+
+**How `Resolve` answers the names aliases bind.** Stage 5a's lookup keeps its steps; what a scope binds gains the
+aliases. A sloppy function's `Function` scope binds the name of each of its aliases, so that a reference only an alias
+binds answers `Static` to that scope and the alias, where stage 5a answered as the scopes alone answer it; in
+`var g; function f() { { function g() {} } return g; }` the reference now answers f's alias, not the Script's `var g`.
+Sloppy eval code's program scope binds its aliases too, and the answer stays `Inherited`, now carrying the alias where
+stage 5a carried none. A Script's references stay `Global`: the alias may silently not exist where an earlier script's
+lexical declaration or the global object refuses it, where a top-level `var` never does, GlobalDeclarationInstantiation
+throwing instead. An existing `var`, top-level function or `Arguments` answer moves nothing, `Resolve` already naming it;
+no binding identifier's answer moves; `DeclarationOf` is unchanged. With Annex B off every answer is null and no gain is
+added, so stage 5a's own answers stand; the Frontend tests compare the answers with Annex B on and off over the
+population.
+
+**What stays conditional.** A Script's alias depends on GlobalDeclarationInstantiation's run-time checks (step
+12.b.ii.2.a, HasLexicalDeclaration and CanDeclareGlobalVar): where either fails no binding is made, and a later script's
+lexical declaration of the name then throws (test262's `annexB/language/global-code/script-decl-lex-collision.js`).
+Eval code's alias depends on its caller's environments, which the request does not describe: a caller's lexical binding
+of the name between the eval and its variable environment, a Catch clause's excepted, withholds it (step 13.b.ii.4). That
+is the interim stage 5c's caller scopes narrow, by a dated revision. With a global variable environment, for an indirect
+eval or a direct eval at a Script's top level, GlobalDeclarationInstantiation-like checks apply (step 13.b.ii.5): a
+run-time condition no parse-time input can close, which stays after stage 5c (an inference). In eval code the binding the
+alias writes can be the caller's parameter or `arguments` binding (step 13.b.ii.7.a), which the model does not see. Under
+the `FunctionBody` goal the body is answered with the parameters empty, so an alias a real parameter would withhold is
+answered as admitted, and `Resolve` then names it where the real function binds the parameter: an extension of section
+10.7's limitation of the dynamic goals.
+
+**The vectors left unanswered.** The value vectors of row AB1, group `ab1`, stay not implemented, as groups `pn1`, `ff3`,
+`ff4`, `ff5` and `rs2` do: they rest on no `semantics` row, and read at the parse each would match by acceptance alone,
+showing nothing of the alias. The Frontend tests cover their sources, and the probes', as a Script and as eval code.
+
+**The dump.** The canonical dump's model section writes, after section 10.7's lines, one `model-annexb` line per block
+function in the model's scopes' and declarations' order: the declaration, and its answer's declaration or `-`. An alias,
+which no scope holds, is named `alias:` and its node there and in the `model-resolution` lines' declaration and fallback
+fields, as an `arguments` binding is named `args:`. A dump without a model is unchanged, and no corpus runner or probe
+requests the model before stage 8.
+
+**Where the library differs from each engine**, named for SJL-15.3 and SJL-15.5, as `docs/roadmap/SharedLibraries.md`
+lists it. Broiler.VM decides membership by declaration and differs on the inputs D-ab1 names: a block function named
+`arguments`, whose arguments object it keeps, its blocking set taking `arguments` for an earlier edition's reason; and,
+in eval code, a block function under an intermediate lexical declaration of its name, or in strict eval code, which it
+aliases. Broiler.JS decides membership by name and gives the specification's answer on the probes; where its rule may
+differ from the pinned text is named there, each an inference not probed. Broiler.VM's decision D-ab1 is Broiler.VM's,
+cited and unchanged: the model meets its `arguments` case by the `Arguments` answer, its intermediate-lexical case by the
+null list's scopes between, and its strict-eval case by strictness (an inference).
+
+**For part F's checklist** (stage 8): the rule's "Annex B.3.3 aliases" is `AnnexBAlias`, `BindingKind.BlockFunctionAlias`
+and `Resolve`.
 
 ## Corrections
 
