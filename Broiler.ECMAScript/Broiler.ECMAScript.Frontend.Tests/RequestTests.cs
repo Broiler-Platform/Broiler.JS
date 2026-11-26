@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Broiler.Unicode.Algorithms;
 using Xunit;
@@ -225,5 +226,41 @@ public sealed class RequestTests
         Assert.Throws<ArgumentException>(() => new InheritedContext { VisiblePrivateNames = ["a"] });
         Assert.Throws<ArgumentException>(() => new InheritedContext { VisiblePrivateNames = ["#"] });
         Assert.Throws<ArgumentException>(() => new InheritedContext { VisiblePrivateNames = [null!] });
+    }
+
+    /// <summary>
+    /// The caller's records (SJL-15.2 stage 5c; the session's decision D-js-caller-scopes): null by default and on
+    /// <see cref="InheritedContext.TopLevel"/>; the list copied, a null element refused; each record's names copied, empty by
+    /// default, a null list refused rather than read as empty, a null or empty name refused, duplicates kept as given.
+    /// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    [Fact]
+    public void The_caller_s_records_are_copied_and_each_names_what_its_record_binds()
+    {
+        Assert.Null(InheritedContext.TopLevel.CallerScopes);
+        Assert.Null(new InheritedContext().CallerScopes);
+        Assert.Empty(new CallerScope().Names);
+        Assert.False(new CallerScope().IsCatch);
+        Assert.Empty(new InheritedContext { CallerScopes = [] }.CallerScopes!);
+
+        string[] names = ["x", "y", "x"];
+        var scope = new CallerScope { Names = names, IsCatch = true };
+        names[0] = "z";
+        Assert.Equal(["x", "y", "x"], scope.Names);
+        Assert.True(scope.IsCatch);
+
+        var block = new CallerScope { Names = ["a"] };
+        CallerScope[] scopes = [block, scope];
+        var context = new InheritedContext { CallerScopes = scopes };
+        scopes[0] = scope;
+        Assert.Equal(2, context.CallerScopes!.Count);
+        Assert.Same(block, context.CallerScopes[0]);
+        Assert.Same(scope, context.CallerScopes[1]);
+        Assert.Throws<NotSupportedException>(() => ((IList<CallerScope>)context.CallerScopes).Add(block));
+
+        Assert.Throws<ArgumentException>(() => new InheritedContext { CallerScopes = [block, null!] });
+        Assert.Throws<ArgumentNullException>(() => new CallerScope { Names = null! });
+        Assert.Throws<ArgumentException>(() => new CallerScope { Names = ["a", null!] });
+        Assert.Throws<ArgumentException>(() => new CallerScope { Names = [""] });
     }
 }

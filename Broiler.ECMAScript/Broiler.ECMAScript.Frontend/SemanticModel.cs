@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   25
-// Annotated:        25/25
-// Exempt:           65
-// Human-reviewed:   0/25
+// Relevant units:   26
+// Annotated:        26/26
+// Exempt:           67
+// Human-reviewed:   0/26
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       25
+// Unverified:       26
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -107,8 +107,9 @@ public enum FunctionKind
 /// resolution (<see cref="Resolve(Identifier)"/>, <see cref="Resolve(BindingIdentifier)"/>) and the environment facts of
 /// the program, every function, every static block and every initialised field (<see cref="EnvironmentOf"/>), and from
 /// stage 5b each block function's Annex B alias (<see cref="AnnexBAlias"/>, Annex B.3.2, which row AB1 names by an
-/// earlier edition's number, B.3.3); the caller's names of eval code, the module record, named evaluation, captures and the early
-/// errors that are not purely grammatical are later stages'. From stage 2 the walk that builds it also reports its
+/// earlier edition's number, B.3.3), and from stage 5c the calls that may be direct evals and the caller's records a direct
+/// <c>eval</c> at each receives (<see cref="DirectEvalCalls"/>, <see cref="CallerScopesOf"/>); the module record, named
+/// evaluation, captures and the early errors that are not purely grammatical are later stages'. From stage 2 the walk that builds it also reports its
 /// early errors of the function context (the super rows, ContainsArguments, eval code's from the caller's context, and
 /// three of expressions') among the parse's diagnostics, so that a source they refuse has no model, from stage 3 those
 /// of jump targets (a <c>break</c> or a <c>continue</c> with no target, and an undefined break or continue target), and
@@ -129,6 +130,11 @@ public enum FunctionKind
 /// <i>(Revised 2026-11-26, at SJL-15.2 stage 5b, when the Annex B aliases joined the model; it read "(<see cref="EnvironmentOf"/>);
 /// Annex B.3.3's aliases, the caller's names of eval code, the module record, named evaluation, captures and the early
 /// errors that are not purely grammatical are later stages'.")</i>
+/// <i>(Revised 2026-11-26, at SJL-15.2 stage 5c, when the caller's records joined the model; it read "earlier edition's
+/// number, B.3.3); the caller's names of eval code, the module record, named evaluation, captures and the early errors that
+/// are not purely grammatical are later stages'.")</i> From stage 5c the walk also reports eval code's <c>var</c>s against
+/// the caller's records the request gives (EvalDeclarationInstantiation step 3.d, catalogue rows EA0007 and EA0008).
+/// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
 /// </summary>
 /// <remarks>
 /// <para>
@@ -157,8 +163,12 @@ public enum FunctionKind
 /// <see cref="EnvironmentOf"/>. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
 /// So does <see cref="AnnexBAlias"/>, for a declaration whose <see cref="Declaration.Node"/> is not in the model's tree.
 /// <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
+/// So does <see cref="CallerScopesOf"/>, for a call that is not in the model's tree or is not a direct-eval candidate.
+/// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
 /// </para>
-/// <para><b>Immutable, and safe to call concurrently</b> (convention 10).</para>
+/// <para><b>Immutable, and safe to call concurrently</b> (convention 10). The <see cref="CallerScope"/> instances
+/// <see cref="CallerScopesOf"/> answers are init-only and copy their names, so that an instance shared by several answers,
+/// or taken from the request, stays as it was. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i></para>
 /// </remarks>
 // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design, ECMA-262 s9.1 environment records, s8.2 scope analysis; IP=Low; Security=Medium; Resources=1; Fingerprint=ADA8F1
 // Hairs-Human:        PENDING
@@ -174,8 +184,9 @@ public sealed class SemanticModel
     private readonly Dictionary<SyntaxNode, Resolution> resolutionOf;
     private readonly Dictionary<SyntaxNode, EnvironmentFacts> environmentOf;
     private readonly Dictionary<Declaration, Declaration> annexBAliasOf;
+    private readonly Dictionary<CallExpression, IReadOnlyList<CallerScope>?> callerScopesOf;
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design; IP=Low; Security=Low; Resources=1; Fingerprint=21FBB4
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design; IP=Low; Security=Low; Resources=1; Fingerprint=64A393
     // Hairs-Human:        PENDING
     internal SemanticModel(
         IReadOnlyList<Scope> scopes,
@@ -189,7 +200,9 @@ public sealed class SemanticModel
         Dictionary<ClassNode, PrivateEnvironment> privateEnvironmentOf,
         Dictionary<SyntaxNode, Resolution> resolutionOf,
         Dictionary<SyntaxNode, EnvironmentFacts> environmentOf,
-        Dictionary<Declaration, Declaration> annexBAliasOf)
+        Dictionary<Declaration, Declaration> annexBAliasOf,
+        IReadOnlyList<CallExpression> directEvalCalls,
+        Dictionary<CallExpression, IReadOnlyList<CallerScope>?> callerScopesOf)
     {
         Scopes = scopes;
         Functions = functions;
@@ -203,6 +216,8 @@ public sealed class SemanticModel
         this.resolutionOf = resolutionOf;
         this.environmentOf = environmentOf;
         this.annexBAliasOf = annexBAliasOf;
+        DirectEvalCalls = directEvalCalls;
+        this.callerScopesOf = callerScopesOf;
     }
 
     /// <summary>
@@ -423,10 +438,12 @@ public sealed class SemanticModel
     /// <see cref="ScopeKind.Function"/> scope and the alias; in sloppy eval code <see cref="ResolutionKind.Inherited"/>,
     /// carrying the alias; in a Script <see cref="ResolutionKind.Global"/>, as before; and an <c>arguments</c> binding a block
     /// function's evaluation creates makes the variable environment's scope a dynamic entry for that name alone, with reason
-    /// <see cref="DynamicReason.BlockFunction"/>. What remains: the interim, eval code's alias conditional on its caller's
-    /// environments until stage 5c describes them; and the run-time conditions, which no stage closes: a Script's alias
-    /// depends on GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on
-    /// GlobalDeclarationInstantiation-like checks. <i>(Revised 2026-11-26, at SJL-15.2
+    /// <see cref="DynamicReason.BlockFunction"/>. Eval code's alias is decided when the request carries the caller's records
+    /// (<see cref="InheritedContext.CallerScopes"/>), a Catch clause's record exempt. Without them the request does not
+    /// describe the caller, and the eval body alone decides, as <c>CallerScopes</c>' contract says. A global variable
+    /// environment's checks remain run-time conditions that no stage closes, as a Script's alias's
+    /// GlobalDeclarationInstantiation checks do. <i>(Revised 2026-11-26, at SJL-15.2 stage 5c, when the caller's records
+    /// joined the request; it read "What remains: the interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on GlobalDeclarationInstantiation-like checks.")</i> <i>(Revised 2026-11-26, at SJL-15.2
     /// stage 5b, when the aliases joined the model; it read "With Annex B on (<see cref="ParseSwitches.AnnexB"/>), a name that
     /// only a block function's Annex B.3.3 alias binds is answered as the scopes alone answer it until stage 5b:
     /// <see cref="ResolutionKind.Global"/>, or a <see cref="ResolutionKind.Static"/> or <see cref="ResolutionKind.Dynamic"/>
@@ -557,16 +574,20 @@ public sealed class SemanticModel
     /// <see cref="DynamicReason.BlockFunction"/>.
     /// </para>
     /// <para>
-    /// <b>Where the answer is conditional.</b> A Script's and eval code's answers are what the source alone decides. A
+    /// <b>Where the answer is conditional.</b> A Script's answer is what the source alone decides. A
     /// Script's alias also depends on GlobalDeclarationInstantiation's run-time checks (step 12.b.ii.2.a:
     /// HasLexicalDeclaration, which an earlier script's lexical declaration of the name fails, and CanDeclareGlobalVar), and
-    /// no binding is made where either fails. Eval code's alias depends on its caller's environments, which the request does
+    /// no binding is made where either fails. Eval code's alias is decided when the request carries the caller's records
+    /// (<see cref="InheritedContext.CallerScopes"/>), a Catch clause's record exempt: a caller's record that binds the name
+    /// between the eval and its variable environment, and is not a Catch clause's, withholds it (EvalDeclarationInstantiation
+    /// step 13.b.ii.4), and an object record never does. Without them the request
+    /// does not describe the caller, and the eval body alone decides, as <c>CallerScopes</c>' contract says. A global
+    /// variable environment's checks remain run-time conditions that no stage closes (step 13.b.ii.5). <i>(Revised 2026-11-26,
+    /// at SJL-15.2 stage 5c, when the caller's records joined the request; it read "A Script's and eval code's answers are
+    /// what the source alone decides." and "Eval code's alias depends on its caller's environments, which the request does
     /// not describe: a caller's lexical binding of the name between the eval and its variable environment, a Catch clause's
     /// excepted, withholds it (EvalDeclarationInstantiation step 13.b.ii.4); and with a global variable environment,
-    /// GlobalDeclarationInstantiation-like checks can withhold it at run time (step 13.b.ii.5). What remains: the interim,
-    /// eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time
-    /// conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code
-    /// with a global variable environment on GlobalDeclarationInstantiation-like checks. In eval
+    /// GlobalDeclarationInstantiation-like checks can withhold it at run time (step 13.b.ii.5). What remains: the interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on GlobalDeclarationInstantiation-like checks.")</i> In eval
     /// code the binding it writes can be the caller's parameter or <c>arguments</c> binding (step 13.b.ii.7.a), which the
     /// model does not see, and the answer is the alias. Under <see cref="ParseGoal.FunctionBody"/> the body is answered with
     /// the parameters empty, as <see cref="Resolution"/> says, so an alias a real parameter would withhold is answered as
@@ -589,6 +610,71 @@ public sealed class SemanticModel
         if (!scopeOf.ContainsKey(declaration.Node))
             throw new ArgumentException("The declaration is not of the semantic model's tree.", nameof(declaration));
         return annexBAliasOf.TryGetValue(declaration, out var alias) ? alias : null;
+    }
+
+    /// <summary>
+    /// The calls that may be direct evals (JSD-0080's inherited context; the session's decision D-js-caller-scopes): every
+    /// direct-<c>eval</c> candidate of the tree, as <see cref="EnvironmentFacts"/> defines one, of every strictness, in the
+    /// source order of the call's start. Whether each is direct is SameValue with %eval% when it runs.
+    /// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    public IReadOnlyList<CallExpression> DirectEvalCalls { get; }
+
+    /// <summary>
+    /// The caller's records a direct <c>eval</c> at <paramref name="call"/> would receive, as
+    /// <see cref="InheritedContext.CallerScopes"/> describes them (PerformEval steps 16.a and 16.b,
+    /// FunctionDeclarationInstantiation steps 19 to 32, EvalDeclarationInstantiation step 3.d; the session's decision
+    /// D-js-caller-scopes): from <see cref="ScopeOf"/> of the call outward by <see cref="ParentOf"/>, one entry per declarative
+    /// record up to and not including the variable environment of the code that holds the call, an arrow's included,
+    /// innermost first. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>The chain, by scope.</b> A <see cref="ScopeKind.With"/> scope adds no entry, being an object record. A
+    /// <see cref="ScopeKind.Block"/>, <see cref="ScopeKind.Switch"/> or <see cref="ScopeKind.For"/> scope adds every name it
+    /// declares, its block functions and class declarations among them, an empty one an empty entry. A
+    /// <see cref="ScopeKind.ClassBody"/> scope inside the code that holds the call adds its inner name, or none. A
+    /// <see cref="ScopeKind.Catch"/> scope with a parameter adds the parameter's names with <see cref="CallerScope.IsCatch"/>
+    /// true, whatever its form; one without a parameter has no environment and adds nothing. Then the chain stops at the
+    /// variable environment: a sloppy function's <see cref="ScopeKind.Function"/> scope adds its
+    /// <see cref="Declaration.IsLexical"/> declarations (FunctionDeclarationInstantiation step 32.b) and a strict one's
+    /// nothing (step 31.a); for a call in a function's parameters, a sloppy function's <see cref="ScopeKind.Parameters"/>
+    /// scope adds every parameter, those after the call included, and <c>arguments</c> where
+    /// <see cref="EnvironmentFacts.Arguments"/> is non-null (steps 20 and 22.d.i), an arrow having none, and a strict one's
+    /// nothing (step 19); a <see cref="ScopeKind.StaticBlock"/> or <see cref="ScopeKind.Module"/> scope, a Script's top level
+    /// (its variable environment the global record) and strict eval code's program add nothing. A field initialiser has no
+    /// scope of its own: the class around it is the first scope outside it, where the chain stops with no entry, so that
+    /// <c>class C { x = eval("") }</c> answers an empty list, while a class inside the initialiser is listed first. A named
+    /// function expression's <see cref="ScopeKind.FunctionName"/> scope lies outside calleeEnv and is never reached. A
+    /// <c>switch</c>'s discriminant stands outside its <see cref="ScopeKind.Switch"/> scope, and a <c>for</c>-<c>in</c> or
+    /// <c>for</c>-<c>of</c> head's expression inside its <see cref="ScopeKind.For"/> scope, as <see cref="ScopeOf"/> says.
+    /// </para>
+    /// <para>
+    /// <b>Eval code.</b> For a call in sloppy eval code the chain reaches the program's scope, whose
+    /// <see cref="Declaration.IsLexical"/> declarations are eval code's own LexicalEnvironment, and continues into the
+    /// request's own <see cref="InheritedContext.CallerScopes"/>, appended as given; where the request gives none the answer
+    /// is null, since the caller is not described.
+    /// </para>
+    /// <para>
+    /// The records are answered as they are, whatever the call's strictness; the library reads none of them for strict eval
+    /// code. Each model scope has one <see cref="CallerScope"/> instance, shared by every answer that holds it, each name once
+    /// in declaration order. Every answer is computed when the model is built and only looked up.
+    /// </para>
+    /// </remarks>
+    /// <param name="call">One of <see cref="DirectEvalCalls"/>.</param>
+    /// <returns>The records, innermost first, or null where the call is in sloppy eval code whose request gives no caller's records.</returns>
+    /// <exception cref="ArgumentNullException">The call is null.</exception>
+    /// <exception cref="ArgumentException">The call is not in the model's tree, or is a call of it that is not a direct-eval candidate.</exception>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s19.2.1.1 PerformEval steps 16-18, s10.2.11 FunctionDeclarationInstantiation steps 19-32, s19.2.1.3 EvalDeclarationInstantiation step 3.d, JSD-0080 inherited context; IP=Low; Security=Medium; Resources=1; Fingerprint=80DE53
+    // Hairs-Human:        PENDING
+    public IReadOnlyList<CallerScope>? CallerScopesOf(CallExpression call)
+    {
+        ArgumentNullException.ThrowIfNull(call);
+        if (!scopeOf.ContainsKey(call))
+            throw new ArgumentException("The node is not in the semantic model's tree.", nameof(call));
+        if (!callerScopesOf.TryGetValue(call, out var scopes))
+            throw new ArgumentException("The call is not a direct-eval candidate.", nameof(call));
+        return scopes;
     }
 }
 
@@ -791,6 +877,10 @@ public enum ResolutionKind
     /// caller's chain for a direct <c>eval</c>, the global environment for an indirect one, which the request does not tell
     /// apart. Only eval code answers it: a name eval code does not declare, and a var-scoped declaration of sloppy eval
     /// code, whose binding PerformEval creates in the caller's VariableEnvironment (step 16.b).
+    /// From stage 5c the request may describe the caller's records (<see cref="InheritedContext.CallerScopes"/>); they narrow
+    /// only the carried declaration and eval code's aliases, and the answer stays inherited, since the records stop at the
+    /// variable environment, leave out <c>with</c> objects and are no scopes of this model. <i>(Added 2026-11-26, at
+    /// SJL-15.2 stage 5c.)</i>
     /// </summary>
     Inherited = 3,
 }
@@ -894,19 +984,36 @@ public enum DynamicReason
 /// it read "Each entry's own reason follows from its kind.")</i>
 /// </para>
 /// <para>
-/// <b>Eval code.</b> The request carries no caller's names and does not tell a direct <c>eval</c> from an indirect one, so
-/// a name eval code does not declare is <see cref="ResolutionKind.Inherited"/>, with no declaration; a var-scoped
+/// <b>Eval code.</b> The request does not tell a direct <c>eval</c> from an indirect one, and its caller's records
+/// (<see cref="InheritedContext.CallerScopes"/>) stop at the variable environment, leave out <c>with</c> objects and are no
+/// scopes of this model, so a name eval code does not declare is <see cref="ResolutionKind.Inherited"/>, with no
+/// declaration; a var-scoped
 /// declaration of sloppy eval code (a top-level <c>var</c> or function declaration) is
 /// <see cref="ResolutionKind.Inherited"/> with that declaration and no scope, since its binding is created in the caller's
-/// VariableEnvironment (PerformEval step 16.b), before which a caller's <c>with</c> object or <c>catch</c> parameter of the
-/// name can stand; strict eval code's declarations, whose VariableEnvironment is its own (step 18), and sloppy eval code's
-/// lexical ones are <see cref="ResolutionKind.Static"/>. The caller's names are a later stage's.
+/// VariableEnvironment (PerformEval step 16.b); strict eval code's declarations, whose VariableEnvironment is its own (step
+/// 18), and sloppy eval code's lexical ones are <see cref="ResolutionKind.Static"/>. The caller's records decide whether a
+/// caller's catch parameter stands before the binding: where one of them binds the name, an
+/// <see cref="ResolutionKind.Inherited"/> answer for a reference, for a binding the language resolves when it runs, or as a
+/// dynamic answer's <see cref="Fallback"/> carries no declaration, and every other binding keeps its own, since
+/// EvalDeclarationInstantiation instantiates it in the variable environment without passing those records; without them
+/// the carried declaration is the eval body's, as <c>CallerScopes</c>' contract says. A caller's <c>with</c> object of the
+/// name can still stand before the binding, and a global variable environment's checks can still withhold an alias; both
+/// are run-time conditions that no stage closes. <i>(Revised 2026-11-26, at SJL-15.2 stage 5c, when the caller's records
+/// joined the request; it read "The request carries no caller's names and does not tell a direct <c>eval</c> from an
+/// indirect one, so", "VariableEnvironment (PerformEval step 16.b), before which a caller's <c>with</c> object or
+/// <c>catch</c> parameter of the name can stand; strict eval code's declarations, whose VariableEnvironment is its own (step
+/// 18), and sloppy eval code's lexical ones are <see cref="ResolutionKind.Static"/>. The caller's names are a later
+/// stage's.")</i>
 /// A name only an Annex B alias of sloppy eval code binds is <see cref="ResolutionKind.Inherited"/> too, carrying that
 /// <see cref="BindingKind.BlockFunctionAlias"/> declaration, whose binding is made in the caller's VariableEnvironment
 /// (EvalDeclarationInstantiation step 13.b.ii.7.a) unless a caller's non-Catch lexical binding of the name between them
 /// withholds it (step 13.b.ii.4), or, for a global variable environment, the global checks do (step 13.b.ii.5); a
 /// caller's <c>catch</c> parameter or <c>with</c> object can still stand before it, as for eval code's <c>var</c>s. Either
-/// way the binding lies outside the eval code. <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
+/// way the binding lies outside the eval code. <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i> With the caller's records
+/// given, a record that is not a Catch clause's and binds the name withholds the alias, so that the name answers
+/// <see cref="ResolutionKind.Inherited"/> with no declaration, and under a Catch clause's record of the name the alias is
+/// kept and the answer carries no declaration, the parameter standing first. <i>(Added 2026-11-26, at SJL-15.2 stage
+/// 5c.)</i>
 /// </para>
 /// <para>
 /// <b>The dynamic function's goals</b> (CreateDynamicFunction, whose function's scope is the realm's global environment):
@@ -923,10 +1030,12 @@ public enum DynamicReason
 /// only a block function's alias binds is answered by the alias as the paragraphs above say, so that in
 /// <c>var g; function f() { { function g() {} } return g; }</c> the reference answers <see cref="ResolutionKind.Static"/>
 /// to f's <see cref="ScopeKind.Function"/> scope and its alias, not the Script's <c>var g</c>; a Script's references stay
-/// <see cref="ResolutionKind.Global"/>. What remains: the interim, eval code's alias conditional on its caller's
-/// environments until stage 5c describes them; and the run-time conditions, which no stage closes: a Script's alias
-/// depends on GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on
-/// GlobalDeclarationInstantiation-like checks. <i>(Revised 2026-11-26, at SJL-15.2 stage 5b, when the aliases joined the
+/// <see cref="ResolutionKind.Global"/>. Eval code's alias is decided when the request carries the caller's records
+/// (<see cref="InheritedContext.CallerScopes"/>), a Catch clause's record exempt. Without them the request does not
+/// describe the caller, and the eval body alone decides, as <c>CallerScopes</c>' contract says. A global variable
+/// environment's checks remain run-time conditions that no stage closes, as a Script's alias's
+/// GlobalDeclarationInstantiation checks do. <i>(Revised 2026-11-26, at SJL-15.2 stage 5c, when the caller's records
+/// joined the request; it read "What remains: the interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on GlobalDeclarationInstantiation-like checks.")</i> <i>(Revised 2026-11-26, at SJL-15.2 stage 5b, when the aliases joined the
 /// model; it read "<b>Annex B.3.3's aliases</b> are stage 5b's: until then, with Annex B on, a name only a block
 /// function's alias binds is answered as the scopes alone answer it, which may be a <see cref="ResolutionKind.Static"/>
 /// answer naming an outer binding that the alias shadows at run time, as in
@@ -964,8 +1073,16 @@ public sealed class Resolution
     /// For <see cref="ResolutionKind.Static"/>, the binding's first declaration in <see cref="Scope"/>, its
     /// <see cref="EnvironmentFacts.Arguments"/>, or the Annex B alias of a function's <see cref="ScopeKind.Function"/>
     /// scope; for <see cref="ResolutionKind.Inherited"/>, sloppy eval code's own var-scoped declaration of the name, the
-    /// first, or, where it has none, its Annex B alias of the name, conditional on its caller's environments until stage 5c
-    /// describes them, or null for a name eval code neither declares nor aliases; null otherwise. <i>(Revised 2026-11-26, at
+    /// first, or, where it has none, its Annex B alias of the name, or null for a name eval code neither declares nor
+    /// aliases, and null where a caller's record the request gives binds the name, for a reference, a binding the language
+    /// resolves when it runs and a dynamic answer's fallback; null otherwise. The caller's records decide whether a caller's
+    /// non-Catch lexical binding withholds an alias, and whether a caller's catch parameter stands before the binding;
+    /// without them the carried declaration is the eval body's, as <see cref="InheritedContext.CallerScopes"/>' contract
+    /// says. A caller's <c>with</c> object of the name can still stand before the binding, and a global variable
+    /// environment's checks can still withhold an alias; both are run-time conditions that no stage closes. <i>(Revised
+    /// 2026-11-26, at SJL-15.2 stage 5c, when the caller's records joined the request; it read "first, or, where it has
+    /// none, its Annex B alias of the name, conditional on its caller's environments until stage 5c describes them, or null
+    /// for a name eval code neither declares nor aliases; null otherwise.")</i> <i>(Revised 2026-11-26, at
     /// SJL-15.2 stage 5b; it read "For <see cref="ResolutionKind.Static"/>, the binding's first declaration in
     /// <see cref="Scope"/>, or its <see cref="EnvironmentFacts.Arguments"/>; for <see cref="ResolutionKind.Inherited"/>,
     /// sloppy eval code's own var-scoped declaration of the name, the first, or null for a name eval code does not declare;

@@ -27,6 +27,9 @@ namespace Broiler.ECMAScript.Syntax.Tests;
 /// and the resolution of the names they bind, on the vectors' and probes' sources, on fixtures and over the same
 /// population, with an oracle of the tree, and against the model's own answers with Annex B off. <i>(Added 2026-11-26, at
 /// SJL-15.2 stage 5b.)</i>
+/// From stage 5c, the caller's records of each direct-eval candidate, <see cref="SemanticModel.DirectEvalCalls"/> and
+/// <see cref="SemanticModel.CallerScopesOf"/>, and what the request's own records decide in eval code, on fixtures and over
+/// the same population, with an oracle of the tree. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
 /// </summary>
 /// <remarks>
 /// The off/on identity is written so that stage 2 narrows it mechanically: equality wherever the on path accepts, and,
@@ -3257,4 +3260,510 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
 
     private static void Same(Resolution a, Resolution b, SemanticModel ma, SemanticModel mb, string at) =>
         Assert.True(Equivalent(a, b, ma, mb), at);
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // The caller's records of a direct eval (SJL-15.2 stage 5c; the session's decision D-js-caller-scopes).
+    // (Added 2026-11-26, at SJL-15.2 stage 5c.)
+
+    // An eval request with the caller's records, the member on or off, Annex B on or off, forced strict or not.
+    private static ParseRequest CallerRequest(string text, IReadOnlyList<CallerScope>? callers, bool model = true, bool annexB = true, bool strict = false, bool allErrors = false) =>
+        new(new SourceText(text), ParseGoal.Eval, UnicodeDataHome.Tables, NoValidator.Instance)
+        {
+            Switches = ParseSwitches.For(ParseGoal.Eval) with { ForcedStrict = strict, AnnexB = annexB },
+            Context = new InheritedContext { InFunction = true, CallerScopes = callers },
+            Limits = new ParseLimits { Reporting = allErrors ? ErrorReporting.AllErrors : ErrorReporting.FirstError },
+            BuildSemanticModel = model,
+        };
+
+    // A list written as the tests write it: "{x,y}{c:e}" innermost first, "" empty; null for "null".
+    private static CallerScope[]? Records(string written)
+    {
+        if (written == "null")
+            return null;
+        var list = new List<CallerScope>();
+        foreach (var part in written.Split('}', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var body = part.TrimStart('{');
+            var isCatch = body.StartsWith("c:", StringComparison.Ordinal);
+            list.Add(new CallerScope { Names = (isCatch ? body[2..] : body).Split(',', StringSplitOptions.RemoveEmptyEntries), IsCatch = isCatch });
+        }
+
+        return list.ToArray();
+    }
+
+    // A list as the tests write it.
+    private static string Written(IReadOnlyList<CallerScope>? list) =>
+        list is null ? "null" : string.Concat(list.Select(static s => "{" + (s.IsCatch ? "c:" : "") + string.Join(",", s.Names) + "}"));
+
+    /// <summary>
+    /// Every case of the chain rule (D-js-caller-scopes): each fixture's first direct-eval candidate answers its records,
+    /// written innermost first; the eval source is then parsed under that list, eval code forced strict where the call is
+    /// strict code, and refused or accepted as EvalDeclarationInstantiation step 3.d says. Blocks, a <c>switch</c>'s
+    /// CaseBlock and a <c>for</c> head's record, every name each binds, block functions and classes included; a <c>for</c>
+    /// head's initialiser and a for-of head's expression in the head's record, a <c>switch</c> discriminant outside its
+    /// CaseBlock; a sloppy body's lexical declarations but not its <c>var</c>s or top-level functions; a call in parameters
+    /// with every parameter and a non-arrow's <c>arguments</c>; a named function expression's name never reached; a Catch
+    /// clause's record of either form, exempt with Annex B on, a parameterless catch omitted, a catch pattern's initialiser in
+    /// its record; <c>with</c> skipped; the class around a field initialiser the chain's stop, a class inside it listed;
+    /// static blocks, heritage and computed keys; and a Script's top level, which answers an empty list, never the Script's
+    /// scope. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    [Theory]
+    [InlineData("{ let x; eval('var x'); }", "{x}", "var x", false, true)]
+    [InlineData("function f() { let a; { const b = 1; eval('var b'); } }", "{b}{a}", "var b", false, true)]
+    [InlineData("function f() { let a; { const b = 1; eval('var a'); } }", "{b}{a}", "var a", false, true)]
+    [InlineData("switch (0) { case 0: let x; eval('var x'); }", "{x}", "var x", false, true)]
+    [InlineData("for (let i = 0; i < 1; i++) { eval('var i'); }", "{}{i}", "var i", false, true)]
+    [InlineData("for (let i = eval('var i');;) break;", "{i}", "var i", false, true)]
+    [InlineData("for (let x of eval('var x')) ;", "{x}", "var x", false, true)]
+    [InlineData("switch (eval('var x')) { case 0: let x; }", "", "var x", false, false)]
+    [InlineData("function f() { let a; var b; function c() {} eval('var b; var c;'); }", "{a}", "var b; var c;", false, false)]
+    [InlineData("function f() { let a; var b; function c() {} eval('var a'); }", "{a}", "var a", false, true)]
+    [InlineData("function f() { { function g() {} class K {} eval('var K'); } }", "{g,K}{}", "var K", false, true)]
+    [InlineData("function f() { { function g() {} eval('var g'); } }", "{g}{}", "var g", false, true)]
+    [InlineData("function f(a, b = eval('var c'), c) {}", "{a,b,c,arguments}", "var c", false, true)]
+    [InlineData("function f(a, b = eval('var arguments')) {}", "{a,b,arguments}", "var arguments", false, true)]
+    [InlineData("function f(a, b = eval('var d')) {}", "{a,b,arguments}", "var d", false, false)]
+    [InlineData("((a = eval('var arguments')) => 0);", "{a}", "var arguments", false, false)]
+    [InlineData("((p = eval('var arguments'), arguments) => 0);", "{p,arguments}", "var arguments", false, true)]
+    [InlineData("(function a(x = eval('var a')) {});", "{x,arguments}", "var a", false, false)]
+    [InlineData("() => { let q; eval('var q'); };", "{q}", "var q", false, true)]
+    [InlineData("'use strict'; { let x; eval('var x'); }", "{x}", "var x", true, false)]
+    [InlineData("{ let x; eval(\"'use strict'; var x\"); }", "{x}", "'use strict'; var x", false, false)]
+    [InlineData("function f() { 'use strict'; let x; { eval('var x'); } }", "{}", "var x", true, false)]
+    [InlineData("try {} catch (e) { eval('var e'); }", "{}{c:e}", "var e", false, false)]
+    [InlineData("try {} catch ({ e, f: [g] }) { eval('var g'); }", "{}{c:e,g}", "var g", false, false)]
+    [InlineData("try {} catch { let y; eval('var y'); }", "{y}", "var y", false, true)]
+    [InlineData("try {} catch ({ a = eval('var a') }) {}", "{c:a}", "var a", false, false)]
+    [InlineData("function f(o) { let x; with (o) { eval('var x'); } }", "{}{x}", "var x", false, true)]
+    [InlineData("with (o) eval('var x');", "", "var x", false, false)]
+    [InlineData("with (eval('var x')) { let x; }", "", "var x", false, false)]
+    [InlineData("class C { x = eval(''); }", "", "", true, false)]
+    [InlineData("class C { x = class D { [eval('')]() {} }; }", "{D}", "", true, false)]
+    [InlineData("class C { static { eval(''); } }", "", "", true, false)]
+    [InlineData("class C { static { { let q; eval('var q'); } } }", "{q}", "var q", true, false)]
+    [InlineData("class C extends (eval('var C'), Object) {}", "{C}", "var C", true, false)]
+    [InlineData("class C { [eval('')]() {} }", "{C}", "", true, false)]
+    [InlineData("eval('var x');", "", "var x", false, false)]
+    [InlineData("let x; eval('var x;');", "", "var x;", false, false)]
+    public void Each_call_answers_the_records_between_it_and_its_variable_environment(string script, string records, string evalSource, bool strict, bool refused)
+    {
+        var (_, m) = Model(script);
+        var call = m.DirectEvalCalls[0];
+        Assert.Equal(records, Written(m.CallerScopesOf(call)));
+        var result = SyntaxParser.Parse(CallerRequest(evalSource, m.CallerScopesOf(call), strict: strict, allErrors: true));
+        Assert.True(refused == (result.Outcome == ParseOutcome.Refused), script + ": " + string.Join(",", result.Diagnostics.Select(static d => d.Code)));
+        if (refused)
+            Assert.Equal("JSE1907", Assert.Single(result.Diagnostics).Code);
+    }
+
+    /// <summary>
+    /// The dynamic goals, eval code and the catch exemption with Annex B off: a dynamic function's body and parameters are a
+    /// function's; a call in sloppy eval code continues into the request's own list, or answers null where the request gives
+    /// none; in strict eval code it stops at the program. A Catch clause's record refuses with Annex B off (EA0008).
+    /// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    [Fact]
+    public void The_dynamic_goals_and_eval_code_continue_the_chain_as_their_environments_say()
+    {
+        var body = Model("let q; eval('');", ParseGoal.FunctionBody).Model;
+        Assert.Equal("{q}", Written(body.CallerScopesOf(body.DirectEvalCalls[0])));
+        var parameters = Model("a, b = eval('')", ParseGoal.FormalParameters).Model;
+        Assert.Equal("{a,b,arguments}", Written(parameters.CallerScopesOf(parameters.DirectEvalCalls[0])));
+
+        foreach (var (outer, expected) in new[] { ("null", "null"), ("", "{x}"), ("{z}{c:e}", "{x}{z}{c:e}") })
+        {
+            var given = Records(outer);
+            var result = SyntaxParser.Parse(CallerRequest("let x; { eval('var y'); }", given));
+            var m = result.Model!;
+            Assert.Equal(expected == "null" ? "null" : "{}" + expected, Written(m.CallerScopesOf(m.DirectEvalCalls[0])));
+            if (given is not null)
+            {
+                // The request's own instances, appended as given.
+                var answer = m.CallerScopesOf(m.DirectEvalCalls[0])!;
+                for (var i = 0; i < given.Length; i++)
+                    Assert.Same(given[i], answer[answer.Count - given.Length + i]);
+            }
+        }
+
+        var strictEval = SyntaxParser.Parse(CallerRequest("let x; { eval(''); }", null, strict: true)).Model!;
+        Assert.Equal("{}", Written(strictEval.CallerScopesOf(strictEval.DirectEvalCalls[0])));
+        var function = SyntaxParser.Parse(CallerRequest("function f() { let x; eval(''); }", null)).Model!;
+        Assert.Equal("{x}", Written(function.CallerScopesOf(function.DirectEvalCalls[0])));
+
+        var exempt = Model("try {} catch (e) { eval('var e'); }").Model;
+        var list = exempt.CallerScopesOf(exempt.DirectEvalCalls[0]);
+        Assert.Equal(ParseOutcome.Accepted, SyntaxParser.Parse(CallerRequest("var e", list)).Outcome);
+        Assert.Equal("JSE1908", Assert.Single(SyntaxParser.Parse(CallerRequest("var e", list, annexB: false)).Diagnostics).Code);
+        Assert.Equal("JSE1908", Assert.Single(SyntaxParser.Parse(CallerRequest("var e", Records("{e}"), annexB: false)).Diagnostics).Code);
+    }
+
+    /// <summary>
+    /// The members' order and errors: <see cref="SemanticModel.DirectEvalCalls"/> lists every candidate in source order, of
+    /// every strictness, the parenthesised callee among them and not an optional call, a member call, a tagged template or
+    /// <c>(0, eval)</c>; one instance per scope, shared; <see cref="SemanticModel.CallerScopesOf"/> refuses a null call, a
+    /// call of another tree and a call that is no candidate. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    [Fact]
+    public void The_candidates_are_in_source_order_and_a_null_foreign_or_other_call_is_refused()
+    {
+        var (r, m) = Model("{ let a; eval(1); (eval)(2); eval?.(3); o.eval(4); (0, eval)(5); eval`6`; f(eval(7)); } function g() { 'use strict'; eval(8); }");
+        Assert.Equal(["1", "2", "7", "8"], m.DirectEvalCalls.Select(static c => ((NumericLiteral)c.Arguments[0]).Text));
+        Assert.True(m.DirectEvalCalls.Select(static c => c.Span.Offset).SequenceEqual(m.DirectEvalCalls.Select(static c => c.Span.Offset).Order()));
+        var first = m.CallerScopesOf(m.DirectEvalCalls[0])!;
+        Assert.Same(first[0], m.CallerScopesOf(m.DirectEvalCalls[1])![0]);
+        Assert.Equal("", Written(m.CallerScopesOf(m.DirectEvalCalls[3])));
+
+        Assert.Throws<ArgumentNullException>(() => m.CallerScopesOf(null!));
+        var other = Model("eval(1);").Model;
+        Assert.Throws<ArgumentException>(() => m.CallerScopesOf(other.DirectEvalCalls[0]));
+        Assert.Throws<ArgumentException>(() => m.CallerScopesOf(Nth<CallExpression>(r, 0, static c => c.Callee is MemberExpression)));
+    }
+
+    /// <summary>
+    /// Section 5's answers: with the caller's records given, a record that is not a Catch clause's withholds eval code's Annex
+    /// B alias, and a Catch clause's keeps it; an inherited answer for a reference, for a binding resolved when it runs, or
+    /// as a dynamic answer's fallback carries no declaration where a record binds the name; every other binding keeps its
+    /// declaration; null keeps stage 5b's answers. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    [Fact]
+    public void The_caller_s_records_decide_eval_code_s_aliases_and_carried_declarations()
+    {
+        (ParseResult Result, SemanticModel Model, Declaration? Alias) Eval(string text, string records, bool strict = false)
+        {
+            var result = SyntaxParser.Parse(CallerRequest(text, Records(records), strict: strict));
+            Assert.True(result.Outcome == ParseOutcome.Accepted, text + " under " + records);
+            var block = result.Model!.Scopes.SelectMany(static s => s.Declarations).FirstOrDefault(static d => d.IsBlockFunction);
+            return (result, result.Model, block is null ? null : result.Model.AnnexBAlias(block));
+        }
+
+        // The alias: withheld by {x}, kept by {c:x}, by {y} and by null; the reference carries it only where no record binds x.
+        const string alias = "{ function x() {} } x;";
+        var (r0, m0, a0) = Eval(alias, "{x}");
+        Assert.Null(a0);
+        IsInherited(m0.Resolve(Reference(r0, "x")), null);
+        var (r1, m1, a1) = Eval(alias, "{}{c:x}");
+        Assert.True(a1 is { Kind: BindingKind.BlockFunctionAlias });
+        IsInherited(m1.Resolve(Reference(r1, "x")), null);
+        var (r2, m2, a2) = Eval(alias, "null");
+        Assert.True(a2 is { Kind: BindingKind.BlockFunctionAlias });
+        IsInherited(m2.Resolve(Reference(r2, "x")), a2);
+        var (r3, m3, a3) = Eval(alias, "{y}");
+        Assert.True(a3 is { Kind: BindingKind.BlockFunctionAlias });
+        IsInherited(m3.Resolve(Reference(r3, "x")), a3);
+        var (r4, m4, a4) = Eval(alias, "{x}", strict: true);
+        Assert.Null(a4);
+        IsInherited(m4.Resolve(Reference(r4, "x")), null);
+
+        // A catch parameter before the binding: the reference and the run-time binding carry none, the others keep theirs.
+        const string carried = "var x = 2; x; var x; function x() {}";
+        var c = SyntaxParser.Parse(CallerRequest(carried, Records("{}{c:x}")));
+        var top = c.Model!.Scopes[0];
+        IsInherited(c.Model.Resolve(Reference(c, "x")), null);
+        IsInherited(c.Model.Resolve(Binding(c, "x", 0)), null);
+        IsInherited(c.Model.Resolve(Binding(c, "x", 1)), Decl(top, "x"));
+        IsInherited(c.Model.Resolve(Binding(c, "x", 2)), Decl(top, "x"));
+        var n = SyntaxParser.Parse(CallerRequest(carried, null));
+        IsInherited(n.Model!.Resolve(Reference(n, "x")), Decl(n.Model.Scopes[0], "x"));
+        IsInherited(n.Model.Resolve(Binding(n, "x", 0)), Decl(n.Model.Scopes[0], "x"));
+
+        // The fallback of a dynamic answer.
+        const string fallback = "var x; with (o) { x; }";
+        var f = SyntaxParser.Parse(CallerRequest(fallback, Records("{c:x}")));
+        IsInherited(IsDynamic(f.Model!.Resolve(Reference(f, "x")), DynamicReason.With, f.Model.Scopes.Single(static s => s.Kind == ScopeKind.With)), null);
+        var g = SyntaxParser.Parse(CallerRequest(fallback, null));
+        IsInherited(IsDynamic(g.Model!.Resolve(Reference(g, "x")), DynamicReason.With, g.Model.Scopes.Single(static s => s.Kind == ScopeKind.With)), Decl(g.Model.Scopes[0], "x"));
+    }
+
+    // The test's own chain: from the call up its parents, each enclosing record's names as the tree declares them, stopping
+    // at the variable environment, then the request's list for sloppy eval code. Iterative; reads the tree, the facts'
+    // strictness and the arguments bindings, never the model's scopes.
+    private static string OracleChain(SemanticModel model, SyntaxNode program, Dictionary<SyntaxNode, SyntaxNode> parents, CallExpression call, IReadOnlyList<CallerScope>? request)
+    {
+        static void Bound(SyntaxNode? pattern, List<string> names)
+        {
+            var pending = new Stack<SyntaxNode>();
+            if (pattern is not null)
+                pending.Push(pattern);
+            while (pending.Count > 0)
+            {
+                switch (pending.Pop())
+                {
+                    case BindingIdentifier b: names.Add(b.Name); break;
+                    case AssignmentPattern a: pending.Push(a.Target); break;
+                    case RestElement r: pending.Push(r.Argument); break;
+                    case ArrayPattern a:
+                        for (var i = a.Elements.Count - 1; i >= 0; i--)
+                        {
+                            if (a.Elements[i] is { } e)
+                                pending.Push(e);
+                        }
+
+                        break;
+                    case ObjectPattern o:
+                        for (var i = o.Properties.Count - 1; i >= 0; i--)
+                            pending.Push(o.Properties[i] is PatternProperty p ? p.Value : o.Properties[i]);
+                        break;
+                }
+            }
+        }
+
+        static List<string> Lexical(IEnumerable<Statement> statements, bool top)
+        {
+            var names = new List<string>();
+            foreach (var statement in statements)
+            {
+                var inner = statement;
+                while (inner is LabelledStatement l)
+                    inner = l.Body;
+                switch (inner)
+                {
+                    case VariableDeclaration { DeclarationKind: not DeclarationKind.Var } v:
+                        foreach (var d in v.Declarations)
+                            Bound(d.Target, names);
+                        break;
+                    case ClassDeclaration { Class.Name: { } name }:
+                        names.Add(name.Name);
+                        break;
+                    case FunctionDeclaration { Function.Name: { } name } when !top:
+                        names.Add(name.Name);
+                        break;
+                }
+            }
+
+            return names;
+        }
+
+        static string Entry(IEnumerable<string> names, bool isCatch) => "{" + (isCatch ? "c:" : "") + string.Join(",", names.Distinct()) + "}";
+
+        var text = new System.Text.StringBuilder();
+        var inField = false;
+        for (SyntaxNode at = call; ; )
+        {
+            var parent = parents[at];
+            switch (parent)
+            {
+                case BlockStatement block:
+                    text.Append(Entry(Lexical(block.Body, top: false), false));
+                    break;
+                case SwitchStatement sw when !ReferenceEquals(at, sw.Discriminant):
+                    text.Append(Entry(Lexical(sw.Cases.SelectMany(static c => c.Consequent), top: false), false));
+                    break;
+                case ForStatement { Init: VariableDeclaration { DeclarationKind: not DeclarationKind.Var } head }:
+                    text.Append(Entry(Lexical([head], top: false), false));
+                    break;
+                case ForInStatement { Left: VariableDeclaration { DeclarationKind: not DeclarationKind.Var } head }:
+                    text.Append(Entry(Lexical([head], top: false), false));
+                    break;
+                case ForOfStatement { Left: VariableDeclaration { DeclarationKind: not DeclarationKind.Var } head }:
+                    text.Append(Entry(Lexical([head], top: false), false));
+                    break;
+                case CatchClause { Parameter: { } parameter }:
+                {
+                    var names = new List<string>();
+                    Bound(parameter, names);
+                    text.Append(Entry(names, true));
+                    break;
+                }
+
+                case FieldDefinition field when ReferenceEquals(at, field.Value):
+                    inField = true;
+                    break;
+                case ClassNode @class when !@class.Decorators.Contains(at) && !ReferenceEquals(at, @class.Name):
+                    if (inField)
+                        return text.ToString();
+                    text.Append(Entry(@class.Name is { } className ? [className.Name] : [], false));
+                    break;
+                case FunctionNode function:
+                {
+                    if (model.FactsOf(function).IsStrict)
+                        return text.ToString();
+                    if (function.Parameters.Contains(at))
+                    {
+                        var names = new List<string>();
+                        foreach (var p in function.Parameters)
+                            Bound(p, names);
+                        if (model.EnvironmentOf(function).Arguments is not null)
+                            names.Add("arguments");
+                        return text.Append(Entry(names, false)).ToString();
+                    }
+
+                    return text.Append(Entry(Lexical(function.Body, top: true), false)).ToString();
+                }
+
+                case StaticBlock:
+                    return text.ToString();
+                case ProgramNode p:
+                {
+                    var facts = model.FactsOf(p);
+                    if (facts.IsStrict || facts.Kind is FunctionKind.Script or FunctionKind.Module)
+                        return text.ToString();
+                    if (facts.Kind == FunctionKind.DynamicFunction)
+                    {
+                        if (p.Parameters.Contains(at))
+                        {
+                            var names = new List<string>();
+                            foreach (var parameter in p.Parameters)
+                                Bound(parameter, names);
+                            if (model.EnvironmentOf(p).Arguments is not null)
+                                names.Add("arguments");
+                            return text.Append(Entry(names, false)).ToString();
+                        }
+
+                        return text.Append(Entry(Lexical(p.Body, top: true), false)).ToString();
+                    }
+
+                    text.Append(Entry(Lexical(p.Body, top: true), false));
+                    return request is null ? "null" : text.Append(Written(request)).ToString();
+                }
+            }
+
+            at = parent;
+        }
+    }
+
+    /// <summary>
+    /// Over the determinism tests' population and the fixtures' sources: every candidate answers without throwing, its
+    /// records as the test's own oracle over a parent map recomputes them from the tree; the instances shared per scope; the
+    /// answer null exactly where the chain reaches sloppy eval code under a null list; and
+    /// <see cref="SemanticModel.DirectEvalCalls"/> the tree's candidates in source order. Eval code is also parsed under an
+    /// empty list and a list naming none of its names. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    [Fact]
+    public void Every_candidate_answers_its_records_over_the_population()
+    {
+        var items = DeterminismTests.Population.Value;
+        var (calls, nulls, units) = OnDocumentedStack(() =>
+        {
+            var (c, n, u) = (0, 0, 0);
+            void One(string name, ParseResult result, IReadOnlyList<CallerScope>? request)
+            {
+                if (result.Model is not { } model)
+                    return;
+                u++;
+                var tree = result.Tree!;
+                var parents = new Dictionary<SyntaxNode, SyntaxNode>(ReferenceEqualityComparer.Instance);
+                var children = new List<SyntaxNode>();
+                var candidates = new List<CallExpression>();
+                foreach (var node in Nodes(tree))
+                {
+                    children.Clear();
+                    node.AddChildren(children);
+                    foreach (var child in children)
+                        parents[child] = node;
+                    if (node is CallExpression { IsOptional: false } call)
+                    {
+                        var callee = call.Callee;
+                        while (callee is ParenthesizedExpression p)
+                            callee = p.Expression;
+                        if (callee is Identifier { Name: "eval" })
+                            candidates.Add(call);
+                    }
+                }
+
+                Assert.True(candidates.OrderBy(static x => x.Span.Offset).SequenceEqual(model.DirectEvalCalls, ReferenceEqualityComparer.Instance), name + ": the candidates");
+                var byNames = new Dictionary<string, HashSet<CallerScope>>(StringComparer.Ordinal);
+                foreach (var call in model.DirectEvalCalls)
+                {
+                    c++;
+                    var answer = model.CallerScopesOf(call);
+                    n += answer is null ? 1 : 0;
+                    Assert.True(OracleChain(model, tree, parents, call, request) == Written(answer), name + ": the records at " + call.Span.Offset.ToString(CultureInfo.InvariantCulture) + " " + Written(answer));
+                }
+
+                // One instance per record: two calls in one block share it.
+                foreach (var scope in model.Scopes)
+                {
+                    var seen = model.DirectEvalCalls.Where(x => ReferenceEquals(model.ScopeOf(x), scope)).Select(x => model.CallerScopesOf(x)).Where(static a => a is { Count: > 0 }).Select(static a => a![0]).Distinct().Count();
+                    Assert.True(seen <= 1, name + ": one instance per scope");
+                }
+            }
+
+            foreach (var item in items)
+            {
+                One(Name(item), SyntaxParser.Parse(DeterminismTests.Request(item, model: true)), null);
+                if (item.Variant[0] == 'E')
+                {
+                    foreach (var list in new[] { Array.Empty<CallerScope>(), [new CallerScope { Names = ["éé not a name"] }, new CallerScope { IsCatch = true }] })
+                    {
+                        var request = DeterminismTests.Request(item, model: true);
+                        One(Name(item) + " with a list", SyntaxParser.Parse(new ParseRequest(request.Source, ParseGoal.Eval, UnicodeDataHome.Tables, NoValidator.Instance)
+                        {
+                            Switches = request.Switches,
+                            Context = new InheritedContext { InFunction = request.Context!.InFunction, CallerScopes = list },
+                            Limits = request.Limits,
+                            BuildSemanticModel = true,
+                        }), list);
+                    }
+                }
+            }
+
+            foreach (var text in CallerSources)
+                One("caller source \"" + text + "\"", Parse(text), null);
+            foreach (var text in CallerSources)
+            {
+                foreach (var list in new[] { null, Records(""), Records("{z}{c:w}") })
+                    One("caller source as eval code \"" + text + "\"", SyntaxParser.Parse(CallerRequest(text, list)), list);
+            }
+
+            return (c, n, u);
+        });
+        Assert.True(calls > CallerSources.Length && nulls > 0 && units > 1_000);
+        output.WriteLine("candidates " + calls.ToString(CultureInfo.InvariantCulture) + ", of them null " + nulls.ToString(CultureInfo.InvariantCulture) + ", over units " + units.ToString(CultureInfo.InvariantCulture));
+    }
+
+    private static readonly string[] CallerSources =
+    [
+        "{ let x; eval('var x'); }", "function f() { let a; { const b = 1; eval(''); } }", "switch (0) { case 0: let x; eval(''); }",
+        "for (let i = eval('');;) { eval(''); }", "for (let x of eval('')) ;", "switch (eval('')) { case 0: let x; }",
+        "function f() { { function g() {} class K {} eval(''); } }", "function f(a, b = eval(''), c) {}", "((a = eval('')) => 0);",
+        "(function a(x = eval('')) {});", "try {} catch ({ e, f: [g] }) { eval(''); }", "try {} catch { let y; eval(''); }",
+        "try {} catch ({ a = eval('') }) {}", "function f(o) { let x; with (o) { eval(''); } }", "class C { x = eval(''); }",
+        "class C { x = class D { [eval('')]() {} }; }", "class C { static { { let q; eval(''); } } }", "class C extends (eval(''), Object) {}",
+        "var x; { let y; eval(''); eval(''); } (eval)('');",
+    ];
+
+    /// <summary>
+    /// The identity forms (B4's off-path list test, B5b's section 8): with the member on, eval code under a null list, an
+    /// empty one and one naming none of its names, and a list's entries permuted, gives the same outcome and the same
+    /// dump but for the caller's-records lines, every member of the previous stages answering alike; an empty list and null
+    /// differ only in those lines. The population's eval-code items and the fixtures' sources. <i>(Added 2026-11-26, at
+    /// SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    [Fact]
+    public void Null_empty_non_colliding_and_permuted_lists_answer_alike_on_every_earlier_member()
+    {
+        static string Earlier(ParseResult result) => string.Join("\n", System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(result)).Split('\n')
+            .Where(static l => !l.StartsWith("model-eval-call ", StringComparison.Ordinal) && !l.StartsWith("model-caller-scope ", StringComparison.Ordinal)));
+
+        var sources = DeterminismTests.Population.Value.Where(static i => i.Variant[0] == 'E').Select(static i => i.Text).Concat(CallerSources)
+            .Concat(["var x = 1; x; { function g() {} } g; with (o) { x; }", "let a; var b; eval(''); function c() {}"]).ToList();
+        var compared = OnDocumentedStack(() =>
+        {
+            var count = 0;
+            foreach (var text in sources)
+            {
+                var baseline = SyntaxParser.Parse(CallerRequest(text, null));
+                foreach (var list in new[] { Records(""), Records("{zz}{c:yy}"), Records("{c:yy}{zz}") })
+                {
+                    var other = SyntaxParser.Parse(CallerRequest(text, list));
+                    Assert.True(baseline.Outcome == other.Outcome, text + ": the outcome");
+                    Assert.True(Earlier(baseline) == Earlier(other), text + ": an earlier member answers otherwise under " + Written(list));
+                }
+
+                count++;
+            }
+
+            return count;
+        });
+        Assert.Equal(sources.Count, compared);
+
+        // Permuting colliding entries changes no outcome or row.
+        foreach (var (a, b) in new[] { ("{x}{c:y}", "{c:y}{x}"), ("{c:x}{y}", "{y}{c:x}") })
+        {
+            var ra = SyntaxParser.Parse(CallerRequest("var x; var y;", Records(a), allErrors: true));
+            var rb = SyntaxParser.Parse(CallerRequest("var x; var y;", Records(b), allErrors: true));
+            Assert.Equal(ra.Diagnostics.Select(static d => (d.Code, d.Span.Offset)), rb.Diagnostics.Select(static d => (d.Code, d.Span.Offset)));
+        }
+    }
 }

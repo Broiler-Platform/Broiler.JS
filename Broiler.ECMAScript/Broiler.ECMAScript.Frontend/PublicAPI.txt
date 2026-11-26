@@ -118,6 +118,7 @@ Broiler.ECMAScript.Semantics.ScopeKind.With = 8
 Broiler.ECMAScript.Semantics.ScopeKind.value__ field System.Int32
 Broiler.ECMAScript.Semantics.SemanticModel sealed class
 Broiler.ECMAScript.Semantics.SemanticModel.AnnexBAlias(Broiler.ECMAScript.Semantics.Declaration) method Broiler.ECMAScript.Semantics.Declaration
+Broiler.ECMAScript.Semantics.SemanticModel.CallerScopesOf(Broiler.ECMAScript.Syntax.CallExpression) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.CallerScope>
 Broiler.ECMAScript.Semantics.SemanticModel.DeclarationOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.Declaration
 Broiler.ECMAScript.Semantics.SemanticModel.EnvironmentOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.EnvironmentFacts
 Broiler.ECMAScript.Semantics.SemanticModel.FactsOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.FunctionFacts
@@ -129,6 +130,7 @@ Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.Pri
 Broiler.ECMAScript.Semantics.SemanticModel.ScopeOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.Scope
 Broiler.ECMAScript.Semantics.SemanticModel.TargetOf(Broiler.ECMAScript.Syntax.BreakStatement) method Broiler.ECMAScript.Semantics.LabelTarget
 Broiler.ECMAScript.Semantics.SemanticModel.TargetOf(Broiler.ECMAScript.Syntax.ContinueStatement) method Broiler.ECMAScript.Semantics.LabelTarget
+Broiler.ECMAScript.Semantics.SemanticModel.get_DirectEvalCalls() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.CallExpression>
 Broiler.ECMAScript.Semantics.SemanticModel.get_Functions() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.FunctionFacts>
 Broiler.ECMAScript.Semantics.SemanticModel.get_Scopes() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.Scope>
 Broiler.ECMAScript.Syntax.ArrayLiteral sealed class : Broiler.ECMAScript.Syntax.Expression
@@ -208,6 +210,12 @@ Broiler.ECMAScript.Syntax.CallExpression.get_Arguments() method System.Collectio
 Broiler.ECMAScript.Syntax.CallExpression.get_Callee() method Broiler.ECMAScript.Syntax.Expression
 Broiler.ECMAScript.Syntax.CallExpression.get_IsOptional() method System.Boolean
 Broiler.ECMAScript.Syntax.CallExpression.get_TrailingComma() method System.Boolean
+Broiler.ECMAScript.Syntax.CallerScope sealed class
+Broiler.ECMAScript.Syntax.CallerScope..ctor() method System.Void
+Broiler.ECMAScript.Syntax.CallerScope.get_IsCatch() method System.Boolean
+Broiler.ECMAScript.Syntax.CallerScope.get_Names() method System.Collections.Generic.IReadOnlyList`1<System.String>
+Broiler.ECMAScript.Syntax.CallerScope.set_IsCatch(System.Boolean) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Syntax.CallerScope.set_Names(System.Collections.Generic.IReadOnlyList`1<System.String>) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Syntax.CatchClause sealed class : Broiler.ECMAScript.Syntax.SyntaxNode
 Broiler.ECMAScript.Syntax.CatchClause.get_Body() method Broiler.ECMAScript.Syntax.BlockStatement
 Broiler.ECMAScript.Syntax.CatchClause.get_Parameter() method Broiler.ECMAScript.Syntax.Pattern
@@ -352,12 +360,14 @@ Broiler.ECMAScript.Syntax.ImportSpecifier.get_Imported() method Broiler.ECMAScri
 Broiler.ECMAScript.Syntax.ImportSpecifier.get_Local() method Broiler.ECMAScript.Syntax.BindingIdentifier
 Broiler.ECMAScript.Syntax.InheritedContext sealed class
 Broiler.ECMAScript.Syntax.InheritedContext..ctor() method System.Void
+Broiler.ECMAScript.Syntax.InheritedContext.get_CallerScopes() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.CallerScope>
 Broiler.ECMAScript.Syntax.InheritedContext.get_InClassFieldInitializer() method System.Boolean
 Broiler.ECMAScript.Syntax.InheritedContext.get_InDerivedConstructor() method System.Boolean
 Broiler.ECMAScript.Syntax.InheritedContext.get_InFunction() method System.Boolean
 Broiler.ECMAScript.Syntax.InheritedContext.get_InMethod() method System.Boolean
 Broiler.ECMAScript.Syntax.InheritedContext.get_TopLevel() method static Broiler.ECMAScript.Syntax.InheritedContext
 Broiler.ECMAScript.Syntax.InheritedContext.get_VisiblePrivateNames() method System.Collections.Generic.IReadOnlyList`1<System.String>
+Broiler.ECMAScript.Syntax.InheritedContext.set_CallerScopes(System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.CallerScope>) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Syntax.InheritedContext.set_InClassFieldInitializer(System.Boolean) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Syntax.InheritedContext.set_InDerivedConstructor(System.Boolean) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Syntax.InheritedContext.set_InFunction(System.Boolean) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)

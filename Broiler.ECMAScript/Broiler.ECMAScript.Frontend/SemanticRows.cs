@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   51
-// Annotated:        51/51
+// Relevant units:   53
+// Annotated:        53/53
 // Exempt:           0
-// Human-reviewed:   0/51
+// Human-reviewed:   0/53
 // IP risk:          Low
 // Security risk:    Low
 // Criteria:         0/0
 // Resource impact:  0/10 max
-// Unverified:       51
+// Unverified:       53
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -26,7 +26,9 @@ namespace Broiler.ECMAScript.Syntax;
 /// <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when its rows joined the table; it
 /// read "(milestone SJL-15.2, stage 2; Broiler.VM's JSD-0080, one early-error stage)" and ended "gives them".)</i>
 /// <i>(Revised 2026-11-25, at SJL-15.2 stage 4, when its rows joined the table; it read "stage 2's rows of the function
-/// context and of expressions, and stage 3's rows of jump targets (the session's decision D-js-jump-rows).")</i> The declarations walk reports them only when the request sets
+/// context and of expressions, and stage 3's rows of jump targets (the session's decision D-js-jump-rows).")</i>
+/// Stage 5c's rows of eval code's <c>var</c>s against its caller's records, EvalDeclarationInstantiation step 3.d
+/// (the session's decision D-js-caller-scope-rows), join them. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i> The declarations walk reports them only when the request sets
 /// <see cref="ParseRequest.BuildSemanticModel"/>, through the same report as <see cref="Rows"/>' rows, in decision D11's
 /// order (the session's decisions D-js-channel and D-js-semantic-rows). EP0017 and EP0018 have no report of their own:
 /// no goal is ShadowRealm's, and EA0003, EA0004 or EE0162 refuses their source first. The Frontend tests hold this list a
@@ -271,6 +273,16 @@ internal static class SemanticRows
     // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=1F12F3
     // Hairs-Human:        PENDING
     internal static readonly LexicalRefusal EA0005 = new("JSE1905", "class.initializer.arguments");
+
+    /// <summary>EA0007: <c>eval.var.lexical-collision</c>, a var-declared name of sloppy eval code that one of its caller's records binds, the record not a <c>Catch</c> clause's, with Annex B on: EvalDeclarationInstantiation step 3.d.i.2.a.i.1, a host that supports Annex B.3.4 (clause 19.2.1.3); reported only where the request gives the caller's records; stage 5c.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=BB4A38
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EA0007 = new("JSE1907", "eval.var.lexical-collision");
+
+    /// <summary>EA0008: <c>eval.var.lexical-collision</c>, the same name against any of the caller's records, a <c>Catch</c> clause's among them, with Annex B off: step 3.d.i.2.a.ii.1, a host that does not support Annex B.3.4; reported only where the request gives the caller's records; stage 5c.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=811176
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EA0008 = new("JSE1908", "eval.var.lexical-collision");
 
     /// <summary>EA0009: <c>class.private-name.undeclared</c>, AllPrivateIdentifiersValid of eval code against the private names its caller sees (EvalDeclarationInstantiation step 7, clause 19.2.1.3); reported only where the request gives them; stage 4.</summary>
     // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=A367B5

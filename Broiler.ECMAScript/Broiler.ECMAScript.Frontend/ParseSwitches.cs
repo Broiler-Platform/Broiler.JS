@@ -67,6 +67,10 @@ public readonly record struct ParseSwitches
     /// <see cref="Semantics.SemanticModel.AnnexBAlias"/>, the block functions' var-scoped aliases (Annex B.3.2), Annex B.3.4's
     /// exemption for a simple <c>catch</c> parameter among them: with it off, no block function has one. <i>(Added
     /// 2026-11-26, at SJL-15.2 stage 5b.)</i>
+    /// With the semantic model built, the switch also decides whether the library reads the host as supporting Annex B.3.4
+    /// in EvalDeclarationInstantiation step 3.d.i.2.a, that is, catalogue row EA0007 against EA0008 for eval code's
+    /// <c>var</c> against its caller's records (<see cref="InheritedContext.CallerScopes"/>), and that a Catch clause's record
+    /// never withholds eval code's alias. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
     /// </summary>
     public bool AnnexB { get; init; }
 

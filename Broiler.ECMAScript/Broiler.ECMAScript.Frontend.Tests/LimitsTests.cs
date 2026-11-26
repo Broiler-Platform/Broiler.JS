@@ -509,5 +509,43 @@ public sealed class LimitsTests
         Assert.Equal(distinct ? low : 1, aliased);
     }
 
+    /// <summary>
+    /// The caller's records at the supported maximum (SJL-15.2 stage 5c): nested blocks, each with a <c>let</c> and an
+    /// <c>eval</c> call, on the documented stack, the same parse with the model on and off; the innermost call answers one
+    /// record per block and the function's, each block's instance shared by the calls whose chains hold it.
+    /// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    [Fact]
+    public void The_caller_s_records_at_the_supported_maximum()
+    {
+        static string Text(int levels)
+        {
+            var text = new StringBuilder("function f() { ");
+            for (var i = 0; i < levels; i++)
+                text.Append("{ let v").Append(i.ToString(CultureInfo.InvariantCulture)).Append("; eval(''); ");
+            return text.Append('}', levels).Append(" }").ToString();
+        }
+
+        var bound = ParseLimits.MaximumSupportedNestingDepth;
+        var (low, high) = (0, bound + 1);
+        while (high - low > 1)
+        {
+            var middle = (low + high) / 2;
+            if (ParseV(Text(middle), bound).Outcome == ParseOutcome.Refused)
+                high = middle;
+            else
+                low = middle;
+        }
+
+        Assert.True(low >= bound / 4, "accepted at " + low.ToString(CultureInfo.InvariantCulture) + " levels");
+        AssertSameWithTheModel(ParseV(Text(low), bound), Text(low), bound, "nested blocks with eval calls");
+        var model = ParseV(Text(low), bound, model: true).Model!;
+        Assert.Equal(low, model.DirectEvalCalls.Count);
+        var innermost = model.CallerScopesOf(model.DirectEvalCalls[^1])!;
+        Assert.Equal(low + 1, innermost.Count);
+        Assert.Equal("v" + (low - 1).ToString(CultureInfo.InvariantCulture), Assert.Single(innermost[0].Names));
+        Assert.Same(innermost[^2], model.CallerScopesOf(model.DirectEvalCalls[0])![0]);
+    }
+
     private const string ManyReferences = "v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v";
 }
