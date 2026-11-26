@@ -50,6 +50,13 @@ namespace Broiler.ECMAScript.Runners;
 /// holds, is named by its node. A parse without a model is dumped as before. <i>(Added 2026-11-26, at SJL-15.2 stage
 /// 5a.)</i>
 /// </para>
+/// <para>
+/// From SJL-15.2 stage 5b it also holds, after those lines, one line per block function in the model's scopes' and their
+/// declarations' order: the declaration, and the declaration its Annex B alias answer names, or none (decision
+/// D-js-part-g). An alias declaration, which no scope holds, is named <c>alias:</c> and its node, in those lines and in the
+/// resolution lines' declaration and fallback fields, as an <c>arguments</c> binding is named <c>args:</c> and its node. A
+/// parse without a model is dumped as before. <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
+/// </para>
 /// </remarks>
 internal static class SyntaxDump
 {
@@ -254,6 +261,7 @@ internal static class SyntaxDump
 
         string Declared(Declaration? declaration) => declaration is null ? "-"
             : declaration.Kind == BindingKind.Arguments ? "args:" + Reference(order, declaration.Node)
+            : declaration.Kind == BindingKind.BlockFunctionAlias ? "alias:" + Reference(order, declaration.Node)
             : declarationIndex[declaration];
 
         for (var i = 0; i < nodes.Count; i++)
@@ -284,6 +292,17 @@ internal static class SyntaxDump
             }
 
             text.Append('\n');
+        }
+
+        // Each block function's Annex B alias answer, in the model's scopes' and declarations' order (SJL-15.2 stage 5b);
+        // never the model's map.
+        foreach (var scope in model.Scopes)
+        {
+            foreach (var declaration in scope.Declarations)
+            {
+                if (declaration.IsBlockFunction)
+                    text.Append("model-annexb ").Append(declarationIndex[declaration]).Append(' ').Append(Declared(model.AnnexBAlias(declaration))).Append('\n');
+            }
         }
     }
 

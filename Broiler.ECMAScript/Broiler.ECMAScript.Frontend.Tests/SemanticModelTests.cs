@@ -2761,6 +2761,45 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         Assert.Null(model.AnnexBAlias(model.AnnexBAlias(BlockFn(model, "g"))!));
     }
 
+    /// <summary>
+    /// The model dump's <c>model-annexb</c> lines, one per block function, and the <c>alias:</c> form in the resolution
+    /// lines, for a function's alias, eval code's and an <c>arguments</c> binding the evaluation creates; a dump without a
+    /// model is unchanged.
+    /// </summary>
+    [Fact]
+    public void The_dump_s_model_section_holds_each_block_function_s_alias()
+    {
+        const string text = "function f() { { function g() {} function* h() {} } { function arguments() {} } return g; }";
+        var on = Parse(text);
+        var model = on.Model!;
+        var lines = System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(on)).Split('\n');
+        var nodes = Nodes(on.Tree!);
+        string Index(SyntaxNode node) => nodes.FindIndex(n => ReferenceEquals(n, node)).ToString(CultureInfo.InvariantCulture);
+        var annexb = lines.Where(static l => l.StartsWith("model-annexb ", StringComparison.Ordinal)).ToList();
+        Assert.Equal(3, annexb.Count);
+        Assert.EndsWith(" alias:" + Index(Binding(on, "g")), annexb[0], StringComparison.Ordinal);
+        Assert.EndsWith(" -", annexb[1], StringComparison.Ordinal);
+        Assert.EndsWith(" args:" + Index(Fn(on, "f")), annexb[2], StringComparison.Ordinal);
+        Assert.Contains(lines, l => l.StartsWith("model-resolution " + Index(Reference(on, "g")) + " 0 ", StringComparison.Ordinal) && l.Contains(" alias:" + Index(Binding(on, "g")) + " ", StringComparison.Ordinal));
+
+        var eval = SyntaxParser.Parse(new ParseRequest(new SourceText("{ function g() {} } g;"), ParseGoal.Eval, UnicodeDataHome.Tables, NoValidator.Instance) { BuildSemanticModel = true, Context = new InheritedContext { InFunction = true } });
+        var evalNodes = Nodes(eval.Tree!);
+        var evalLines = System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(eval)).Split('\n');
+        var g = evalNodes.FindIndex(n => n is Identifier { Name: "g" }).ToString(CultureInfo.InvariantCulture);
+        var gBinding = evalNodes.FindIndex(n => n is BindingIdentifier { Name: "g" }).ToString(CultureInfo.InvariantCulture);
+        Assert.Contains("model-resolution " + g + " 3 - alias:" + gBinding + " - - -", evalLines);
+
+        var created = Parse("function f(a = 0) { { function arguments() {} } return arguments; }");
+        var createdNodes = Nodes(created.Tree!);
+        var createdLines = System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(created)).Split('\n');
+        var reference = createdNodes.FindIndex(n => n is Identifier { Name: "arguments" }).ToString(CultureInfo.InvariantCulture);
+        Assert.Contains(createdLines, l => l.StartsWith("model-resolution " + reference + " 1 - - 2 ", StringComparison.Ordinal));
+
+        var off = Parse(text, model: false);
+        Assert.True(SyntaxDump.Dump(off).AsSpan().SequenceEqual(SyntaxDump.Dump(on, model: false)));
+        Assert.DoesNotContain("model-annexb", System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(off)), StringComparison.Ordinal);
+    }
+
     // Accepted sources for the aliases, beside the population, the fixtures and the resolution sources.
     private static readonly (ParseGoal Goal, string Text)[] AnnexBSources =
     [
