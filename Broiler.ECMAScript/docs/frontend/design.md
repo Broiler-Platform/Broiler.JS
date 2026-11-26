@@ -652,6 +652,8 @@ evaluation, captures and the early errors)" and "and stage 4 the private-name en
 (section 10.6); the early errors of the module record stay their stage's".)*
 Stage 5b adds Annex B's block-function aliases (section 10.8), which the model's fact list names ("Annex B's
 block-function aliases", section 4) and the sketch gives no member. *(Added 2026-11-26, at SJL-15.2 stage 5b.)*
+Stage 5c adds the caller's records to the request, with the model members that answer them and the rows they decide
+(section 10.9). *(Added 2026-11-26, at SJL-15.2 stage 5c.)*
 
 ### 10.1 The entry
 
@@ -666,7 +668,7 @@ block-function aliases", section 4) and the sketch gives no member. *(Added 2026
 
 | Sketch | The library's | What |
 |---|---|---|
-| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)`; `TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)` (section 10.5); `PrivateEnvironmentOf(ClassNode)` and `Resolve(PrivateIdentifier)` (section 10.6); `Resolve(Identifier)`, `Resolve(BindingIdentifier)` and `EnvironmentOf(SyntaxNode)` (section 10.7); `AnnexBAlias(Declaration)` (section 10.8) *(revised 2026-11-25, at SJL-15.2 stage 3; the cell ended at "`FactsOf(SyntaxNode)`")* *(revised 2026-11-25, at SJL-15.2 stage 4; the cell ended at "`TargetOf(ContinueStatement)` (section 10.5)")* *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Resolve(PrivateIdentifier)` (section 10.6)")* *(revised 2026-11-26, at SJL-15.2 stage 5b; the cell ended at "`EnvironmentOf(SyntaxNode)` (section 10.7)")* |
+| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)`; `TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)` (section 10.5); `PrivateEnvironmentOf(ClassNode)` and `Resolve(PrivateIdentifier)` (section 10.6); `Resolve(Identifier)`, `Resolve(BindingIdentifier)` and `EnvironmentOf(SyntaxNode)` (section 10.7); `AnnexBAlias(Declaration)` (section 10.8); `DirectEvalCalls` and `CallerScopesOf(CallExpression)` (section 10.9) *(revised 2026-11-25, at SJL-15.2 stage 3; the cell ended at "`FactsOf(SyntaxNode)`")* *(revised 2026-11-25, at SJL-15.2 stage 4; the cell ended at "`TargetOf(ContinueStatement)` (section 10.5)")* *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Resolve(PrivateIdentifier)` (section 10.6)")* *(revised 2026-11-26, at SJL-15.2 stage 5b; the cell ended at "`EnvironmentOf(SyntaxNode)` (section 10.7)")* *(revised 2026-11-26, at SJL-15.2 stage 5c; the cell ended at "`AnnexBAlias(Declaration)` (section 10.8)")* |
 | `Scope` | The tables' `Scope`, the same instances | The model's `Scopes` are a superset of `DeclarationTables.Scopes` in the same relative order, adding the kinds `With`, `ClassBody`, `FunctionName` and `Parameters`. Eval code is not a kind: its program's scope is a `Script` scope and its facts' kind `FunctionKind.EvalCode`; the separate variable environment is a function fact, `FunctionFacts.HasSeparateVariableEnvironment` (section 10.7) *(revised 2026-11-26, at SJL-15.2 stage 5a; it read "the separate variable environment is a function fact of a later stage")* |
 | `Declaration` | The tables' `Declaration`, the same instances | `BindingKind` gains `Parameter`, `FunctionName` (a named function expression's own name) and `ClassName` (a class's inner name), each with its three flags false, and `Declaration.IsMutable`, from the kind; and `Arguments`, the `arguments` binding, the model's alone and in no scope's declarations (section 10.7); and `BlockFunctionAlias`, a block function's var-scoped alias, the model's alone and in no scope's declarations (section 10.8) *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Declaration.IsMutable`, from the kind")* *(revised 2026-11-26, at SJL-15.2 stage 5b; the cell ended at "in no scope's declarations (section 10.7)")* |
 | `FunctionFacts` | The tables' `FunctionFacts`, the same instances | `Kind` (`FunctionKind`), `IsAsync`, `IsGenerator`, `HasSimpleParameterList` and `HasParameterExpressions`, the same on every request; the model's `Functions` add one for every static block and every field with an initialiser; and `HasSeparateVariableEnvironment`, computed from them, the same on every request (section 10.7) *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "every field with an initialiser")* |
@@ -684,6 +686,8 @@ throw `ArgumentException` for it".)* *(Revised 2026-11-25, at SJL-15.2 stage 4; 
 the tree that has no facts".)*
 `AnnexBAlias` throws `ArgumentException` for a declaration whose node is not in the model's tree. *(Added 2026-11-26,
 at SJL-15.2 stage 5b.)*
+`CallerScopesOf` throws `ArgumentException` for a call that is not in the model's tree or is not a direct-eval candidate.
+*(Added 2026-11-26, at SJL-15.2 stage 5c.)*
 
 ### 10.3 Scopes and `ScopeOf`
 
@@ -960,6 +964,8 @@ which an engine's lowering needs (a search with a bound, then a static fallback)
 caller's environments the request does not describe; and the `BindingIdentifier` overload answers where a binding the
 language resolves when it runs writes. JSD-0080's resolution forms are not among the decisions that bind this
 repository, and these go beyond them.
+From stage 5c the request may describe the caller's records up to the variable environment; they narrow only eval code's
+carried declarations and aliases, and `Inherited` stays (section 10.9). *(Added 2026-11-26, at SJL-15.2 stage 5c.)*
 
 **The lookup**, finished after the walk over the references it recorded in visit order, since a later direct `eval`
 makes an earlier reference dynamic (`function f() { x; eval("var x"); }`); it is a pass over a list, not a second walk.
@@ -1027,14 +1033,29 @@ scope's environment; a strict function's scope is one environment (step 31.a); s
 its own LexicalEnvironment's declarations, its `var`s going to the caller's. For resolution the split cannot be
 observed: a reference meets the LexicalEnvironment first, and a direct `eval`'s `var` beside one of its names is
 EvalDeclarationInstantiation's SyntaxError. Stage 5c's caller scopes read the `IsLexical` split.
+`SemanticModel.CallerScopesOf` reads it, a sloppy function's record between a call in its body and its
+VariableEnvironment holding the `IsLexical` declarations alone (section 10.9). *(Added 2026-11-26, at SJL-15.2 stage
+5c.)*
 
-**Eval code.** The request does not tell a direct `eval` from an indirect one and carries no caller's names, so a name
-eval code does not declare is `Inherited`, with no declaration; sloppy eval code's own var-scoped declarations are
+**Eval code.** The request does not tell a direct `eval` from an indirect one, and the caller's records it may carry
+stop at the variable environment, leave out `with` objects and are no scopes of the model, so a name eval code does not
+declare is `Inherited`, with no declaration; sloppy eval code's own var-scoped declarations are `Inherited` with the
+declaration and no scope, the binding being created in the caller's VariableEnvironment; strict eval code's
+declarations and sloppy eval code's lexical ones are `Static`. The caller's records narrow only the carried declaration
+and eval code's aliases, and `Inherited` stays: where a record the request gives binds the name, a reference, a binding
+the language resolves when it runs and a dynamic answer's fallback carry no declaration, a caller's catch parameter
+standing first, and every other binding keeps its own; without them the carried declaration is the eval body's, as the
+member's contract says. A caller's `with` object of the name can still stand before the binding, a run-time condition
+that no stage closes (section 10.9). *(Revised 2026-11-26, at SJL-15.2 stage 5c, when the caller's records joined the
+request; it read "The request does not tell a direct `eval` from an indirect one and carries no caller's names, so a
+name eval code does not declare is `Inherited`, with no declaration; sloppy eval code's own var-scoped declarations are
 `Inherited` with the declaration and no scope, the binding being created in the caller's VariableEnvironment, before
 which a caller's `with` object or `catch` parameter of the name can stand; strict eval code's declarations and sloppy
-eval code's lexical ones are `Static`. Stage 5c's caller scopes may narrow `Inherited`.
+eval code's lexical ones are `Static`. Stage 5c's caller scopes may narrow `Inherited`.")*
 A name only an Annex B alias of sloppy eval code binds is `Inherited` too, carrying the alias, which the caller's
 environments can still withhold (section 10.8). *(Added 2026-11-26, at SJL-15.2 stage 5b.)*
+With the caller's records given, a record that is not a Catch clause's and binds the name withholds it, and under a Catch clause's record the
+alias is kept and the answer carries no declaration (section 10.9). *(Added 2026-11-26, at SJL-15.2 stage 5c.)*
 
 **The dynamic function's goals.** CreateDynamicFunction's function has the realm's global environment as its scope, so
 an undeclared name is `Global`. Each goal is answered with the other piece empty: under the `FunctionBody` goal `return
@@ -1111,7 +1132,11 @@ step 32.a), only `IsBlockFunction`; the model answers it, `SemanticModel.AnnexBA
 to the function's `Function` scope and the alias, so that in `var g; function f() { { function g() {} } return g; }` the
 reference answers f's alias, not the Script's `var g`; in sloppy eval code `Inherited`, carrying the alias; in a Script
 `Global`; and an `arguments` binding a block function's evaluation creates is a dynamic entry, reason `BlockFunction`.
-What remains: the interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and
+Eval code's alias is decided when the request carries the caller's records (`InheritedContext.CallerScopes`), a Catch
+clause's record exempt. Without them the request does not describe the caller, and the eval body alone decides, as
+`CallerScopes`' contract says. *(Revised 2026-11-26, at SJL-15.2 stage 5c, when the caller's records joined the request,
+closing the interim; it read "What remains: the interim, eval code's alias conditional on its caller's environments until
+stage 5c describes them; and" before the run-time conditions, which stay as written.)* What remains:
 the run-time conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and
 eval code with a global variable environment on GlobalDeclarationInstantiation-like checks. *(Revised 2026-11-26, at SJL-15.2 stage 5b, when the aliases joined the model; it
 read "**Annex B.3.3's aliases until stage 5b.** The tables hold no block function's var alias (FunctionDeclarationInstantiation
@@ -1251,12 +1276,19 @@ population.
 **What stays conditional.** A Script's alias depends on GlobalDeclarationInstantiation's run-time checks (step
 12.b.ii.2.a, HasLexicalDeclaration and CanDeclareGlobalVar): where either fails no binding is made, and a later script's
 lexical declaration of the name then throws (test262's `annexB/language/global-code/script-decl-lex-collision.js`).
-Eval code's alias depends on its caller's environments, which the request does not describe: a caller's lexical binding
-of the name between the eval and its variable environment, a Catch clause's excepted, withholds it (step 13.b.ii.4). That
-is the interim stage 5c's caller scopes narrow, by a dated revision. With a global variable environment, for an indirect
+Eval code's alias is decided when the request carries the caller's records (`InheritedContext.CallerScopes`), a Catch
+clause's record exempt: a caller's record that binds the name between the eval and its variable environment, and is not
+a Catch clause's, withholds it (step 13.b.ii.4), and an object record never does (section 10.9). Without them the
+request does not describe the caller, and the eval body alone decides, as `CallerScopes`' contract says. *(Revised
+2026-11-26, at SJL-15.2 stage 5c, when the caller's records joined the request, closing the interim; it read "Eval code's
+alias depends on its caller's environments, which the request does not describe: a caller's lexical binding of the name
+between the eval and its variable environment, a Catch clause's excepted, withholds it (step 13.b.ii.4). That is the
+interim stage 5c's caller scopes narrow, by a dated revision.")* With a global variable environment, for an indirect
 eval or a direct eval at a Script's top level, GlobalDeclarationInstantiation-like checks apply (step 13.b.ii.5): a
-run-time condition no parse-time input can close, which stays after stage 5c (an inference). What remains: the interim,
-eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time conditions,
+run-time condition no parse-time input can close, which stays after stage 5c (an inference). *(Revised 2026-11-26, at
+SJL-15.2 stage 5c, closing the interim; it read "What remains: the interim, eval code's alias conditional on its
+caller's environments until stage 5c describes them; and" before the run-time conditions, which stay as written.)* What
+remains: the run-time conditions,
 which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code with a global
 variable environment on GlobalDeclarationInstantiation-like checks. In eval code the binding the
 alias writes can be the caller's parameter or `arguments` binding (step 13.b.ii.7.a), which the model does not see. Under
@@ -1285,6 +1317,152 @@ null list's scopes between, and its strict-eval case by strictness (an inference
 
 **For part F's checklist** (stage 8): the rule's "Annex B.3.3 aliases" is `AnnexBAlias`, `BindingKind.BlockFunctionAlias`
 and `Resolve`.
+
+### 10.9 The caller's records in eval code's inherited context
+
+*(Added 2026-11-26, at SJL-15.2 stage 5c.)* The caller's records a direct `eval` receives, the model members that answer
+them, and the rows they decide, as the library answers them. Like the rest of this section it restates and decides
+nothing: the decisions are D-js-caller-scopes, D-js-caller-scope-rows and D-js-adapter-caller-scopes of 2026-11-26, in
+`docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)".
+
+**The member and its contract.** `InheritedContext.CallerScopes`, init-only and null by default, is a list of the new
+`Broiler.ECMAScript.Syntax.CallerScope`, each with `Names` and `IsCatch`, both init-only. A list describes the
+declarative Environment Records from a direct `eval`'s caller's running LexicalEnvironment outwards, innermost first, up
+to and not including its VariableEnvironment (PerformEval steps 16.a and 16.b). Object records are left out, since
+EvalDeclarationInstantiation's step 3.d and step 13.b.ii.4 skip them. Each entry carries every name its record binds, as
+HasBinding sees it, not only the names it declares lexically: for a call in a sloppy function's parameters the
+parameters and `arguments` (FunctionDeclarationInstantiation steps 20 and 22.d.i), a class's inner name, a `catch`
+parameter of either form, a block's functions. A sloppy function's own `var`s and top-level functions are in its
+VariableEnvironment and are never listed (step 32.b). `IsCatch` marks "the Environment Record for a |Catch| clause",
+whatever the parameter's form (Annex B.3.4 changes both steps with no condition on it). Null means the request does not
+describe the caller: the library refuses no `var` for it, decides eval code's aliases from the eval body alone, and
+leaves EvalDeclarationInstantiation's step 3 and step 13.b.ii.4 to the engine, as a null `VisiblePrivateNames` leaves
+step 7. An empty list is a caller whose LexicalEnvironment is its VariableEnvironment; the request does not tell an
+indirect `eval` from a direct one, so an indirect one passes an empty list or null, and both decide the same. Even with
+a list these stay the engine's, since they read the realm: step 3.a.i.1 (row EA0006), the TypeErrors of steps 10.a.iv.1
+and 12.a.i.1.a, step 13.b.ii.5, and whether a caller's `with` object binds a name. Strict eval code, by its directive or
+by `ParseSwitches.ForcedStrict`, reads none of it. The list and each entry's names are copied, so the context stays
+immutable. `InheritedContext.TopLevel` carries no list, so that its "that check stays the engine's" stays true of step 3
+too. With `ParseRequest.BuildSemanticModel` off nothing reads the member.
+
+**Beyond the contract's words.** JSD-0080's request row names "the caller's lexical names, which Broiler.JS needs for
+direct `eval` (decision D41)". `CallerScope` and its per-record shape, every name a record binds with a Catch flag, are
+this repository's decision D-js-caller-scopes, beyond those words, as D-js-resolution's inherited form goes beyond
+JSD-0080's resolution forms (section 10.7). JSD-0080's words win over this document where they differ (the header's
+"What wins"); this section restates the library's own decision and does not reword them. The member is the one
+Broiler.VM's decision D16 leaves "until SJL-15's model"; D16, D44 and JSD-0080 are Broiler.VM's and left as written,
+and part F reads the member against JSD-0080's input row at stage 8.
+
+**The model members.** `SemanticModel.DirectEvalCalls` lists every direct-`eval` candidate (section 10.7's definition) of
+every strictness, in source order. `SemanticModel.CallerScopesOf(CallExpression)` answers the list a direct `eval` at one
+of them would receive, as the records are, whatever the call's strictness; it throws `ArgumentNullException` for null and
+`ArgumentException` for a call outside the tree or one that is no candidate. Each model scope has a `CallerScope`
+instance of its own, shared by the answers that hold it, each name once in declaration order, and every answer is computed in
+`Model()` before the alias pass and only looked up. From `ScopeOf(call)` outward by `ParentOf`:
+
+| Scope reached | Entry | Then |
+|---|---|---|
+| `With` | none, an object record | continue |
+| `Block`, `Switch`, `For` | every name it declares, block functions and class declarations among them; an empty one an empty entry | continue |
+| `ClassBody` inside the code that holds the call | its inner name, or none | continue |
+| `Catch` with a parameter | the parameter's names, `IsCatch` true | continue |
+| `Catch` without a parameter | none: it has no environment | continue |
+| `Function`, sloppy | its `IsLexical` declarations, the LexicalEnvironment over the VariableEnvironment (step 32.b) | stop |
+| `Function`, strict | none (step 31.a) | stop |
+| `Parameters`, sloppy, the call in the parameters | every parameter, those after the call included, then `arguments` where `EnvironmentOf(...).Arguments` is non-null, an arrow having none | stop: the variable environment is calleeEnv (steps 19 and 20) |
+| `Parameters`, strict | none | stop |
+| `StaticBlock`, `Module`, a Script's top level, strict eval code's program | none: strict, or the global record | stop |
+| The class around a field initialiser that holds the call | none: the initialiser's lexical environment is its variable environment, and it has no scope | stop |
+| Sloppy eval code's program | its `IsLexical` declarations, then the request's own list appended as given; the answer null where the request gives none | end |
+
+So `class C { x = eval("") }` answers an empty list, while in `x = class { [eval("")]() {} }` the inner class is listed
+before the stop. A named function expression's `FunctionName` scope lies outside calleeEnv and is never reached, so
+`(function a(x = eval("var a")) {})` is accepted. A `switch` discriminant stands outside its `Switch` scope, so
+`switch (eval("var x")) { case 0: let x; }` is accepted; a `for` head's initialiser and a for-in or for-of head's
+expression stand in the head's `For` scope, and a catch pattern's initialiser in its `Catch` scope (section 10.3). A
+Script's top-level call answers an empty list, never the Script's scope, which is the global record of row EA0006's
+step, so that `let x; eval('var x;')` is accepted under an empty list.
+
+**EvalDeclarationInstantiation step 3.** For sloppy eval code (step 3), with a global variable environment step 3.a.i.1
+throws for a global lexical declaration (EA0006); step 3.b sets thisEnv to lexEnv; step 3.d walks while thisEnv is not
+varEnv, the variable environment itself never checked; step 3.d.i skips object records; step 3.d.i.2.a asks
+HasBinding of each name of varNames; a host that supports Annex B.3.4 throws at step 3.d.i.2.a.i.1 unless thisEnv is a
+Catch clause's record (EA0007), and any other host throws at step 3.d.i.2.a.ii.1 (EA0008). Step 13.b.ii.4, the alias
+walk from lexEnv to varEnv, skips object records and exempts a Catch clause's record at step 13.b.ii.4.a.i.1.a.
+Both exemptions follow the steps' text, which asks only whether thisEnv is the Environment Record for a Catch clause, so
+they hold for every call whose chain meets that record, a call in the catch parameter's own initialisers included:
+`try {} catch ({ a = eval('var a') }) {}` is accepted with Annex B on. Annex B.3.4's prose names only "direct eval calls
+contained within the Block of a Catch clause"; the library reads the steps (an inference).
+
+**The rows.** EA0007 (`JSE1907`) and EA0008 (`JSE1908`), `eval.var.lexical-collision`, join `SemanticRows`. With the
+member on, for sloppy eval code whose request gives the caller's records, the walk reports each var-declared name of the
+eval body (its VarDeclaredNames: `var`s and for-var heads at any depth outside functions, and top-level functions,
+labelled ones included, but no block function) that a record binds, once, at its first declaration in source order,
+with the name as the argument: EA0007 where the record is not a Catch clause's and Annex B is on, EA0008 for every
+record with Annex B off, the switch read as the host's support of Annex B.3.4 as the static Catch rule reads it. The row
+is a construct's refusal placed at its construct (D-js-channel), since neither engine places it: Broiler.VM throws from
+its executor and Broiler.JS at the eval program's start or at the statement. The partial walk reports the rows over the
+top-level statements it finished. **EA0006 stays a row only a run reaches**, named as decision rule R's line on such
+rows allows: the realm's global lexical declarations are no input of a parse. D-js-semantic-rows' "equal at stage 8
+except EA0006" (section 10.4) stands.
+
+**The interims, closed, and what stays.** Stage 5a's and stage 5b's eval-code interims are closed. Eval code's alias is
+decided when the request carries the caller's records, a Catch clause's record exempt: a record that is not a Catch
+clause's and binds the name withholds it (step 13.b.ii.4), and an object record never does. An inherited answer whose
+carried declaration's name a record binds carries no declaration, for a reference, for a binding the language resolves
+when it runs (a `var` with an initialiser, a for-in or for-of `var` head) and for a dynamic answer's fallback: a caller's
+catch parameter stands before the binding (Annex B.3.4's "PutValue" through it), and a withheld alias leaves the name to
+the caller. Every other binding keeps its declaration, since EvalDeclarationInstantiation instantiates it in the
+variable environment without passing those records: under a catch parameter `x`, `var x;` and `function x(){}` keep
+theirs, and `var x = 2` and the reference `x` carry none. With Annex B on only a Catch clause's record can hold a var
+name of an accepted source, a non-Catch record refusing it with EA0007. `Resolve`'s kinds do not change, and eval code's
+outside stays `Inherited`: the records stop at the variable environment, leave out `with` objects and are no scopes of
+the model. Without the records the request does not describe the caller, and the eval body's answer is the member's
+contract, not an interim. The run-time conditions stay, as stage 5b words them: a Script's alias depends on
+GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on
+GlobalDeclarationInstantiation-like checks; and a caller's `with` object of the name can stand before the binding, a
+property that exists only when the code runs.
+
+**The vectors and the nested parse.** The adapter passes every `DirectEval` request the caller's records from
+`CallerScopesOf` on the Script's model (D-js-adapter-caller-scopes), so a Script's top-level call passes an empty list,
+and the vectors of EA0007 are answered by id: `ea0007/0001` to `ea0007/0005`. `ea0007/0005`'s eval code itself holds a
+direct `eval` of a string literal: the adapter follows it, parsing the inner eval code in the context the eval code's
+model gives it, the outer request's flags where the eval code itself holds the call, its private names and records
+appended, and answers the innermost parse, a refusal at any level being the answer. That applies the owner's answer of
+2026-11-25, "Keep the reading at the parse (Recommended)", to a nested parse, and is no revision of it. The vectors of
+EA0006 stay not implemented, and no vector exercises EA0008: the generator lists it uncovered, since only a host
+without Annex B.3.4 reaches its step.
+
+**The order, against the specification** (an inference). The specification raises ParseText's early errors, then
+PerformEval's steps 11.b to 11.h (EA0002 to EA0005), then EvalDeclarationInstantiation's step 3.a (EA0006, at run time),
+step 3.d (EA0007, EA0008) innermost record first over varNames in order, step 7 (EA0009), and then the TypeErrors. The
+library orders by place (decision D11), so under first error it can name EA0009 at an earlier place before EA0007,
+EA0007 before a later-placed ParseText row or a later-placed EA0003, EA0004 or EA0005 (in `var x; new.target` under a
+record binding `x` with `InFunction` false, the specification raises the `new.target` row first), or a different name
+than the specification would. Under all errors the partial walk adds a row the specification never raises: where
+ParseText fails PerformEval throws at step 11.b and EvalDeclarationInstantiation never runs, yet the partial walk reports
+EA0007 or EA0008 over its finished statements before the grammar's refusal, as it reports EA0003 to EA0005. Where the
+variable environment is global at run time, the specification raises EA0006 on one name before EA0007 on another; only
+the code differs. Stage 4's note on EA0009 against EA0006 to EA0008 meets EA0007 here: Broiler.VM checks private names
+before the declarations, the reverse of the specification's order, and Broiler.JS raises in the specification's order.
+
+**Where the library differs from each engine**, named for SJL-15.3 and SJL-15.5, as `docs/roadmap/SharedLibraries.md`
+lists it. Broiler.JS checks a direct eval's `var` against a flat list of the caller's lexical names, captured where the
+call is compiled, a simple catch parameter excepted in sloppy code; it refuses a destructuring catch parameter's name,
+which the pinned step does not refuse; its conflict test reads only the eval code's top-level statements (an inference,
+not probed); and it misses the nested eval of probe V046. Broiler.VM checks when the eval runs, through its eval map,
+skipping `with` rows and continuing through an enclosing evaluation; its map marks a Catch clause's record per record,
+whatever the parameter's form; and passing the records would change its eval request's format (an inference). EA0008's
+site with Annex B off is a refusal neither engine makes, both engines asking with Annex B on.
+
+**D16 in this document is left as written.** Section 1's row reads "**no caller's lexical names at SJL-13 or SJL-14**: the
+conflict they serve is EvalDeclarationInstantiation's, a run-time `SyntaxError` each engine raises today, until SJL-15's
+model", and section 9's row reads "No caller's lexical names at SJL-13 or SJL-14": both stay true of those milestones.
+Section 9.2's note of 2026-11-01 reads "`InheritedContext` carries the four flags and the optional private names", which
+describes SJL-13.2a's types. Each is left as written.
+
+**For part F's checklist** (stage 8): JSD-0080's "the caller's lexical names" is `InheritedContext.CallerScopes`,
+`CallerScope`, `SemanticModel.DirectEvalCalls` and `SemanticModel.CallerScopesOf`.
 
 ## Corrections
 

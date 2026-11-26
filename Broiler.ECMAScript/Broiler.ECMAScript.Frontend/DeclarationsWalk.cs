@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   136
-// Annotated:        136/136
+// Relevant units:   138
+// Annotated:        138/138
 // Exempt:           81
-// Human-reviewed:   0/136
+// Human-reviewed:   0/138
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       136
+// Unverified:       138
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -59,6 +59,11 @@ namespace Broiler.ECMAScript.Semantics;
 /// From stage 5b the model also decides, after the walk and before resolution, each block function's Annex B alias from
 /// the model's scopes and facts and the walk's record of plain functions, adding no statement to the visit and numbering
 /// nothing; with Annex B off it decides none. <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
+/// From stage 5c the model also lists the direct-eval candidates in source order and, before the alias pass, computes the
+/// caller's records a direct <c>eval</c> at each receives from the model's scopes, facts and arguments bindings; and for
+/// sloppy eval code whose request gives its caller's records (<see cref="InheritedContext.CallerScopes"/>), the alias pass
+/// and the resolutions read them, adding no statement to the visit and numbering nothing. <i>(Added 2026-11-26, at
+/// SJL-15.2 stage 5c.)</i>
 /// </para>
 /// <para>
 /// <b>No <c>request</c> or <c>engine</c> row is reported, and a <c>semantics</c> row only with the member on</b>: with it
@@ -70,6 +75,10 @@ namespace Broiler.ECMAScript.Semantics;
 /// [Await] parameter of the top level, as it reaches the parser (decision D10). <i>(Revised 2026-11-25, at SJL-15.2 stage
 /// 2; it read "<b>No <c>request</c>, <c>engine</c> or <c>semantics</c> row is reported</b>: every refusal is one of
 /// <see cref="Rows"/>.")</i>
+/// From stage 5c the program's walk also reports, under the same flag and only for sloppy eval code whose request gives
+/// its caller's records, the rows of EvalDeclarationInstantiation step 3.d (EA0007 and EA0008) at each colliding
+/// var-declared name's first declaration, in the partial walk too, over the statements it finished. <i>(Added 2026-11-26,
+/// at SJL-15.2 stage 5c.)</i>
 /// </para>
 /// </remarks>
 // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B38FCA
@@ -352,7 +361,7 @@ internal sealed class DeclarationsWalk
     /// sequence; each declaration by its node, the tables' first, so that a class declaration's name answers its outer
     /// declaration (the session's decision D-js-declaration-of).
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=DB1189
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=71AF2E
     // Hairs-Human:        PENDING
     private SemanticModel Model(Scope[] tableScopes)
     {
@@ -378,10 +387,157 @@ internal sealed class DeclarationsWalk
                 declarationOf.TryAdd(declaration.Node, declaration);
         }
 
+        // The direct-eval candidates in source order and the caller's records a direct eval at each receives (SJL-15.2 stage
+        // 5c), from the model's scopes, facts and arguments bindings; and, for sloppy eval code whose request gives its
+        // caller's records, the names they bind, which the alias pass and the resolutions read.
+        var (directEvalCalls, callerScopesOf) = CallerChains();
+        var callerNames = CallerNames(scopeList);
+
         // The resolutions and the environment facts (SJL-15.2 stage 5a), from the lists the walk recorded, and the Annex B
         // aliases (SJL-15.2 stage 5b), from the model's scopes and facts.
-        var (resolutionOf, environmentOf, annexBAliasOf) = Resolutions(scopeList, functionList, declarationOf);
-        return new SemanticModel(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), scopeOf!, parentOf!, declarationOf, factsOf!, targetOf!, privateOf!, privateEnvironmentOf!, resolutionOf, environmentOf, annexBAliasOf);
+        var (resolutionOf, environmentOf, annexBAliasOf) = Resolutions(scopeList, functionList, declarationOf, callerNames);
+        return new SemanticModel(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), scopeOf!, parentOf!, declarationOf, factsOf!, targetOf!, privateOf!, privateEnvironmentOf!, resolutionOf, environmentOf, annexBAliasOf,
+            directEvalCalls, callerScopesOf);
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // The caller's records of eval code (SJL-15.2 stage 5c), finished after the walk from the model's scopes.
+
+    /// <summary>
+    /// The direct-eval candidates in source order, and for each the caller's records a direct <c>eval</c> there receives
+    /// (the session's decision D-js-caller-scopes; PerformEval steps 16.a and 16.b, FunctionDeclarationInstantiation steps
+    /// 19 to 32, EvalDeclarationInstantiation step 3.d): from the call's scope outward, the declarative records up to and
+    /// not including the variable environment of the code that holds the call, an arrow's included, object records left
+    /// out, innermost first; for a call in sloppy eval code, the request's own records appended, or null where it gives
+    /// none. One entry per model scope, shared by every chain that holds it, each name once in declaration order. Every map
+    /// here is only looked up.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s19.2.1.1 PerformEval steps 16-18, s10.2.11 FunctionDeclarationInstantiation steps 19-32, s19.2.1.3 EvalDeclarationInstantiation step 3.d, JSD-0080 inherited context; IP=Low; Security=Medium; Resources=1; Fingerprint=7AB278
+    // Hairs-Human:        PENDING
+    private (IReadOnlyList<CallExpression> Calls, Dictionary<CallExpression, IReadOnlyList<CallerScope>?> ScopesOf) CallerChains()
+    {
+        var ordered = new List<(int Start, int Index, CallExpression Call, SyntaxNode Owner)>(candidates!.Count);
+        for (var i = 0; i < candidates.Count; i++)
+            ordered.Add((candidates[i].Call.Span.Offset, i, candidates[i].Call, candidates[i].Owner));
+        ordered.Sort(static (a, b) => a.Start != b.Start ? a.Start.CompareTo(b.Start) : a.Index.CompareTo(b.Index));
+
+        var entries = new Dictionary<Scope, CallerScope>(ReferenceEqualityComparer.Instance);
+        CallerScope Entry(Scope scope, bool lexicalOnly, bool isCatch, string? arguments)
+        {
+            if (entries.TryGetValue(scope, out var known))
+                return known;
+            var names = new List<string>();
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var declaration in scope.Declarations)
+            {
+                if ((!lexicalOnly || declaration.IsLexical) && seen.Add(declaration.Name))
+                    names.Add(declaration.Name);
+            }
+
+            if (arguments is not null && seen.Add(arguments))
+                names.Add(arguments);
+            var entry = new CallerScope { Names = names, IsCatch = isCatch };
+            entries[scope] = entry;
+            return entry;
+        }
+
+        var calls = new CallExpression[ordered.Count];
+        var scopesOf = new Dictionary<CallExpression, IReadOnlyList<CallerScope>?>(ReferenceEqualityComparer.Instance);
+        for (var i = 0; i < ordered.Count; i++)
+        {
+            var (_, _, call, owner) = ordered[i];
+            calls[i] = call;
+            var chain = new List<CallerScope>();
+            var inherited = false;
+            for (var scope = scopeOf![call]; scope is not null; scope = parentOf![scope])
+            {
+                var stop = true;
+                switch (scope.Kind)
+                {
+                    case ScopeKind.With:
+                        // An object record: neither walk of EvalDeclarationInstantiation reads it.
+                        stop = false;
+                        break;
+                    case ScopeKind.Block or ScopeKind.Switch or ScopeKind.For:
+                        chain.Add(Entry(scope, lexicalOnly: false, isCatch: false, arguments: null));
+                        stop = false;
+                        break;
+                    case ScopeKind.Catch:
+                        // A catch without a parameter has no environment (clause 14.15.2).
+                        if (((CatchClause)scope.Node).Parameter is not null)
+                            chain.Add(Entry(scope, lexicalOnly: false, isCatch: true, arguments: null));
+                        stop = false;
+                        break;
+                    case ScopeKind.ClassBody:
+                        // A class inside the code that holds the call; the class around a field initialiser is the first
+                        // scope outside it, whose lexical environment is its variable environment.
+                        if (owner is not FieldDefinition field || scope.Node.Span.Offset > field.Span.Offset || End(field) > End(scope.Node))
+                        {
+                            chain.Add(Entry(scope, lexicalOnly: false, isCatch: false, arguments: null));
+                            stop = false;
+                        }
+
+                        break;
+                    case ScopeKind.Function:
+                        // A sloppy function's LexicalEnvironment over its VariableEnvironment (FunctionDeclarationInstantiation
+                        // step 32.b); a strict one's is one environment (step 31.a).
+                        if (!factsOf![scope.Node].IsStrict)
+                            chain.Add(Entry(scope, lexicalOnly: true, isCatch: false, arguments: null));
+                        break;
+                    case ScopeKind.Parameters:
+                        // A call in sloppy parameters with expressions: their environment over calleeEnv, the variable
+                        // environment (steps 19 and 20), with the arguments binding (step 22.d.i); strict, env is calleeEnv.
+                        if (!factsOf![scope.Node].IsStrict)
+                            chain.Add(Entry(scope, lexicalOnly: false, isCatch: false, arguments: argumentsOf!.ContainsKey(scope.Node) ? "arguments" : null));
+                        break;
+                    case ScopeKind.Script when factsOf![scope.Node] is { Kind: FunctionKind.EvalCode, IsStrict: false }:
+                        // Sloppy eval code's own LexicalEnvironment, over the request's caller's records (PerformEval step 16.a).
+                        chain.Add(Entry(scope, lexicalOnly: true, isCatch: false, arguments: null));
+                        inherited = true;
+                        break;
+                }
+
+                if (stop)
+                    break;
+            }
+
+            if (!inherited)
+                scopesOf[call] = Array.AsReadOnly(chain.ToArray());
+            else if (request.Context!.CallerScopes is { } outer)
+            {
+                chain.AddRange(outer);
+                scopesOf[call] = Array.AsReadOnly(chain.ToArray());
+            }
+            else
+                scopesOf[call] = null;
+        }
+
+        return (Array.AsReadOnly(calls), scopesOf);
+    }
+
+    /// <summary>
+    /// For sloppy eval code whose request gives its caller's records (SJL-15.2 stage 5c), every name they bind, and the
+    /// names a record that is not a <c>Catch</c> clause's binds; null otherwise, where nothing reads the records.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s19.2.1.3 EvalDeclarationInstantiation steps 3.d 13.b.ii.4, Annex B.3.4; IP=Low; Security=Medium; Resources=1; Fingerprint=5347D1
+    // Hairs-Human:        PENDING
+    private (HashSet<string> Any, HashSet<string> OutsideCatch)? CallerNames(Scope[] scopeList)
+    {
+        if (factsOf![scopeList[0].Node] is not { Kind: FunctionKind.EvalCode, IsStrict: false } || request.Context!.CallerScopes is not { } callers)
+            return null;
+        var any = new HashSet<string>(StringComparer.Ordinal);
+        var outsideCatch = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var caller in callers)
+        {
+            foreach (var name in caller.Names)
+            {
+                any.Add(name);
+                if (!caller.IsCatch)
+                    outsideCatch.Add(name);
+            }
+        }
+
+        return (any, outsideCatch);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -394,9 +550,10 @@ internal sealed class DeclarationsWalk
     /// the scope that holds its declaration; the arguments object's need; and one <see cref="EnvironmentFacts"/> per facts
     /// entry. Every map and set here is only looked up; every order comes from the walk's lists or the model's.
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, s10.2.11 FunctionDeclarationInstantiation steps 15-30, s19.2.1.1 PerformEval steps 16-18, JSD-0080 reference resolution; IP=Low; Security=Medium; Resources=1; Fingerprint=AD4C29
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, s10.2.11 FunctionDeclarationInstantiation steps 15-30, s19.2.1.1 PerformEval steps 16-18, JSD-0080 reference resolution; IP=Low; Security=Medium; Resources=1; Fingerprint=73297E
     // Hairs-Human:        PENDING
-    private (Dictionary<SyntaxNode, Resolution> Resolutions, Dictionary<SyntaxNode, EnvironmentFacts> Environments, Dictionary<Declaration, Declaration> AnnexBAliases) Resolutions(Scope[] scopeList, FunctionFacts[] functionList, Dictionary<SyntaxNode, Declaration> declarationOf)
+    private (Dictionary<SyntaxNode, Resolution> Resolutions, Dictionary<SyntaxNode, EnvironmentFacts> Environments, Dictionary<Declaration, Declaration> AnnexBAliases) Resolutions(Scope[] scopeList, FunctionFacts[] functionList, Dictionary<SyntaxNode, Declaration> declarationOf,
+        (HashSet<string> Any, HashSet<string> OutsideCatch)? callerNames)
     {
         // Each facts node's own candidates, by where they stand, and the owners of the arguments object they may read: the
         // innermost facts node past arrows (an arrow has no arguments of its own).
@@ -423,7 +580,7 @@ internal sealed class DeclarationsWalk
 
         // The Annex B aliases (SJL-15.2 stage 5b), before the scopes that may gain bindings, which they join only for the
         // name arguments.
-        var aliases = AnnexBAliases(scopeList, parametersOf);
+        var aliases = AnnexBAliases(scopeList, parametersOf, callerNames?.OutsideCatch);
 
         // The scopes a sloppy direct eval may add to (PerformEval step 16.b): a function's own variable environment, its
         // Function scope where it is separate (FunctionDeclarationInstantiation step 30) and its Parameters scope where it
@@ -442,7 +599,7 @@ internal sealed class DeclarationsWalk
 
         var program = factsOf![scopeList[0].Node];
         var isEval = program.Kind == FunctionKind.EvalCode;
-        var pass = new ResolutionPass(parentOf!, gaining, argumentsOf!, isEval, isEval && !program.IsStrict ? scopeList[0] : null, aliases.Bound, aliases.ArgumentsGains);
+        var pass = new ResolutionPass(parentOf!, gaining, argumentsOf!, isEval, isEval && !program.IsStrict ? scopeList[0] : null, aliases.Bound, aliases.ArgumentsGains, callerNames?.Any);
 
         // The references and the bindings resolved when they run, in the walk's order; the arguments objects a reference
         // reads, by its binding or by a top-level var of its name (FunctionDeclarationInstantiation steps 29 and 30).
@@ -496,9 +653,10 @@ internal sealed class DeclarationsWalk
     /// and name; and the scopes that may gain <c>arguments</c> by a block function's evaluation. Every map and set here is only
     /// looked up. Empty with Annex B off.
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Annex B.3.2, s10.2.11 FunctionDeclarationInstantiation step 32.a, GlobalDeclarationInstantiation step 12, EvalDeclarationInstantiation step 13, JSD-0080 Annex B aliases; IP=Low; Security=Medium; Resources=1; Fingerprint=C3B584
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 Annex B.3.2, s10.2.11 FunctionDeclarationInstantiation step 32.a, GlobalDeclarationInstantiation step 12, EvalDeclarationInstantiation step 13, JSD-0080 Annex B aliases; IP=Low; Security=Medium; Resources=1; Fingerprint=CF7254
     // Hairs-Human:        PENDING
-    private (Dictionary<Declaration, Declaration> AliasOf, Dictionary<(Scope Scope, string Name), Declaration> Bound, HashSet<Scope> ArgumentsGains) AnnexBAliases(Scope[] scopeList, Dictionary<SyntaxNode, Scope> parametersOf)
+    private (Dictionary<Declaration, Declaration> AliasOf, Dictionary<(Scope Scope, string Name), Declaration> Bound, HashSet<Scope> ArgumentsGains) AnnexBAliases(Scope[] scopeList, Dictionary<SyntaxNode, Scope> parametersOf,
+        HashSet<string>? callerLexical)
     {
         var aliasOf = new Dictionary<Declaration, Declaration>(ReferenceEqualityComparer.Instance);
         var bound = new Dictionary<(Scope Scope, string Name), Declaration>(ScopeNameComparer.Instance);
@@ -515,6 +673,11 @@ internal sealed class DeclarationsWalk
             foreach (var declaration in scope.Declarations)
             {
                 if (!declaration.IsBlockFunction || AnnexBVarScope(scope, declaration) is not { } varScope)
+                    continue;
+
+                // Sloppy eval code's alias, withheld where a caller's record that is not a Catch clause's binds the name
+                // (EvalDeclarationInstantiation step 13.b.ii.4; SJL-15.2 stage 5c); null where the request gives none.
+                if (callerLexical is not null && factsOf![varScope.Node].Kind == FunctionKind.EvalCode && callerLexical.Contains(declaration.Name))
                     continue;
                 var existing = AnnexBExisting(varScope, declaration.Name);
                 admitted.Add((declaration, varScope, existing));
@@ -720,10 +883,10 @@ internal sealed class DeclarationsWalk
     /// from a scope, a <c>with</c> scope and a scope a sloppy direct <c>eval</c> may add to being dynamic entries, a scope
     /// that binds the name ending it, and the chain's end being inherited for eval code and global otherwise.
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, s14.11.2 with statement, s19.2.1.1 PerformEval step 16.b, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=FA5680
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, s14.11.2 with statement, s19.2.1.1 PerformEval step 16.b, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=E75E20
     // Hairs-Human:        PENDING
     private sealed class ResolutionPass(Dictionary<Scope, Scope?> parentOf, HashSet<Scope> gaining, Dictionary<SyntaxNode, Declaration> argumentsOf, bool inherited, Scope? sloppyEvalScope,
-        Dictionary<(Scope Scope, string Name), Declaration> aliases, HashSet<Scope> argumentsGains)
+        Dictionary<(Scope Scope, string Name), Declaration> aliases, HashSet<Scope> argumentsGains, HashSet<string>? callerNames)
     {
         // Hairs-AI:           Origin=AI; Spec=JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=4DB646
         // Hairs-Human:        PENDING
@@ -733,7 +896,7 @@ internal sealed class DeclarationsWalk
         private readonly Dictionary<Scope, Dictionary<string, Declaration>> byName = new(ReferenceEqualityComparer.Instance);
 
         /// <summary>The resolution of a name standing in a scope.</summary>
-        // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=77ACB9
+        // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=77CC36
         // Hairs-Human:        PENDING
         internal Resolution Lookup(Scope start, string name)
         {
@@ -753,7 +916,7 @@ internal sealed class DeclarationsWalk
 
                 if (Binding(scope, name) is { } declaration)
                 {
-                    end = Bound(scope, declaration);
+                    end = Bound(scope, declaration, looked: true);
                     break;
                 }
 
@@ -779,16 +942,18 @@ internal sealed class DeclarationsWalk
         }
 
         /// <summary>The resolution of a name a scope binds, as a lookup that reaches the scope answers it.</summary>
-        // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=7885B2
+        // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=157688
         // Hairs-Human:        PENDING
-        internal Resolution At(Scope scope, string name) => Bound(scope, Binding(scope, name)!);
+        internal Resolution At(Scope scope, string name) => Bound(scope, Binding(scope, name)!, looked: false);
 
         // Sloppy eval code's own var-scoped declaration is inherited (PerformEval step 16.b); every other bound name static.
-        // Hairs-AI:           Origin=AI; Spec=ECMA-262 s19.2.1.1 PerformEval step 16.b, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=D41C05
+        // From SJL-15.2 stage 5c a lookup that reaches it, and not a binding the variable environment instantiates, carries
+        // no declaration where a caller's record the request gives binds the name, which the lookup meets first.
+        // Hairs-AI:           Origin=AI; Spec=ECMA-262 s19.2.1.1 PerformEval step 16.b, s19.2.1.3 EvalDeclarationInstantiation step 3.d, Annex B.3.4, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=8714E1
         // Hairs-Human:        PENDING
-        private Resolution Bound(Scope scope, Declaration declaration) =>
+        private Resolution Bound(Scope scope, Declaration declaration, bool looked) =>
             ReferenceEquals(scope, sloppyEvalScope) && !declaration.IsLexical
-                ? new Resolution(ResolutionKind.Inherited, null, declaration, Array.Empty<Scope>(), null, null)
+                ? new Resolution(ResolutionKind.Inherited, null, looked && callerNames is not null && callerNames.Contains(declaration.Name) ? null : declaration, Array.Empty<Scope>(), null, null)
                 : new Resolution(ResolutionKind.Static, scope, declaration, Array.Empty<Scope>(), null, null);
 
         // The first declaration of a name in a scope, or its arguments binding (FunctionDeclarationInstantiation step 22).
@@ -970,7 +1135,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // The program.
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=CB34EC
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=1CCEDB
     // Hairs-Human:        PENDING
     private void WalkProgram(ProgramNode program, IReadOnlyList<Statement> body, bool closed)
     {
@@ -1020,6 +1185,29 @@ internal sealed class DeclarationsWalk
         var lexical = new List<Declaration>();
         var vars = new List<Declaration>();
         CollectList(body, top, isModule, lexical, vars);
+
+        // The model's rows of eval code against its caller's records (SJL-15.2 stage 5c; EvalDeclarationInstantiation step
+        // 3.d): for sloppy eval code whose request gives the records, each var-declared name, once, at its first
+        // declaration, that a record binds: EA0007 where the record is not a Catch clause's and Annex B is on (step
+        // 3.d.i.2.a.i.1), and EA0008, a host without Annex B.3.4, for every record with Annex B off (step 3.d.i.2.a.ii.1).
+        // Block functions are not var-declared names here. With the member off, or a null list, nothing is read.
+        if (semantics && goal == ParseGoal.Eval && !strict && request.Context!.CallerScopes is { } callers)
+        {
+            var held = new Dictionary<string, bool>(StringComparer.Ordinal);
+            foreach (var caller in callers)
+            {
+                foreach (var name in caller.Names)
+                    held[name] = (held.TryGetValue(name, out var outsideCatch) && outsideCatch) || !caller.IsCatch;
+            }
+
+            var collided = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var declaration in vars)
+            {
+                if (held.TryGetValue(declaration.Name, out var outsideCatch) && (outsideCatch || !annexB) && collided.Add(declaration.Name))
+                    Report(annexB ? SemanticRows.EA0007 : SemanticRows.EA0008, declaration.Node, declaration.Name);
+            }
+        }
+
         var scopeKind = isModule ? ScopeKind.Module : isDynamic ? ScopeKind.Function : ScopeKind.Script;
         var programScope = AddScope(program.Span.Offset, new Scope(scopeKind, program, Merge(lexical, vars)), programParameters);
         if (model)

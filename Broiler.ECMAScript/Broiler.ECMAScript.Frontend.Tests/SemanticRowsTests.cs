@@ -44,6 +44,10 @@ public sealed class SemanticRowsTests
     /// with <c>#</c>, read in their order from the options as written, not from the set, or an empty list where there are
     /// none; without <c>v</c> the list is null. <i>(Revised 2026-11-25, at SJL-15.2 stage 4, which added <c>v</c>; the
     /// eval context set no visible names.)</i>
+    /// Eval code's context also gives the caller's records, innermost first, from the option tokens in their written
+    /// order: <c>s:x,y</c> a record binding <c>x</c> and <c>y</c> (<c>s:</c> one binding nothing), <c>c:e</c> a
+    /// <c>Catch</c> clause's record binding <c>e</c>; <c>n0</c> an empty list; with none of them the list is null. <c>nb</c>
+    /// turns Annex B off, for every goal. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
     /// </summary>
     private static ParseRequest Request(string options, string text, bool model)
     {
@@ -54,6 +58,8 @@ public sealed class SemanticRowsTests
         var switches = ParseSwitches.For(goal);
         if (set.Contains("fs"))
             switches = switches with { ForcedStrict = true };
+        if (set.Contains("nb"))
+            switches = switches with { AnnexB = false };
         var limits = new ParseLimits { Reporting = set.Contains("all") ? ErrorReporting.AllErrors : ErrorReporting.FirstError };
         var kind = set.Contains("g") ? DynamicFunctionKind.Generator : set.Contains("a") ? DynamicFunctionKind.Async
             : set.Contains("ag") ? DynamicFunctionKind.AsyncGenerator : DynamicFunctionKind.Normal;
@@ -73,6 +79,7 @@ public sealed class SemanticRowsTests
                     InDerivedConstructor = dc,
                     InClassFieldInitializer = cf || set.Contains("cfo"),
                     VisiblePrivateNames = set.Contains("v") ? tokens.Where(static o => o.StartsWith('#')).ToArray() : null,
+                    CallerScopes = Callers(tokens),
                 },
             };
         }
@@ -87,6 +94,14 @@ public sealed class SemanticRowsTests
     }
 
     private static ParseResult Parse(string options, string text, bool model = true) => SyntaxParser.Parse(Request(options, text, model));
+
+    // The caller's records the options give (SJL-15.2 stage 5c): s: and c: tokens in their order, n0 an empty list, else null.
+    private static CallerScope[]? Callers(string[] tokens)
+    {
+        var records = tokens.Where(static t => t.StartsWith("s:", StringComparison.Ordinal) || t.StartsWith("c:", StringComparison.Ordinal))
+            .Select(static t => new CallerScope { Names = t[2..].Split(',', StringSplitOptions.RemoveEmptyEntries), IsCatch = t[0] == 'c' }).ToArray();
+        return records.Length > 0 || tokens.Contains("n0") ? records : null;
+    }
 
     private static LexicalRefusal Row(string name) =>
         (LexicalRefusal)typeof(SemanticRows).GetField(name, BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
@@ -209,6 +224,12 @@ public sealed class SemanticRowsTests
         new("EE0167", "", "this.#x;", "this", 0, "#x", "", "class C { #x; m() { this.#x; } }"),
         new("EE0177", "m", "this.#x;", "this", 0, "#x", "m", "class C { #x; m() { this.#x; } }"),
         new("EA0009", "e v", "this.#x;", "this", 0, "#x", "e v #x", "this.#x;"),
+
+        // Stage 5c: eval code's var against its caller's records (EvalDeclarationInstantiation step 3.d), at its first
+        // declaration with the name as the argument: EA0007 for a record that is not a Catch clause's with Annex B on,
+        // EA0008 for any record with it off. (Added 2026-11-26, at SJL-15.2 stage 5c.)
+        new("EA0007", "e s:x", "var x;", "x", 0, "x", "e s:y", "var x;"),
+        new("EA0008", "e c:e nb", "var e;", "e", 0, "e", "e c:e", "var e;"),
     ];
 
     public static TheoryData<Fixture> FixtureData()
@@ -304,6 +325,19 @@ public sealed class SemanticRowsTests
         { "EA0009", "e im fs v", "r += 'a'; this.#y" },
         { "EA0009", "e v", "r += 'a'; this.#x" },
         { "EA0009", "e v #x", "class D { m() { return this.#y; } }" },
+
+        // Stage 5c. (Added 2026-11-26, at SJL-15.2 stage 5c.)
+        { "EA0008", "e s:x nb", "var x;" },
+        { "EA0007", "e s:a s:x", "var x;" },
+        { "EA0007", "e c:x s:x", "var x;" },
+        { "EA0007", "e s:x im", "for (var x of []) ;" },
+        { "EA0007", "e s:x", "{ var x; }" },
+        { "EA0007", "e s:x", "if (1) { for (var x in o) ; }" },
+        { "EA0007", "e s:x", "function x() {}" },
+        { "EA0007", "e s:x", "L: function x() {}" },
+        { "EA0007", "e s:x", "try {} catch (e) { var x; }" },
+        { "EA0007", "e s:arguments if", "var arguments;" },
+        { "EA0008", "e c:e nb", "function e() {}" },
     };
 
     // The nearest admitted variants of the dynamic goals and of each eval context: accepted on and off.
@@ -391,6 +425,20 @@ public sealed class SemanticRowsTests
         { "e im fs v #s", "C.#s" },
         { "b", "this.#x;" },
         { "p", "a = this.#x" },
+
+        // Stage 5c: what the caller's records leave admitted. (Added 2026-11-26, at SJL-15.2 stage 5c.)
+        { "e s:x", "{ function x() {} }" },
+        { "e c:x", "{ function x() {} }" },
+        { "e s:x", "let x; const y = 1; class z {}" },
+        { "e s:x", "function f() { var x; }" },
+        { "e s:x", "'use strict'; var x;" },
+        { "e s:x fs", "var x;" },
+        { "e c:x", "var x = 2; function x() {}" },
+        { "e c:x", "for (var x of []) ;" },
+        { "e n0", "var x;" },
+        { "e s:", "var x;" },
+        { "e s:y,z c:w", "var x; function v() {}" },
+        { "s:x", "var x;" },
     };
 
     [Theory]
@@ -842,6 +890,8 @@ public sealed class SemanticRowsTests
     [InlineData("m", "this.#x; (", "EE0177")]
     [InlineData("e v", "this.#x; (", "EA0009")]
     [InlineData("", "class C { #x; m() { this.#x; } } this.#y; (", "EE0167")]
+    [InlineData("e s:x", "var x; (", "EA0007")]
+    [InlineData("e s:x c:y nb", "var x; var y; (", "EA0008 EA0008")]
     public void The_partial_walk_reports_the_rows_before_a_grammar_refusal_with_the_member_on(string options, string text, string rows)
     {
         var codes = rows.Split(' ').Select(Code).ToArray();
@@ -869,5 +919,96 @@ public sealed class SemanticRowsTests
         var on = Parse("e all", "this.#x; (");
         Assert.Single(off.Diagnostics);
         Assert.Equal(Describe(off), Describe(on));
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // Eval code against its caller's records (SJL-15.2 stage 5c; the session's decision D-js-caller-scope-rows).
+    // (Added 2026-11-26, at SJL-15.2 stage 5c.)
+
+    /// <summary>
+    /// The rows' places: each colliding name once, at its first var-scoped declaration in source order, with the name as the
+    /// argument; under all errors one row per name; a block function is no var-declared name; with Annex B on a Catch
+    /// clause's record refuses nothing, with it off every record refuses (EA0008); strict eval code, by its directive or by
+    /// the forced switch, refuses nothing; and a caller's row before the program's own conflict, which is keyed at its
+    /// close. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    [Fact]
+    public void Each_caller_row_is_placed_at_the_first_declaration_of_its_name()
+    {
+        const string text = "var a; { var x; } var y, x; function y() {}";
+        Assert.Equal(new[] { (Code("EA0007"), Offset(text, "x", 0)), (Code("EA0007"), Offset(text, "y", 0)) }, Reported("e s:x c:z s:y all", text));
+        Assert.Equal(new[] { "x", "y" }, Parse("e s:x c:z s:y all", text).Diagnostics.Select(static d => d.Arguments.Single()));
+        Assert.Equal(new[] { (Code("EA0007"), Offset(text, "x", 0)) }, Reported("e s:x c:z s:y", text));
+        Assert.Equal(new[] { (Code("EA0008"), Offset(text, "a;", 0)), (Code("EA0008"), Offset(text, "x", 0)) }, Reported("e c:a s:x nb all", text));
+        Assert.Empty(Reported("e c:a c:x c:y all", text));
+        Assert.Empty(Reported("e s:x,y fs all", text));
+        Assert.Empty(Reported("e s:x,y all", "'use strict'; " + text));
+        Assert.Empty(Reported("e s:x all", "{ function x() {} } if (1) function x() {}"));
+
+        // A scope's own conflict is keyed at the program's close, after a caller's row.
+        const string both = "var x; let y; var y;";
+        var conflict = Parse("e all", both, model: false).Diagnostics.Single();
+        Assert.Equal(new[] { Code("EA0007"), conflict.Code }, Reported("e s:x all", both).Select(static r => r.Code));
+        Assert.Equal(new[] { conflict.Code }, Parse("e s:x all", both, model: false).Diagnostics.Select(static d => d.Code));
+    }
+
+    /// <summary>
+    /// With the member off nothing reads the caller's records (SJL-15.2 stage 5c; stage 4's off-path list test, B4's
+    /// form): the same eval code with no list, an empty one, colliding ones and a Catch clause's gives the same outcome,
+    /// the same diagnostics and the same dump, under all errors, in each caller's context and with Annex B off too. Part
+    /// B's identity runs send no list and cannot show it. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    [Fact]
+    public void With_the_member_off_eval_code_s_caller_records_are_read_nowhere()
+    {
+        var sources = new[]
+        {
+            "var x;", "var x = 1; x;", "function x() {}", "{ function x() {} } x;", "let x; var y;", "for (var x of []) ;",
+            "var x; with (o) { x; }", "var x; (", "'use strict'; var x;", "this.#x; var x;", "eval('var x');",
+        };
+        var compared = 0;
+        foreach (var source in sources)
+        {
+            foreach (var caller in new[] { "e", "e im fs", "e if", "e nb" })
+            {
+                var results = new[] { caller + " all", caller + " all n0", caller + " all s:x", caller + " all c:x", caller + " all s:y,x c:x" }
+                    .Select(o => Parse(o, source, model: false)).ToArray();
+                var dump = SyntaxDump.Dump(results[0]);
+                foreach (var result in results)
+                {
+                    Assert.True(result.Outcome == results[0].Outcome && Describe(result) == Describe(results[0]), caller + " " + source + ": " + Describe(result));
+                    Assert.True(SyntaxDump.Dump(result).AsSpan().SequenceEqual(dump), caller + " " + source + ": the dump differs");
+                    Assert.Null(result.Model);
+                }
+
+                compared++;
+            }
+        }
+
+        Assert.Equal(sources.Length * 4, compared);
+    }
+
+    /// <summary>
+    /// The rows answer the test262 files the stage read at the pin (by file name; the eval source as the file writes it, the
+    /// caller's records as its caller's chain gives them): a nested block's <c>let</c> refuses and a strict caller's does
+    /// not; a function's top-level <c>let</c> refuses, its lexical environment over its variable environment; a parameter's
+    /// name, and a non-arrow's <c>arguments</c> in its parameters, refuse; an arrow's parameters give no <c>arguments</c>
+    /// unless one is so named; and a simple catch parameter admits every var-scoped form with Annex B on.
+    /// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// </summary>
+    [Theory]
+    [InlineData("var-env-lower-lex-non-strict.js", "e s: s:x if", "var x;", "EA0007")]
+    [InlineData("var-env-lower-lex-strict-caller.js", "e s: s:x if fs", "var x;", "")]
+    [InlineData("scope-body-lex-distinct.js", "e s:x if", "var x;", "EA0007")]
+    [InlineData("eval-var-scope-syntax-err.js", "e s:a,arguments if", "var a = 42", "EA0007")]
+    [InlineData("func-decl-fn-body-cntns-arguments-lex-bind-declare-arguments.js", "e s:p,arguments if", "var arguments", "EA0007")]
+    [InlineData("func-decl-fn-body-cntns-arguments-var-bind-declare-arguments.js", "e s:p,arguments if", "var arguments", "EA0007")]
+    [InlineData("arrow-fn-a-following-parameter-is-named-arguments-arrow-func-declare-arguments-assign.js", "e s:p,arguments", "var arguments = 'param'", "EA0007")]
+    [InlineData("arrow-fn-no-pre-existing-arguments-bindings-are-present-arrow-func-declare-arguments-assign.js", "e s:p", "var arguments = 'param'", "")]
+    [InlineData("var-env-lower-lex-catch-non-strict.js", "e s: c:err", "function err() {} function* err() {} async function err() {} async function* err() {} var err; for (var err; false; ) {} for (var err in []) {} for (var err of []) {}", "")]
+    public void The_test262_files_read_at_the_pin_are_answered(string file, string options, string text, string row)
+    {
+        var result = Parse(options + " all", text);
+        Assert.True(row.Length == 0 ? result.Outcome == ParseOutcome.Accepted : result.Diagnostics.Select(static d => d.Code).Distinct().SequenceEqual([Code(row)]), file + ": " + Describe(result));
     }
 }

@@ -15,6 +15,9 @@ namespace Broiler.ECMAScript.Runners;
 /// when group <c>lb1</c> was answered; it read "(milestone SJL-15.2, from stage 2; the session's decisions D-js-adapter of
 /// 2026-11-24 and D-js-adapter-form of 2026-11-25): the <c>semantics</c> area's vectors (corpus revision 42,
 /// <c>conformance/vectors/semantics/</c>) whose row the semantic model reports, parsed".)</i>
+/// From stage 5c (the session's decision D-js-adapter-caller-scopes) a <c>DirectEval</c> vector's eval code also receives
+/// its caller's records, and a direct <c>eval</c> the eval code itself holds is followed. <i>(Added 2026-11-26, at SJL-15.2
+/// stage 5c.)</i>
 /// </summary>
 /// <remarks>
 /// <para>
@@ -52,6 +55,19 @@ namespace Broiler.ECMAScript.Runners;
 /// (PerformEval step 10). The eval code is then parsed".)</i> <i>(Revised 2026-11-26, at SJL-15.2 stage 5a, when
 /// resolution joined the model; it read "Whether a name <c>eval</c> is the intrinsic one is not resolved: resolution is a
 /// later stage's.")</i>
+/// From stage 5c the inherited context also carries the caller's records (<see cref="InheritedContext.CallerScopes"/>),
+/// the Script model's <see cref="SemanticModel.CallerScopesOf"/> for the call, its candidate in
+/// <see cref="SemanticModel.DirectEvalCalls"/> being the one whose callee starts at the <c>eval</c> token, so that a Script's
+/// top-level call passes an empty list, never null. And where the eval code is accepted and itself holds exactly one
+/// <c>eval</c> name called with one string literal, by the same rule applied to the eval code's tokens, that inner eval code
+/// is parsed in the context the eval code's model gives it: the flags of the innermost function that is not an arrow and
+/// holds the call, the outer request's where that is the eval code itself, PerformEval's running context there being the
+/// outer eval's; the innermost holder's strictness; the private names visible at the call, the outer request's appended,
+/// each once; and <c>CallerScopesOf</c> of the inner call, which appends the outer request's records. That repeats while
+/// each level holds such a call, every literal shorter than the source holding it, and the innermost parse is the answer,
+/// a refusal at any level being one (the session's decision D-js-adapter-caller-scopes). The Script's rule, "the Script
+/// holding exactly one <c>eval</c> name", and "more than one <c>eval</c> name, is not implemented" stay the Script's.
+/// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
 /// </para>
 /// <para>
 /// <b>What it answers</b> is the syntax area's rendering (<see cref="RenderParse"/>): <c>error: SyntaxError</c> for a
@@ -80,6 +96,9 @@ internal sealed partial class AlgorithmsLibrary
     /// names; group <c>pn1</c> stays unanswered, its vectors naming no row and two of them expecting a value the Script
     /// computes after catching the eval code's refusal (the session's decision D-js-adapter-visible-names).
     /// <i>(Added 2026-11-25, at SJL-15.2 stage 4.)</i>
+    /// Stage 5c's, eval code's <c>var</c>s against its caller's records
+    /// (EvalDeclarationInstantiation step 3.d); the vectors of EA0006, a row only a run reaches, stay unanswered.
+    /// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
     /// </summary>
     internal static readonly IReadOnlyList<string> SemanticsAnsweredRows =
     [
@@ -102,6 +121,9 @@ internal sealed partial class AlgorithmsLibrary
 
         // Stage 4: private names: AllPrivateIdentifiersValid of a Script and of a Module, and of eval code against the private names visible at the call.
         "EE0167", "EE0177", "EA0009",
+
+        // Stage 5c: eval code's var against the caller's records, with Annex B on and off.
+        "EA0007", "EA0008",
     ];
 
     /// <summary>
@@ -204,7 +226,7 @@ internal sealed partial class AlgorithmsLibrary
             case ScriptEvaluationOperation:
                 return RenderParse(SyntaxParser.Parse(SemanticsScriptRequest(source)).Outcome);
             case DirectEvalOperation:
-                return DirectEvalRequest(source) is { } request ? RenderParse(SyntaxParser.Parse(request).Outcome) : EmptyLibrary.NotImplemented;
+                return DirectEvalRequest(source) is { } request ? RenderParse(DirectEvalParse(request).Outcome) : EmptyLibrary.NotImplemented;
             default:
                 return EmptyLibrary.NotImplemented;
         }
@@ -213,16 +235,53 @@ internal sealed partial class AlgorithmsLibrary
     /// <summary>
     /// The eval request a <c>DirectEval</c> vector's Script makes (see the type's remarks): the eval code of its one direct
     /// <c>eval</c> of a string literal, in the context and the strictness of the code that holds the call; null where the
-    /// Script is refused on the on path, or holds no such call, or more than one <c>eval</c> name.
+    /// Script is refused on the on path, or holds no such call, or more than one <c>eval</c> name. From stage 5c its context
+    /// also carries the call's records from the Script's model. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
     /// </summary>
     internal static ParseRequest? DirectEvalRequest(string script)
     {
         var parsed = SyntaxParser.Parse(SemanticsScriptRequest(script, retainTokens: true));
         if (parsed.Outcome != ParseOutcome.Accepted || parsed.Model is not { } model)
             return null;
+        return EvalRequestAt(model, parsed.Tokens, null);
+    }
 
+    /// <summary>
+    /// The parse a <c>DirectEval</c> vector is answered by (SJL-15.2 stage 5c; the session's decision
+    /// D-js-adapter-caller-scopes): the outer eval request's, and while the accepted eval code holds exactly one <c>eval</c>
+    /// of a string literal, the inner eval code's in the context its model gives it; the innermost parse. It takes only a
+    /// request that <c>DirectEvalRequest</c> or <c>EvalRequestAt</c> builds: each parse copies the members those set (the
+    /// source, the tables, the switches, the context and the limits), so a request with proposals, extensions, a dynamic
+    /// function's kind or a meter would be parsed without them.
+    /// </summary>
+    internal static ParseResult DirectEvalParse(ParseRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        for (var current = request; ;)
+        {
+            var parsed = SyntaxParser.Parse(new ParseRequest(current.Source, ParseGoal.Eval, current.UnicodeTables, current.RegularExpressions)
+            {
+                Switches = current.Switches,
+                Context = current.Context,
+                Limits = current.Limits,
+                BuildSemanticModel = true,
+                RetainTokens = true,
+            });
+            if (parsed.Outcome != ParseOutcome.Accepted || parsed.Model is not { } model || EvalRequestAt(model, parsed.Tokens, current) is not { } inner)
+                return parsed;
+            current = inner;
+        }
+    }
+
+    /// <summary>
+    /// The eval request of the one direct <c>eval</c> of a string literal that a unit's tokens hold (see the type's remarks),
+    /// from the unit's model; null where they hold none, or more than one <c>eval</c> name. <paramref name="outer"/> is the
+    /// request that parsed the unit when it is eval code, whose flags, private names and records the inner request inherits;
+    /// null for a Script.
+    /// </summary>
+    private static ParseRequest? EvalRequestAt(SemanticModel model, IReadOnlyList<Token> tokens, ParseRequest? outer)
+    {
         // The one eval name, called with one string literal, not a member's name.
-        var tokens = parsed.Tokens;
         var at = -1;
         string? code = null;
         var names = 0;
@@ -241,6 +300,17 @@ internal sealed partial class AlgorithmsLibrary
         }
 
         if (names != 1 || code is null)
+            return null;
+
+        // The candidate the call is: its callee starts at the eval token, the tokens holding it contiguous (SJL-15.2 stage 5c).
+        CallExpression? call = null;
+        foreach (var candidate in model.DirectEvalCalls)
+        {
+            if (candidate.Callee.Span.Offset == at)
+                call = candidate;
+        }
+
+        if (call is null)
             return null;
 
         // The functions whose code holds the call, outermost first (the model's order is by start, then by creation).
@@ -265,6 +335,8 @@ internal sealed partial class AlgorithmsLibrary
                 continue;
             (inFunction, inMethod, inDerivedConstructor, inClassFieldInitializer) = holding[i].Kind switch
             {
+                // Eval code holding the call: PerformEval's running context is the outer eval's (SJL-15.2 stage 5c).
+                FunctionKind.EvalCode when outer?.Context is { } context => (context.InFunction, context.InMethod, context.InDerivedConstructor, context.InClassFieldInitializer),
                 FunctionKind.Normal => (true, false, false, false),
                 FunctionKind.Method or FunctionKind.Getter or FunctionKind.Setter or FunctionKind.ClassConstructor or FunctionKind.StaticBlock => (true, true, false, false),
                 FunctionKind.DerivedConstructor => (true, true, true, false),
@@ -283,7 +355,8 @@ internal sealed partial class AlgorithmsLibrary
                 InMethod = inMethod,
                 InDerivedConstructor = inDerivedConstructor,
                 InClassFieldInitializer = inClassFieldInitializer,
-                VisiblePrivateNames = VisiblePrivateNames(model, at),
+                VisiblePrivateNames = Appended(VisiblePrivateNames(model, at), outer?.Context?.VisiblePrivateNames),
+                CallerScopes = model.CallerScopesOf(call),
             },
             BuildSemanticModel = true,
         };
@@ -329,6 +402,23 @@ internal sealed partial class AlgorithmsLibrary
         }
 
         return names;
+    }
+
+    // The names visible in eval code's classes, then its caller's, each once (EvalDeclarationInstantiation steps 4 to 6;
+    // SJL-15.2 stage 5c, for a nested eval).
+    private static IReadOnlyList<string> Appended(IReadOnlyList<string> names, IReadOnlyList<string>? outer)
+    {
+        if (outer is null)
+            return names;
+        var all = new List<string>(names);
+        var seen = new HashSet<string>(names, StringComparer.Ordinal);
+        foreach (var name in outer)
+        {
+            if (seen.Add(name))
+                all.Add(name);
+        }
+
+        return all;
     }
 
     /// <summary>

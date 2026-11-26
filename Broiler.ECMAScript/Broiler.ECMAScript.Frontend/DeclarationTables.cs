@@ -62,6 +62,9 @@ public enum ScopeKind
     /// For resolution, a sloppy function's scope also binds the name of each Annex B alias of its block functions
     /// (<see cref="SemanticModel.AnnexBAlias"/>, a <see cref="BindingKind.BlockFunctionAlias"/> declaration), which no
     /// scope's <see cref="Scope.Declarations"/> holds. <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
+    /// The split is what <see cref="SemanticModel.CallerScopesOf"/> reads for a direct <c>eval</c> in a sloppy function's
+    /// body: the record between the call and the VariableEnvironment holds the <see cref="Declaration.IsLexical"/>
+    /// declarations alone. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
     /// </summary>
     Function = 2,
 
@@ -76,6 +79,9 @@ public enum ScopeKind
     /// declaration, where ECMA-262 clause 14.15.2 (<c>Catch : catch Block</c>) creates no environment; the semantic model
     /// keeps it as the tables have it, and its <see cref="SemanticModel.ParentOf"/> is then the parent of the clause's
     /// block. <i>(Added 2026-11-24, at SJL-15.2 stage 1.)</i>
+    /// A Catch scope with a parameter stands for the record EvalDeclarationInstantiation calls "the Environment Record for a
+    /// |Catch| clause", whatever the parameter's form, which <see cref="SemanticModel.CallerScopesOf"/> marks
+    /// <see cref="CallerScope.IsCatch"/>. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
     /// </summary>
     Catch = 5,
 
