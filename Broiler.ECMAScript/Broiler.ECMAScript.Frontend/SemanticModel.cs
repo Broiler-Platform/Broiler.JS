@@ -144,13 +144,13 @@ public enum FunctionKind
 /// <see cref="FactsOf"/>, both <see cref="TargetOf(BreakStatement)"/> overloads, <see cref="PrivateEnvironmentOf"/> and
 /// <see cref="Resolve(PrivateIdentifier)"/> throw <see cref="ArgumentException"/>
 /// for a node that is not in the model's tree, and <see cref="ParentOf"/> for a scope that is not one of the model's.
-/// So do the <see cref="Resolve(Identifier)"/> and <see cref="Resolve(BindingIdentifier)"/> overloads and
-/// <see cref="EnvironmentOf"/>. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
 /// <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when <c>TargetOf</c> joined them; it read "<see cref="ScopeOf"/>,
 /// <see cref="DeclarationOf"/> and <see cref="FactsOf"/> throw <see cref="ArgumentException"/> for a node that is not in
 /// the model's tree".)</i> <i>(Revised 2026-11-25, at SJL-15.2 stage 4, when <c>PrivateEnvironmentOf</c> and
 /// <c>Resolve</c> joined them; it read "<see cref="FactsOf"/> and both <see cref="TargetOf(BreakStatement)"/> overloads
 /// throw".)</i>
+/// So do the <see cref="Resolve(Identifier)"/> and <see cref="Resolve(BindingIdentifier)"/> overloads and
+/// <see cref="EnvironmentOf"/>. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
 /// </para>
 /// <para><b>Immutable, and safe to call concurrently</b> (convention 10).</para>
 /// </remarks>

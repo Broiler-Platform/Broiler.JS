@@ -1486,7 +1486,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     public void The_dump_s_model_section_holds_the_environments_and_the_resolutions()
     {
         const string text = "function f(a) { with (a) { return arguments; } }";
-        var (on, model) = Model(text);
+        var (on, model) = Resolved(text);
         var lines = System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(on)).Split('\n');
         var nodes = Nodes(on.Tree!);
         string Index(SyntaxNode node) => nodes.FindIndex(n => ReferenceEquals(n, node)).ToString(CultureInfo.InvariantCulture);
@@ -1553,16 +1553,27 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         return r.Fallback;
     }
 
+    // A fixture's model, its tree also put through the population's check (Complete) beside the off path's parse, on the
+    // documented stack, so that every Identifier and BindingIdentifier of every fixture is checked, not only those the
+    // fixture names.
+    private static (ParseResult Result, SemanticModel Model) Resolved(string text, ParseGoal goal = ParseGoal.Script)
+    {
+        var (result, model) = Model(text, goal);
+        OnDocumentedStack(() => Complete("fixture \"" + text + "\"", result, Parse(text, goal, model: false)));
+        return (result, model);
+    }
+
     private static (ParseResult Result, SemanticModel Model) SloppyEvalModel(string text, bool strict = false)
     {
-        var request = new ParseRequest(new SourceText(text), ParseGoal.Eval, UnicodeDataHome.Tables, NoValidator.Instance)
+        ParseResult Parsed(bool model) => SyntaxParser.Parse(new ParseRequest(new SourceText(text), ParseGoal.Eval, UnicodeDataHome.Tables, NoValidator.Instance)
         {
-            BuildSemanticModel = true,
+            BuildSemanticModel = model,
             Switches = ParseSwitches.For(ParseGoal.Eval) with { ForcedStrict = strict },
             Context = new InheritedContext { InFunction = true },
-        };
-        var result = SyntaxParser.Parse(request);
+        });
+        var result = Parsed(true);
         Assert.True(result.Outcome == ParseOutcome.Accepted, text + ": " + (result.Diagnostics.Count > 0 ? result.Diagnostics[0].Code : "-"));
+        OnDocumentedStack(() => Complete("fixture (eval code" + (strict ? ", strict" : string.Empty) + ") \"" + text + "\"", result, Parsed(false)));
         return (result, result.Model!);
     }
 
@@ -1571,7 +1582,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     public void The_arguments_probes_answer_the_binding_its_need_and_its_mapping()
     {
         // V001, ff3/0001: needed and mapped, the reference to the binding in the parameters' scope.
-        var (r, m) = Model("__reached = true; function f(a) { arguments[0] = 2; return a; } f(1)");
+        var (r, m) = Resolved("__reached = true; function f(a) { arguments[0] = 2; return a; } f(1)");
         var f = Fn(r, "f");
         var env = m.EnvironmentOf(f);
         Assert.NotNull(env.Arguments);
@@ -1585,13 +1596,13 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         IsGlobal(m.Resolve(Reference(r, "__reached")));
 
         // V002, ff3/0002: needed, not mapped.
-        (r, m) = Model("__reached = true; function f(a) { 'use strict'; arguments[0] = 2; return a; } f(1)");
+        (r, m) = Resolved("__reached = true; function f(a) { 'use strict'; arguments[0] = 2; return a; } f(1)");
         env = m.EnvironmentOf(Fn(r, "f"));
         Assert.True(env.ArgumentsNeeded);
         Assert.False(env.ArgumentsMapped);
 
         // V003, ff3/0003: needed by a direct-eval candidate, whose own callee the function's environment may shadow.
-        (r, m) = Model("__reached = true; function f() { return eval('arguments.length'); } f(1, 2)");
+        (r, m) = Resolved("__reached = true; function f() { return eval('arguments.length'); } f(1, 2)");
         f = Fn(r, "f");
         env = m.EnvironmentOf(f);
         Assert.True(env.ArgumentsNeeded);
@@ -1600,7 +1611,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         IsGlobal(IsDynamic(m.Resolve(Reference(r, "eval")), DynamicReason.SloppyDirectEval, Of(m, ScopeKind.Parameters, f)));
 
         // V004, ff3/0004: an arrow's reference reads the function's binding; the arrow has none.
-        (r, m) = Model("__reached = true; function f() { return (() => arguments[1])(); } f(1, 9)");
+        (r, m) = Resolved("__reached = true; function f() { return (() => arguments[1])(); } f(1, 9)");
         f = Fn(r, "f");
         var arrow = First<FunctionNode>(r, static n => n.IsArrow);
         IsStatic(m.Resolve(Reference(r, "arguments")), Of(m, ScopeKind.Parameters, f), m.EnvironmentOf(f).Arguments!);
@@ -1609,7 +1620,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         Assert.False(m.EnvironmentOf(arrow).ArgumentsNeeded);
 
         // V005, ff3/0005: a mention of eval that is no call is no candidate.
-        (r, m) = Model("__reached = true; function f() { var e = eval; return e('typeof arguments'); } f(1)");
+        (r, m) = Resolved("__reached = true; function f() { var e = eval; return e('typeof arguments'); } f(1)");
         env = m.EnvironmentOf(Fn(r, "f"));
         Assert.NotNull(env.Arguments);
         Assert.False(env.ArgumentsNeeded);
@@ -1617,7 +1628,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         IsGlobal(m.Resolve(Reference(r, "eval")));
 
         // V006, ff3/0006: the reference is the var's, which the arguments object initialises.
-        (r, m) = Model("__reached = true; function f() { var arguments; return typeof arguments; } f()");
+        (r, m) = Resolved("__reached = true; function f() { var arguments; return typeof arguments; } f()");
         f = Fn(r, "f");
         IsStatic(m.Resolve(Reference(r, "arguments")), Of(m, ScopeKind.Function, f), Decl(Of(m, ScopeKind.Function, f), "arguments"));
         Assert.NotNull(m.EnvironmentOf(f).Arguments);
@@ -1626,7 +1637,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         // V007, V008, ff3/0007, ff3/0008: a function declaration or a lexical declaration of the name, and no binding.
         foreach (var (text, kind) in new[] { ("__reached = true; function f() { function arguments() { return 4; } return arguments(); } f()", BindingKind.Function), ("__reached = true; function f() { let arguments = 6; return arguments; } f()", BindingKind.Let) })
         {
-            (r, m) = Model(text);
+            (r, m) = Resolved(text);
             f = Fn(r, "f");
             Assert.Null(m.EnvironmentOf(f).Arguments);
             Assert.False(m.EnvironmentOf(f).ArgumentsNeeded);
@@ -1636,7 +1647,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         }
 
         // ff3/0009: a parameter of the name, and no binding.
-        (r, m) = Model("function f(arguments) { return arguments; } f(5)");
+        (r, m) = Resolved("function f(arguments) { return arguments; } f(5)");
         f = Fn(r, "f");
         Assert.Null(m.EnvironmentOf(f).Arguments);
         IsStatic(m.Resolve(Reference(r, "arguments")), Of(m, ScopeKind.Parameters, f), Decl(Of(m, ScopeKind.Parameters, f), "arguments"));
@@ -1647,13 +1658,13 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     public void The_separate_variable_environment_probes_answer_their_bindings()
     {
         // V009, ff4/0001: the closure in the parameters skips the body.
-        var (r, m) = Model("__reached = true; var x = 'outer'; function f(a = () => x) { var x = 'inner'; return a(); } f()");
+        var (r, m) = Resolved("__reached = true; var x = 'outer'; function f(a = () => x) { var x = 'inner'; return a(); } f()");
         var f = Fn(r, "f");
         Assert.True(m.FactsOf(f).HasSeparateVariableEnvironment);
         IsStatic(m.Resolve(Reference(r, "x")), m.Scopes[0], Decl(m.Scopes[0], "x"));
 
         // V010, ff4/0002: the closure's a is the parameter, the body's the var.
-        (r, m) = Model("__reached = true; function f(a, b = function () { return a; }) { var a = 2; return a + ',' + b(); } f(1)");
+        (r, m) = Resolved("__reached = true; function f(a, b = function () { return a; }) { var a = 2; return a + ',' + b(); } f(1)");
         f = Fn(r, "f");
         IsStatic(m.Resolve(Reference(r, "a", 0)), Of(m, ScopeKind.Parameters, f), Decl(Of(m, ScopeKind.Parameters, f), "a"));
         IsStatic(m.Resolve(Reference(r, "a", 1)), Of(m, ScopeKind.Function, f), Decl(Of(m, ScopeKind.Function, f), "a"));
@@ -1661,7 +1672,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         // V011, ff4/0003 and ff4/0004: the body's a is the var, with a separate environment and without one.
         foreach (var (text, separate) in new[] { ("__reached = true; function f(a = 1) { var a; return a; } f()", true), ("function f(a, b) { var a; return a; } f(3)", false) })
         {
-            (r, m) = Model(text);
+            (r, m) = Resolved(text);
             f = Fn(r, "f");
             Assert.Equal(separate, m.FactsOf(f).HasSeparateVariableEnvironment);
             IsStatic(m.Resolve(Reference(r, "a")), Of(m, ScopeKind.Function, f), Decl(Of(m, ScopeKind.Function, f), "a"));
@@ -1673,7 +1684,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     public void The_direct_eval_probes_answer_the_environments_that_may_gain_bindings()
     {
         // V012, ff5/0001: the function shares its parameters' environment, which may gain x.
-        var (r, m) = Model("__reached = true; var x = 'outer'; function f() { eval('var x = \"inner\"'); return x; } f()");
+        var (r, m) = Resolved("__reached = true; var x = 'outer'; function f() { eval('var x = \"inner\"'); return x; } f()");
         var f = Fn(r, "f");
         Assert.True(m.EnvironmentOf(f).DirectEvalInBody);
         Assert.False(m.FactsOf(f).HasSeparateVariableEnvironment);
@@ -1682,14 +1693,14 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         // V013, V014, ff5/0002, ff5/0003: no candidate.
         foreach (var text in new[] { "__reached = true; function f() { var x = 1; (0, eval)('var x = 2'); return x; } f()", "__reached = true; function f() { var x = 1; var e = eval; e('var x = 2'); return x; } f()" })
         {
-            (r, m) = Model(text);
+            (r, m) = Resolved(text);
             f = Fn(r, "f");
             Assert.False(m.EnvironmentOf(f).DirectEvalInBody);
             IsStatic(m.Resolve(Reference(r, "x")), Of(m, ScopeKind.Function, f), Decl(Of(m, ScopeKind.Function, f), "x"));
         }
 
         // V015, ff5/0004: the arrow's call is the arrow's.
-        (r, m) = Model("__reached = true; function f() { var x = 1; (() => eval('var x = 2'))(); return x; } f()");
+        (r, m) = Resolved("__reached = true; function f() { var x = 1; (() => eval('var x = 2'))(); return x; } f()");
         f = Fn(r, "f");
         var arrow = First<FunctionNode>(r, static n => n.IsArrow);
         Assert.True(m.EnvironmentOf(arrow).DirectEvalInBody);
@@ -1698,23 +1709,23 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         IsGlobal(IsDynamic(m.Resolve(Reference(r, "eval")), DynamicReason.SloppyDirectEval, Of(m, ScopeKind.Parameters, arrow)));
 
         // V016, ff5/0005: a call in a block is the function's; x is bound before the gaining scope.
-        (r, m) = Model("__reached = true; function f() { var x = 1; { eval('var x = 2'); } return x; } f()");
+        (r, m) = Resolved("__reached = true; function f() { var x = 1; { eval('var x = 2'); } return x; } f()");
         f = Fn(r, "f");
         Assert.True(m.EnvironmentOf(f).DirectEvalInBody);
         IsStatic(m.Resolve(Reference(r, "x")), Of(m, ScopeKind.Function, f), Decl(Of(m, ScopeKind.Function, f), "x"));
 
         // ff5/0006: a function the eval declares.
-        (r, m) = Model("function f() { eval('function g() { return 3; }'); return g(); } f()");
+        (r, m) = Resolved("function f() { eval('function g() { return 3; }'); return g(); } f()");
         f = Fn(r, "f");
         IsGlobal(IsDynamic(m.Resolve(Reference(r, "g")), DynamicReason.SloppyDirectEval, Of(m, ScopeKind.Parameters, f)));
 
         // V017, ff5/0007: strict, no gaining scope.
-        (r, m) = Model("__reached = true; function f() { 'use strict'; eval('var y = 1'); return typeof y; } f()");
+        (r, m) = Resolved("__reached = true; function f() { 'use strict'; eval('var y = 1'); return typeof y; } f()");
         Assert.False(m.EnvironmentOf(Fn(r, "f")).DirectEvalInBody);
         IsGlobal(m.Resolve(Reference(r, "y")));
 
         // ff5/0008: the function's gaining scope is not on the Script's chain.
-        (r, m) = Model("var y = 0; function f() { eval('var y = 1'); } f(); y");
+        (r, m) = Resolved("var y = 0; function f() { eval('var y = 1'); } f(); y");
         IsStatic(m.Resolve(Reference(r, "y")), m.Scopes[0], Decl(m.Scopes[0], "y"));
     }
 
@@ -1723,29 +1734,29 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     public void The_resolution_probes_answer_with_global_and_the_constant()
     {
         // V018, rs2/0001.
-        var (r, m) = Model("__reached = true; var x = 'g'; var o = { x: 'o' }; function f() { with (o) { return x; } } f()");
+        var (r, m) = Resolved("__reached = true; var x = 'g'; var o = { x: 'o' }; function f() { with (o) { return x; } } f()");
         var with = Of(m, ScopeKind.With, First<WithStatement>(r));
         IsStatic(IsDynamic(m.Resolve(Reference(r, "x")), DynamicReason.With, with), m.Scopes[0], Decl(m.Scopes[0], "x"));
         Assert.True(m.EnvironmentOf(Fn(r, "f")).ContainsWith);
 
         // V019, rs2/0002: the var's binding with an initialiser is looked up through the object environment.
-        (r, m) = Model("__reached = true; var o = { x: 1 }; with (o) { var x = 2; } o.x");
+        (r, m) = Resolved("__reached = true; var o = { x: 1 }; with (o) { var x = 2; } o.x");
         with = Of(m, ScopeKind.With, First<WithStatement>(r));
         IsStatic(IsDynamic(m.Resolve(Binding(r, "x")), DynamicReason.With, with), m.Scopes[0], Decl(m.Scopes[0], "x"));
         Assert.True(m.EnvironmentOf(r.Tree!).ContainsWith);
 
         // rs2/0003.
-        (r, m) = Model("function f(o) { with (o) { return typeof y; } } f({ y: 1 })");
+        (r, m) = Resolved("function f(o) { with (o) { return typeof y; } } f({ y: 1 })");
         IsGlobal(IsDynamic(m.Resolve(Reference(r, "y")), DynamicReason.With, Of(m, ScopeKind.With, First<WithStatement>(r))));
 
         // V020, V021.
-        (r, m) = Model("__reached = true; typeof undeclaredName");
+        (r, m) = Resolved("__reached = true; typeof undeclaredName");
         IsGlobal(m.Resolve(Reference(r, "undeclaredName")));
-        (r, m) = Model("__reached = true; undeclaredName");
+        (r, m) = Resolved("__reached = true; undeclaredName");
         IsGlobal(m.Resolve(Reference(r, "undeclaredName")));
 
         // V022: the constant, RS4 read from Resolve and IsMutable.
-        (r, m) = Model("__reached = true; const c = 1; var r; try { c = 2; } catch (e) { r = e.name; } r");
+        (r, m) = Resolved("__reached = true; const c = 1; var r; try { c = 2; } catch (e) { r = e.name; } r");
         var resolution = m.Resolve(Reference(r, "c"));
         IsStatic(resolution, m.Scopes[0], Decl(m.Scopes[0], "c"));
         Assert.False(resolution.Declaration!.IsMutable);
@@ -1760,54 +1771,54 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     public void Each_construct_resolves_as_its_environments_say()
     {
         // The closure in the parameters sees the outer x, not the body's.
-        var (r, m) = Model("var x; function f(a = () => x) { var x; }");
+        var (r, m) = Resolved("var x; function f(a = () => x) { var x; }");
         IsStatic(m.Resolve(Reference(r, "x")), m.Scopes[0], Decl(m.Scopes[0], "x"));
 
         // A named function expression's own name, and one named arguments, which the binding shadows.
-        (r, m) = Model("(function g() { return g; });");
+        (r, m) = Resolved("(function g() { return g; });");
         var g = Fn(r, "g");
         IsStatic(m.Resolve(Reference(r, "g")), Of(m, ScopeKind.FunctionName, g), Decl(Of(m, ScopeKind.FunctionName, g), "g"));
-        (r, m) = Model("(function arguments() { return arguments; });");
+        (r, m) = Resolved("(function arguments() { return arguments; });");
         var named = Fn(r, "arguments");
         IsStatic(m.Resolve(Reference(r, "arguments")), Of(m, ScopeKind.Parameters, named), m.EnvironmentOf(named).Arguments!);
 
         // A class's inner name in its heritage and its field initialiser, and the outer name outside.
-        (r, m) = Model("let D = class C extends (() => C, Object) { x = C; }; C;");
+        (r, m) = Resolved("let D = class C extends (() => C, Object) { x = C; }; C;");
         var classScope = Of(m, ScopeKind.ClassBody, First<ClassNode>(r));
         IsStatic(m.Resolve(Reference(r, "C", 0)), classScope, Decl(classScope, "C"));
         IsStatic(m.Resolve(Reference(r, "C", 1)), classScope, Decl(classScope, "C"));
         IsGlobal(m.Resolve(Reference(r, "C", 2)));
-        (r, m) = Model("class K { m() { return K; } } K;");
+        (r, m) = Resolved("class K { m() { return K; } } K;");
         classScope = Of(m, ScopeKind.ClassBody, First<ClassNode>(r));
         IsStatic(m.Resolve(Reference(r, "K", 0)), classScope, Decl(classScope, "K"));
         IsStatic(m.Resolve(Reference(r, "K", 1)), m.Scopes[0], Decl(m.Scopes[0], "K"));
         IsStatic(m.Resolve(Binding(r, "K")), m.Scopes[0], Decl(m.Scopes[0], "K"));
 
         // Annex B.3.4: the catch parameter, for the reference and for the var's binding with an initialiser.
-        (r, m) = Model("try {} catch (e) { var e; e; }");
+        (r, m) = Resolved("try {} catch (e) { var e; e; }");
         var catchScope = Only(m, ScopeKind.Catch);
         IsStatic(m.Resolve(Reference(r, "e")), catchScope, Decl(catchScope, "e"));
-        (r, m) = Model("try {} catch (e) { var e = 1; }");
+        (r, m) = Resolved("try {} catch (e) { var e = 1; }");
         catchScope = Only(m, ScopeKind.Catch);
         IsStatic(m.Resolve(Binding(r, "e", 1)), catchScope, Decl(catchScope, "e"));
         IsStatic(m.Resolve(Binding(r, "e", 0)), catchScope, Decl(catchScope, "e"));
 
         // with: the body's var, and a for-in head's binding without an initialiser.
-        (r, m) = Model("function f(o) { with (o) { var x; x; } }");
+        (r, m) = Resolved("function f(o) { with (o) { var x; x; } }");
         var f = Fn(r, "f");
         var with = Only(m, ScopeKind.With);
         IsStatic(IsDynamic(m.Resolve(Reference(r, "x")), DynamicReason.With, with), Of(m, ScopeKind.Function, f), Decl(Of(m, ScopeKind.Function, f), "x"));
         IsStatic(m.Resolve(Binding(r, "x")), Of(m, ScopeKind.Function, f), Decl(Of(m, ScopeKind.Function, f), "x"));
-        (r, m) = Model("function f(o) { with (o) { for (var x in o); } }");
+        (r, m) = Resolved("function f(o) { with (o) { for (var x in o); } }");
         f = Fn(r, "f");
         IsStatic(IsDynamic(m.Resolve(Binding(r, "x")), DynamicReason.With, Only(m, ScopeKind.With)), Of(m, ScopeKind.Function, f), Decl(Of(m, ScopeKind.Function, f), "x"));
 
         // A Script's lexical and var declarations, an undeclared name, and a Module's import.
-        (r, m) = Model("let l; var v; l; v; typeof undeclared;");
+        (r, m) = Resolved("let l; var v; l; v; typeof undeclared;");
         IsStatic(m.Resolve(Reference(r, "l")), m.Scopes[0], Decl(m.Scopes[0], "l"));
         IsStatic(m.Resolve(Reference(r, "v")), m.Scopes[0], Decl(m.Scopes[0], "v"));
         IsGlobal(m.Resolve(Reference(r, "undeclared")));
-        (r, m) = Model("import i from \"m\"; i; j;", ParseGoal.Module);
+        (r, m) = Resolved("import i from \"m\"; i; j;", ParseGoal.Module);
         IsStatic(m.Resolve(Reference(r, "i")), m.Scopes[0], Decl(m.Scopes[0], "i"));
         IsStatic(m.Resolve(Binding(r, "i")), m.Scopes[0], Decl(m.Scopes[0], "i"));
         IsGlobal(m.Resolve(Reference(r, "j")));
@@ -1829,14 +1840,14 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         Assert.True(m.FactsOf(r.Tree!).HasSeparateVariableEnvironment);
 
         // The dynamic function's goals: each piece with the other empty.
-        (r, m) = Model("a, b = a, c = d", ParseGoal.FormalParameters);
+        (r, m) = Resolved("a, b = a, c = d", ParseGoal.FormalParameters);
         var parameters = m.Scopes[0];
         Assert.Equal(ScopeKind.Parameters, parameters.Kind);
         IsStatic(m.Resolve(Reference(r, "a")), parameters, Decl(parameters, "a"));
         IsGlobal(m.Resolve(Reference(r, "d")));
         Assert.True(m.FactsOf(r.Tree!).HasSeparateVariableEnvironment);
         Assert.NotNull(m.EnvironmentOf(r.Tree!).Arguments);
-        (r, m) = Model("var q; return a + q + arguments.length;", ParseGoal.FunctionBody);
+        (r, m) = Resolved("var q; return a + q + arguments.length;", ParseGoal.FunctionBody);
         var body = Of(m, ScopeKind.Function, r.Tree!);
         IsGlobal(m.Resolve(Reference(r, "a")));
         IsStatic(m.Resolve(Reference(r, "q")), body, Decl(body, "q"));
@@ -1848,7 +1859,7 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         Assert.False(m.FactsOf(r.Tree!).HasSeparateVariableEnvironment);
 
         // A call in the parameters: calleeEnv, which the Parameters entry stands for, between the parameters and the name.
-        (r, m) = Model("(function f(a = eval(\"\")) { return f; });");
+        (r, m) = Resolved("(function f(a = eval(\"\")) { return f; });");
         f = Fn(r, "f");
         Assert.True(m.EnvironmentOf(f).DirectEvalInParameters);
         Assert.False(m.EnvironmentOf(f).DirectEvalInBody);
@@ -1857,17 +1868,17 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
 
         // A call in the body: the parameter is the eval's var's binding where the environment is shared, and the body's
         // own environment gains where it is separate.
-        (r, m) = Model("function f(a) { eval(\"\"); return a; }");
+        (r, m) = Resolved("function f(a) { eval(\"\"); return a; }");
         f = Fn(r, "f");
         IsStatic(m.Resolve(Reference(r, "a")), Of(m, ScopeKind.Parameters, f), Decl(Of(m, ScopeKind.Parameters, f), "a"));
-        (r, m) = Model("function f(a = 1) { eval(\"\"); return a; }");
+        (r, m) = Resolved("function f(a = 1) { eval(\"\"); return a; }");
         f = Fn(r, "f");
         IsStatic(IsDynamic(m.Resolve(Reference(r, "a")), DynamicReason.SloppyDirectEval, Of(m, ScopeKind.Function, f)), Of(m, ScopeKind.Parameters, f), Decl(Of(m, ScopeKind.Parameters, f), "a"));
 
         // R-a for a function declaration of a parameter's name, with the environment shared and separate.
         foreach (var text in new[] { "function f(a) { function a() {} return a; }", "function f(a = 1) { function a() {} return a; }" })
         {
-            (r, m) = Model(text);
+            (r, m) = Resolved(text);
             f = Fn(r, "f");
             var declaration = Decl(Of(m, ScopeKind.Function, f), "a");
             Assert.Equal(BindingKind.Function, declaration.Kind);
@@ -1881,27 +1892,27 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     {
         foreach (var (text, candidate) in new[] { ("function f() { (eval)(\"\"); }", true), ("function f() { ((eval))(\"\"); }", true), ("function f() { eval?.(\"\"); }", false), ("function f() { (0, eval)(\"\"); }", false), ("function f() { new eval(); }", false), ("function f() { eval`x`; }", false), ("function f() { o.eval(\"\"); }", false) })
         {
-            var (fr, fm) = Model(text);
+            var (fr, fm) = Resolved(text);
             Assert.True(candidate == fm.EnvironmentOf(Fn(fr, "f")).DirectEvalInBody, text);
             Assert.True(candidate == fm.EnvironmentOf(Fn(fr, "f")).ArgumentsNeeded, text);
         }
 
         // A class's computed key is the enclosing function's strict code: no gaining, but the eval code may read arguments.
-        var (r, m) = Model("function f() { class C { [eval(\"\")]() {} } }");
+        var (r, m) = Resolved("function f() { class C { [eval(\"\")]() {} } }");
         var f = Fn(r, "f");
         Assert.False(m.EnvironmentOf(f).DirectEvalInBody);
         Assert.True(m.EnvironmentOf(f).ArgumentsNeeded);
         Assert.True(m.EnvironmentOf(f).ArgumentsMapped);
 
         // An arrow's call is the arrow's, though it reaches f's x by name at run time.
-        (r, m) = Model("function f() { var x; (() => eval(\"x = 1\"))(); }");
+        (r, m) = Resolved("function f() { var x; (() => eval(\"x = 1\"))(); }");
         f = Fn(r, "f");
         Assert.False(m.EnvironmentOf(f).DirectEvalInBody);
         Assert.True(m.EnvironmentOf(First<FunctionNode>(r, static n => n.IsArrow)).DirectEvalInBody);
         Assert.True(m.EnvironmentOf(f).ArgumentsNeeded);
 
         // A static block's binding, needed by its eval; a field initialiser has none.
-        (r, m) = Model("class C { static { eval(\"arguments\"); } x = 1; y; }");
+        (r, m) = Resolved("class C { static { eval(\"arguments\"); } x = 1; y; }");
         var block = First<StaticBlock>(r);
         Assert.NotNull(m.EnvironmentOf(block).Arguments);
         Assert.Same(block, m.EnvironmentOf(block).Arguments!.Node);
@@ -1914,19 +1925,19 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         Assert.False(m.FactsOf(block).HasSeparateVariableEnvironment);
 
         // Needed through a dynamic resolution's fallback to the var of the name.
-        (r, m) = Model("function f(o) { var arguments; with (o) { arguments; } }");
+        (r, m) = Resolved("function f(o) { var arguments; with (o) { arguments; } }");
         f = Fn(r, "f");
         IsStatic(IsDynamic(m.Resolve(Reference(r, "arguments")), DynamicReason.With, Only(m, ScopeKind.With)), Of(m, ScopeKind.Function, f), Decl(Of(m, ScopeKind.Function, f), "arguments"));
         Assert.True(m.EnvironmentOf(f).ArgumentsNeeded);
 
         // A binding's write does not observe the object.
-        (r, m) = Model("function f() { var arguments = 1; }");
+        (r, m) = Resolved("function f() { var arguments = 1; }");
         Assert.False(m.EnvironmentOf(Fn(r, "f")).ArgumentsNeeded);
 
         // with in own code, an arrow's being the arrow's.
-        (r, m) = Model("function f(o) { with (o) {} }");
+        (r, m) = Resolved("function f(o) { with (o) {} }");
         Assert.True(m.EnvironmentOf(Fn(r, "f")).ContainsWith);
-        (r, m) = Model("function f(o) { (() => { with (o) {} })(); }");
+        (r, m) = Resolved("function f(o) { (() => { with (o) {} })(); }");
         Assert.False(m.EnvironmentOf(Fn(r, "f")).ContainsWith);
         Assert.True(m.EnvironmentOf(First<FunctionNode>(r, static n => n.IsArrow)).ContainsWith);
     }
@@ -1935,17 +1946,17 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     [Fact]
     public void Several_declarations_of_one_name_answer_the_first()
     {
-        var (r, m) = Model("var v; var v; v;");
+        var (r, m) = Resolved("var v; var v; v;");
         IsStatic(m.Resolve(Reference(r, "v")), m.Scopes[0], Decl(m.Scopes[0], "v", 0));
-        (r, m) = Model("var v; var v = 1; v;");
+        (r, m) = Resolved("var v; var v = 1; v;");
         var first = Decl(m.Scopes[0], "v", 0);
         IsStatic(m.Resolve(Binding(r, "v", 0)), m.Scopes[0], first);
         IsStatic(m.Resolve(Binding(r, "v", 1)), m.Scopes[0], first);
         IsStatic(m.Resolve(Reference(r, "v")), m.Scopes[0], first);
-        (r, m) = Model("function g() { return 1 } function g() { return 2 } g;");
+        (r, m) = Resolved("function g() { return 1 } function g() { return 2 } g;");
         IsStatic(m.Resolve(Reference(r, "g")), m.Scopes[0], Decl(m.Scopes[0], "g", 0));
         IsStatic(m.Resolve(Binding(r, "g", 1)), m.Scopes[0], Decl(m.Scopes[0], "g", 0));
-        (r, m) = Model("function f(a, a) { return a; }");
+        (r, m) = Resolved("function f(a, a) { return a; }");
         var parameters = Of(m, ScopeKind.Parameters, Fn(r, "f"));
         IsStatic(m.Resolve(Binding(r, "a", 0)), parameters, Decl(parameters, "a", 0));
         IsStatic(m.Resolve(Binding(r, "a", 1)), parameters, Decl(parameters, "a", 0));
@@ -1956,8 +1967,8 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     [Fact]
     public void A_null_or_foreign_reference_or_a_node_without_facts_is_refused()
     {
-        var (result, model) = Model("var a = 1; a; function f(b) { return b; } class C { x; y = 1; }");
-        var (other, _) = Model("var a = 1; a; function f(b) { return b; } class C { x; y = 1; }");
+        var (result, model) = Resolved("var a = 1; a; function f(b) { return b; } class C { x; y = 1; }");
+        var (other, _) = Resolved("var a = 1; a; function f(b) { return b; } class C { x; y = 1; }");
         Assert.Throws<ArgumentNullException>(() => model.Resolve((Identifier)null!));
         Assert.Throws<ArgumentNullException>(() => model.Resolve((BindingIdentifier)null!));
         Assert.Throws<ArgumentNullException>(() => model.EnvironmentOf(null!));
@@ -1970,7 +1981,8 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         Assert.NotNull(model.EnvironmentOf(result.Tree!));
     }
 
-    // Accepted sources for resolution and the environment facts, beside the population: the fixtures' and the probes'.
+    // Accepted sources for resolution and the environment facts, beside the population and the fixtures (which Resolved and
+    // SloppyEvalModel put through the same check): further probes' sources and constructs.
     private static readonly (ParseGoal Goal, string Text)[] ResolutionSources =
     [
         (ParseGoal.Script, "function f(a) { arguments[0] = 2; return a; } f(1)"), (ParseGoal.Script, "function f() { return eval('arguments.length'); } f(1, 2)"),
@@ -1989,11 +2001,287 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         (ParseGoal.Eval, "var x; x; function h() { eval(\"\"); return x + y; } let z; z; with (o) { x; }"),
     ];
 
+    // One accepted tree's resolutions and environment facts, each as the lookup over the model's scopes and an oracle of the
+    // test's own require, with the off path's tables beside them: the check the population and every fixture pass through.
+    // It returns the references, bindings, dynamic answers and facts nodes it checked.
+    private static (int References, int Bindings, int Dynamic, int Functions) Complete(string name, ParseResult on, ParseResult off)
+    {
+        var (refs, binds, dyn, fns) = (0, 0, 0, 0);
+        if (on.Model is not { } model)
+            return default;
+        var tree = on.Tree!;
+        var unit = model.FactsOf(tree);
+        var nodes = Nodes(tree);
+        var parents = new Dictionary<SyntaxNode, SyntaxNode>(ReferenceEqualityComparer.Instance);
+        var children = new List<SyntaxNode>();
+        foreach (var node in nodes)
+        {
+            children.Clear();
+            node.AddChildren(children);
+            foreach (var child in children)
+                parents[child] = node;
+        }
+
+        // The tables, on and off: no arguments binding, and the same separate-environment facts.
+        Assert.DoesNotContain(on.Declarations!.Scopes.SelectMany(static s => s.Declarations), static d => d.Kind == BindingKind.Arguments);
+        Assert.DoesNotContain(off.Declarations!.Scopes.SelectMany(static s => s.Declarations), static d => d.Kind == BindingKind.Arguments);
+        Assert.DoesNotContain(model.Scopes.SelectMany(static s => s.Declarations), static d => d.Kind == BindingKind.Arguments);
+        Assert.True(on.Declarations.Functions.Select(static f => f.HasSeparateVariableEnvironment).SequenceEqual(off.Declarations!.Functions.Select(static f => f.HasSeparateVariableEnvironment)), name + ": the separate environment differs off and on");
+        foreach (var facts in model.Functions)
+            Assert.Equal(facts.Kind == FunctionKind.EvalCode ? facts.IsStrict : facts.HasParameterExpressions, facts.HasSeparateVariableEnvironment);
+
+        // Each declaration's scope, and each facts node's parameters', body's and block's scopes, by identity.
+        var holder = new Dictionary<Declaration, Scope>(ReferenceEqualityComparer.Instance);
+        var scopeByKind = new Dictionary<(ScopeKind, SyntaxNode), Scope>();
+        foreach (var scope in model.Scopes)
+        {
+            foreach (var declaration in scope.Declarations)
+                holder.TryAdd(declaration, scope);
+            if (scope.Kind is ScopeKind.Parameters or ScopeKind.Function or ScopeKind.StaticBlock)
+                scopeByKind[(scope.Kind, scope.Node)] = scope;
+        }
+
+        // The oracle: the facts node whose own code holds a node, whether it is in that node's parameters, and the
+        // code's strictness (a class's parts but its decorators being strict).
+        var factsNodes = new HashSet<SyntaxNode>(model.Functions.Select(static f => f.Node), ReferenceEqualityComparer.Instance);
+        (SyntaxNode Owner, bool InParameters, bool Strict) OwnerOf(SyntaxNode node)
+        {
+            var inClass = false;
+            for (var at = node; ; )
+            {
+                var parent = parents[at];
+                var owns = parent switch
+                {
+                    FunctionNode or StaticBlock or ProgramNode => true,
+                    FieldDefinition field => ReferenceEquals(at, field.Value),
+                    _ => false,
+                };
+                if (owns)
+                {
+                    var inParameters = parent switch
+                    {
+                        FunctionNode function => function.Parameters.Contains(at),
+                        ProgramNode program => program.Parameters.Contains(at),
+                        _ => false,
+                    };
+                    return (parent, inParameters, inClass || model.FactsOf(parent).IsStrict);
+                }
+
+                if (parent is ClassNode @class && !@class.Decorators.Contains(at))
+                    inClass = true;
+                at = parent;
+            }
+        }
+
+        SyntaxNode ReaderOf(SyntaxNode owner)
+        {
+            while (owner is FunctionNode { IsArrow: true })
+                owner = OwnerOf(owner).Owner;
+            return owner;
+        }
+
+        var inParams = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
+        var inBody = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
+        var readers = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
+        var withs = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
+        foreach (var node in nodes)
+        {
+            if (node is WithStatement)
+                withs.Add(OwnerOf(node).Owner);
+            if (node is not CallExpression { IsOptional: false } call)
+                continue;
+            var callee = call.Callee;
+            while (callee is ParenthesizedExpression p)
+                callee = p.Expression;
+            if (callee is not Identifier { Name: "eval" })
+                continue;
+            var (owner, parameters, strict) = OwnerOf(call);
+            if (!strict)
+                (parameters ? inParams : inBody).Add(owner);
+            readers.Add(ReaderOf(owner));
+        }
+
+        foreach (var facts in model.Functions)
+        {
+            var env = model.EnvironmentOf(facts.Node);
+            Assert.Same(facts.Node, env.Node);
+            Assert.True(inParams.Contains(facts.Node) == env.DirectEvalInParameters, name + ": DirectEvalInParameters at " + facts.Node.Span.Offset.ToString(CultureInfo.InvariantCulture));
+            Assert.True(inBody.Contains(facts.Node) == env.DirectEvalInBody, name + ": DirectEvalInBody at " + facts.Node.Span.Offset.ToString(CultureInfo.InvariantCulture));
+            Assert.True(withs.Contains(facts.Node) == env.ContainsWith, name + ": ContainsWith at " + facts.Node.Span.Offset.ToString(CultureInfo.InvariantCulture));
+            Assert.True(!env.DirectEvalInParameters || facts.HasParameterExpressions, name + ": a call in parameters without expressions");
+        }
+
+        // The gaining scopes, by section 3.4's rule from the facts.
+        var gaining = new HashSet<Scope>(ReferenceEqualityComparer.Instance);
+        foreach (var facts in model.Functions)
+        {
+            if (!scopeByKind.TryGetValue((ScopeKind.Parameters, facts.Node), out var parameters))
+                continue;
+            var env = model.EnvironmentOf(facts.Node);
+            if (env.DirectEvalInBody)
+                gaining.Add(facts.HasSeparateVariableEnvironment ? scopeByKind[(ScopeKind.Function, facts.Node)] : parameters);
+            if (env.DirectEvalInParameters)
+                gaining.Add(parameters);
+        }
+
+        // What a scope binds, the test's own reading.
+        Declaration? Binds(Scope scope, string n)
+        {
+            var first = scope.Declarations.FirstOrDefault(d => d.Name == n);
+            if (first is null && n == "arguments" && scope.Kind is ScopeKind.Parameters or ScopeKind.StaticBlock && factsNodes.Contains(scope.Node))
+                first = model.EnvironmentOf(scope.Node).Arguments;
+            return first;
+        }
+
+        var sloppyEval = unit.Kind == FunctionKind.EvalCode && !unit.IsStrict;
+        bool EvalVar(Scope scope, Declaration declaration) => sloppyEval && ReferenceEquals(scope, model.Scopes[0]) && !declaration.IsLexical;
+
+        // The answer the lookup requires, checked member by member.
+        void Check(SyntaxNode node, string n, Resolution answer, string at)
+        {
+            var chain = new List<Scope>();
+            for (Scope? s = model.ScopeOf(node); s is not null; s = model.ParentOf(s))
+                chain.Add(s);
+            var expected = new List<Scope>();
+            Resolution end;
+            var i = 0;
+            for (; i < chain.Count; i++)
+            {
+                if (chain[i].Kind == ScopeKind.With)
+                {
+                    expected.Add(chain[i]);
+                    continue;
+                }
+
+                if (Binds(chain[i], n) is not null)
+                    break;
+                if (gaining.Contains(chain[i]))
+                    expected.Add(chain[i]);
+            }
+
+            if (answer.Kind == ResolutionKind.Dynamic)
+            {
+                Assert.True(expected.Count > 0 && expected.SequenceEqual(answer.DynamicScopes, ReferenceEqualityComparer.Instance), at + ": the dynamic scopes");
+                Assert.True((answer.Reason == DynamicReason.With) == (answer.DynamicScopes[0].Kind == ScopeKind.With), at + ": the reason");
+                Assert.True(answer.Scope is null && answer.Declaration is null && answer.Fallback is { Kind: not ResolutionKind.Dynamic }, at + ": a dynamic answer's members");
+                end = answer.Fallback!;
+            }
+            else
+            {
+                Assert.True(expected.Count == 0 && answer.DynamicScopes.Count == 0 && answer.Reason is null && answer.Fallback is null, at + ": not dynamic where it should be");
+                end = answer;
+            }
+
+            if (i < chain.Count)
+            {
+                var declaration = Binds(chain[i], n)!;
+                if (EvalVar(chain[i], declaration))
+                    Assert.True(end.Kind == ResolutionKind.Inherited && end.Scope is null && ReferenceEquals(end.Declaration, declaration), at + ": eval code's var");
+                else
+                    Assert.True(end.Kind == ResolutionKind.Static && ReferenceEquals(end.Scope, chain[i]) && ReferenceEquals(end.Declaration, declaration), at + ": not the first binding scope's first declaration");
+            }
+            else
+            {
+                Assert.True(end.Kind == (unit.Kind == FunctionKind.EvalCode ? ResolutionKind.Inherited : ResolutionKind.Global) && end.Scope is null && end.Declaration is null, at + ": the chain's end");
+            }
+
+            if (end.Declaration is { } d)
+                Assert.Equal(n, d.Name);
+        }
+
+        // The bindings the language resolves when it runs: a var declarator's with an initialiser, and a for-in
+        // or for-of var head's.
+        bool RunTime(BindingIdentifier binding)
+        {
+            SyntaxNode at = binding;
+            while (parents.TryGetValue(at, out var parent) && parent is ArrayPattern or ObjectPattern or PatternProperty or RestElement or AssignmentPattern)
+            {
+                if (parent is AssignmentPattern assignment && !ReferenceEquals(assignment.Target, at))
+                    return false;
+                at = parent;
+            }
+
+            return parents.TryGetValue(at, out var declarator) && declarator is VariableDeclarator d && ReferenceEquals(d.Target, at)
+                && parents[d] is VariableDeclaration { DeclarationKind: DeclarationKind.Var } v
+                && (d.Initializer is not null || parents.TryGetValue(v, out var loop) && (loop is ForInStatement fi && ReferenceEquals(fi.Left, v) || loop is ForOfStatement fo && ReferenceEquals(fo.Left, v)));
+        }
+
+        var read = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
+        foreach (var node in nodes)
+        {
+            var at = name + ": " + node.GetType().Name + " at " + node.Span.Offset.ToString(CultureInfo.InvariantCulture);
+            if (node is Identifier reference)
+            {
+                refs++;
+                var answer = model.Resolve(reference);
+                Assert.Null(model.DeclarationOf(reference));
+                Check(reference, reference.Name, answer, at);
+                if (answer.Kind == ResolutionKind.Dynamic)
+                    dyn++;
+                if ((answer.Kind == ResolutionKind.Dynamic ? answer.Fallback! : answer) is { Kind: ResolutionKind.Static, Declaration: { } d, Scope: { } s })
+                {
+                    if (d.Kind == BindingKind.Arguments)
+                        read.Add(d.Node);
+                    else if (d.Kind == BindingKind.Var && d.Name == "arguments" && s.Kind is ScopeKind.Function or ScopeKind.StaticBlock)
+                        read.Add(s.Node);
+                }
+
+                Assert.True(answer.Kind != ResolutionKind.Global || unit.Kind is FunctionKind.Script or FunctionKind.Module or FunctionKind.DynamicFunction, at + ": global outside a Script, Module or dynamic goal");
+                Assert.True(answer.Kind != ResolutionKind.Inherited || unit.Kind == FunctionKind.EvalCode, at + ": inherited outside eval code");
+            }
+            else if (node is BindingIdentifier binding)
+            {
+                binds++;
+                var answer = model.Resolve(binding);
+                if (RunTime(binding))
+                {
+                    Check(binding, binding.Name, answer, at + " (run-time binding)");
+                    continue;
+                }
+
+                var own = model.DeclarationOf(binding)!;
+                var scope = holder[own];
+                var first = Binds(scope, binding.Name)!;
+                if (EvalVar(scope, first))
+                    IsInherited(answer, first);
+                else
+                    IsStatic(answer, scope, first);
+            }
+        }
+
+        // The arguments binding exactly where FunctionDeclarationInstantiation's steps 15 to 18 create one, its need
+        // by a reference or a candidate, and its mapping.
+        foreach (var facts in model.Functions)
+        {
+            fns++;
+            var env = model.EnvironmentOf(facts.Node);
+            var bodyScope = facts.Kind is FunctionKind.StaticBlock ? scopeByKind[(ScopeKind.StaticBlock, facts.Node)]
+                : facts.Kind is FunctionKind.FieldInitializer or FunctionKind.Script or FunctionKind.Module or FunctionKind.EvalCode ? null
+                : scopeByKind[(ScopeKind.Function, facts.Node)];
+            var exists = bodyScope is not null && facts.Kind != FunctionKind.Arrow && !facts.ParameterNames.Contains("arguments")
+                && (facts.HasParameterExpressions || !bodyScope.Declarations.Any(static d => d.Name == "arguments" && (d.IsLexical || d.Kind == BindingKind.Function)));
+            var at = name + ": facts at " + facts.Node.Span.Offset.ToString(CultureInfo.InvariantCulture);
+            Assert.True(exists == env.Arguments is not null, at + ": the arguments binding");
+            if (env.Arguments is { } arguments)
+            {
+                Assert.True(arguments.Kind == BindingKind.Arguments && arguments.Name == "arguments" && ReferenceEquals(arguments.Node, facts.Node) && arguments.IsMutable && !arguments.IsLexical, at + ": the binding's members");
+                Assert.Null(model.DeclarationOf(arguments.Node));
+            }
+
+            var needed = env.Arguments is not null && (read.Contains(facts.Node) || readers.Contains(facts.Node));
+            Assert.True(needed == env.ArgumentsNeeded, at + ": the need");
+            Assert.True((env.ArgumentsNeeded && !facts.IsStrict && facts.HasSimpleParameterList) == env.ArgumentsMapped, at + ": the mapping");
+        }
+
+        return (refs, binds, dyn, fns);
+    }
+
     /// <summary>
-    /// Over the determinism tests' population and the fixtures' sources: every reference and every binding resolved, each
-    /// answer as the lookup over the model's scopes requires, recomputed by the test; the two overloads in agreement; and
-    /// each facts node's environment facts as an independent oracle over a parent map recomputes them, iteratively. With
-    /// the member on and off the tables hold no <c>arguments</c> binding and the same separate-environment facts.
+    /// Over the determinism tests' population and further sources (each fixture's own tree passing the same check, through
+    /// Resolved and SloppyEvalModel): every reference and every binding resolved, each answer as the lookup over the
+    /// model's scopes requires, recomputed by the test; the two overloads in agreement; and each facts node's environment
+    /// facts as an independent oracle over a parent map recomputes them, iteratively. With the member on and off the
+    /// tables hold no <c>arguments</c> binding and the same separate-environment facts.
     /// </summary>
     [Fact]
     public void Every_reference_and_binding_resolves_and_every_function_s_facts_hold_over_the_population()
@@ -2004,270 +2292,8 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
             var (refs, binds, dyn, fns) = (0, 0, 0, 0);
             void One(string name, ParseResult on, ParseResult off)
             {
-                if (on.Model is not { } model)
-                    return;
-                var tree = on.Tree!;
-                var unit = model.FactsOf(tree);
-                var nodes = Nodes(tree);
-                var parents = new Dictionary<SyntaxNode, SyntaxNode>(ReferenceEqualityComparer.Instance);
-                var children = new List<SyntaxNode>();
-                foreach (var node in nodes)
-                {
-                    children.Clear();
-                    node.AddChildren(children);
-                    foreach (var child in children)
-                        parents[child] = node;
-                }
-
-                // The tables, on and off: no arguments binding, and the same separate-environment facts.
-                Assert.DoesNotContain(on.Declarations!.Scopes.SelectMany(static s => s.Declarations), static d => d.Kind == BindingKind.Arguments);
-                Assert.DoesNotContain(model.Scopes.SelectMany(static s => s.Declarations), static d => d.Kind == BindingKind.Arguments);
-                Assert.True(on.Declarations.Functions.Select(static f => f.HasSeparateVariableEnvironment).SequenceEqual(off.Declarations!.Functions.Select(static f => f.HasSeparateVariableEnvironment)), name + ": the separate environment differs off and on");
-                foreach (var facts in model.Functions)
-                    Assert.Equal(facts.Kind == FunctionKind.EvalCode ? facts.IsStrict : facts.HasParameterExpressions, facts.HasSeparateVariableEnvironment);
-
-                // Each declaration's scope, and each facts node's parameters', body's and block's scopes, by identity.
-                var holder = new Dictionary<Declaration, Scope>(ReferenceEqualityComparer.Instance);
-                var scopeByKind = new Dictionary<(ScopeKind, SyntaxNode), Scope>();
-                foreach (var scope in model.Scopes)
-                {
-                    foreach (var declaration in scope.Declarations)
-                        holder.TryAdd(declaration, scope);
-                    if (scope.Kind is ScopeKind.Parameters or ScopeKind.Function or ScopeKind.StaticBlock)
-                        scopeByKind[(scope.Kind, scope.Node)] = scope;
-                }
-
-                // The oracle: the facts node whose own code holds a node, whether it is in that node's parameters, and the
-                // code's strictness (a class's parts but its decorators being strict).
-                var factsNodes = new HashSet<SyntaxNode>(model.Functions.Select(static f => f.Node), ReferenceEqualityComparer.Instance);
-                (SyntaxNode Owner, bool InParameters, bool Strict) OwnerOf(SyntaxNode node)
-                {
-                    var inClass = false;
-                    for (var at = node; ; )
-                    {
-                        var parent = parents[at];
-                        var owns = parent switch
-                        {
-                            FunctionNode or StaticBlock or ProgramNode => true,
-                            FieldDefinition field => ReferenceEquals(at, field.Value),
-                            _ => false,
-                        };
-                        if (owns)
-                        {
-                            var inParameters = parent switch
-                            {
-                                FunctionNode function => function.Parameters.Contains(at),
-                                ProgramNode program => program.Parameters.Contains(at),
-                                _ => false,
-                            };
-                            return (parent, inParameters, inClass || model.FactsOf(parent).IsStrict);
-                        }
-
-                        if (parent is ClassNode @class && !@class.Decorators.Contains(at))
-                            inClass = true;
-                        at = parent;
-                    }
-                }
-
-                SyntaxNode ReaderOf(SyntaxNode owner)
-                {
-                    while (owner is FunctionNode { IsArrow: true })
-                        owner = OwnerOf(owner).Owner;
-                    return owner;
-                }
-
-                var inParams = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
-                var inBody = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
-                var readers = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
-                var withs = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
-                foreach (var node in nodes)
-                {
-                    if (node is WithStatement)
-                        withs.Add(OwnerOf(node).Owner);
-                    if (node is not CallExpression { IsOptional: false } call)
-                        continue;
-                    var callee = call.Callee;
-                    while (callee is ParenthesizedExpression p)
-                        callee = p.Expression;
-                    if (callee is not Identifier { Name: "eval" })
-                        continue;
-                    var (owner, parameters, strict) = OwnerOf(call);
-                    if (!strict)
-                        (parameters ? inParams : inBody).Add(owner);
-                    readers.Add(ReaderOf(owner));
-                }
-
-                foreach (var facts in model.Functions)
-                {
-                    var env = model.EnvironmentOf(facts.Node);
-                    Assert.Same(facts.Node, env.Node);
-                    Assert.True(inParams.Contains(facts.Node) == env.DirectEvalInParameters, name + ": DirectEvalInParameters at " + facts.Node.Span.Offset.ToString(CultureInfo.InvariantCulture));
-                    Assert.True(inBody.Contains(facts.Node) == env.DirectEvalInBody, name + ": DirectEvalInBody at " + facts.Node.Span.Offset.ToString(CultureInfo.InvariantCulture));
-                    Assert.True(withs.Contains(facts.Node) == env.ContainsWith, name + ": ContainsWith at " + facts.Node.Span.Offset.ToString(CultureInfo.InvariantCulture));
-                    Assert.True(!env.DirectEvalInParameters || facts.HasParameterExpressions, name + ": a call in parameters without expressions");
-                }
-
-                // The gaining scopes, by section 3.4's rule from the facts.
-                var gaining = new HashSet<Scope>(ReferenceEqualityComparer.Instance);
-                foreach (var facts in model.Functions)
-                {
-                    if (!scopeByKind.TryGetValue((ScopeKind.Parameters, facts.Node), out var parameters))
-                        continue;
-                    var env = model.EnvironmentOf(facts.Node);
-                    if (env.DirectEvalInBody)
-                        gaining.Add(facts.HasSeparateVariableEnvironment ? scopeByKind[(ScopeKind.Function, facts.Node)] : parameters);
-                    if (env.DirectEvalInParameters)
-                        gaining.Add(parameters);
-                }
-
-                // What a scope binds, the test's own reading.
-                Declaration? Binds(Scope scope, string n)
-                {
-                    var first = scope.Declarations.FirstOrDefault(d => d.Name == n);
-                    if (first is null && n == "arguments" && scope.Kind is ScopeKind.Parameters or ScopeKind.StaticBlock && factsNodes.Contains(scope.Node))
-                        first = model.EnvironmentOf(scope.Node).Arguments;
-                    return first;
-                }
-
-                var sloppyEval = unit.Kind == FunctionKind.EvalCode && !unit.IsStrict;
-                bool EvalVar(Scope scope, Declaration declaration) => sloppyEval && ReferenceEquals(scope, model.Scopes[0]) && !declaration.IsLexical;
-
-                // The answer the lookup requires, checked member by member.
-                void Check(SyntaxNode node, string n, Resolution answer, string at)
-                {
-                    var chain = new List<Scope>();
-                    for (Scope? s = model.ScopeOf(node); s is not null; s = model.ParentOf(s))
-                        chain.Add(s);
-                    var expected = new List<Scope>();
-                    Resolution end;
-                    var i = 0;
-                    for (; i < chain.Count; i++)
-                    {
-                        if (chain[i].Kind == ScopeKind.With)
-                        {
-                            expected.Add(chain[i]);
-                            continue;
-                        }
-
-                        if (Binds(chain[i], n) is not null)
-                            break;
-                        if (gaining.Contains(chain[i]))
-                            expected.Add(chain[i]);
-                    }
-
-                    if (answer.Kind == ResolutionKind.Dynamic)
-                    {
-                        Assert.True(expected.Count > 0 && expected.SequenceEqual(answer.DynamicScopes, ReferenceEqualityComparer.Instance), at + ": the dynamic scopes");
-                        Assert.True((answer.Reason == DynamicReason.With) == (answer.DynamicScopes[0].Kind == ScopeKind.With), at + ": the reason");
-                        Assert.True(answer.Scope is null && answer.Declaration is null && answer.Fallback is { Kind: not ResolutionKind.Dynamic }, at + ": a dynamic answer's members");
-                        end = answer.Fallback!;
-                    }
-                    else
-                    {
-                        Assert.True(expected.Count == 0 && answer.DynamicScopes.Count == 0 && answer.Reason is null && answer.Fallback is null, at + ": not dynamic where it should be");
-                        end = answer;
-                    }
-
-                    if (i < chain.Count)
-                    {
-                        var declaration = Binds(chain[i], n)!;
-                        if (EvalVar(chain[i], declaration))
-                            Assert.True(end.Kind == ResolutionKind.Inherited && end.Scope is null && ReferenceEquals(end.Declaration, declaration), at + ": eval code's var");
-                        else
-                            Assert.True(end.Kind == ResolutionKind.Static && ReferenceEquals(end.Scope, chain[i]) && ReferenceEquals(end.Declaration, declaration), at + ": not the first binding scope's first declaration");
-                    }
-                    else
-                    {
-                        Assert.True(end.Kind == (unit.Kind == FunctionKind.EvalCode ? ResolutionKind.Inherited : ResolutionKind.Global) && end.Scope is null && end.Declaration is null, at + ": the chain's end");
-                    }
-
-                    if (end.Declaration is { } d)
-                        Assert.Equal(n, d.Name);
-                }
-
-                // The bindings the language resolves when it runs: a var declarator's with an initialiser, and a for-in
-                // or for-of var head's.
-                bool RunTime(BindingIdentifier binding)
-                {
-                    SyntaxNode at = binding;
-                    while (parents.TryGetValue(at, out var parent) && parent is ArrayPattern or ObjectPattern or PatternProperty or RestElement or AssignmentPattern)
-                    {
-                        if (parent is AssignmentPattern assignment && !ReferenceEquals(assignment.Target, at))
-                            return false;
-                        at = parent;
-                    }
-
-                    return parents.TryGetValue(at, out var declarator) && declarator is VariableDeclarator d && ReferenceEquals(d.Target, at)
-                        && parents[d] is VariableDeclaration { DeclarationKind: DeclarationKind.Var } v
-                        && (d.Initializer is not null || parents.TryGetValue(v, out var loop) && (loop is ForInStatement fi && ReferenceEquals(fi.Left, v) || loop is ForOfStatement fo && ReferenceEquals(fo.Left, v)));
-                }
-
-                var read = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
-                foreach (var node in nodes)
-                {
-                    var at = name + ": " + node.GetType().Name + " at " + node.Span.Offset.ToString(CultureInfo.InvariantCulture);
-                    if (node is Identifier reference)
-                    {
-                        refs++;
-                        var answer = model.Resolve(reference);
-                        Assert.Null(model.DeclarationOf(reference));
-                        Check(reference, reference.Name, answer, at);
-                        if (answer.Kind == ResolutionKind.Dynamic)
-                            dyn++;
-                        if ((answer.Kind == ResolutionKind.Dynamic ? answer.Fallback! : answer) is { Kind: ResolutionKind.Static, Declaration: { } d, Scope: { } s })
-                        {
-                            if (d.Kind == BindingKind.Arguments)
-                                read.Add(d.Node);
-                            else if (d.Kind == BindingKind.Var && d.Name == "arguments" && s.Kind is ScopeKind.Function or ScopeKind.StaticBlock)
-                                read.Add(s.Node);
-                        }
-
-                        Assert.True(answer.Kind != ResolutionKind.Global || unit.Kind is FunctionKind.Script or FunctionKind.Module or FunctionKind.DynamicFunction, at + ": global outside a Script, Module or dynamic goal");
-                        Assert.True(answer.Kind != ResolutionKind.Inherited || unit.Kind == FunctionKind.EvalCode, at + ": inherited outside eval code");
-                    }
-                    else if (node is BindingIdentifier binding)
-                    {
-                        binds++;
-                        var answer = model.Resolve(binding);
-                        if (RunTime(binding))
-                        {
-                            Check(binding, binding.Name, answer, at + " (run-time binding)");
-                            continue;
-                        }
-
-                        var own = model.DeclarationOf(binding)!;
-                        var scope = holder[own];
-                        var first = Binds(scope, binding.Name)!;
-                        if (EvalVar(scope, first))
-                            IsInherited(answer, first);
-                        else
-                            IsStatic(answer, scope, first);
-                    }
-                }
-
-                // The arguments binding exactly where FunctionDeclarationInstantiation's steps 15 to 18 create one, its need
-                // by a reference or a candidate, and its mapping.
-                foreach (var facts in model.Functions)
-                {
-                    fns++;
-                    var env = model.EnvironmentOf(facts.Node);
-                    var bodyScope = facts.Kind is FunctionKind.StaticBlock ? scopeByKind[(ScopeKind.StaticBlock, facts.Node)]
-                        : facts.Kind is FunctionKind.FieldInitializer or FunctionKind.Script or FunctionKind.Module or FunctionKind.EvalCode ? null
-                        : scopeByKind[(ScopeKind.Function, facts.Node)];
-                    var exists = bodyScope is not null && facts.Kind != FunctionKind.Arrow && !facts.ParameterNames.Contains("arguments")
-                        && (facts.HasParameterExpressions || !bodyScope.Declarations.Any(static d => d.Name == "arguments" && (d.IsLexical || d.Kind == BindingKind.Function)));
-                    var at = name + ": facts at " + facts.Node.Span.Offset.ToString(CultureInfo.InvariantCulture);
-                    Assert.True(exists == env.Arguments is not null, at + ": the arguments binding");
-                    if (env.Arguments is { } arguments)
-                    {
-                        Assert.True(arguments.Kind == BindingKind.Arguments && arguments.Name == "arguments" && ReferenceEquals(arguments.Node, facts.Node) && arguments.IsMutable && !arguments.IsLexical, at + ": the binding's members");
-                        Assert.Null(model.DeclarationOf(arguments.Node));
-                    }
-
-                    var needed = env.Arguments is not null && (read.Contains(facts.Node) || readers.Contains(facts.Node));
-                    Assert.True(needed == env.ArgumentsNeeded, at + ": the need");
-                    Assert.True((env.ArgumentsNeeded && !facts.IsStrict && facts.HasSimpleParameterList) == env.ArgumentsMapped, at + ": the mapping");
-                }
+                var (r, b, d, f) = Complete(name, on, off);
+                (refs, binds, dyn, fns) = (refs + r, binds + b, dyn + d, fns + f);
             }
 
             foreach (var item in items)
