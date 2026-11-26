@@ -754,9 +754,11 @@ Not yet packed under a version of its own: the stream's next version is set when
 
   `Resolve` answers a function's reference to a name only an alias binds with that alias, and sloppy eval code's with
   `Inherited` carrying it; a Script's reference stays global. The interim that stage 5a's entry above states, "Until
-  stage 5b a name only an Annex B.3.3 alias binds is answered as the scopes alone answer it", is closed; eval code's alias
-  stays conditional on its caller until stage 5c. No row is added and no vector is newly answered: the value vectors of
-  group `ab1` stay not implemented. The canonical dump's model section (`runners/SyntaxDump.cs`) writes a
+  stage 5b a name only an Annex B.3.3 alias binds is answered as the scopes alone answer it", is closed. What remains: the
+  interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time
+  conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code
+  with a global variable environment on GlobalDeclarationInstantiation-like checks. No row is added and no vector is newly
+  answered: the value vectors of group `ab1` stay not implemented. The canonical dump's model section (`runners/SyntaxDump.cs`) writes a
   `model-annexb` line per block function, and names an alias `alias:` and its node there and in the `model-resolution`
   lines. No observable change: no published version carries the member, and with it off nothing moves.
 

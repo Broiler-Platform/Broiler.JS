@@ -1109,10 +1109,11 @@ decides it. Until then such a candidate in a sloppy function's own code counts t
 step 32.a), only `IsBlockFunction`; the model answers it, `SemanticModel.AnnexBAlias` (section 10.8). With Annex B on
 (`ParseSwitches.AnnexB`), a name that only a block function's alias binds answers that alias: in function code `Static`,
 to the function's `Function` scope and the alias, so that in `var g; function f() { { function g() {} } return g; }` the
-reference answers f's alias, not the Script's `var g`; in sloppy eval code `Inherited`, carrying the alias, which the
-caller's environments can still withhold until stage 5c; in a Script `Global`, since GlobalDeclarationInstantiation's
-run-time checks can leave the alias unmade; and an `arguments` binding a block function's evaluation creates is a
-dynamic entry, reason `BlockFunction`. *(Revised 2026-11-26, at SJL-15.2 stage 5b, when the aliases joined the model; it
+reference answers f's alias, not the Script's `var g`; in sloppy eval code `Inherited`, carrying the alias; in a Script
+`Global`; and an `arguments` binding a block function's evaluation creates is a dynamic entry, reason `BlockFunction`.
+What remains: the interim, eval code's alias conditional on its caller's environments until stage 5c describes them; and
+the run-time conditions, which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and
+eval code with a global variable environment on GlobalDeclarationInstantiation-like checks. *(Revised 2026-11-26, at SJL-15.2 stage 5b, when the aliases joined the model; it
 read "**Annex B.3.3's aliases until stage 5b.** The tables hold no block function's var alias (FunctionDeclarationInstantiation
 step 32.a), only `IsBlockFunction`. With Annex B on (`ParseSwitches.AnnexB`), a name that only a block function's Annex
 B.3.3 alias binds is answered as the scopes alone answer it until stage 5b: `Global`, or a `Static` or `Dynamic` answer
@@ -1254,7 +1255,10 @@ Eval code's alias depends on its caller's environments, which the request does n
 of the name between the eval and its variable environment, a Catch clause's excepted, withholds it (step 13.b.ii.4). That
 is the interim stage 5c's caller scopes narrow, by a dated revision. With a global variable environment, for an indirect
 eval or a direct eval at a Script's top level, GlobalDeclarationInstantiation-like checks apply (step 13.b.ii.5): a
-run-time condition no parse-time input can close, which stays after stage 5c (an inference). In eval code the binding the
+run-time condition no parse-time input can close, which stays after stage 5c (an inference). What remains: the interim,
+eval code's alias conditional on its caller's environments until stage 5c describes them; and the run-time conditions,
+which no stage closes: a Script's alias depends on GlobalDeclarationInstantiation's checks, and eval code with a global
+variable environment on GlobalDeclarationInstantiation-like checks. In eval code the binding the
 alias writes can be the caller's parameter or `arguments` binding (step 13.b.ii.7.a), which the model does not see. Under
 the `FunctionBody` goal the body is answered with the parameters empty, so an alias a real parameter would withhold is
 answered as admitted, and `Resolve` then names it where the real function binds the parameter: an extension of section
