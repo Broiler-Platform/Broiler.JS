@@ -1,0 +1,115 @@
+# Why stage 5c's model-eval-call and model-caller-scope lines cannot reach part B's --dump output; read 2026-11-26 by
+# read-only git in the stage's worktree, each command with its output below it. Stage 5c (30af0dad) adds
+# 'model-eval-call' lines, one per direct-eval candidate with the number of its caller's records, and after each
+# 'model-caller-scope' lines, one per record, to the model section of the shared library's canonical dump,
+# Broiler.ECMAScript/runners/SyntaxDump.cs, written only when ParseResult.Model is present, which
+# ParseRequest.BuildSemanticModel asks for (default false). Part B's tool, docs/evidence/sjl-12-001/tools/parse-corpus,
+# writes its own canonical dump (CanonicalDump.cs) of Broiler.JS's tree and reaches the Frontend only through
+# Broiler.JS's parser, whose request never sets the member. Stage 5c also adds InheritedContext.CallerScopes, read only
+# with the member on, and the public type CallerScope, SemanticModel.DirectEvalCalls and SemanticModel.CallerScopesOf;
+# the walk records the candidates and computes the records, their names and EA0007 and EA0008 only with the member on
+# (the rows only where the request also gives the records), none of which Broiler.JS sets or reads.
+
+$ git diff --stat 4e27f13d 30af0dad -- Broiler.JS docs/evidence/sjl-12-001
+(exit 0)
+
+$ git grep -n -e model-eval-call -e model-caller-scope 30af0dad -- Broiler.ECMAScript/runners
+30af0dad:Broiler.ECMAScript/runners/SyntaxDump.cs:61:/// From SJL-15.2 stage 5c it also holds, after those lines, one <c>model-eval-call</c> line per direct-eval candidate in the
+30af0dad:Broiler.ECMAScript/runners/SyntaxDump.cs:63:/// null; and after each, one <c>model-caller-scope</c> line per record, innermost first: whether it is a <c>Catch</c>
+30af0dad:Broiler.ECMAScript/runners/SyntaxDump.cs:320:            text.Append("model-eval-call ").Append(Reference(order, call)).Append(' ').Append(records is null ? "-" : Number(records.Count)).Append('\n');
+30af0dad:Broiler.ECMAScript/runners/SyntaxDump.cs:325:                text.Append("model-caller-scope ").Append(Flag(record.IsCatch));
+(exit 0)
+
+$ git grep -n -e model-eval-call -e model-caller-scope 4e27f13d -- Broiler.ECMAScript/runners
+(exit 1)
+
+$ git grep -n 'if (model && result.Model is' 30af0dad -- Broiler.ECMAScript/runners
+30af0dad:Broiler.ECMAScript/runners/SyntaxDump.cs:157:        if (model && result.Model is { } semantic)
+(exit 0)
+
+$ git grep -n 'BuildSemanticModel { get; init; }' 30af0dad -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs:236:    public bool BuildSemanticModel { get; init; }
+(exit 0)
+
+$ git grep -n BuildSemanticModel 30af0dad -- Broiler.JS docs/evidence/sjl-12-001
+(exit 1)
+
+$ git grep -n SyntaxDump 30af0dad -- Broiler.JS docs/evidence/sjl-12-001/tools
+(exit 1)
+
+$ git grep -n -e CallerScope -e DirectEvalCalls -e AnnexBAlias -e BlockFunctionAlias -e DynamicReason -e EnvironmentOf -e ResolutionKind 30af0dad -- Broiler.JS docs/evidence/sjl-12-001
+(exit 1)
+
+$ git grep -n ProjectReference 30af0dad -- docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj
+30af0dad:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:24:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj" />
+30af0dad:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:25:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj" />
+30af0dad:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:26:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj" />
+30af0dad:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:27:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj" />
+30af0dad:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:28:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj" />
+30af0dad:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:29:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj" />
+30af0dad:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:30:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj" />
+30af0dad:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:31:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj" />
+(exit 0)
+
+$ git grep -n 'new ParseRequest(' 30af0dad -- Broiler.JS
+30af0dad:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs:168:        return new ParseRequest(source, goal, request.UnicodeTables ?? JSUnicodeTables.Instance, BridgeRegularExpressions.Instance)
+30af0dad:Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs:84:        var request = new ParseRequest(new SourceText(source, string.Empty, 0), ParseGoal.Script, JSUnicode.Tables, RegularExpressions.Instance)
+(exit 0)
+
+$ git grep -n -A 8 'new InheritedContext' 30af0dad -- Broiler.JS
+30af0dad:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs:172:                ? new InheritedContext
+30af0dad:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs-173-                {
+30af0dad:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs-174-                    InFunction = request.InFunction,
+30af0dad:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs-175-                    InMethod = request.InMethod,
+30af0dad:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs-176-                    InDerivedConstructor = request.InDerivedConstructor,
+30af0dad:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs-177-                    InClassFieldInitializer = request.InClassFieldInitializer,
+30af0dad:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs-178-                    VisiblePrivateNames = request.VisiblePrivateNames,
+30af0dad:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs-179-                }
+30af0dad:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs-180-                : null,
+(exit 0)
+
+$ git grep -n -e 'public IReadOnlyList<CallerScope>? CallerScopes' -e 'init => callerScopes = value is null' 30af0dad -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/InheritedContext.cs
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/InheritedContext.cs:172:    public IReadOnlyList<CallerScope>? CallerScopes
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/InheritedContext.cs:175:        init => callerScopes = value is null ? null : CopyScopes(value);
+(exit 0)
+
+$ git grep -n -e 'new DeclarationsWalk(request' -e 'model = buildModel;' -e 'this.semantics = semantics;' -e 'model ? Model(scopeList) : null' -e '= CallerChains();' -e '= CallerNames(scopeList);' -e '= Resolutions(scopeList' -e '= AnnexBAliases(scopeList' -e 'case CallExpression call when model && IsDirectEvalCandidate(call):' -e 'if (semantics && goal == ParseGoal.Eval && !strict && request.Context!.CallerScopes is' 30af0dad -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:204:        model = buildModel;
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:224:        this.semantics = semantics;
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:305:        var walk = new DeclarationsWalk(request, request.BuildSemanticModel, request.BuildSemanticModel);
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:320:        var walk = new DeclarationsWalk(request, buildModel: false, semantics: request.BuildSemanticModel);
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:356:        return new DeclarationTables(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), model ? Model(scopeList) : null);
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:393:        var (directEvalCalls, callerScopesOf) = CallerChains();
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:394:        var callerNames = CallerNames(scopeList);
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:398:        var (resolutionOf, environmentOf, annexBAliasOf) = Resolutions(scopeList, functionList, declarationOf, callerNames);
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:583:        var aliases = AnnexBAliases(scopeList, parametersOf, callerNames?.OutsideCatch);
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1194:        if (semantics && goal == ParseGoal.Eval && !strict && request.Context!.CallerScopes is { } callers)
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1672:            case CallExpression call when model && IsDirectEvalCandidate(call):
+(exit 0)
+
+$ git grep -n -e 'private SemanticModel Model(' -e ') CallerChains()' -e ') CallerNames(Scope' -e ') Resolutions(Scope' 30af0dad -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:366:    private SemanticModel Model(Scope[] tableScopes)
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:417:    private (IReadOnlyList<CallExpression> Calls, Dictionary<CallExpression, IReadOnlyList<CallerScope>?> ScopesOf) CallerChains()
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:555:    private (Dictionary<SyntaxNode, Resolution> Resolutions, Dictionary<SyntaxNode, EnvironmentFacts> Environments, Dictionary<Declaration, Declaration> AnnexBAliases) Resolutions(Scope[] scopeList, FunctionFacts[] functionList, Dictionary<SyntaxNode, Declaration> declarationOf,
+(exit 0)
+
+$ git grep -n -e 'DirectEvalCalls = directEvalCalls;' -e 'public IReadOnlyList<CallerScope>? CallerScopesOf(CallExpression call)' 30af0dad -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs:219:        DirectEvalCalls = directEvalCalls;
+30af0dad:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs:677:    public IReadOnlyList<CallerScope>? CallerScopesOf(CallExpression call)
+(exit 0)
+
+# Notes: the first command's empty output says that no file of Broiler.JS/ or of bundle sjl-12-001 (the tool
+# included) differs between the two commits; the second's and third's that the model-eval-call and model-caller-scope
+# lines are stage 5c's, written in the model section, which the fourth's line writes only when the parse built a model;
+# the sixth's, seventh's and eighth's (exit 1, no match) that nothing in Broiler.JS or the bundle sets
+# BuildSemanticModel, uses the library's SyntaxDump or reads any member stage 5c adds (or stage 5b's, 5a's alias,
+# environment and resolution members; the pattern CallerScope also matches CallerScopes and CallerScopesOf); the tool
+# references only Broiler.JS projects. The two ParseRequest constructions in Broiler.JS (the bridge's, which the tool's
+# P and K reach, and the portable compiler's) set no BuildSemanticModel, so the member keeps its default, false, and the
+# parse builds no model; the bridge's InheritedContext, for the eval goal, sets five members and not CallerScopes, which
+# so stays null (the eleventh and twelfth commands). The walk is built with buildModel and semantics equal to the
+# request's BuildSemanticModel, or buildModel false; the direct-eval candidates are recorded only with model set, the
+# records and their names are computed only in Model, which the tables call only when model is set (CallerChains and
+# CallerNames called at lines 393 and 394, between Model's declaration at line 366 and CallerChains' at line 417), and
+# EA0007 and EA0008 are reported only with semantics set and a non-null CallerScopes. And the dumps' hashes are
+# identical in every row at both commits (rows-d1.txt).

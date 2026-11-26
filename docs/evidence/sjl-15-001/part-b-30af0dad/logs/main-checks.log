@@ -1,0 +1,8 @@
+2026-11-26T21:07:13Z step 0 (start, before the worktree; the push ref claude/busy-lamport-m3yprr at 628f4b3887f1117b73d595cdbc9429bd5b033754): 30af0dad83f73d2a5cf5495b2d4e3716cc7ed0df	refs/heads/main
+2026-11-26T21:07:27Z step 1 (the worktree): 30af0dad83f73d2a5cf5495b2d4e3716cc7ed0df	refs/heads/main
+2026-11-26T21:08:04Z step 1a (before the base run at 4e27f13d): 30af0dad83f73d2a5cf5495b2d4e3716cc7ed0df	refs/heads/main
+2026-11-26T21:13:33Z step 1b (before the after run at 30af0dad): 30af0dad83f73d2a5cf5495b2d4e3716cc7ed0df	refs/heads/main
+2026-11-26T21:19:26Z step 2 (after both runs, before the comparison; Shared libraries concluded, CI in progress): 30af0dad83f73d2a5cf5495b2d4e3716cc7ed0df	refs/heads/main
+2026-11-26T21:19:45Z step 3 (before the CI import; both CI runs concluded): 30af0dad83f73d2a5cf5495b2d4e3716cc7ed0df	refs/heads/main
+2026-11-26T21:21:23Z before step 4 (retain): 30af0dad83f73d2a5cf5495b2d4e3716cc7ed0df	refs/heads/main
+2026-11-26T21:25:08Z check (retention; later checks are in the stage's scratch log only): 30af0dad83f73d2a5cf5495b2d4e3716cc7ed0df	refs/heads/main
