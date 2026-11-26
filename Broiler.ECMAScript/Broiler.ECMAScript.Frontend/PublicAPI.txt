@@ -2,6 +2,7 @@
 # Regenerate with BROILER_ECMASCRIPT_UPDATE_API=1 dotnet test Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests;
 # a change here is an API change, versioned under convention 16.
 Broiler.ECMAScript.Semantics.BindingKind enum
+Broiler.ECMAScript.Semantics.BindingKind.Arguments = 13
 Broiler.ECMAScript.Semantics.BindingKind.AwaitUsing = 4
 Broiler.ECMAScript.Semantics.BindingKind.CatchParameter = 8
 Broiler.ECMAScript.Semantics.BindingKind.Class = 6
@@ -27,8 +28,21 @@ Broiler.ECMAScript.Semantics.Declaration.get_Node() method Broiler.ECMAScript.Sy
 Broiler.ECMAScript.Semantics.DeclarationTables sealed class
 Broiler.ECMAScript.Semantics.DeclarationTables.get_Functions() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.FunctionFacts>
 Broiler.ECMAScript.Semantics.DeclarationTables.get_Scopes() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.Scope>
+Broiler.ECMAScript.Semantics.DynamicReason enum
+Broiler.ECMAScript.Semantics.DynamicReason.SloppyDirectEval = 1
+Broiler.ECMAScript.Semantics.DynamicReason.With = 0
+Broiler.ECMAScript.Semantics.DynamicReason.value__ field System.Int32
+Broiler.ECMAScript.Semantics.EnvironmentFacts sealed class
+Broiler.ECMAScript.Semantics.EnvironmentFacts.get_Arguments() method Broiler.ECMAScript.Semantics.Declaration
+Broiler.ECMAScript.Semantics.EnvironmentFacts.get_ArgumentsMapped() method System.Boolean
+Broiler.ECMAScript.Semantics.EnvironmentFacts.get_ArgumentsNeeded() method System.Boolean
+Broiler.ECMAScript.Semantics.EnvironmentFacts.get_ContainsWith() method System.Boolean
+Broiler.ECMAScript.Semantics.EnvironmentFacts.get_DirectEvalInBody() method System.Boolean
+Broiler.ECMAScript.Semantics.EnvironmentFacts.get_DirectEvalInParameters() method System.Boolean
+Broiler.ECMAScript.Semantics.EnvironmentFacts.get_Node() method Broiler.ECMAScript.Syntax.SyntaxNode
 Broiler.ECMAScript.Semantics.FunctionFacts sealed class
 Broiler.ECMAScript.Semantics.FunctionFacts.get_HasParameterExpressions() method System.Boolean
+Broiler.ECMAScript.Semantics.FunctionFacts.get_HasSeparateVariableEnvironment() method System.Boolean
 Broiler.ECMAScript.Semantics.FunctionFacts.get_HasSimpleParameterList() method System.Boolean
 Broiler.ECMAScript.Semantics.FunctionFacts.get_IsAsync() method System.Boolean
 Broiler.ECMAScript.Semantics.FunctionFacts.get_IsGenerator() method System.Boolean
@@ -69,6 +83,19 @@ Broiler.ECMAScript.Semantics.PrivateNameKind.Accessor = 2
 Broiler.ECMAScript.Semantics.PrivateNameKind.Field = 0
 Broiler.ECMAScript.Semantics.PrivateNameKind.Method = 1
 Broiler.ECMAScript.Semantics.PrivateNameKind.value__ field System.Int32
+Broiler.ECMAScript.Semantics.Resolution sealed class
+Broiler.ECMAScript.Semantics.Resolution.get_Declaration() method Broiler.ECMAScript.Semantics.Declaration
+Broiler.ECMAScript.Semantics.Resolution.get_DynamicScopes() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.Scope>
+Broiler.ECMAScript.Semantics.Resolution.get_Fallback() method Broiler.ECMAScript.Semantics.Resolution
+Broiler.ECMAScript.Semantics.Resolution.get_Kind() method Broiler.ECMAScript.Semantics.ResolutionKind
+Broiler.ECMAScript.Semantics.Resolution.get_Reason() method System.Nullable`1<Broiler.ECMAScript.Semantics.DynamicReason>
+Broiler.ECMAScript.Semantics.Resolution.get_Scope() method Broiler.ECMAScript.Semantics.Scope
+Broiler.ECMAScript.Semantics.ResolutionKind enum
+Broiler.ECMAScript.Semantics.ResolutionKind.Dynamic = 1
+Broiler.ECMAScript.Semantics.ResolutionKind.Global = 2
+Broiler.ECMAScript.Semantics.ResolutionKind.Inherited = 3
+Broiler.ECMAScript.Semantics.ResolutionKind.Static = 0
+Broiler.ECMAScript.Semantics.ResolutionKind.value__ field System.Int32
 Broiler.ECMAScript.Semantics.Scope sealed class
 Broiler.ECMAScript.Semantics.Scope.get_Declarations() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.Declaration>
 Broiler.ECMAScript.Semantics.Scope.get_Kind() method Broiler.ECMAScript.Semantics.ScopeKind
@@ -89,9 +116,12 @@ Broiler.ECMAScript.Semantics.ScopeKind.With = 8
 Broiler.ECMAScript.Semantics.ScopeKind.value__ field System.Int32
 Broiler.ECMAScript.Semantics.SemanticModel sealed class
 Broiler.ECMAScript.Semantics.SemanticModel.DeclarationOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.Declaration
+Broiler.ECMAScript.Semantics.SemanticModel.EnvironmentOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.EnvironmentFacts
 Broiler.ECMAScript.Semantics.SemanticModel.FactsOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.FunctionFacts
 Broiler.ECMAScript.Semantics.SemanticModel.ParentOf(Broiler.ECMAScript.Semantics.Scope) method Broiler.ECMAScript.Semantics.Scope
 Broiler.ECMAScript.Semantics.SemanticModel.PrivateEnvironmentOf(Broiler.ECMAScript.Syntax.ClassNode) method Broiler.ECMAScript.Semantics.PrivateEnvironment
+Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.BindingIdentifier) method Broiler.ECMAScript.Semantics.Resolution
+Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.Identifier) method Broiler.ECMAScript.Semantics.Resolution
 Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.PrivateIdentifier) method Broiler.ECMAScript.Semantics.PrivateNameBinding
 Broiler.ECMAScript.Semantics.SemanticModel.ScopeOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.Scope
 Broiler.ECMAScript.Semantics.SemanticModel.TargetOf(Broiler.ECMAScript.Syntax.BreakStatement) method Broiler.ECMAScript.Semantics.LabelTarget

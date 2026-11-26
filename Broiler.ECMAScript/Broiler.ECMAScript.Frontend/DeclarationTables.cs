@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   7
-// Annotated:        7/7
-// Exempt:           49
-// Human-reviewed:   0/7
+// Relevant units:   8
+// Annotated:        8/8
+// Exempt:           50
+// Human-reviewed:   0/8
 // IP risk:          Low
 // Security risk:    Low
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       7
+// Unverified:       8
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -32,7 +32,15 @@ namespace Broiler.ECMAScript.Semantics;
 // Hairs-Human:        PENDING
 public enum ScopeKind
 {
-    /// <summary>A Script's top level, or eval code's.</summary>
+    /// <summary>
+    /// A Script's top level, or eval code's. A Script's declarations are its own, its lexical ones in the global
+    /// environment's declarative record and the others in its object record (ECMA-262
+    /// GlobalDeclarationInstantiation); sloppy eval code's scope holds its own LexicalEnvironment's declarations, its
+    /// var-scoped ones going to the caller's VariableEnvironment (PerformEval, clause 19.2.1.1, steps 16.a and 16.b), and
+    /// strict eval code's is one environment, its VariableEnvironment its LexicalEnvironment (step 18). <i>(Revised
+    /// 2026-11-26, at SJL-15.2 stage 5a, when resolution joined the semantic model; it read "A Script's top level, or eval
+    /// code's.")</i>
+    /// </summary>
     Script = 0,
 
     /// <summary>A Module's top level.</summary>
@@ -43,7 +51,14 @@ public enum ScopeKind
     /// FunctionDeclarationInstantiation). The tables give a function this one scope, holding its body's declarations; the
     /// semantic model puts its parameters in a <see cref="Parameters"/> scope, this one's parent, and leaves this scope as
     /// the tables have it. <i>(Revised 2026-11-24, at SJL-15.2 stage 1; it read "A function's parameters and body, an arrow
-    /// function's among them; the dynamic function's goals too.")</i>
+    /// function's among them; the dynamic function's goals too.")</i> A sloppy function's one scope stands for its
+    /// LexicalEnvironment over its VariableEnvironment (FunctionDeclarationInstantiation step 32.b): its
+    /// <see cref="Declaration.IsLexical"/> declarations are the LexicalEnvironment's and the others the
+    /// VariableEnvironment's, and where <see cref="FunctionFacts.HasSeparateVariableEnvironment"/> is false the
+    /// VariableEnvironment is also its <see cref="Parameters"/> scope's environment (step 29.d); a strict function's scope is
+    /// one environment (step 31.a). For resolution the split cannot be observed: a reference meets the LexicalEnvironment
+    /// first, and a direct <c>eval</c>'s <c>var</c> beside one of its names is EvalDeclarationInstantiation's SyntaxError.
+    /// <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
     /// </summary>
     Function = 2,
 
@@ -64,7 +79,12 @@ public enum ScopeKind
     /// <summary>The head of a <c>for</c>, <c>for</c>-<c>in</c> or <c>for</c>-<c>of</c> statement that declares lexically.</summary>
     For = 6,
 
-    /// <summary>A class static block.</summary>
+    /// <summary>
+    /// A class static block, whose body FunctionDeclarationInstantiation instantiates with no parameters (ECMA-262 clause
+    /// 15.7.11): in the semantic model it also binds the block's <c>arguments</c>, its
+    /// <see cref="EnvironmentFacts.Arguments"/>, which no scope's <see cref="Scope.Declarations"/> holds. <i>(Revised
+    /// 2026-11-26, at SJL-15.2 stage 5a; it read "A class static block.")</i>
+    /// </summary>
     StaticBlock = 7,
 
     /// <summary>
@@ -96,7 +116,11 @@ public enum ScopeKind
     /// among them, and by the <see cref="ProgramNode"/> for <see cref="ParseGoal.FormalParameters"/> and
     /// <see cref="ParseGoal.FunctionBody"/> (CreateDynamicFunction, clause 20.2.1.1.1): it holds the parameters'
     /// <see cref="BindingKind.Parameter"/> declarations and is the parent of the function's <see cref="Function"/> scope. A
-    /// Script, a Module and eval code have none. The semantic model's alone.
+    /// Script, a Module and eval code have none. The semantic model's alone. It also binds the function's
+    /// <c>arguments</c> where FunctionDeclarationInstantiation creates it (step 22), the function's
+    /// <see cref="EnvironmentFacts.Arguments"/>, which no scope's <see cref="Scope.Declarations"/> holds. <i>(Revised
+    /// 2026-11-26, at SJL-15.2 stage 5a; it read "and is the parent of the function's Function scope. A Script, a Module and
+    /// eval code have none. The semantic model's alone.")</i>
     /// </summary>
     Parameters = 11,
 }
@@ -106,9 +130,11 @@ public enum ScopeKind
 /// <see cref="ExportDefault"/> are the tables' kinds; <see cref="Parameter"/>, <see cref="FunctionName"/> and
 /// <see cref="ClassName"/> are the semantic model's alone, in its own scopes (JSD-0080, "The semantic model's design":
 /// "each binding identifier's declaration, kind (var, let, const, class, function, parameter, catch, import) and
-/// mutability").
+/// mutability"); <see cref="Arguments"/> is the semantic model's alone too, and in no scope's
+/// <see cref="Scope.Declarations"/>. <i>(Revised 2026-11-26, at SJL-15.2 stage 5a, when <c>Arguments</c> was added; it
+/// read "are the semantic model's alone, in its own scopes".)</i>
 /// </summary>
-// Hairs-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk, JSD-0080 semantic model declarations; IP=Low; Security=Low; Resources=0; Fingerprint=C8AC8D
+// Hairs-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk, JSD-0080 semantic model declarations; IP=Low; Security=Low; Resources=0; Fingerprint=232701
 // Hairs-Human:        PENDING
 public enum BindingKind
 {
@@ -164,6 +190,16 @@ public enum BindingKind
     /// <see cref="Class"/>, in the scope that declares it. Its declaration's three flags are false, as a parameter's are.
     /// </summary>
     ClassName = 12,
+
+    /// <summary>
+    /// The <c>arguments</c> binding FunctionDeclarationInstantiation creates where its argumentsObjectNeeded is true (ECMA-262
+    /// clause 10.2.11, steps 15 to 18 and 22), in the environment of the function's <see cref="ScopeKind.Parameters"/> scope
+    /// or the static block's <see cref="ScopeKind.StaticBlock"/> scope: the semantic model's alone, held as
+    /// <see cref="EnvironmentFacts.Arguments"/> and in no scope's <see cref="Scope.Declarations"/>. Its declaration's
+    /// <see cref="Declaration.Node"/> is the function's, the static block's or the dynamic function's program, and its three
+    /// flags are false, as a parameter's are. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
+    /// </summary>
+    Arguments = 13,
 }
 
 /// <summary>One declared name, as the declarations walk finds it (decision D10).</summary>
@@ -187,7 +223,13 @@ public sealed class Declaration
     /// <summary>How it is declared.</summary>
     public BindingKind Kind { get; }
 
-    /// <summary>The node that binds it: a <see cref="BindingIdentifier"/>, or the declaration of a name no identifier spells (<c>*default*</c>).</summary>
+    /// <summary>
+    /// The node that binds it: a <see cref="BindingIdentifier"/>, or the declaration of a name no identifier spells
+    /// (<c>*default*</c>); for a <see cref="BindingKind.Arguments"/> declaration, the <see cref="FunctionNode"/>, the
+    /// <see cref="StaticBlock"/> or the dynamic function's <see cref="ProgramNode"/> whose <c>arguments</c> it is, for which
+    /// <see cref="SemanticModel.DeclarationOf"/> answers null. <i>(Revised 2026-11-26, at SJL-15.2 stage 5a; it read "The
+    /// node that binds it: a BindingIdentifier, or the declaration of a name no identifier spells (*default*).")</i>
+    /// </summary>
     public SyntaxNode Node { get; }
 
     /// <summary>
@@ -195,7 +237,9 @@ public sealed class Declaration
     /// also for a <see cref="BindingKind.Parameter"/>, <see cref="BindingKind.FunctionName"/> or
     /// <see cref="BindingKind.ClassName"/> declaration, which is in neither. <i>(Revised 2026-11-24, at SJL-15.2 stage 1,
     /// when the semantic model's kinds were added; it read "Whether the scope declares it lexically
-    /// (LexicallyDeclaredNames), rather than var-scoped (VarDeclaredNames).")</i>
+    /// (LexicallyDeclaredNames), rather than var-scoped (VarDeclaredNames).")</i> False also for a
+    /// <see cref="BindingKind.Arguments"/> declaration, which is in neither. <i>(Added 2026-11-26, at SJL-15.2 stage
+    /// 5a.)</i>
     /// </summary>
     public bool IsLexical { get; }
 
@@ -211,7 +255,10 @@ public sealed class Declaration
     /// <c>using</c> or an <c>await using</c> declaration (IsConstantDeclaration, clause 8.2.3; BlockDeclarationInstantiation,
     /// clause 14.2.3), an import's local name (a source text module record's InitializeEnvironment), a named function
     /// expression's own name (clause 15.2.5) and a class's inner name (clause 15.7.14); true for
-    /// every other kind, which CreateMutableBinding creates. It follows from <see cref="Kind"/> alone.
+    /// every other kind, which CreateMutableBinding creates. It follows from <see cref="Kind"/> alone. A
+    /// <see cref="BindingKind.Arguments"/> binding is true too: strict FunctionDeclarationInstantiation creates it immutable,
+    /// but "In strict mode code early errors prevent attempting to assign to this binding, so its mutability is not
+    /// observable" (clause 10.2.11, step 22.c.ii's note). <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
     /// </summary>
     // Hairs-AI:           Origin=AI; Spec=ECMA-262 s9.1.1.1.3 CreateImmutableBinding, s8.2.3 IsConstantDeclaration, JSD-0080 semantic model mutability; IP=Low; Security=Low; Resources=1; Fingerprint=43F5A5
     // Hairs-Human:        PENDING
@@ -267,7 +314,10 @@ public sealed class Scope
 /// function's; the semantic model's <see cref="SemanticModel.Functions"/> also holds one for every class static block and
 /// for every field with an initialiser, which the tables do not. <i>(Revised 2026-11-24, at SJL-15.2 stage 1, when the
 /// kind and the parameter facts were added; it read "A program's or a function's facts the walk computes (decision D10):
-/// its strictness and its parameters' names.")</i>
+/// its strictness and its parameters' names.")</i> From SJL-15.2 stage 5a it also answers whether it has a separate
+/// variable environment (<see cref="HasSeparateVariableEnvironment"/>, row FF4), computed from the facts above, so that
+/// it is the same with the semantic model on or off; the facts that depend on the model are
+/// <see cref="SemanticModel.EnvironmentOf"/>'s. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
 /// </summary>
 // Hairs-AI:           Origin=AI; Spec=JSD-0083 D10 side tables of the declarations walk, JSD-0080 semantic model per-function facts; IP=Low; Security=Low; Resources=1; Fingerprint=6CA3D3
 // Hairs-Human:        PENDING
@@ -326,6 +376,23 @@ public sealed class FunctionFacts
     /// clause 10.2.11); false where there are no parameters.
     /// </summary>
     public bool HasParameterExpressions { get; }
+
+    /// <summary>
+    /// Whether its VariableEnvironment is separate from the environment its parameters are bound in (row FF4): for a
+    /// function of any kind, the dynamic function's goals among them, <see cref="HasParameterExpressions"/>
+    /// (FunctionDeclarationInstantiation, ECMA-262 clause 10.2.11, step 30, whose note reads that closures created by
+    /// expressions in the formal parameter list do not see the body's declarations); for eval code,
+    /// <see cref="IsStrict"/> (PerformEval, clause 19.2.1.1, step 18, "If strictEval is true, set varEnv to lexEnv", strict
+    /// eval code's VariableEnvironment being its own); false for a Script, a Module, a static block and a field
+    /// initialiser, whose <see cref="HasParameterExpressions"/> is false. Computed from <see cref="Kind"/>,
+    /// <see cref="IsStrict"/> and <see cref="HasParameterExpressions"/>, so that it is the same with the semantic model on
+    /// or off. A separate parameter environment (steps 19 and 20) is <c>!IsStrict &amp;&amp; HasParameterExpressions</c>,
+    /// and a separate LexicalEnvironment is <c>!IsStrict</c> for a function (steps 31 and 32) and always present for eval
+    /// code (PerformEval steps 16.a and 17.a); neither is a member. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s10.2.11 FunctionDeclarationInstantiation step 30, s19.2.1.1 PerformEval step 18, JSD-0080 per-function facts FF4; IP=Low; Security=Low; Resources=0; Fingerprint=861B81
+    // Hairs-Human:        PENDING
+    public bool HasSeparateVariableEnvironment => Kind == FunctionKind.EvalCode ? IsStrict : HasParameterExpressions;
 }
 
 /// <summary>

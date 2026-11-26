@@ -415,4 +415,60 @@ public sealed class LimitsTests
         Assert.Equal(("JSE9201", "512"), (refused.Diagnostics[0].Code, refused.Diagnostics[0].Arguments[0]));
         Assert.Equal("JSE9201", ParseV(Text(100_000), bound).Diagnostics[0].Code);
     }
+
+    /// <summary>
+    /// Resolution at the supported maximum on the documented stack (SJL-15.2 stage 5a): nested named function expressions
+    /// and classes with methods, the constructs that add the most scopes per level of nesting, at the deepest source the
+    /// bound admits, every reference resolving to the outermost declaration; and many references at that depth. The model
+    /// is built during the parse, on the documented stack. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
+    /// </summary>
+    [Theory]
+    [InlineData("var v; x = ", "(function f(a = v) { return ", "v", "})", ";", 1)]
+    [InlineData("var v; x = ", "class C extends (v, Object) { m() { return ", "v", "} }", ";", 1)]
+    [InlineData("var v; x = ", "(function f() { return ", ManyReferences, "})", ";", 200)]
+    public void Resolution_at_the_supported_maximum_answers_the_outermost_declaration(string prefix, string open, string core, string close, string suffix, int innermost)
+    {
+        string Text(int levels) => prefix + string.Concat(Enumerable.Repeat(open, levels)) + core + string.Concat(Enumerable.Repeat(close, levels)) + suffix;
+        var bound = ParseLimits.MaximumSupportedNestingDepth;
+        var (low, high) = (0, bound + 1);
+        while (high - low > 1)
+        {
+            var middle = (low + high) / 2;
+            if (ParseV(Text(middle), bound).Outcome == ParseOutcome.Refused)
+                high = middle;
+            else
+                low = middle;
+        }
+
+        Assert.True(low >= bound / 4, "accepted at " + low.ToString(CultureInfo.InvariantCulture) + " levels");
+        var on = ParseV(Text(low), bound, model: true);
+        Assert.Equal(ParseOutcome.Accepted, on.Outcome);
+        var model = on.Model!;
+        var outer = model.Scopes[0].Declarations.First(static d => d.Name == "v");
+        var references = new List<Identifier>();
+        var pending = new Stack<SyntaxNode>();
+        var children = new List<SyntaxNode>();
+        pending.Push(on.Tree!);
+        while (pending.Count > 0)
+        {
+            var node = pending.Pop();
+            if (node is Identifier { Name: "v" } reference)
+                references.Add(reference);
+            children.Clear();
+            node.AddChildren(children);
+            foreach (var child in children)
+                pending.Push(child);
+        }
+
+        Assert.True(references.Count >= innermost && (innermost > 1 || references.Count > low), references.Count.ToString(CultureInfo.InvariantCulture) + " references");
+        foreach (var reference in references)
+        {
+            var resolution = model.Resolve(reference);
+            Assert.Equal(Semantics.ResolutionKind.Static, resolution.Kind);
+            Assert.Same(model.Scopes[0], resolution.Scope);
+            Assert.Same(outer, resolution.Declaration);
+        }
+    }
+
+    private const string ManyReferences = "v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v";
 }

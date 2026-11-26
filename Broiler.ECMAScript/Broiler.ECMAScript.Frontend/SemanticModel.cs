@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   17
-// Annotated:        17/17
-// Exempt:           40
-// Human-reviewed:   0/17
+// Relevant units:   24
+// Annotated:        24/24
+// Exempt:           63
+// Human-reviewed:   0/24
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       17
+// Unverified:       24
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -103,7 +103,10 @@ public enum FunctionKind
 /// their parents, the declarations with their binding identifiers, and the per-function facts; from stage 3 it also holds
 /// each <c>break</c>'s and <c>continue</c>'s target (<see cref="TargetOf(BreakStatement)"/>), and from stage 4 each
 /// class's private environment and the binding each private name names (<see cref="PrivateEnvironmentOf"/>,
-/// <see cref="Resolve(PrivateIdentifier)"/>); resolution, the module record, named evaluation, captures and the early
+/// <see cref="Resolve(PrivateIdentifier)"/>), and from stage 5a each reference's and each binding identifier's
+/// resolution (<see cref="Resolve(Identifier)"/>, <see cref="Resolve(BindingIdentifier)"/>) and the environment facts of
+/// the program, every function, every static block and every initialised field (<see cref="EnvironmentOf"/>); Annex
+/// B.3.3's aliases, the caller's names of eval code, the module record, named evaluation, captures and the early
 /// errors that are not purely grammatical are later stages'. From stage 2 the walk that builds it also reports its
 /// early errors of the function context (the super rows, ContainsArguments, eval code's from the caller's context, and
 /// three of expressions') among the parse's diagnostics, so that a source they refuse has no model, from stage 3 those
@@ -118,7 +121,10 @@ public enum FunctionKind
 /// private names joined the model; it read "each <c>break</c>'s and <c>continue</c>'s target
 /// (<see cref="TargetOf(BreakStatement)"/>); resolution, private names, the module record, named evaluation, captures
 /// and the early errors that are not purely grammatical are later stages'", "and from stage 3 those of jump targets"
-/// and "the early errors of private names and the module record are later stages'.")</i>
+/// and "the early errors of private names and the module record are later stages'.")</i> <i>(Revised 2026-11-26, at
+/// SJL-15.2 stage 5a, when resolution and the environment facts joined the model; it read "(<see
+/// cref="PrivateEnvironmentOf"/>, <see cref="Resolve(PrivateIdentifier)"/>); resolution, the module record, named
+/// evaluation, captures and the early errors that are not purely grammatical are later stages'.")</i>
 /// </summary>
 /// <remarks>
 /// <para>
@@ -138,6 +144,8 @@ public enum FunctionKind
 /// <see cref="FactsOf"/>, both <see cref="TargetOf(BreakStatement)"/> overloads, <see cref="PrivateEnvironmentOf"/> and
 /// <see cref="Resolve(PrivateIdentifier)"/> throw <see cref="ArgumentException"/>
 /// for a node that is not in the model's tree, and <see cref="ParentOf"/> for a scope that is not one of the model's.
+/// So do the <see cref="Resolve(Identifier)"/> and <see cref="Resolve(BindingIdentifier)"/> overloads and
+/// <see cref="EnvironmentOf"/>. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
 /// <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when <c>TargetOf</c> joined them; it read "<see cref="ScopeOf"/>,
 /// <see cref="DeclarationOf"/> and <see cref="FactsOf"/> throw <see cref="ArgumentException"/> for a node that is not in
 /// the model's tree".)</i> <i>(Revised 2026-11-25, at SJL-15.2 stage 4, when <c>PrivateEnvironmentOf</c> and
@@ -157,8 +165,10 @@ public sealed class SemanticModel
     private readonly Dictionary<SyntaxNode, LabelTarget> targetOf;
     private readonly Dictionary<SyntaxNode, PrivateNameBinding> privateOf;
     private readonly Dictionary<ClassNode, PrivateEnvironment> privateEnvironmentOf;
+    private readonly Dictionary<SyntaxNode, Resolution> resolutionOf;
+    private readonly Dictionary<SyntaxNode, EnvironmentFacts> environmentOf;
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design; IP=Low; Security=Low; Resources=1; Fingerprint=40E31D
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design; IP=Low; Security=Low; Resources=1; Fingerprint=D347C4
     // Hairs-Human:        PENDING
     internal SemanticModel(
         IReadOnlyList<Scope> scopes,
@@ -169,7 +179,9 @@ public sealed class SemanticModel
         Dictionary<SyntaxNode, FunctionFacts> factsOf,
         Dictionary<SyntaxNode, LabelTarget> targetOf,
         Dictionary<SyntaxNode, PrivateNameBinding> privateOf,
-        Dictionary<ClassNode, PrivateEnvironment> privateEnvironmentOf)
+        Dictionary<ClassNode, PrivateEnvironment> privateEnvironmentOf,
+        Dictionary<SyntaxNode, Resolution> resolutionOf,
+        Dictionary<SyntaxNode, EnvironmentFacts> environmentOf)
     {
         Scopes = scopes;
         Functions = functions;
@@ -180,6 +192,8 @@ public sealed class SemanticModel
         this.targetOf = targetOf;
         this.privateOf = privateOf;
         this.privateEnvironmentOf = privateEnvironmentOf;
+        this.resolutionOf = resolutionOf;
+        this.environmentOf = environmentOf;
     }
 
     /// <summary>
@@ -387,6 +401,85 @@ public sealed class SemanticModel
             throw new ArgumentException("The node is not in the semantic model's tree.", nameof(name));
         return privateOf.TryGetValue(name, out var binding) ? binding : null;
     }
+
+    /// <summary>
+    /// The resolution of a reference (JSD-0080: "reference resolution: static, to a scope and declaration; dynamic, with its
+    /// reason, where <c>with</c> or sloppy direct <c>eval</c> makes it so; or global"; ECMA-262 ResolveBinding and
+    /// GetIdentifierReference, read statically): the binding the name resolves to where it stands, with
+    /// the scopes that may bind it at run time before that one, as <see cref="Resolution"/> describes. Every
+    /// <see cref="Identifier"/> of the tree has one, since an <see cref="Identifier"/> is exactly an IdentifierReference: a
+    /// property name, a label, a meta-property's part and an export name are <see cref="IdentifierName"/>s. With Annex B on
+    /// (<see cref="ParseSwitches.AnnexB"/>), a name that only a block function's Annex B.3.3 alias binds is answered as the
+    /// scopes alone answer it until stage 5b: <see cref="ResolutionKind.Global"/>, or a <see cref="ResolutionKind.Static"/>
+    /// or <see cref="ResolutionKind.Dynamic"/> answer naming an outer binding, which the alias shadows at run time. Beside
+    /// the <see cref="Resolve(BindingIdentifier)"/> and <see cref="Resolve(PrivateIdentifier)"/> overloads, a caller passing a
+    /// null literal names the overload by a cast. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
+    /// </summary>
+    /// <param name="reference">An <see cref="Identifier"/> of the model's tree.</param>
+    /// <returns>Its resolution, never null.</returns>
+    /// <exception cref="ArgumentNullException">The reference is null.</exception>
+    /// <exception cref="ArgumentException">The reference is not in the model's tree.</exception>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, s14.11.2 with statement, s19.2.1.1 PerformEval, JSD-0080 reference resolution; IP=Low; Security=Medium; Resources=1; Fingerprint=95618E
+    // Hairs-Human:        PENDING
+    public Resolution Resolve(Identifier reference)
+    {
+        ArgumentNullException.ThrowIfNull(reference);
+        if (!scopeOf.ContainsKey(reference))
+            throw new ArgumentException("The node is not in the semantic model's tree.", nameof(reference));
+        return resolutionOf[reference];
+    }
+
+    /// <summary>
+    /// The resolution of a binding identifier (the session's decision D-js-resolution). A binding the language resolves
+    /// when it runs is looked up as a reference standing there would be: every BoundName of a <c>var</c> declarator with an
+    /// initialiser (VariableDeclaration evaluation, whose ResolveBinding a pattern's PutValue with
+    /// an undefined environment repeats) and of a <c>for</c>-<c>in</c> or <c>for</c>-<c>of</c> statement's <c>var</c>
+    /// head, so that <c>with (o) { var x = 2 }</c> writes <c>o.x</c> and <c>catch (e) { var e = 1 }</c> writes the
+    /// <c>catch</c> parameter (Annex B.3.4). Every other binding answers as a reference would where the lookup reaches the
+    /// scope that holds its <see cref="DeclarationOf"/>: <see cref="ResolutionKind.Static"/> with that scope and the name's
+    /// first declaration in it, or, for a var-scoped declaration of sloppy eval code, <see cref="ResolutionKind.Inherited"/>
+    /// with that first declaration. Duplicate sloppy parameters, which FunctionDeclarationInstantiation also initialises
+    /// through ResolveBinding (its step 25.a), answer that way too: a simple sloppy list has no expression, <c>with</c> or
+    /// direct <c>eval</c> between a parameter and its environment, so that the lookup ends there on the name's first
+    /// declaration. So the two overloads agree: in <c>var v; var v = 1; v</c> both bindings and the reference answer the
+    /// first <c>var</c>. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
+    /// </summary>
+    /// <param name="binding">A <see cref="BindingIdentifier"/> of the model's tree.</param>
+    /// <returns>Its resolution, never null.</returns>
+    /// <exception cref="ArgumentNullException">The binding is null.</exception>
+    /// <exception cref="ArgumentException">The binding is not in the model's tree.</exception>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding, VariableDeclaration evaluation, ForIn/OfBodyEvaluation, Annex B.3.4, JSD-0080 reference resolution; IP=Low; Security=Medium; Resources=1; Fingerprint=9BAE93
+    // Hairs-Human:        PENDING
+    public Resolution Resolve(BindingIdentifier binding)
+    {
+        ArgumentNullException.ThrowIfNull(binding);
+        if (!scopeOf.ContainsKey(binding))
+            throw new ArgumentException("The node is not in the semantic model's tree.", nameof(binding));
+        return resolutionOf[binding];
+    }
+
+    /// <summary>
+    /// The environment facts of the program, a <see cref="FunctionNode"/>, a <see cref="StaticBlock"/> or a
+    /// <see cref="FieldDefinition"/> with an initialiser (JSD-0080: "per-function facts"; rows FF3 and FF5), the nodes
+    /// <see cref="FactsOf"/> accepts: its <c>arguments</c> binding, whether it is needed and mapped, and direct <c>eval</c>
+    /// and <c>with</c> in its own code, as <see cref="EnvironmentFacts"/> describes. The separate variable environment, row
+    /// FF4, is <see cref="FunctionFacts.HasSeparateVariableEnvironment"/>. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
+    /// </summary>
+    /// <param name="node">The <see cref="ProgramNode"/>, a <see cref="FunctionNode"/>, a <see cref="StaticBlock"/> or an initialised <see cref="FieldDefinition"/> of the model's tree.</param>
+    /// <returns>Its environment facts.</returns>
+    /// <exception cref="ArgumentNullException">The node is null.</exception>
+    /// <exception cref="ArgumentException">The node is not in the model's tree, or is a node of it that has no facts: none of those four.</exception>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s10.2.11 FunctionDeclarationInstantiation steps 15-22, s19.2.1.1 PerformEval, s14.11.2 with statement, JSD-0080 per-function facts; IP=Low; Security=Medium; Resources=1; Fingerprint=863083
+    // Hairs-Human:        PENDING
+    public EnvironmentFacts EnvironmentOf(SyntaxNode node)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+        if (!scopeOf.ContainsKey(node))
+            throw new ArgumentException("The node is not in the semantic model's tree.", nameof(node));
+        if (!environmentOf.TryGetValue(node, out var facts))
+            throw new ArgumentException("The node is not a program, a function, a static block or an initialised field.", nameof(node));
+        return facts;
+    }
 }
 
 /// <summary>
@@ -553,4 +646,267 @@ public sealed class PrivateNameBinding
     /// order: one, or a getter and a setter.
     /// </summary>
     public IReadOnlyList<SyntaxNode> Elements { get; }
+}
+
+/// <summary>
+/// The kind of a <see cref="Resolution"/> (the session's decision D-js-resolution). <i>(Added 2026-11-26, at SJL-15.2
+/// stage 5a.)</i>
+/// </summary>
+/// <remarks>The numbers are stable; a later member takes a new number.</remarks>
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=0; Fingerprint=6798E4
+// Hairs-Human:        PENDING
+public enum ResolutionKind
+{
+    /// <summary>To the binding of <see cref="Resolution.Scope"/>'s environment named by <see cref="Resolution.Declaration"/>.</summary>
+    Static = 0,
+
+    /// <summary>
+    /// To a binding one of <see cref="Resolution.DynamicScopes"/> may hold at run time, a <c>with</c> statement's object or
+    /// a sloppy direct <c>eval</c>'s <c>var</c>, and otherwise to <see cref="Resolution.Fallback"/>.
+    /// </summary>
+    Dynamic = 1,
+
+    /// <summary>
+    /// To no binding the unit declares or the parse knows: GetIdentifierReference ends at the global environment, so that a read throws a ReferenceError unless the global object holds the name, <c>typeof</c> gives
+    /// <c>"undefined"</c>, and a sloppy write creates a global. Only Script, Module and the dynamic function's goals answer
+    /// it.
+    /// </summary>
+    Global = 2,
+
+    /// <summary>
+    /// To the environments eval code inherits, which the request does not describe (<see cref="InheritedContext"/>): the
+    /// caller's chain for a direct <c>eval</c>, the global environment for an indirect one, which the request does not tell
+    /// apart. Only eval code answers it: a name eval code does not declare, and a var-scoped declaration of sloppy eval
+    /// code, whose binding PerformEval creates in the caller's VariableEnvironment (step 16.b).
+    /// </summary>
+    Inherited = 3,
+}
+
+/// <summary>
+/// Why a <see cref="ResolutionKind.Dynamic"/> resolution is dynamic: the reason of its innermost
+/// <see cref="Resolution.DynamicScopes"/> entry. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
+/// </summary>
+/// <remarks>The numbers are stable; a later member takes a new number.</remarks>
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s14.11.2 with statement NewObjectEnvironment, s19.2.1.1 PerformEval step 16.b, JSD-0080 dynamic markers; IP=Low; Security=Low; Resources=0; Fingerprint=27A2DE
+// Hairs-Human:        PENDING
+public enum DynamicReason
+{
+    /// <summary>A <c>with</c> statement's object environment (ECMA-262 clause 14.11.2, NewObjectEnvironment), which may bind any name.</summary>
+    With = 0,
+
+    /// <summary>
+    /// A sloppy direct <c>eval</c>, which declares its <c>var</c>s in the running VariableEnvironment (PerformEval, ECMA-262
+    /// clause 19.2.1.1, step 16.b).
+    /// </summary>
+    SloppyDirectEval = 1,
+}
+
+/// <summary>
+/// The resolution of a reference or a binding identifier, as <see cref="SemanticModel.Resolve(Identifier)"/> and
+/// <see cref="SemanticModel.Resolve(BindingIdentifier)"/> answer it (JSD-0080: "reference resolution"; milestone SJL-15.2,
+/// stage 5a; the area design's <c>Resolution</c>): <see cref="ResolutionKind.Static"/>, to a scope and a declaration;
+/// <see cref="ResolutionKind.Dynamic"/>, with the scopes that may bind the name at run time, innermost first, the
+/// innermost's reason, and the answer when none of them binds it; <see cref="ResolutionKind.Global"/>; or
+/// <see cref="ResolutionKind.Inherited"/>, for eval code. <i>(Added 2026-11-26, at SJL-15.2 stage 5a.)</i>
+/// </summary>
+/// <remarks>
+/// <para>
+/// <b>The lookup.</b> From the scope where the node stands outward by <see cref="SemanticModel.ParentOf"/>: a
+/// <see cref="ScopeKind.With"/> scope may bind any name and is a dynamic entry; a scope that binds the name ends the
+/// lookup; a scope that does not, but whose environment a sloppy direct <c>eval</c> may add to, is a dynamic entry; the end
+/// of the chain is <see cref="ResolutionKind.Inherited"/> for eval code and <see cref="ResolutionKind.Global"/> for every
+/// other unit. Resolution is finished after the walk, over the references the walk recorded, since a later <c>eval</c>
+/// makes an earlier reference dynamic (<c>function f() { x; eval("var x"); }</c>); it is a pass over a list, not a second
+/// walk of the tree.
+/// </para>
+/// <para>
+/// <b>A scope binds</b> its <see cref="Scope.Declarations"/> by name; a <see cref="ScopeKind.Parameters"/> scope also binds
+/// its function's <c>arguments</c> where <see cref="EnvironmentFacts.Arguments"/> is non-null
+/// (FunctionDeclarationInstantiation step 22), as a <see cref="ScopeKind.StaticBlock"/> scope binds its block's. A Script's
+/// declarations are <see cref="ResolutionKind.Static"/> to the Script scope, its lexical ones in the global declarative
+/// record and the others in the object record (GlobalDeclarationInstantiation); storage stays each engine's.
+/// </para>
+/// <para>
+/// <b><see cref="Declaration"/> names the binding, not its value.</b> Several declarations of one name in one scope make
+/// one binding, and the answer names the first in source order. Where several function declarations share a name, the
+/// binding's value is the last one's ("If there are multiple function declarations for the same name, the last
+/// declaration is used", FunctionDeclarationInstantiation step 14.a.iii.2, as GlobalDeclarationInstantiation and
+/// EvalDeclarationInstantiation note too); a <c>var</c> and a function declaration of one name are one binding, whose
+/// value is the function. A top-level <c>var</c> or function declaration in a function's <see cref="ScopeKind.Function"/>
+/// scope of a parameter's name, or of <c>arguments</c>, answers its own declaration: where
+/// <see cref="FunctionFacts.HasSeparateVariableEnvironment"/> is false such a <c>var</c> creates no binding and is that
+/// parameter's binding (FunctionDeclarationInstantiation steps 29.b and 29.c), and such a function declaration's object
+/// replaces the parameter's value (step 37, in the VariableEnvironment, which is the parameters' environment); otherwise
+/// each is a binding of its own, a <c>var</c> initialised from the parameter (steps 30.e.i.4 and 30.e.i.6) and a function
+/// declaration to undefined (step 30.e.i.3) and then to its function object.
+/// </para>
+/// <para>
+/// <b>A <see cref="DynamicScopes"/> entry</b> is a <see cref="ScopeKind.With"/> scope, the statement's object environment,
+/// whose reason is <see cref="DynamicReason.With"/>; or a scope a sloppy direct <c>eval</c> may add to, whose reason is
+/// <see cref="DynamicReason.SloppyDirectEval"/>: a <see cref="ScopeKind.Function"/> entry is the function's own
+/// VariableEnvironment, where its body holds such a call and the environment is separate
+/// (FunctionDeclarationInstantiation step 30); a <see cref="ScopeKind.Parameters"/> entry stands for one of two
+/// environments, never both: where the function's <see cref="EnvironmentFacts.DirectEvalInParameters"/> is true, its
+/// calleeEnv, just outside the parameters' environment (step 20 and its note), and otherwise the parameters' environment
+/// itself, which is also the body's VariableEnvironment (step 29.d). A caller tells the two apart by
+/// <c>EnvironmentOf(entry.Node).DirectEvalInParameters</c>. Each entry's own reason follows from its kind.
+/// </para>
+/// <para>
+/// <b>Eval code.</b> The request carries no caller's names and does not tell a direct <c>eval</c> from an indirect one, so
+/// a name eval code does not declare is <see cref="ResolutionKind.Inherited"/>, with no declaration; a var-scoped
+/// declaration of sloppy eval code (a top-level <c>var</c> or function declaration) is
+/// <see cref="ResolutionKind.Inherited"/> with that declaration and no scope, since its binding is created in the caller's
+/// VariableEnvironment (PerformEval step 16.b), before which a caller's <c>with</c> object or <c>catch</c> parameter of the
+/// name can stand; strict eval code's declarations, whose VariableEnvironment is its own (step 18), and sloppy eval code's
+/// lexical ones are <see cref="ResolutionKind.Static"/>. The caller's names are a later stage's.
+/// </para>
+/// <para>
+/// <b>The dynamic function's goals</b> (CreateDynamicFunction, whose function's scope is the realm's global environment):
+/// each goal is answered with the other piece empty, so that under <see cref="ParseGoal.FunctionBody"/> <c>return a</c> in
+/// the body of <c>new Function("a", "return a")</c> answers <see cref="ResolutionKind.Global"/>, although the real
+/// function's parameter binds <c>a</c>: <see cref="ResolutionKind.Global"/> there means "bound neither by this piece nor
+/// known to the parse".
+/// </para>
+/// <para>
+/// <b>Annex B.3.3's aliases</b> are stage 5b's: until then, with Annex B on, a name only a block function's alias binds
+/// is answered as the scopes alone answer it, which may be a <see cref="ResolutionKind.Static"/> answer naming an outer
+/// binding that the alias shadows at run time, as in <c>var g; function f() { { function g() {} } return g; }</c>.
+/// </para>
+/// <para>
+/// Whether a reference writes is not the model's: <see cref="Declaration.IsMutable"/> of the answer's declaration is the
+/// mutability. Immutable, and safe to read concurrently (convention 10); no instance is shared by guarantee, and callers
+/// compare by members.
+/// </para>
+/// </remarks>
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 ResolveBinding GetIdentifierReference, s10.2.11 FunctionDeclarationInstantiation, s19.2.1.1 PerformEval, s14.11.2 with statement, JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=2CBC03
+// Hairs-Human:        PENDING
+public sealed class Resolution
+{
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 reference resolution; IP=Low; Security=Low; Resources=1; Fingerprint=07C870
+    // Hairs-Human:        PENDING
+    internal Resolution(ResolutionKind kind, Scope? scope, Declaration? declaration, IReadOnlyList<Scope> dynamicScopes, DynamicReason? reason, Resolution? fallback)
+    {
+        Kind = kind;
+        Scope = scope;
+        Declaration = declaration;
+        DynamicScopes = dynamicScopes;
+        Reason = reason;
+        Fallback = fallback;
+    }
+
+    /// <summary>Its kind.</summary>
+    public ResolutionKind Kind { get; }
+
+    /// <summary>For <see cref="ResolutionKind.Static"/>, the scope whose environment holds the binding; null otherwise.</summary>
+    public Scope? Scope { get; }
+
+    /// <summary>
+    /// For <see cref="ResolutionKind.Static"/>, the binding's first declaration in <see cref="Scope"/>, or its
+    /// <see cref="EnvironmentFacts.Arguments"/>; for <see cref="ResolutionKind.Inherited"/>, sloppy eval code's own
+    /// var-scoped declaration of the name, the first, or null for a name eval code does not declare; null otherwise.
+    /// </summary>
+    public Declaration? Declaration { get; }
+
+    /// <summary>
+    /// For <see cref="ResolutionKind.Dynamic"/>, the scopes that may bind the name at run time, innermost first: every
+    /// <see cref="ScopeKind.With"/> scope and every scope a sloppy direct <c>eval</c> may add to between the node and
+    /// <see cref="Fallback"/>'s scope, or the end of the chain; empty otherwise. Never empty for a dynamic resolution.
+    /// </summary>
+    public IReadOnlyList<Scope> DynamicScopes { get; }
+
+    /// <summary>For <see cref="ResolutionKind.Dynamic"/>, the reason of the first <see cref="DynamicScopes"/> entry; null otherwise.</summary>
+    public DynamicReason? Reason { get; }
+
+    /// <summary>For <see cref="ResolutionKind.Dynamic"/>, the resolution when none of <see cref="DynamicScopes"/> binds the name, never itself dynamic; null otherwise.</summary>
+    public Resolution? Fallback { get; }
+}
+
+/// <summary>
+/// The environment facts of a program, a function, a static block or a field initialiser, as
+/// <see cref="SemanticModel.EnvironmentOf"/> answers them (JSD-0080: "per-function facts"; milestone SJL-15.2, stage 5a;
+/// rows FF3 and FF5): the facts that depend on the semantic model. The separate variable environment, row FF4, is
+/// <see cref="FunctionFacts.HasSeparateVariableEnvironment"/>, which does not. <i>(Added 2026-11-26, at SJL-15.2 stage
+/// 5a.)</i>
+/// </summary>
+/// <remarks>
+/// <para>
+/// <b>A direct-<c>eval</c> candidate</b> is a <see cref="CallExpression"/> that is not optional and whose callee, through
+/// any number of <see cref="ParenthesizedExpression"/>s, is an <see cref="Identifier"/> named <c>eval</c>: the call's
+/// evaluation reads a Reference whose name is <c>"eval"</c>, and the grouping operator keeps a Reference, so that
+/// <c>(eval)(s)</c> is one; <c>eval?.(s)</c>, <c>(0, eval)(s)</c>, <c>new eval()</c>, a tagged template and a member call
+/// are not. Every candidate only may be direct: SameValue with %eval% decides at run time. Its strictness is the call's own.
+/// </para>
+/// <para>
+/// <b>Own code</b> is outside every nested function, arrow, method, field initialiser and static block, so that an arrow's
+/// call is the arrow's, which has an environment of its own. <see cref="DirectEvalInParameters"/> and
+/// <see cref="DirectEvalInBody"/> say whether this node's own environments may gain bindings; they do not say whether a
+/// nested direct <c>eval</c> can read this node's bindings by name: in <c>function f() { var x; (() => eval("x = 1"))(); }</c>
+/// f's <see cref="DirectEvalInBody"/> is false, yet the arrow's call reaches f's <c>x</c> at run time. That reach is a
+/// later stage's, with captures.
+/// </para>
+/// <para>
+/// <b>The dynamic function's goals</b> are answered with the other piece empty, as <see cref="Resolution"/> says:
+/// <see cref="Arguments"/>, <see cref="ArgumentsMapped"/> and <see cref="FunctionFacts.HasSeparateVariableEnvironment"/>
+/// are computed with the parameters of the <see cref="ParseGoal.FunctionBody"/> goal empty too. Immutable, and safe to read
+/// concurrently (convention 10).
+/// </para>
+/// </remarks>
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 s10.2.11 FunctionDeclarationInstantiation steps 15-22, call evaluation direct eval, s19.2.1.1 PerformEval, s14.11.2 with statement, JSD-0080 per-function facts; IP=Low; Security=Low; Resources=1; Fingerprint=B9E0FC
+// Hairs-Human:        PENDING
+public sealed class EnvironmentFacts
+{
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 per-function facts; IP=Low; Security=Low; Resources=1; Fingerprint=EC3BFD
+    // Hairs-Human:        PENDING
+    internal EnvironmentFacts(SyntaxNode node, Declaration? arguments, bool argumentsNeeded, bool argumentsMapped, bool directEvalInParameters, bool directEvalInBody, bool containsWith)
+    {
+        Node = node;
+        Arguments = arguments;
+        ArgumentsNeeded = argumentsNeeded;
+        ArgumentsMapped = argumentsMapped;
+        DirectEvalInParameters = directEvalInParameters;
+        DirectEvalInBody = directEvalInBody;
+        ContainsWith = containsWith;
+    }
+
+    /// <summary>The node, as <see cref="FunctionFacts.Node"/>: the <see cref="ProgramNode"/>, a <see cref="FunctionNode"/>, a <see cref="StaticBlock"/> or a <see cref="FieldDefinition"/>.</summary>
+    public SyntaxNode Node { get; }
+
+    /// <summary>
+    /// The <c>arguments</c> binding FunctionDeclarationInstantiation creates (ECMA-262 clause 10.2.11, steps 15 to 18 and
+    /// 22), a <see cref="BindingKind.Arguments"/> declaration whose node is this one, in no scope's
+    /// <see cref="Scope.Declarations"/>: for a function that is not an arrow, a static block (whose body FunctionDeclarationInstantiation
+    /// instantiates with no parameters) and the dynamic function's goals, where no parameter is named <c>arguments</c> and,
+    /// without parameter expressions, no top-level function declaration and no lexical declaration of the body is. Null for an
+    /// arrow, a Script, a Module, eval code and every field initialiser, whose evaluation calls no
+    /// FunctionDeclarationInstantiation ("Even though field initializers constitute a function boundary, calling
+    /// FunctionDeclarationInstantiation does not have any observable effect and so is omitted").
+    /// </summary>
+    public Declaration? Arguments { get; }
+
+    /// <summary>
+    /// Whether the arguments object is needed (row FF3), the observable need rather than FunctionDeclarationInstantiation's
+    /// argumentsObjectNeeded: <see cref="Arguments"/> is non-null and a reference resolves to it, or to a top-level
+    /// <c>var</c> named <c>arguments</c> in this node's own <see cref="ScopeKind.Function"/> scope, which is the binding
+    /// itself or is initialised from it, either as <see cref="ResolutionKind.Static"/> or as a dynamic resolution's
+    /// <see cref="Resolution.Fallback"/>; or a direct-<c>eval</c> candidate of any strictness stands in this node's own code,
+    /// in an arrow's parameters or body within it, or in a nested class's heritage, computed keys or decorators, since eval
+    /// code may name <c>arguments</c>. Only references count, not a binding's write. It is reference-based, not
+    /// flow-sensitive: <c>var arguments = 1; return arguments;</c> gives true.
+    /// </summary>
+    public bool ArgumentsNeeded { get; }
+
+    /// <summary>
+    /// Whether the needed arguments object is mapped: <see cref="ArgumentsNeeded"/>, not strict and a simple parameter list
+    /// (FunctionDeclarationInstantiation steps 22.a and 22.b).
+    /// </summary>
+    public bool ArgumentsMapped { get; }
+
+    /// <summary>Whether a direct-<c>eval</c> candidate made in non-strict code stands in this node's own parameters (row FF5); it implies <see cref="FunctionFacts.HasParameterExpressions"/>.</summary>
+    public bool DirectEvalInParameters { get; }
+
+    /// <summary>Whether a direct-<c>eval</c> candidate made in non-strict code stands in this node's own body, outside its parameters (row FF5).</summary>
+    public bool DirectEvalInBody { get; }
+
+    /// <summary>Whether a <c>with</c> statement stands in this node's own code, arrows excluded, as Contains crosses no function boundary; strict code refuses one.</summary>
+    public bool ContainsWith { get; }
 }
