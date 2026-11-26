@@ -1,0 +1,86 @@
+# Why stage 5a's model-environment and model-resolution lines cannot reach part B's --dump output; read 2026-11-26 by
+# read-only git in the stage's worktree, each command with its output below it. Stage 5a (4d8aa93a) adds
+# 'model-environment' and 'model-resolution' lines to the model section of the shared library's canonical dump,
+# Broiler.ECMAScript/runners/SyntaxDump.cs, written only when ParseResult.Model is present, which
+# ParseRequest.BuildSemanticModel asks for (default false). Part B's tool, docs/evidence/sjl-12-001/tools/parse-corpus,
+# writes its own canonical dump (CanonicalDump.cs) of Broiler.JS's tree and reaches the Frontend only through
+# Broiler.JS's parser, whose request never sets the member. Stage 5a also has the declarations walk record each
+# direct-eval candidate and finish the resolutions and the environment facts after the walk, both only with the model on,
+# and adds FunctionFacts.HasSeparateVariableEnvironment, a computed member of the shared facts type, which Broiler.JS
+# does not read.
+
+$ git diff --stat 746591d2 4d8aa93a -- Broiler.JS docs/evidence/sjl-12-001
+(exit 0)
+
+$ git grep -n -e model-environment -e model-resolution 4d8aa93a -- Broiler.ECMAScript/runners
+4d8aa93a:Broiler.ECMAScript/runners/SyntaxDump.cs:249:            text.Append("model-environment ").Append(Reference(order, function.Node)).Append(' ')
+4d8aa93a:Broiler.ECMAScript/runners/SyntaxDump.cs:269:            text.Append("model-resolution ").Append(Number(i)).Append(' ').Append(Number((int)resolution.Kind)).Append(' ')
+(exit 0)
+
+$ git grep -n -e model-environment -e model-resolution 746591d2 -- Broiler.ECMAScript/runners
+(exit 1)
+
+$ git grep -n 'if (model && result.Model is' 4d8aa93a -- Broiler.ECMAScript/runners/SyntaxDump.cs
+4d8aa93a:Broiler.ECMAScript/runners/SyntaxDump.cs:142:        if (model && result.Model is { } semantic)
+(exit 0)
+
+$ git grep -n 'BuildSemanticModel { get; init; }' 4d8aa93a -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs
+4d8aa93a:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs:236:    public bool BuildSemanticModel { get; init; }
+(exit 0)
+
+$ git grep -n BuildSemanticModel 4d8aa93a -- Broiler.JS docs/evidence/sjl-12-001
+(exit 1)
+
+$ git grep -n SyntaxDump 4d8aa93a -- Broiler.JS docs/evidence/sjl-12-001/tools
+(exit 1)
+
+$ git grep -n -e EnvironmentOf -e EnvironmentFacts -e HasSeparateVariableEnvironment -e ResolutionKind -e DynamicReason -e BindingKind.Arguments 4d8aa93a -- Broiler.JS docs/evidence/sjl-12-001
+(exit 1)
+
+$ git grep -n ProjectReference 4d8aa93a -- docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj
+4d8aa93a:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:24:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj" />
+4d8aa93a:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:25:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj" />
+4d8aa93a:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:26:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj" />
+4d8aa93a:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:27:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj" />
+4d8aa93a:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:28:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj" />
+4d8aa93a:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:29:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj" />
+4d8aa93a:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:30:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj" />
+4d8aa93a:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:31:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj" />
+(exit 0)
+
+$ git grep -n 'new ParseRequest(' 4d8aa93a -- Broiler.JS
+4d8aa93a:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs:168:        return new ParseRequest(source, goal, request.UnicodeTables ?? JSUnicodeTables.Instance, BridgeRegularExpressions.Instance)
+4d8aa93a:Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs:84:        var request = new ParseRequest(new SourceText(source, string.Empty, 0), ParseGoal.Script, JSUnicode.Tables, RegularExpressions.Instance)
+(exit 0)
+
+$ git grep -n -e 'new DeclarationsWalk(request' -e 'model = buildModel;' -e 'case CallExpression call when model' -e 'model ? Model(scopeList) : null' -e '= Resolutions(scopeList' 4d8aa93a -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs
+4d8aa93a:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:192:        model = buildModel;
+4d8aa93a:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:293:        var walk = new DeclarationsWalk(request, request.BuildSemanticModel, request.BuildSemanticModel);
+4d8aa93a:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:308:        var walk = new DeclarationsWalk(request, buildModel: false, semantics: request.BuildSemanticModel);
+4d8aa93a:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:344:        return new DeclarationTables(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), model ? Model(scopeList) : null);
+4d8aa93a:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:379:        var (resolutionOf, environmentOf) = Resolutions(scopeList, functionList, declarationOf);
+4d8aa93a:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1309:            case CallExpression call when model && IsDirectEvalCandidate(call):
+(exit 0)
+
+$ git grep -n 'public bool HasSeparateVariableEnvironment =>' 4d8aa93a -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationTables.cs
+4d8aa93a:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationTables.cs:395:    public bool HasSeparateVariableEnvironment => Kind == FunctionKind.EvalCode ? IsStrict : HasParameterExpressions;
+(exit 0)
+
+$ git grep -n -e 'public bool IsStrict { get; }' -e 'public FunctionKind Kind { get; }' -e 'public bool HasParameterExpressions { get; }' 746591d2 -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationTables.cs
+746591d2:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationTables.cs:298:    public bool IsStrict { get; }
+746591d2:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationTables.cs:308:    public FunctionKind Kind { get; }
+746591d2:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationTables.cs:328:    public bool HasParameterExpressions { get; }
+(exit 0)
+
+# Notes: the first command's empty output says that no file of Broiler.JS/ or of bundle sjl-12-001 (the tool
+# included) differs between the two commits; the second's and third's that the two lines are stage 5a's, written in the
+# model section, which the fourth's line writes only when the parse built a model; the sixth's, seventh's and eighth's
+# (exit 1, no match) that nothing in Broiler.JS or the bundle sets BuildSemanticModel, uses the library's SyntaxDump or
+# reads any member stage 5a adds; the tool references only Broiler.JS projects. The two ParseRequest constructions in
+# Broiler.JS (the bridge's, which the tool's P and K reach, and the portable compiler's) set no BuildSemanticModel, so
+# the member keeps its default, false, and the parse builds no model. Both walks are built with buildModel equal to the
+# request's BuildSemanticModel or false; the direct-eval candidates are recorded only when model is set, and the
+# resolutions and environment facts are finished only in Model, which the tables call only when model is set; and
+# HasSeparateVariableEnvironment is a getter computed from members the facts already had at 746591d2 (the last command),
+# so it changes no fact. And the
+# dumps' hashes are identical in every row at both commits (rows-d1.txt).

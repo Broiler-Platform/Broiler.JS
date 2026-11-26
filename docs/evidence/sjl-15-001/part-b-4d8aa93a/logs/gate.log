@@ -1,0 +1,9 @@
+2026-11-26T10:01:11Z lock pb-746591d2 WAIT
+2026-11-26T10:01:11Z lock pb-746591d2 HELD
+2026-11-26T10:01:11Z gate pb-746591d2 PASS load1=0.34 procs=none checks=0
+2026-11-26T10:08:12Z stop-servers: done, remaining:
+2026-11-26T10:08:31Z lock pb-4d8aa93a WAIT
+2026-11-26T10:08:31Z lock pb-4d8aa93a HELD
+2026-11-26T10:08:31Z gate pb-4d8aa93a WAIT load1=1.07 procs=none
+2026-11-26T10:08:41Z gate pb-4d8aa93a PASS load1=0.90 procs=none checks=1
+2026-11-26T10:14:45Z stop-servers: done, remaining:
