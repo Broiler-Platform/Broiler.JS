@@ -621,3 +621,30 @@ which attempt decides, flagged for the owner at the first model commit, does not
 2026-11-24, 2026-11-25 and 2026-11-26, stay as written. A NOT MET at any later model commit makes part B NOT MET.
 **Next:** SJL-15.2 stage 5c, the caller's names in the inherited context, the seventh model commit. No rule file is
 added or edited, and no earlier output changes.
+
+*(Noted 2026-11-26, at SJL-15.2 stage 5c, written before part B's run at it.)* **The seventh model commit.** This
+branch's merge will be the seventh model commit: SJL-15.2 stage 5c, the caller's names in the inherited context, named
+here once it exists. Part B is taken after it, against its own first parent (decision D-js-part-b-method), with both
+workflows' push runs imported and decision D-js-part-b-attempt applying. The merge condition: both workflows are green
+on the PR; after the merge, nothing merges to `main` until both push runs at the merge have concluded. For ci.yml's run
+that includes the one re-run D-js-part-b-attempt allows (`docs/roadmap/SharedLibraries.md:3808`). A later push cancels
+ci.yml's push run (`.github/workflows/ci.yml:25-27`, :36-39). A later push never cancels Shared libraries' push run,
+because its push group carries the commit (`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported
+too, as at stage 1 ("Nothing merged to the default branch until both push runs at it had concluded",
+`docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken after the merge, against the merge's own first parent.
+Stage 5b's part B records say the same of stage 5b: "Nothing merged to the default branch until both push runs at it had
+concluded" (`docs/roadmap/SharedLibraries.md:4335-4336`). The reading at it will be limited to the model commits taken
+so far.
+
+From this change eval code's request may describe its caller's records (`InheritedContext.CallerScopes`), and the
+semantic model reports catalogue rows EA0007 and EA0008 from them and decides eval code's Annex B aliases and carried
+declarations with them; EA0006 is named as a row only a run reaches (decisions D-js-caller-scopes,
+D-js-caller-scope-rows and D-js-adapter-caller-scopes in `docs/roadmap/SharedLibraries.md`'s section "Shared static
+semantics (SJL-15)"). The library-level adapter, `runners/AlgorithmsLibrary.Semantics.cs`, newly answers the vectors of
+EA0007, read at the parse, the reading the owner ruled on 2026-11-25 to keep ("Keep the reading at the parse
+(Recommended)"), as the note above at SJL-15.2 stage 2 records it, the nested parse of `ea0007/0005` included: a
+refusal at any level is the answer. The vectors of EA0006 stay not implemented, and no EA0008 vector exists. EA0007's
+rows in the corrections, C1's ([`corrections/corrections.tsv`](corrections/corrections.tsv), its EA0007 row) and E's and
+T's (`corrections/class-e.tsv`, `corrections/class-t.tsv`, their EA0007 rows), are unchanged, and `corrections.md` and
+its tables are unchanged. No rule file is added or edited, and no earlier output changes. "What it will hold" above is
+left as written.

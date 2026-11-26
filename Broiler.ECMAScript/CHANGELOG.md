@@ -761,6 +761,46 @@ Not yet packed under a version of its own: the stream's next version is set when
   answered: the value vectors of group `ab1` stay not implemented. The canonical dump's model section (`runners/SyntaxDump.cs`) writes a
   `model-annexb` line per block function, and names an alias `alias:` and its node there and in the `model-resolution`
   lines. No observable change: no published version carries the member, and with it off nothing moves.
+- `Broiler.ECMAScript.Frontend`: **the caller's records in eval code's inherited context** (milestone SJL-15.2, stage
+  5c; the decisions of 2026-11-26, D-js-caller-scopes, D-js-caller-scope-rows and D-js-adapter-caller-scopes, in
+  `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)"; design
+  [`docs/frontend/design.md`](docs/frontend/design.md), section 10.9). A minor change under convention 16, which no
+  published version carries: nothing is removed, and with the new request member off the parse answers as before, its
+  tree, side tables and diagnostics unchanged. It adds, as rule SL6's `PublicAPI.txt` lists them:
+  - ``Broiler.ECMAScript.Semantics.SemanticModel.CallerScopesOf(Broiler.ECMAScript.Syntax.CallExpression) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.CallerScope>``:
+    the records a direct `eval` at one of `DirectEvalCalls` receives, innermost first, up to the variable environment of the code that holds it, continuing for a call in sloppy eval code into the request's own list, or null where the request gives none; it throws `ArgumentNullException` for null and `ArgumentException` for a call outside the tree or no candidate;
+  - ``Broiler.ECMAScript.Semantics.SemanticModel.get_DirectEvalCalls() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.CallExpression>``:
+    the direct-`eval` candidates, of every strictness, in source order;
+  - `Broiler.ECMAScript.Syntax.CallerScope sealed class`:
+    a declarative Environment Record of a direct eval's caller, init-only and copying its names;
+  - `Broiler.ECMAScript.Syntax.CallerScope..ctor() method System.Void`;
+  - `Broiler.ECMAScript.Syntax.CallerScope.get_IsCatch() method System.Boolean`:
+    whether the record is a Catch clause's, of either parameter form;
+  - ``Broiler.ECMAScript.Syntax.CallerScope.get_Names() method System.Collections.Generic.IReadOnlyList`1<System.String>``:
+    every name the record binds, empty by default; a null list or a null or empty name is refused;
+  - `Broiler.ECMAScript.Syntax.CallerScope.set_IsCatch(System.Boolean) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)`;
+  - ``Broiler.ECMAScript.Syntax.CallerScope.set_Names(System.Collections.Generic.IReadOnlyList`1<System.String>) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)``;
+  - ``Broiler.ECMAScript.Syntax.InheritedContext.get_CallerScopes() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.CallerScope>``:
+    the caller's records, null by default and on `TopLevel`, copied, a null element refused; read only with the member on;
+  - ``Broiler.ECMAScript.Syntax.InheritedContext.set_CallerScopes(System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.CallerScope>) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)``.
+
+  The rows EA0007 and EA0008 (EvalDeclarationInstantiation step 3.d.i.2.a.i.1 and step 3.d.i.2.a.ii.1) are reported with
+  the member on, for sloppy eval code whose request gives the caller's records, at each colliding var-declared name's
+  first declaration: EA0007 for a record that is not a Catch clause's with Annex B on, EA0008 for any record with it off.
+  EA0006 stays a row only a run reaches. With the records given, a record that is not a Catch clause's withholds eval
+  code's Annex B alias of its name, and an inherited answer for a reference, a binding resolved when it runs or a dynamic
+  answer's fallback carries no declaration where a record binds its name; `Resolve`'s kinds are unchanged. The interim
+  stage 5b's entry above states, "What remains: the interim, eval code's alias conditional on its caller's environments
+  until stage 5c describes them", is closed: with the records given the library decides, and without them the request
+  does not describe the caller and the eval body's answer is the member's contract. The run-time conditions stay, as that
+  entry words them, "and the run-time conditions, which no stage closes: a Script's alias depends on
+  GlobalDeclarationInstantiation's checks, and eval code with a global variable environment on
+  GlobalDeclarationInstantiation-like checks", with a caller's `with` object of the name. The library-level adapter
+  (`runners/AlgorithmsLibrary.Semantics.cs`) passes every `DirectEval` request its records and follows a direct `eval` the
+  eval code holds, and newly answers the vectors of EA0007, read at the parse; those of EA0006 stay not implemented. The
+  canonical dump's model section (`runners/SyntaxDump.cs`) writes a `model-eval-call` line per candidate and a
+  `model-caller-scope` line per record. No observable change: no published version carries the member, and with it off
+  nothing moves.
 
 ### Changed
 
