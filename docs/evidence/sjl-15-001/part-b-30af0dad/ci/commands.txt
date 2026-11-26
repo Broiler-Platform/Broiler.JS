@@ -9,6 +9,10 @@
 # (21:10:49Z), the same, its answer kept (../logs/status-20261126T211049Z.tsv); and CI's run polled through the API
 # (GET runs/45894440417, its status only) until it read completed, at 21:19:37Z: success in attempt 1, updated_at
 # 21:14:27Z.
+# Added 2026-11-26 after review: the first read's time, 21:09Z, is approximate; the tool records none, and the note
+# that gives it is stamped 21:08:24Z (../logs/notes.log), so the read was made by then. The poll's answers are not kept
+# either: it rests on ../logs/notes.log's line alone. That both runs had concluded does not rest on either; it rests on
+# each run record's updated_at, in run-45894440417.json and run-45894440363.json below.
 #
 # One read, 2026-11-26T21:19:45Z-21:19:52Z, after both runs had concluded, each in its first attempt, and after both of
 # part B's runs had ended (../logs/runs.tsv):

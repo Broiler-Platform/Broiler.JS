@@ -164,7 +164,8 @@ retention (`activity-main-*.tsv`), and the stage's notes (`notes.log`).
   ([`logs/main-checks.log`](logs/main-checks.log)): the merge was made at 20:54:50Z; Shared libraries' run concluded at
   21:01:16Z and ci.yml's at 21:14:27Z (each record's `updated_at`); the stage's first check, at 21:07:13Z, while ci.yml's
   run was still in progress, finds the default branch at `30af0dad`, and so does every later check, among them those at
-  21:13:33Z, before ci.yml's run concluded, and at 21:19:26Z and 21:19:45Z, after it had; a ref that is not
+  21:13:33Z, before ci.yml's run concluded, and at 21:19:26Z (whose stale label the method's notes below explain) and
+  21:19:45Z, after it had; a ref that is not
   force-pushed cannot come back to a commit it has left; and GitHub's activity list of the default branch, read at
   21:20:59Z ([`logs/activity-main-20261126T212059Z.tsv`](logs/activity-main-20261126T212059Z.tsv)), has as its newest
   entry the merge from `4e27f13d` to `30af0dad` at 20:54:50Z and nothing after it. The check at 21:19:45Z was logged
@@ -197,6 +198,10 @@ retention (`activity-main-*.tsv`), and the stage's notes (`notes.log`).
   progress; the first read of both runs, at 21:09Z after the stage's worktree, was by a GitHub tool whose answers are
   not kept, and found Shared libraries' run concluded `success` in its first attempt and ci.yml's in progress; ci.yml's
   run was then polled through the API, its status alone, until it read completed (`logs/notes.log`).
+  *(Added 2026-11-26 after review:)* the first read's time, 21:09Z, is approximate: the tool records none, and the
+  note that gives it is stamped 21:08:24Z, so the read was made by then. The poll's answers are not kept either; it
+  rests on `logs/notes.log`'s line alone. That both runs had concluded rests on neither, but on each run record's
+  `updated_at` ([`ci/commands.txt`](ci/commands.txt)).
 - Nothing was set aside at this commit: no run was stopped or re-taken, and no CI job was re-run.
 
 [`../hashes.txt`](../hashes.txt) gives the SHA-256 of every file here.
