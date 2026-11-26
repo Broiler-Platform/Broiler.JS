@@ -4201,6 +4201,34 @@ admission policy; eval code's free names are inherited, beyond JSD-0080's three 
 `correspondence.md`, row FF4) is step 30 in the pinned ES2026; neither file is edited here. None of it is accepted: no
 second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
 
+*(Noted 2026-11-26, after part B's runs at the fifth model commit.)* The note of 2026-11-26 at SJL-15.2 stage 5a reads
+"Part B is taken after the merge, against the merge's own first parent", and its merge condition reads "after the merge,
+nothing merges to `main` until both push runs at the merge have concluded". Stage 5a merged as
+Broiler-Platform/Broiler.JS#1141, `4d8aa93ad5023017b66534feb248c4c16f59bf6e`, **the fifth model commit**, named with its
+first parent `746591d2` (Broiler-Platform/Broiler.JS#1140, no model commit) in bundle
+[`sjl-15-001`](../evidence/sjl-15-001/README.md)'s README. Nothing merged to the default branch until both push runs at it
+had concluded. Part B is taken at it and at its first parent and retained in the bundle's
+[`part-b-4d8aa93a/`](../evidence/sjl-15-001/part-b-4d8aa93a/README.md), as that README's note of 2026-11-26 records:
+bundle `sjl-12-001`'s tool byte-unchanged, built and run from a clean archive of each commit; both runs complete and
+identical in every field, compared by `scripts/compliance/compare_parse_corpus.py` with no admitted class and by the
+dumps' hashes, the reports' headers differing only in each assembly's module version id, which names a build; the
+environment and resolution lines stage 5a adds to the library's canonical dump, and the resolutions and environment
+facts its declarations walk finishes, not reaching the tool's dumps, since the tool writes its own dump of Broiler.JS's
+tree and nothing in Broiler.JS sets `ParseRequest.BuildSemanticModel`; Shared libraries' push run and ci.yml's push run
+each green in its first attempt, with no re-run, so the one re-run decision D-js-part-b-attempt allows was not needed.
+
+**The reading**, taken as recommended under the owner's direction quoted above and recorded as the owner's decision of
+2026-11-26: **part B read MET on the retained runs at the model commits taken so far
+(`be6c4a5c3e389c7eb2aff71c34e31bdae5efe276`, `6c61879bce81b1a7badf987e16c7b0531030258d`,
+`d87044c9db5fe2a26841782308bd53e2f9294656`, `56272150fe23725a0e70978fb18e3c25f2548548`,
+`4d8aa93ad5023017b66534feb248c4c16f59bf6e`), limited to them; the part's verdict waits for the last model commit before
+the base.** At `4d8aa93a` the rule's "the commit's CI run of every test project passed" is read on both workflows' push
+runs, each as it concluded in its first attempt. The readings at `be6c4a5c`, at `6c61879b`, at `d87044c9` and at
+`56272150`, and the first one's flag for the owner, in the notes of 2026-11-24 and 2026-11-25 above, stay as written.
+Next: SJL-15.2 stage 5b, Annex B block-function aliases, the sixth model commit, judged by its part B against its own
+first parent. None of it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in both
+repositories.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
