@@ -207,7 +207,18 @@ before the retention (`activity-main-*.tsv`), and the stage's notes (`notes.log`
   progress, and at 10:18:09Z, during the after run, when both had concluded; between them ci.yml's run and its jobs were
   read once through the API at about 10:18Z, those answers not kept (`logs/notes.log`). That both runs had concluded
   rests on neither, but on each run record's `updated_at` ([`ci/commands.txt`](ci/commands.txt)). The CI import was
-  read during the after run's build step, which reads no network.
+  read while the after run's build step (10:17:55Z-10:19:07Z,
+  [`2c48beb1/logs/runs.tsv`](2c48beb1/logs/runs.tsv)) held the run lock; its reads change no file the build or the
+  runs read.
+  *(Added 2026-11-27 after review:)* the line above replaces "The CI import was read during the after run's build
+  step, which reads no network": that build step begins with a NuGet restore
+  ([`2c48beb1/logs/build-parse-corpus.stdout.txt`](2c48beb1/logs/build-parse-corpus.stdout.txt)), and nothing kept
+  shows it read no network. `logs/notes.log`'s line at 10:25:14Z, "the after run reads no network", is left as
+  written, and this note takes its place. `logs/main-checks.log`'s line at 10:24:58Z is labelled "both CI runs
+  concluded at 10:18:09Z": 10:18:09Z is the time of the status read that found them concluded
+  ([`logs/status-20261127T101809Z.tsv`](logs/status-20261127T101809Z.tsv)), not when they concluded; Shared
+  libraries' run concluded at 09:59:57Z and ci.yml's at 10:11:52Z (each record's `updated_at`). The line is left as
+  written.
 - Nothing was set aside at this commit: no run was stopped or re-taken, and no CI job was re-run.
 
 [`../hashes.txt`](../hashes.txt) gives the SHA-256 of every file here.

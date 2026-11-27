@@ -12,7 +12,12 @@
 # (../logs/status-20261127T101809Z.tsv).
 #
 # One read, 2026-11-27T10:18:29Z-10:18:36Z, after both runs had concluded, each in its first attempt, during part B's
-# after run at 2c48beb1 (its build step, ../logs/runs.tsv), which reads no network:
+# after run at 2c48beb1 (its build step, ../2c48beb1/logs/runs.tsv), made while that build step held the run lock; the
+# reads change no file the build or the runs read.
+# Added 2026-11-27 after review: the two lines above replace "(its build step, ../logs/runs.tsv), which reads no
+# network:"; that build step begins with a NuGet restore (../2c48beb1/logs/build-parse-corpus.stdout.txt), and nothing
+# kept shows it read no network. ../logs/runs.tsv names part B's two runs; the build step's row is in
+# ../2c48beb1/logs/runs.tsv. The commands of that read:
 R=repos/Broiler-Platform/Broiler.JS/actions/runs
 gh api "$R?head_sha=2c48beb1e332dd7c9fa1577705ed5458b5686c1f&per_page=50" > runs-at-2c48beb1.json
 #   -> two runs at 2c48beb1, each event push, status completed, conclusion success, run_attempt 1:
