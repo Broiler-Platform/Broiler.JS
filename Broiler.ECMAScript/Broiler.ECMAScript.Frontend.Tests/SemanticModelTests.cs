@@ -4411,4 +4411,31 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         "export default class {} export var [p, {q}] = r; export function f() {} export let z; import(\"x\");",
         "import \"a\"; import {} from \"b\"; export {} from \"c\"; import x, {} from \"a\"; export { x as y };",
     ];
+
+    /// <summary>
+    /// The dump's module-record lines (D-js-part-g): the fact line, each request with its attributes in its first
+    /// statement's order, then the entries; a Script's model and a dump without a model gain none. <i>(Added 2026-11-27, at
+    /// SJL-15.2 stage 6.)</i>
+    /// </summary>
+    [Fact]
+    public void The_dump_s_model_section_holds_the_module_record()
+    {
+        const string text = "import a from \"m\" with { type: \"json\", b: \"c\" }; var v; export { v as w }; export { a }; export * from \"n\"; export * as s from \"m\" with { b: \"c\", type: \"json\" };";
+        var lines = System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(ModuleOf(text).Result)).Split('\n');
+        var module = lines.Where(static l => l.StartsWith("model-module ", StringComparison.Ordinal) || l.StartsWith("model-request ", StringComparison.Ordinal)
+            || l.StartsWith("model-attribute ", StringComparison.Ordinal) || l.StartsWith("model-import ", StringComparison.Ordinal) || l.StartsWith("model-export-", StringComparison.Ordinal)).ToList();
+        Assert.Equal("model-module 0", module[0]);
+        Assert.StartsWith("model-request 0 \"m\" 0 ", module[1], StringComparison.Ordinal);
+        Assert.Equal(6, module[1].Split(' ').Length);
+        Assert.Equal(["model-attribute \"type\" \"json\"", "model-attribute \"b\" \"c\""], module.Skip(2).Take(2));
+        Assert.StartsWith("model-request 1 \"n\" 0 ", module[4], StringComparison.Ordinal);
+        Assert.StartsWith("model-import 0 1 \"default\" \"a\" ", module[5], StringComparison.Ordinal);
+        Assert.StartsWith("model-export-local \"w\" \"v\" ", module[6], StringComparison.Ordinal);
+        Assert.StartsWith("model-export-indirect \"a\" 0 1 \"default\" ", module[7], StringComparison.Ordinal);
+        Assert.StartsWith("model-export-indirect \"s\" 0 3 - ", module[8], StringComparison.Ordinal);
+        Assert.StartsWith("model-export-star 1 ", module[9], StringComparison.Ordinal);
+        Assert.Equal(10, module.Count);
+        Assert.DoesNotContain(System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(Model("var v;").Result)).Split('\n'), static l => l.StartsWith("model-module", StringComparison.Ordinal));
+        Assert.DoesNotContain(System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(Parse(text, ParseGoal.Module, model: false))).Split('\n'), static l => l.StartsWith("model-", StringComparison.Ordinal));
+    }
 }

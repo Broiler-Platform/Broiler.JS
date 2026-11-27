@@ -99,6 +99,9 @@ internal sealed partial class AlgorithmsLibrary
     /// Stage 5c's, eval code's <c>var</c>s against its caller's records
     /// (EvalDeclarationInstantiation step 3.d); the vectors of EA0006, a row only a run reaches, stay unanswered.
     /// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+    /// Stage 6's, the module record's ExportedNames duplicates and ExportedBindings not declared, which only the Module goal
+    /// reaches and so no semantics vector names: listing them answers no vector, the list being held equal to the table.
+    /// <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
     /// </summary>
     internal static readonly IReadOnlyList<string> SemanticsAnsweredRows =
     [
@@ -124,6 +127,9 @@ internal sealed partial class AlgorithmsLibrary
 
         // Stage 5c: eval code's var against the caller's records, with Annex B on and off.
         "EA0007", "EA0008",
+
+        // Stage 6: the module record's rows, which no vector reaches (the Module goal has no field in schema 1).
+        "EE0170", "EE0171",
     ];
 
     /// <summary>

@@ -65,6 +65,19 @@ namespace Broiler.ECMAScript.Runners;
 /// no fact of its own, so the lines leave it out. A parse without a model is dumped as before. <i>(Added 2026-11-26, at
 /// SJL-15.2 stage 5c.)</i>
 /// </para>
+/// <para>
+/// From SJL-15.2 stage 6 a Module's model also holds, after those lines, its record: one <c>model-module</c> line with its
+/// top-level-await fact; per request in the record's order, a <c>model-request</c> line with its place, its specifier, its
+/// phase and the statements that make it, then one <c>model-attribute</c> line per attribute, key and value, in the
+/// record's order, which is the request's first statement's source order, not the specification's sorted one; then one
+/// <c>model-import</c> line per import entry (its request's place, its kind, its import name or <c>-</c>, its local name,
+/// its node and its declaration), one <c>model-export-local</c> line per local export entry (its export name, its local
+/// name, its node and its declaration), one <c>model-export-indirect</c> line per indirect one (its export name or
+/// <c>-</c>, its request's place, its kind, its import name or <c>-</c>, and its node) and one <c>model-export-star</c>
+/// line per star one (its request's place and its node), in the record's lists' order (decision D-js-part-g). A Script's,
+/// eval code's and a dynamic function's model gain no line, and a parse without a model is dumped as before. The
+/// program's own fact line already writes its top-level-await fact. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+/// </para>
 /// </remarks>
 internal static class SyntaxDump
 {
@@ -332,6 +345,62 @@ internal static class SyntaxDump
                 text.Append('\n');
             }
         }
+
+        // A Module's record (SJL-15.2 stage 6): its top-level-await fact, its requests with their attributes in the record's
+        // order, the first statement's, then its import entries and its local, indirect and star export entries in their
+        // lists' order, by the nodes' own references, each request by its place in the record; never the model's maps.
+        if (model.Module is not { } module)
+            return;
+        text.Append("model-module ").Append(Flag(module.HasTopLevelAwait)).Append('\n');
+        var requestIndex = new Dictionary<ModuleRequest, int>(ReferenceEqualityComparer.Instance);
+        foreach (var request in module.RequestedModules)
+        {
+            requestIndex[request] = requestIndex.Count;
+            text.Append("model-request ").Append(Number(requestIndex[request])).Append(' ');
+            Escaped(text, request.Specifier);
+            text.Append(' ').Append(Number((int)request.Phase));
+            foreach (var statement in request.Statements)
+                text.Append(' ').Append(Reference(order, statement));
+            text.Append('\n');
+            foreach (var attribute in request.Attributes)
+            {
+                text.Append("model-attribute ");
+                Escaped(text, attribute.Key);
+                text.Append(' ');
+                Escaped(text, attribute.Value);
+                text.Append('\n');
+            }
+        }
+
+        foreach (var entry in module.ImportEntries)
+        {
+            text.Append("model-import ").Append(Number(requestIndex[entry.ModuleRequest])).Append(' ').Append(Number((int)entry.ImportKind)).Append(' ');
+            Escaped(text, entry.ImportName);
+            text.Append(' ');
+            Escaped(text, entry.LocalName);
+            text.Append(' ').Append(Reference(order, entry.Node)).Append(' ').Append(Declared(entry.Declaration)).Append('\n');
+        }
+
+        foreach (var entry in module.LocalExportEntries)
+        {
+            text.Append("model-export-local ");
+            Escaped(text, entry.ExportName);
+            text.Append(' ');
+            Escaped(text, entry.LocalName);
+            text.Append(' ').Append(Reference(order, entry.Node)).Append(' ').Append(Declared(entry.Declaration)).Append('\n');
+        }
+
+        foreach (var entry in module.IndirectExportEntries)
+        {
+            text.Append("model-export-indirect ");
+            Escaped(text, entry.ExportName);
+            text.Append(' ').Append(Number(requestIndex[entry.ModuleRequest!])).Append(' ').Append(Number((int)entry.ImportKind)).Append(' ');
+            Escaped(text, entry.ImportName);
+            text.Append(' ').Append(Reference(order, entry.Node)).Append('\n');
+        }
+
+        foreach (var entry in module.StarExportEntries)
+            text.Append("model-export-star ").Append(Number(requestIndex[entry.ModuleRequest!])).Append(' ').Append(Reference(order, entry.Node)).Append('\n');
     }
 
     /// <summary>The SHA-256 of the canonical dump, in lowercase hexadecimal.</summary>
