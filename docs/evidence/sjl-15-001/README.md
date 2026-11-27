@@ -796,3 +796,30 @@ commit makes part B NOT MET. **Next:** SJL-15.2 stage 7, the ninth model commit:
 ("Stages 1, 2, 3, 4, 5a, 5b, 5c, 6, 7 and 8, one merge each, in that order"), "**stage 7**, named evaluation, free names
 and captures"; stage 6's records name no next step of their own. No rule file is added or edited, and no earlier output
 changes.
+
+*(Noted 2026-11-27, at SJL-15.2 stage 7, written before part B's run at it.)* **The ninth model commit.** This branch's
+merge will be the ninth model commit: SJL-15.2 stage 7, named evaluation, free names and captures, named here once it
+exists. Part B is taken after it, against its own first parent (decision D-js-part-b-method), with both workflows' push
+runs imported and decision D-js-part-b-attempt applying. The merge condition: both workflows are green on the PR; after
+the merge, nothing merges to `main` until both push runs at the merge have concluded. For ci.yml's run that includes the
+one re-run D-js-part-b-attempt allows (`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run
+(`.github/workflows/ci.yml:25-27`, :36-39). A later push never cancels Shared libraries' push run, because its push group
+carries the commit (`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1
+("Nothing merged to the default branch until both push runs at it had concluded",
+`docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken after the merge, against the merge's own first parent.
+Stage 6's part B records say the same of stage 6: "Nothing merged to the default branch until both push runs at it had
+concluded" (`docs/roadmap/SharedLibraries.md:4619-4620`). The reading at it will be limited to the model commits taken
+so far.
+
+From this change, with the request member on, the semantic model holds the name each anonymous function or class
+definition's named evaluation passes, or the computed key that names it (`SemanticModel.NamedEvaluationName` and
+`NamedEvaluationKey`), and each facts node's free names and captures (`FreeNames`, `Captured`, and `EnvironmentFacts`'
+`DirectEvalOrWithWithin` and `FunctionNameReferenced`), under decisions D-js-named-evaluation, D-js-captures and
+D-js-debugger in `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)". The library-level
+adapter, `runners/AlgorithmsLibrary.Semantics.cs`, answers no new vector: by decision D-js-named-evaluation-vectors
+group `ne1` stays not implemented, since it names no catalogue row and each of its vectors would match by acceptance
+alone when read at the parse, the reading the owner ruled on 2026-11-25 to keep ("Keep the reading at the parse
+(Recommended)"). As a proposal, the model's names are the specification's answers that C1's row NE1 names
+([`corrections/corrections.tsv`](corrections/corrections.tsv), its NE1 row); SJL-15.5 applies them, and
+[`corrections.md`](corrections.md) and its tables are unchanged. No rule file is added or edited, and no earlier output
+changes. "What it will hold" above is left as written.

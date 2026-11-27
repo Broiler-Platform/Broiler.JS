@@ -605,4 +605,47 @@ public sealed class LimitsTests
     }
 
     private const string ManyReferences = "v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v";
+
+    /// <summary>
+    /// Free names, captures and named evaluation at the supported maximum (SJL-15.2 stage 7): arrows nested to the bound,
+    /// each naming an outer binding and one global name, and a long run of named-evaluation sites, each on the documented
+    /// stack, the same parse with the model on and off; every arrow has the two names free, the binding's declaration
+    /// captured, and every site names its function. <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    [Fact]
+    public void The_free_names_and_the_named_evaluation_at_the_supported_maximum()
+    {
+        static string Text(int levels) => "var v; " + string.Concat(Enumerable.Repeat("() => [v, g, ", levels)) + "0" + new string(']', levels) + ";";
+        var bound = ParseLimits.MaximumSupportedNestingDepth;
+        var (low, high) = (0, bound + 1);
+        while (high - low > 1)
+        {
+            var middle = (low + high) / 2;
+            if (ParseV(Text(middle), bound).Outcome == ParseOutcome.Refused)
+                high = middle;
+            else
+                low = middle;
+        }
+
+        Assert.True(low >= bound / 4, "accepted at " + low.ToString(CultureInfo.InvariantCulture) + " levels");
+        AssertSameWithTheModel(ParseV(Text(low), bound), Text(low), bound, "nested arrows naming an outer binding");
+        var model = ParseV(Text(low), bound, model: true).Model!;
+        var arrows = model.Functions.Where(static f => f.Kind == Semantics.FunctionKind.Arrow).ToList();
+        Assert.Equal(low, arrows.Count);
+        var declaration = model.Scopes[0].Declarations.Single(static d => d.Name == "v");
+        Assert.All(arrows, arrow => Assert.Equal(["v", "g"], model.FreeNames(arrow.Node)));
+        Assert.All(arrows, arrow => Assert.Same(declaration, Assert.Single(model.Captured(arrow.Node))));
+        Assert.Equal(["g"], model.FreeNames(model.Functions[0].Node));
+
+        var many = new StringBuilder();
+        const int count = 2000;
+        for (var i = 0; i < count; i++)
+            many.Append("var a").Append(i.ToString(CultureInfo.InvariantCulture)).Append(" = function () {}, b").Append(i.ToString(CultureInfo.InvariantCulture)).Append(" = { [k]: () => 0 }; ");
+        AssertSameWithTheModel(ParseV(many.ToString(), bound), many.ToString(), bound, "many named-evaluation sites");
+        var sites = ParseV(many.ToString(), bound, model: true).Model!;
+        var functions = sites.Functions.Where(static f => f.Kind != Semantics.FunctionKind.Script).ToList();
+        Assert.Equal(2 * count, functions.Count);
+        Assert.Equal(count, functions.Count(f => sites.NamedEvaluationName(f.Node) is not null));
+        Assert.Equal(count, functions.Count(f => sites.NamedEvaluationKey(f.Node) is not null));
+    }
 }

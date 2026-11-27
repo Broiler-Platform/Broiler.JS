@@ -635,7 +635,7 @@ are this repository's of 2026-11-24, recorded in `docs/roadmap/SharedLibraries.m
 (SJL-15)" (D-js-entry, D-js-default-off, D-js-instances, D-js-kinds, D-js-scope-shape, D-js-parameters,
 D-js-declaration-of, D-js-function-kind and D-js-names among them), and where this section differs from them or from the
 records that win (the header), it is corrected to match. Section 4 stays the sketch as restated at SJL-12.1. Stage 1 is
-the model's foundation; the members the sketch names beyond it (named evaluation, captures and the
+the model's foundation; the members the sketch names beyond it (the
 early errors) are its later stages', and none is declared before its stage. Stage 2 adds the early errors of the
 function context (section 10.4), stage 3 the jump targets with their early errors (section 10.5), stage 4 the
 private-name environments with their early errors (section 10.6), and stage 5a resolution and the function environment
@@ -658,6 +658,9 @@ Stage 5c adds the caller's records to the request, with the model members that a
 evaluation, captures and the early errors)" and "facts (section 10.7); the early errors of the module record stay their
 stage's".)* Stage 6 adds the module record with its early errors of exported names (section 10.10). *(Added 2026-11-27,
 at SJL-15.2 stage 6.)*
+*(Revised 2026-11-27, at SJL-15.2 stage 7, when named evaluation and captures landed; it read "(named evaluation,
+captures and the early errors)".)* Stage 7 adds named evaluation, free names and captures (section 10.11). *(Added
+2026-11-27, at SJL-15.2 stage 7.)*
 
 ### 10.1 The entry
 
@@ -672,7 +675,7 @@ at SJL-15.2 stage 6.)*
 
 | Sketch | The library's | What |
 |---|---|---|
-| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)`; `TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)` (section 10.5); `PrivateEnvironmentOf(ClassNode)` and `Resolve(PrivateIdentifier)` (section 10.6); `Resolve(Identifier)`, `Resolve(BindingIdentifier)` and `EnvironmentOf(SyntaxNode)` (section 10.7); `AnnexBAlias(Declaration)` (section 10.8); `DirectEvalCalls` and `CallerScopesOf(CallExpression)` (section 10.9); `Module` (section 10.10) *(revised 2026-11-25, at SJL-15.2 stage 3; the cell ended at "`FactsOf(SyntaxNode)`")* *(revised 2026-11-25, at SJL-15.2 stage 4; the cell ended at "`TargetOf(ContinueStatement)` (section 10.5)")* *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Resolve(PrivateIdentifier)` (section 10.6)")* *(revised 2026-11-26, at SJL-15.2 stage 5b; the cell ended at "`EnvironmentOf(SyntaxNode)` (section 10.7)")* *(revised 2026-11-26, at SJL-15.2 stage 5c; the cell ended at "`AnnexBAlias(Declaration)` (section 10.8)")* *(revised 2026-11-27, at SJL-15.2 stage 6; the cell ended at "`CallerScopesOf(CallExpression)` (section 10.9)")* |
+| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)`; `TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)` (section 10.5); `PrivateEnvironmentOf(ClassNode)` and `Resolve(PrivateIdentifier)` (section 10.6); `Resolve(Identifier)`, `Resolve(BindingIdentifier)` and `EnvironmentOf(SyntaxNode)` (section 10.7); `AnnexBAlias(Declaration)` (section 10.8); `DirectEvalCalls` and `CallerScopesOf(CallExpression)` (section 10.9); `Module` (section 10.10); `NamedEvaluationName(SyntaxNode)`, `NamedEvaluationKey(SyntaxNode)`, `FreeNames(SyntaxNode)` and `Captured(SyntaxNode)` (section 10.11) *(revised 2026-11-25, at SJL-15.2 stage 3; the cell ended at "`FactsOf(SyntaxNode)`")* *(revised 2026-11-25, at SJL-15.2 stage 4; the cell ended at "`TargetOf(ContinueStatement)` (section 10.5)")* *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Resolve(PrivateIdentifier)` (section 10.6)")* *(revised 2026-11-26, at SJL-15.2 stage 5b; the cell ended at "`EnvironmentOf(SyntaxNode)` (section 10.7)")* *(revised 2026-11-26, at SJL-15.2 stage 5c; the cell ended at "`AnnexBAlias(Declaration)` (section 10.8)")* *(revised 2026-11-27, at SJL-15.2 stage 6; the cell ended at "`CallerScopesOf(CallExpression)` (section 10.9)")* *(revised 2026-11-27, at SJL-15.2 stage 7; the cell ended at "`Module` (section 10.10)")* |
 | `Scope` | The tables' `Scope`, the same instances | The model's `Scopes` are a superset of `DeclarationTables.Scopes` in the same relative order, adding the kinds `With`, `ClassBody`, `FunctionName` and `Parameters`. Eval code is not a kind: its program's scope is a `Script` scope and its facts' kind `FunctionKind.EvalCode`; the separate variable environment is a function fact, `FunctionFacts.HasSeparateVariableEnvironment` (section 10.7) *(revised 2026-11-26, at SJL-15.2 stage 5a; it read "the separate variable environment is a function fact of a later stage")* |
 | `Declaration` | The tables' `Declaration`, the same instances | `BindingKind` gains `Parameter`, `FunctionName` (a named function expression's own name) and `ClassName` (a class's inner name), each with its three flags false, and `Declaration.IsMutable`, from the kind; and `Arguments`, the `arguments` binding, the model's alone and in no scope's declarations (section 10.7); and `BlockFunctionAlias`, a block function's var-scoped alias, the model's alone and in no scope's declarations (section 10.8) *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Declaration.IsMutable`, from the kind")* *(revised 2026-11-26, at SJL-15.2 stage 5b; the cell ended at "in no scope's declarations (section 10.7)")* |
 | `FunctionFacts` | The tables' `FunctionFacts`, the same instances | `Kind` (`FunctionKind`), `IsAsync`, `IsGenerator`, `HasSimpleParameterList` and `HasParameterExpressions`, the same on every request; the model's `Functions` add one for every static block and every field with an initialiser; and `HasSeparateVariableEnvironment`, computed from them, the same on every request (section 10.7) *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "every field with an initialiser")* |
@@ -692,6 +695,9 @@ the tree that has no facts".)*
 at SJL-15.2 stage 5b.)*
 `CallerScopesOf` throws `ArgumentException` for a call that is not in the model's tree or is not a direct-eval candidate.
 *(Added 2026-11-26, at SJL-15.2 stage 5c.)*
+`NamedEvaluationName` and `NamedEvaluationKey` throw `ArgumentException` for a node that is not in the model's tree, and
+`FreeNames` and `Captured` for such a node and, as `FactsOf` does, for a node of the tree that has no facts. *(Added
+2026-11-27, at SJL-15.2 stage 7.)*
 
 ### 10.3 Scopes and `ScopeOf`
 
@@ -1125,6 +1131,8 @@ search, entering an arrow's body only, misses (an inference, not probed).
 nested direct `eval` can read its bindings by name: in `function f() { var x; (() => eval("x = 1"))(); }` f's
 `DirectEvalInBody` is false, yet the arrow's call reaches f's `x` at run time. That reach is stage 7's, with captures
 and the rebuild of Broiler.JS's `FreeNameScan.Dynamic`, which is transitive and ignores strictness.
+Stage 7 gives it as `EnvironmentFacts.DirectEvalOrWithWithin`, beside the free names and captures (section 10.11).
+*(Added 2026-11-27, at SJL-15.2 stage 7.)*
 
 **An unknown: a class decorator's candidate.** A direct-`eval` candidate in a class's own decorators is read at the
 enclosing code's strictness, as the walk reads decorators: it visits them in the enclosing context, and the class's
@@ -1173,6 +1181,8 @@ reads `(eval)(...)` as a direct call is unknown. FF3: Broiler.JS materialises th
 direct `eval`; Broiler.VM's need is the mention above. RS1 to RS4: both engines are the same, Broiler.VM's slice
 refusals being its admission policy, and eval code's free names are inherited, beyond JSD-0080's three forms. The
 correspondence files' "FunctionDeclarationInstantiation's step 28" is step 30 in the pinned edition.
+The reach the model left to stage 7 is `DirectEvalOrWithWithin` from that stage (section 10.11). *(Added 2026-11-27, at
+SJL-15.2 stage 7.)*
 
 **For part F's checklist** (stage 8): "reference resolution with dynamic markers" is `Resolve` and `Resolution`;
 "per-function flags" are `EnvironmentOf`, `EnvironmentFacts` and `FunctionFacts.HasSeparateVariableEnvironment`.
@@ -1582,6 +1592,140 @@ checklist reads the record as carrying the entries and the module's own rows, an
 
 Section 4's sketch, `public ModuleRecord? Module { get; }`, stays as it is ("Section 4 stays the sketch"). No text in
 sections 1 to 9 is touched, so no Corrections entry is owed.
+
+### 10.11 Named evaluation, free names and captures
+
+*(Added 2026-11-27, at SJL-15.2 stage 7.)* The names named evaluation passes, and each function's free names and
+captures, as the library answers them. Like the rest of this section it restates and decides nothing: the decisions are
+D-js-named-evaluation, D-js-captures, D-js-debugger and D-js-named-evaluation-vectors of 2026-11-27, in
+`docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)".
+
+**The named-evaluation members.** With `ParseRequest.BuildSemanticModel` on, `SemanticModel.NamedEvaluationName(SyntaxNode)`
+answers, for an anonymous function or class definition's node, the name its NamedEvaluation passes where the source
+fixes it, and `NamedEvaluationKey(SyntaxNode)` the `ComputedPropertyName` whose run-time value names it; where named
+evaluation applies the name or the key answers, never both, and every other node answers neither. The node is the
+definition's `FunctionNode` (a function expression, generator, async function or async generator without a name, or
+any arrow) or `ClassNode` (a class expression without a name), the keys `FactsOf` and `PrivateEnvironmentOf` take; the
+`FunctionExpression`, `ArrowFunctionExpression` and `ClassExpression` wrappers and every `ParenthesizedExpression`
+answer neither, so that the anonymous default declarations, which have no expression, are keyed the same way. The
+sketch's `string? NamedEvaluationName(SyntaxNode node)` (section 4) cannot carry a computed or symbol key, whence the
+key member.
+
+**The sites**, each read at a node the walk already visits, the value unwrapped through every parenthesis:
+- a declarator of a `BindingIdentifier` with an initialiser, of `var`, `let` and `const`, of a `for` statement's head,
+  and of Annex B's `for (var x = f in o)`;
+- a single-name binding with a default, in parameters, `catch` parameters and declaration patterns, the binding
+  shorthand `{p = f}` included, and an assignment element or keyed assignment property with a default whose target is
+  an unparenthesised name, `[t = f] = a` and `({k: t = f} = o)`, both naming the target, not the key;
+- an assignment pattern shorthand, `({x = f} = o)`;
+- an assignment, and a logical assignment (`&&=`, `||=`, `??=`), whose target is a name, `IsIdentifierRef` of the
+  target; a compound assignment never names, nor a parenthesised or member target;
+- an object literal's `PropertyName : AssignmentExpression` entry, but a non-computed `__proto__` key, which sets the
+  prototype (isProtoSetter), an escaped spelling of it among them;
+- a class field with an initialiser, static, private and computed fields among them, with no isProtoSetter exclusion;
+- `export default` of an expression, which passes "default".
+
+A comma expression is no function definition, nor is an assignment, so that in `a = b = function () {}` only `b`'s
+assignment names the function. A literal key's name is its property name: an `IdentifierName`'s StringValue, a string's
+value, a Number's `Number::toString` (`1e3` gives "1000", `0x10` gives "16"), and a BigInt's integer in decimal, read
+from the literal's text (`0x10n` gives "16"); a private name's is its description with the `#`. A computed key names at
+run time by SetFunctionName's conversion of its value, a Symbol as its description in brackets or the empty string, and
+a key whose value the source writes is not folded. **The anonymous default declarations**, `export default function ()
+{}` in its generator and async forms and `export default class {}`, answer "default" too: the specification names them
+by SetFunctionName, not by NamedEvaluation, and their binding is `*default*`, which the module record carries.
+Methods, getters and setters, of object literals and classes, answer null: DefineMethod names them by their key and
+prefix. So does a function or class with its own name. **The answer is the argument, not the final `name`
+property**: a class's name is set before its static elements are defined, so a static `name` member overrides it, and
+where no name is passed the function's `name` is the empty string at run time.
+
+**Beyond the pinned edition**, each a reading of the library's: `using` and `await using` declarators name as `let`
+and `const` ones do, which test262's `statements/using/fn-name-fn.js` expects; and an auto-accessor field names as a
+field does, the tree's reading, whether the decorators proposal names it being unknown. Decorators carry no site.
+
+**Free names and captures.** `SemanticModel.FreeNames(SyntaxNode)` and `Captured(SyntaxNode)` take the nodes `FactsOf`
+takes: the program, a `FunctionNode`, a `StaticBlock` and an initialised `FieldDefinition`, since a field initialiser
+and a static block are functions with no `FunctionNode`. The specification defines neither notion, so the model's
+definition is its own:
+- **Scope ownership.** A scope made for a facts node belongs to it (a function's `FunctionName`, `Parameters` and
+  `Function` scopes, a static block's, and the program's, the dynamic function's parameters' among them); a
+  `ClassBody` scope belongs to the facts node whose code holds the class, recorded at the class, so that a class
+  expression in a field initialiser belongs to the field; every other scope belongs to the facts node whose code makes
+  it.
+- **The binding** of a reference is `Resolve`'s answer, or a dynamic answer's fallback. A reference is free in a facts
+  node when it stands in the node's code, nested code included, and its binding is in no scope of the node or of a facts
+  node nested in it.
+
+| The binding | In `FreeNames` | In `Captured` |
+|---|---|---|
+| `Static` | yes | its declaration |
+| `Dynamic`, its fallback `Static` | yes | the fallback's declaration |
+| `Global`, or `Dynamic` falling back to `Global` | yes | no |
+| `Inherited`, with a declaration or without | yes | no |
+
+Only references count, not bindings: eval code's `var x = 1;` gives the program no free name, while `var x = 1; x`
+gives "x", free and not captured, its binding being the caller's. `this`, `super` and `new.target` are no names, and
+`arguments` is an ordinary reference: an arrow's is free in the arrow and captures its function's `Arguments`
+declaration. A named function expression's own name is in its own `FunctionName` scope, so it is never its own free
+name, though it is a free name of a function nested in it that uses it; a class's inner name is free in the methods,
+field initialisers and static blocks that use it, and not in the code that holds the class, whose heritage and computed
+keys stand in that code. Parameters with expressions have their own scope, and a `for` statement's per-iteration copies
+share their declaration. Each name appears at its first free reference only, and each declaration at its name's place;
+the specification gives no order. A dynamic answer's `with` objects and scopes that may gain bindings change nothing, so
+for them a list may name more than run time reaches. What a direct `eval`'s text names is not listed, that text being
+no part of the tree: in `function f() { var x; (() => eval("x"))(); }` the arrow reaches f's `x` at run time and its
+list holds only "eval"; `DirectEvalOrWithWithin` says where code may so reach bindings by names a list leaves out. The
+model's own declarations can be captured: an outer function's `Arguments`, an Annex B alias, an outer `FunctionName`
+and an outer `ClassName`.
+
+**How the walk feeds them.** The walk records, at visits it already makes and only with the member on, each reference's
+owning facts node, each `ClassBody` scope's owner and each named-evaluation site's answer; after the walk a pass over
+the recorded references in start order and the final resolutions, after every resolution revision and before the
+environment facts are built, climbs from each reference's owner by the enclosing functions to its binding's owner and
+adds the name, and its declaration, at each node climbed. It is no second walk and numbers nothing.
+
+**The dynamic reach and the self-name.** `EnvironmentFacts.DirectEvalOrWithWithin` says whether a direct-`eval` candidate
+of any strictness or a `with` statement stands in the node's code or in code nested in it: the reach section 10.7 left
+here, transitive and whatever the strictness, as Broiler.JS's `FreeNameScan.Dynamic` is; a candidate is section 10.7's,
+so `(eval)(s)` counts and `eval?.(s)` does not. `EnvironmentFacts.FunctionNameReferenced` says whether a named function
+expression's own name is used in its code or in code nested in it, so that it is true for `g` in
+`var f = function g() { return () => g; }`; a use only in a direct `eval`'s text does not count, so it is false in
+`var f = function g() { return eval("g"); }`, where `DirectEvalOrWithWithin` is true. **No `debugger` fact**:
+`debugger` gives no binding access in the specification, and `FreeNameScan`'s dynamic flag does not count it in code,
+whatever its documentation says.
+
+**The vectors.** The value vectors of row NE1, group `ne1`, stay not implemented: they name no catalogue row, and read
+at the parse each would match by acceptance alone. FC1 has no vector file.
+
+**The dump.** The canonical dump's model section writes, per facts entry in the model's order, a `model-captures` line
+(its node, `DirectEvalOrWithWithin`, `FunctionNameReferenced` and its free names) and a `model-captured` line (its node
+and each captured declaration), and, per function and class node in tree order with an answer, a `model-named` line
+(its name, or `key` and the computed key). The dump computes no fact of its own.
+
+**The facade's answers**, for SJL-15.5, which builds none here: `FreeNameScan.Free` is the set of `FreeNames`, and
+`FreeInOrder` is `FreeNames`, if `FreeInOrder`'s order, the closure rewriter's slot order, equals the start order, which
+no test reads and is unverified; `Dynamic` is `DirectEvalOrWithWithin`; `SelfNameReferenced` is
+`FunctionNameReferenced`; `ForProgram` iterates the model's functions but the program and the field initialisers, which
+`FreeNameScan` has no entry for. Mapping Broiler.JS's bridged functions to the model's nodes is SJL-15.5's, and unknown.
+
+**Where the library differs from each engine**, named for SJL-15.3 and SJL-15.5, as `docs/roadmap/SharedLibraries.md`
+lists it. Row NE1: Broiler.JS names at lowering, and in indirect-eval code gives no name where the specification names
+each of the probes C1's row NE1 lists; Broiler.VM names in its lowering and binder, and its rule admits no NE class at
+its window (an inference). Row FC1: `FreeNameScan` counts `this` as a name, class names, class element keys and private
+names as references, and `eval?.()` as dynamic; binds lexical declarations only as its walk meets them; hoists block
+functions in strict code; gives parameters naming later parameters or `arguments` free; misses decorators' references;
+has a self-name flag that is not transitive; and has no entry for a field initialiser, each an inference by reading its
+code. Its own tests' sets are the model's (the Frontend's tests port them), so a model-based facade is expected to pass
+them (an inference, not run). Broiler.VM computes no capture.
+
+**The decisions**: D-js-named-evaluation, D-js-captures, D-js-debugger and D-js-named-evaluation-vectors.
+
+**For part F's checklist** (stage 8): JSD-0080's "**Named-evaluation names**" are `NamedEvaluationName` and
+`NamedEvaluationKey`; "**Free names and captures**, per function" are `FreeNames`, `Captured` and `EnvironmentFacts`'
+`DirectEvalOrWithWithin` and `FunctionNameReferenced`.
+
+Section 4's sketch, `public string? NamedEvaluationName(SyntaxNode node);` and
+`public IReadOnlyList<Declaration> Captured(FunctionNode function);`, stays as it is ("Section 4 stays the sketch"). No
+text in sections 1 to 9 is touched, so no Corrections entry is owed.
 
 ## Corrections
 

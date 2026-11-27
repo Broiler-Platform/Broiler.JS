@@ -41,6 +41,8 @@ Broiler.ECMAScript.Semantics.EnvironmentFacts.get_ArgumentsNeeded() method Syste
 Broiler.ECMAScript.Semantics.EnvironmentFacts.get_ContainsWith() method System.Boolean
 Broiler.ECMAScript.Semantics.EnvironmentFacts.get_DirectEvalInBody() method System.Boolean
 Broiler.ECMAScript.Semantics.EnvironmentFacts.get_DirectEvalInParameters() method System.Boolean
+Broiler.ECMAScript.Semantics.EnvironmentFacts.get_DirectEvalOrWithWithin() method System.Boolean
+Broiler.ECMAScript.Semantics.EnvironmentFacts.get_FunctionNameReferenced() method System.Boolean
 Broiler.ECMAScript.Semantics.EnvironmentFacts.get_Node() method Broiler.ECMAScript.Syntax.SyntaxNode
 Broiler.ECMAScript.Semantics.ExportEntry sealed class
 Broiler.ECMAScript.Semantics.ExportEntry.get_Declaration() method Broiler.ECMAScript.Semantics.Declaration
@@ -157,9 +159,13 @@ Broiler.ECMAScript.Semantics.ScopeKind.value__ field System.Int32
 Broiler.ECMAScript.Semantics.SemanticModel sealed class
 Broiler.ECMAScript.Semantics.SemanticModel.AnnexBAlias(Broiler.ECMAScript.Semantics.Declaration) method Broiler.ECMAScript.Semantics.Declaration
 Broiler.ECMAScript.Semantics.SemanticModel.CallerScopesOf(Broiler.ECMAScript.Syntax.CallExpression) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.CallerScope>
+Broiler.ECMAScript.Semantics.SemanticModel.Captured(Broiler.ECMAScript.Syntax.SyntaxNode) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.Declaration>
 Broiler.ECMAScript.Semantics.SemanticModel.DeclarationOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.Declaration
 Broiler.ECMAScript.Semantics.SemanticModel.EnvironmentOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.EnvironmentFacts
 Broiler.ECMAScript.Semantics.SemanticModel.FactsOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.FunctionFacts
+Broiler.ECMAScript.Semantics.SemanticModel.FreeNames(Broiler.ECMAScript.Syntax.SyntaxNode) method System.Collections.Generic.IReadOnlyList`1<System.String>
+Broiler.ECMAScript.Semantics.SemanticModel.NamedEvaluationKey(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Syntax.ComputedPropertyName
+Broiler.ECMAScript.Semantics.SemanticModel.NamedEvaluationName(Broiler.ECMAScript.Syntax.SyntaxNode) method System.String
 Broiler.ECMAScript.Semantics.SemanticModel.ParentOf(Broiler.ECMAScript.Semantics.Scope) method Broiler.ECMAScript.Semantics.Scope
 Broiler.ECMAScript.Semantics.SemanticModel.PrivateEnvironmentOf(Broiler.ECMAScript.Syntax.ClassNode) method Broiler.ECMAScript.Semantics.PrivateEnvironment
 Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.BindingIdentifier) method Broiler.ECMAScript.Semantics.Resolution

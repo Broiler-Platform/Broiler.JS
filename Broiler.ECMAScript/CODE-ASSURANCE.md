@@ -16,12 +16,12 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Files scanned | 171 |
 | Files not covered | 0 |
 | Files carrying an annotation | 171 |
-| Code units | 4971 |
-| Relevant | 3143 |
-| Exempt by predicate | 1828 |
-| Annotated | 3143 of 3143 (100%) |
-| Human reviewed | 0 of 3143 (0%) |
-| Unverified | 3143 |
+| Code units | 4989 |
+| Relevant | 3151 |
+| Exempt by predicate | 1838 |
+| Annotated | 3151 of 3151 (100%) |
+| Human reviewed | 0 of 3151 (0%) |
+| Unverified | 3151 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 3143 |
+| HUMAN_PENDING | 3151 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 1828 |
+| EXEMPT | 1838 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
 | None | 51 |
-| Low | 3172 |
+| Low | 3184 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,8 +51,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 77 |
-| Low | 2012 |
-| Medium | 907 |
+| Low | 2015 |
+| Medium | 916 |
 | High | 235 |
 | Critical | 0 |
 | *not annotated* | 0 |
@@ -63,7 +63,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | Maximum | 9 / 10 |
 | Average over annotated units | 1.0 / 10 |
-| Units scored | 3143 |
+| Units scored | 3151 |
 
 ## High-security review areas
 
@@ -329,13 +329,13 @@ that the rule is reviewable in one place rather than in several hundred.
 
 | Case | Units |
 |---|---:|
-| TrivialPropertyOrAccessor | 552 |
+| TrivialPropertyOrAccessor | 554 |
 | ParameterAssigningConstructor | 41 |
 | TrivialExpressionBodiedMember | 36 |
 | CompilerSuppliedRecordOrEnumMember | 131 |
 | DelegatingOverrideOrOperator | 6 |
 | InsideAssemblyMarker | 0 |
-| FieldDeclaringStorage | 254 |
+| FieldDeclaringStorage | 262 |
 | EnumMemberOfADeclaredVocabulary | 808 |
 | DeclaredInSource | 0 |
 
@@ -360,7 +360,7 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `hairs.manifest.json` lists **every** code unit in the 5 covered assemblies -
-4971 of them, exempt and relevant alike - with the fingerprint of its declaration.
+4989 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as
