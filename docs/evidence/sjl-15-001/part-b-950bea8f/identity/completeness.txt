@@ -1,0 +1,20 @@
+manifest /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s157-pb/compare/950bea8f-26c6d6ec/corpus.manifest: 106963 inputs and variants
+/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s157-pb/base/26c6d6ec/parse-corpus-c.tsv.gz: mode acceptance, columns id,variant,entry,outcome,type,message, rows 213926, end '#% end\t213926', keys 106963 (each 2 time(s) expected), equal to the manifest's: yes
+  K accepted: 97249
+  K crashed: 8
+  K refused: 9706
+  P accepted: 98214
+  P refused: 8749
+/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s157-pb/base/26c6d6ec/parse-corpus-d1.tsv.gz: mode dump, columns id,variant,slot,parse,parser-sha256,pass,pass-sha256, rows 106963, end '#% end\t106963', keys 106963 (each 1 time(s) expected), equal to the manifest's: yes
+  dump accepted: 98214
+  dump refused: 8749
+/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s157-pb/after/950bea8f/parse-corpus-c.tsv.gz: mode acceptance, columns id,variant,entry,outcome,type,message, rows 213926, end '#% end\t213926', keys 106963 (each 2 time(s) expected), equal to the manifest's: yes
+  K accepted: 97249
+  K crashed: 8
+  K refused: 9706
+  P accepted: 98214
+  P refused: 8749
+/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s157-pb/after/950bea8f/parse-corpus-d1.tsv.gz: mode dump, columns id,variant,slot,parse,parser-sha256,pass,pass-sha256, rows 106963, end '#% end\t106963', keys 106963 (each 1 time(s) expected), equal to the manifest's: yes
+  dump accepted: 98214
+  dump refused: 8749
+rc=0

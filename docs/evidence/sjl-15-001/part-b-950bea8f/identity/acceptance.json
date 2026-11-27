@@ -1,0 +1,66 @@
+{
+  "admitted": 0,
+  "after": "/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s157-pb/after/950bea8f/parse-corpus-c.tsv.gz",
+  "afterAssemblies": [
+    [
+      "Broiler.JavaScript.Ast",
+      "0.1.0-preview.1",
+      "5c9ab5bc-2294-4745-a3ea-03a6d3a6c3e9"
+    ],
+    [
+      "Broiler.JavaScript.Parser",
+      "0.1.0-preview.1",
+      "9e62c9dc-6a5e-410b-9736-d83a4c696e93"
+    ],
+    [
+      "Broiler.JavaScript.Compiler",
+      "0.1.0-preview.1",
+      "a4a276b9-9647-476d-bd6d-b02fb56b8022"
+    ],
+    [
+      "Broiler.JavaScript.Engine",
+      "0.1.0-preview.1",
+      "7a4cdad9-8894-439a-947a-2f824136570a"
+    ],
+    [
+      "Broiler.JavaScript.Runtime",
+      "0.1.0-preview.1",
+      "c5b6550b-4394-422d-a1fe-a5ff34413958"
+    ]
+  ],
+  "allDifferencesAdmitted": true,
+  "base": "/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s157-pb/base/26c6d6ec/parse-corpus-c.tsv.gz",
+  "baseAssemblies": [
+    [
+      "Broiler.JavaScript.Ast",
+      "0.1.0-preview.1",
+      "8a6da43b-0541-42cc-83ca-ce5b6d08d4e9"
+    ],
+    [
+      "Broiler.JavaScript.Parser",
+      "0.1.0-preview.1",
+      "3760dbe3-8c25-411a-bbae-928445c0d04c"
+    ],
+    [
+      "Broiler.JavaScript.Compiler",
+      "0.1.0-preview.1",
+      "19c84cd8-0195-4dd5-9f63-6d6c819d98fd"
+    ],
+    [
+      "Broiler.JavaScript.Engine",
+      "0.1.0-preview.1",
+      "41769d3a-dce4-43b7-849e-1d897802197a"
+    ],
+    [
+      "Broiler.JavaScript.Runtime",
+      "0.1.0-preview.1",
+      "6bf520b0-33cb-48f5-89cb-7835bf12572b"
+    ]
+  ],
+  "differences": [],
+  "manifestSha256": "1c5342104766f14d0c17d950537e4ed078a0c438c3652f8c65bff8c6c347e9cc",
+  "notAdmitted": 0,
+  "part": "C",
+  "rows": 213926,
+  "unusedClassifications": []
+}
