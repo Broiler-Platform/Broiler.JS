@@ -262,6 +262,7 @@ public sealed class SemanticModel
     /// the model's own. The first is the program's: its <see cref="ScopeKind.Script"/> or <see cref="ScopeKind.Module"/>
     /// scope, or for a dynamic function's goals its <see cref="ScopeKind.Parameters"/> scope.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "Environment Records" and "Static Semantics: LexicallyScopedDeclarations". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public IReadOnlyList<Scope> Scopes { get; }
 
     /// <summary>
@@ -270,6 +271,7 @@ public sealed class SemanticModel
     /// relative order, and the model's own, of kinds <see cref="FunctionKind.StaticBlock"/> and
     /// <see cref="FunctionKind.FieldInitializer"/>. A field without an initialiser has none.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "ECMAScript Function Objects" and "FunctionDeclarationInstantiation". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public IReadOnlyList<FunctionFacts> Functions { get; }
 
     /// <summary>
@@ -356,6 +358,7 @@ public sealed class SemanticModel
     /// <returns>Its facts.</returns>
     /// <exception cref="ArgumentNullException">The node is null.</exception>
     /// <exception cref="ArgumentException">The node is not in the model's tree, or is a node of it that has no facts: none of those four.</exception>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "ECMAScript Function Objects" and "FunctionDeclarationInstantiation". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     // Hairs-AI:           Origin=AI; Spec=ECMA-262 s10.2 function objects, s15.7 class elements, JSD-0080 FactsOf; IP=Low; Security=Medium; Resources=1; Fingerprint=6D55B3
     // Hairs-Human:        PENDING
     public FunctionFacts FactsOf(SyntaxNode node)
@@ -661,6 +664,7 @@ public sealed class SemanticModel
     /// source order of the call's start. Whether each is direct is SameValue with %eval% when it runs.
     /// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "Function Calls" (the direct eval test of its evaluation) and "PerformEval". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public IReadOnlyList<CallExpression> DirectEvalCalls { get; }
 
     /// <summary>
@@ -937,6 +941,7 @@ public sealed class LabelTarget
     /// The statement the jump leaves or continues: an iteration statement, a <c>switch</c>, or the statement a labelled
     /// <c>break</c> names, looked at through every label on it; never a <see cref="LabelledStatement"/>.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "Runtime Semantics: LabelledEvaluation" and "Static Semantics: ContainsUndefinedBreakTarget". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public Statement Statement { get; }
 
     /// <summary>
@@ -944,6 +949,7 @@ public sealed class LabelTarget
     /// <see cref="LabelledStatement"/>s directly over it, outermost first, so that in <c>A: B: C: do ... while (c)</c> it is
     /// [A, B, C]; empty when it has none.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "Runtime Semantics: LabelledEvaluation" (its labelSet). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public IReadOnlyList<string> LabelSet { get; }
 }
 
@@ -957,15 +963,18 @@ public sealed class LabelTarget
 public enum PrivateNameKind
 {
     /// <summary>A private field: a <see cref="FieldDefinition"/> that is not an auto-accessor.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "PrivateElements" ([[Kind]] field). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     Field = 0,
 
     /// <summary>A private method: a <see cref="MethodDefinition"/> of <see cref="MethodKind.Method"/>, plain, generator, async or async generator.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "PrivateElements" ([[Kind]] method). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     Method = 1,
 
     /// <summary>
     /// A private accessor: a getter, a setter, a getter and setter pair of one placement, or an auto-accessor
     /// (<c>accessor #x</c>, the auto-accessors proposal, <see cref="ProposalFlags.AutoAccessors"/>).
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "PrivateElements" ([[Kind]] accessor). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     Accessor = 2,
 }
 
@@ -999,6 +1008,7 @@ public sealed class PrivateEnvironment
     }
 
     /// <summary>The class whose ClassBody declares the environment.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "PrivateEnvironment Records" and "Runtime Semantics: ClassDefinitionEvaluation". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public ClassNode Class { get; }
 
     /// <summary>
@@ -1060,18 +1070,22 @@ public sealed class PrivateNameBinding
     public string Name { get; }
 
     /// <summary>The private environment that holds it, the one <see cref="SemanticModel.PrivateEnvironmentOf"/> answers for its class.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "PrivateEnvironment Records" and "ResolvePrivateIdentifier". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public PrivateEnvironment Environment { get; }
 
     /// <summary>Whether it is a field, a method or an accessor.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "PrivateElements" ([[Kind]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public PrivateNameKind Kind { get; }
 
     /// <summary>Whether its elements are <c>static</c>. A static name used through an instance, or the other way round, is the brand check's run-time error, not an early one.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "Runtime Semantics: ClassDefinitionEvaluation" (its static and instance private methods). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public bool IsStatic { get; }
 
     /// <summary>
     /// The class elements that declare it, each a <see cref="MethodDefinition"/> or a <see cref="FieldDefinition"/>, in source
     /// order: one, or a getter and a setter.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "Static Semantics: PrivateBoundIdentifiers" and "Runtime Semantics: ClassElementEvaluation". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public IReadOnlyList<SyntaxNode> Elements { get; }
 }
 
@@ -1085,6 +1099,7 @@ public sealed class PrivateNameBinding
 public enum ResolutionKind
 {
     /// <summary>To the binding of <see cref="Resolution.Scope"/>'s environment named by <see cref="Resolution.Declaration"/>.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "ResolveBinding" and "GetIdentifierReference". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     Static = 0,
 
     /// <summary>
@@ -1094,6 +1109,7 @@ public enum ResolutionKind
     /// one of <see cref="Resolution.DynamicScopes"/> may hold at run time, a <c>with</c> statement's object or a sloppy
     /// direct <c>eval</c>'s <c>var</c>, and otherwise to <see cref="Resolution.Fallback"/>.")</i>
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "GetIdentifierReference", "Object Environment Records" and "PerformEval". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     Dynamic = 1,
 
     /// <summary>
@@ -1101,6 +1117,7 @@ public enum ResolutionKind
     /// <c>"undefined"</c>, and a sloppy write creates a global. Only Script, Module and the dynamic function's goals answer
     /// it.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "GetIdentifierReference" and "Global Environment Records". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     Global = 2,
 
     /// <summary>
@@ -1299,9 +1316,11 @@ public sealed class Resolution
     }
 
     /// <summary>Its kind.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "ResolveBinding" and "GetIdentifierReference". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public ResolutionKind Kind { get; }
 
     /// <summary>For <see cref="ResolutionKind.Static"/>, the scope whose environment holds the binding; null otherwise.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "GetIdentifierReference" (the environment that holds the binding). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public Scope? Scope { get; }
 
     /// <summary>
@@ -1334,12 +1353,15 @@ public sealed class Resolution
     /// sloppy direct <c>eval</c> may add to between the node and <see cref="Fallback"/>'s scope, or the end of the
     /// chain".)</i>
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "Object Environment Records" and "PerformEval". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public IReadOnlyList<Scope> DynamicScopes { get; }
 
     /// <summary>For <see cref="ResolutionKind.Dynamic"/>, the reason of the first <see cref="DynamicScopes"/> entry; null otherwise.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "The with Statement" and "PerformEval". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public DynamicReason? Reason { get; }
 
     /// <summary>For <see cref="ResolutionKind.Dynamic"/>, the resolution when none of <see cref="DynamicScopes"/> binds the name, never itself dynamic; null otherwise.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "GetIdentifierReference" (its [[OuterEnv]] walk). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public Resolution? Fallback { get; }
 }
 
@@ -1396,6 +1418,7 @@ public sealed class EnvironmentFacts
     }
 
     /// <summary>The node, as <see cref="FunctionFacts.Node"/>: the <see cref="ProgramNode"/>, a <see cref="FunctionNode"/>, a <see cref="StaticBlock"/> or a <see cref="FieldDefinition"/>.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "FunctionDeclarationInstantiation". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public SyntaxNode Node { get; }
 
     /// <summary>
@@ -1429,12 +1452,15 @@ public sealed class EnvironmentFacts
     public bool ArgumentsMapped { get; }
 
     /// <summary>Whether a direct-<c>eval</c> candidate made in non-strict code stands in this node's own parameters (row FF5); it implies <see cref="FunctionFacts.HasParameterExpressions"/>.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "FunctionDeclarationInstantiation" and "PerformEval". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public bool DirectEvalInParameters { get; }
 
     /// <summary>Whether a direct-<c>eval</c> candidate made in non-strict code stands in this node's own body, outside its parameters (row FF5).</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "FunctionDeclarationInstantiation" and "PerformEval". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public bool DirectEvalInBody { get; }
 
     /// <summary>Whether a <c>with</c> statement stands in this node's own code, arrows excluded, as Contains crosses no function boundary; strict code refuses one.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "The with Statement" and "Static Semantics: Contains". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public bool ContainsWith { get; }
 
     /// <summary>
@@ -1448,6 +1474,7 @@ public sealed class EnvironmentFacts
     /// <c>eval?.(s)</c> does not. A <c>debugger</c> statement does not count: it gives no binding access.
     /// <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "PerformEval" and "The with Statement". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public bool DirectEvalOrWithWithin { get; }
 
     /// <summary>
@@ -1461,6 +1488,7 @@ public sealed class EnvironmentFacts
     /// of the tree and does not count: in <c>var f = function g() { return eval("g"); }</c> it is false, and
     /// <see cref="DirectEvalOrWithWithin"/> is true. <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "Runtime Semantics: InstantiateOrdinaryFunctionExpression" (its funcEnv). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public bool FunctionNameReferenced { get; }
 }
 
@@ -1599,12 +1627,14 @@ public sealed class ModuleRequest
     /// phase; the source-phase and deferred imports are proposals (<see cref="ProposalFlags.ImportSourceDeclarations"/>,
     /// <see cref="ProposalFlags.ImportDeferDeclarations"/>), and the field is the library's, beyond the edition.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "ModuleRequest Records" and "Static Semantics: ModuleRequests". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public ImportPhase Phase { get; }
 
     /// <summary>
     /// Every <see cref="ImportDeclaration"/>, <see cref="ExportNamedDeclaration"/> with a FromClause and
     /// <see cref="ExportAllDeclaration"/> that makes this request, in source order, the first making it.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "Static Semantics: ModuleRequests". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public IReadOnlyList<Statement> Statements { get; }
 }
 
@@ -1649,12 +1679,15 @@ public enum ImportNameKind
     Name = 1,
 
     /// <summary>~namespace-object~: an import entry's namespace binding, <c>import * as ns</c>, a deferred one among them.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ImportEntry Records" (~namespace-object~). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     NamespaceObject = 2,
 
     /// <summary>~all~: an export entry's <c>export * as n from</c>, or the re-export of an imported namespace object.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ExportEntry Records" (~all~). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     All = 3,
 
     /// <summary>~all-but-default~: an export entry's <c>export * from</c>.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ExportEntry Records" (~all-but-default~). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     AllButDefault = 4,
 
     /// <summary>
@@ -1705,9 +1738,11 @@ public sealed class ImportEntry
     public string LocalName { get; }
 
     /// <summary>The ImportedBinding.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "ImportEntry Records" and "Static Semantics: ImportEntriesForModule". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public BindingIdentifier Node { get; }
 
     /// <summary>The <see cref="BindingKind.Import"/> declaration the binding makes, the instance <see cref="SemanticModel.DeclarationOf"/> answers for <see cref="Node"/>.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "ImportEntry Records" and "Static Semantics: BoundNames". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public Declaration Declaration { get; }
 }
 
@@ -1772,6 +1807,7 @@ public sealed class ExportEntry
     public string? LocalName { get; }
 
     /// <summary>The entry's node: the <see cref="ExportSpecifier"/>, the bound name's <see cref="BindingIdentifier"/>, the <see cref="ExportDefaultDeclaration"/> or the <see cref="ExportAllDeclaration"/>.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "ExportEntry Records" and "Static Semantics: ExportEntriesForModule". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public SyntaxNode Node { get; }
 
     /// <summary>
@@ -1780,5 +1816,6 @@ public sealed class ExportEntry
     /// <see cref="BindingKind.ExportDefault"/> declaration of the <see cref="ExportDefaultDeclaration"/>; every local entry
     /// of an accepted Module has one, the rest being refused (EE0171). Null for an indirect or star entry.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "ExportEntry Records" and "Static Semantics: ExportedBindings". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public Declaration? Declaration { get; }
 }

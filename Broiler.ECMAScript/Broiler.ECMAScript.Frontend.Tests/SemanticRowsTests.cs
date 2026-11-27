@@ -127,8 +127,16 @@ public sealed class SemanticRowsTests
     // -----------------------------------------------------------------------------------------------------------------
     // The table.
 
+    /// <summary>
+    /// The table's rows are the stage table's <c>semantics</c> rows but EA0006, a row only a run reaches, with the
+    /// catalogue's codes and identifiers (decision D-js-semantic-rows: "A test holds the table a subset of the stage table's
+    /// <c>semantics</c> rows, to be equal at stage 8 except EA0006"). <i>(Revised 2026-11-27, at SJL-15.2 stage 8, when the
+    /// subset test became this equality; it was
+    /// <c>The_model_s_rows_are_a_subset_of_the_stage_table_s_semantics_rows_with_the_catalogue_s_codes_and_identifiers</c>
+    /// and held each field a <c>semantics</c> row, never EA0006.)</i>
+    /// </summary>
     [Fact]
-    public void The_model_s_rows_are_a_subset_of_the_stage_table_s_semantics_rows_with_the_catalogue_s_codes_and_identifiers()
+    public void The_model_s_rows_are_the_stage_table_s_semantics_rows_but_EA0006_with_the_catalogue_s_codes_and_identifiers()
     {
         var catalogue = Table("early-errors.tsv").ToDictionary(static c => c[0], StringComparer.Ordinal);
         var semantics = Table("stages.tsv").Where(static c => c[2] == "semantics").Select(static c => c[0]).ToHashSet(StringComparer.Ordinal);
@@ -147,6 +155,13 @@ public sealed class SemanticRowsTests
 
         // The codes are the rows' own: no two fields share one.
         Assert.Equal(fields.Length, fields.Select(static f => ((LexicalRefusal)f.GetValue(null)!).Code).Distinct(StringComparer.Ordinal).Count());
+
+        // Equal, as a set, to the stage table's semantics rows but EA0006, which stays a row only a run reaches (SJL-15.2
+        // stage 8; decision D-js-semantic-rows' "equal at stage 8 except EA0006").
+        Assert.Contains("EA0006", semantics);
+        Assert.Equal(
+            semantics.Where(static r => r != "EA0006").Order(StringComparer.Ordinal),
+            fields.Select(static f => f.Name).Order(StringComparer.Ordinal));
     }
 
     // -----------------------------------------------------------------------------------------------------------------

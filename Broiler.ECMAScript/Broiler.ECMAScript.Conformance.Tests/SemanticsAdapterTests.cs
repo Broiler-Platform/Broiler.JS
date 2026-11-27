@@ -341,6 +341,63 @@ public class SemanticsAdapterTests
     }
 
     /// <summary>
+    /// The value vectors no row decides stay not implemented, each group left by the decision that names it (SJL-15.2 stage
+    /// 8; the session's decision D-js-adapter-final): <c>ab1</c> by D-js-annexb-vectors; <c>ff3</c>, <c>ff4</c>,
+    /// <c>ff5</c> and <c>rs2</c> by D-js-environment-vectors; <c>ne1</c> by D-js-named-evaluation-vectors; and <c>pn1</c>
+    /// by D-js-adapter-visible-names. The model decides no value at the parse, and read at the parse each would match by
+    /// acceptance alone. The only group answered is <c>lb1</c> (D-js-adapter-groups). The vectors of EA0006 are listed
+    /// apart: they are a row's, which the rule's part F names as a row only a run reaches and D-js-semantic-rows leaves out
+    /// of the table, not a group's. The <c>pn1</c> and <c>ne1</c> assertions above fold into this one.
+    /// <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i>
+    /// </summary>
+    [Fact]
+    public void The_unanswered_groups_are_each_left_by_a_decision_and_EA0006_s_vectors_apart()
+    {
+        var left = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["ab1"] = "D-js-annexb-vectors",
+            ["ff3"] = "D-js-environment-vectors",
+            ["ff4"] = "D-js-environment-vectors",
+            ["ff5"] = "D-js-environment-vectors",
+            ["ne1"] = "D-js-named-evaluation-vectors",
+            ["pn1"] = "D-js-adapter-visible-names",
+            ["rs2"] = "D-js-environment-vectors",
+        };
+        var unanswered = SemanticsVectors.Where(static v => !AlgorithmsLibrary.IsLibrarySemantics(v)).ToList();
+        Assert.Equal(
+            left.Keys.Order(StringComparer.Ordinal),
+            unanswered.Where(static v => AlgorithmsLibrary.SemanticsRow(v) is null).Select(static v => AlgorithmsLibrary.SemanticsGroup(v)!).Distinct().Order(StringComparer.Ordinal));
+        foreach (var (group, decision) in left)
+        {
+            Assert.NotEmpty(decision);
+            Assert.DoesNotContain(AlgorithmsLibrary.SemanticsAnsweredGroups, g => g.Group == group);
+            Assert.All(SemanticsVectors.Where(v => AlgorithmsLibrary.SemanticsGroup(v) == group), static v => Assert.False(AlgorithmsLibrary.IsLibrarySemantics(v), v.Id));
+        }
+
+        Assert.Equal(new[] { "lb1" }, AlgorithmsLibrary.SemanticsAnsweredGroups.Select(static g => g.Group));
+
+        // EA0006's vectors, apart: the only row whose vectors are not answered, and no row of the table.
+        Assert.Equal(new[] { "EA0006" }, unanswered.Select(static v => AlgorithmsLibrary.SemanticsRow(v)).OfType<string>().Distinct());
+        Assert.DoesNotContain("EA0006", AlgorithmsLibrary.SemanticsAnsweredRows);
+    }
+
+    /// <summary>
+    /// The answered rows that no <c>semantics</c> vector's identifier names (SJL-15.2 stage 8): part F's library-level run
+    /// carries no vector evidence for them, so they are listed, and held equal to the rows no vector names. EE0021's site
+    /// no source reaches; EE0170 to EE0172 and EE0175 to EE0177 reach only the Module goal, which schema 1 has no field for,
+    /// or no vector of theirs exists; EA0008 is reached only with Annex B off; EP0017 and EP0018 have no report of their
+    /// own. <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i>
+    /// </summary>
+    [Fact]
+    public void The_answered_rows_no_vector_names_are_listed()
+    {
+        var named = SemanticsVectors.Select(static v => AlgorithmsLibrary.SemanticsRow(v)).OfType<string>().ToHashSet(StringComparer.Ordinal);
+        Assert.Equal(
+            new[] { "EA0008", "EE0021", "EE0170", "EE0171", "EE0172", "EE0175", "EE0176", "EE0177", "EP0017", "EP0018" },
+            AlgorithmsLibrary.SemanticsAnsweredRows.Where(r => !named.Contains(r)).Order(StringComparer.Ordinal));
+    }
+
+    /// <summary>
     /// The adapter's groups (D-js-adapter-groups): each has vectors, all of its operation and answered; every row a group
     /// names is one of the adapter's rows; and every row each of its vectors' notes names is one of the group's, a check on
     /// the corpus, not a dispatch. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>

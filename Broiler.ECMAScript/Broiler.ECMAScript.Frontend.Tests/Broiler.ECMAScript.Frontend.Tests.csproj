@@ -42,5 +42,9 @@
   <ItemGroup>
     <Compile Include="..\runners\UnicodeDataHome.cs" Link="UnicodeDataHome.cs" />
     <Compile Include="..\runners\SyntaxDump.cs" Link="SyntaxDump.cs" />
+    <!-- The probe's corpus reader and its digest mode's request and line (SJL-15.2 stage 8), for the tests that hold the
+         digest mode's copy of the request equal to the reader's and its lines to their classes (CorpusDigestTests). -->
+    <Compile Include="..\Broiler.ECMAScript.Probe\ParseCorpus.cs" Link="ParseCorpus.cs" />
+    <Compile Include="..\Broiler.ECMAScript.Probe\CorpusDigestRequest.cs" Link="CorpusDigestRequest.cs" />
   </ItemGroup>
 </Project>

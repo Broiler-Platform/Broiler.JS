@@ -18,6 +18,11 @@ namespace Broiler.ECMAScript.Probe;
 /// on each of two threads, and reports a difference between the two. Every parse runs on a thread of
 /// <see cref="ParseLimits.StackBytes"/>. Run under the JIT and from the Native AOT image, the two files are compared byte
 /// for byte.
+/// From SJL-15.2 stage 8 every request it parses is the corpus reader's with <see cref="ParseRequest.BuildSemanticModel"/>
+/// on (<see cref="CorpusDigestRequest"/>; the session's decisions D-js-digest-model and D-js-part-g), so that each line's
+/// digest covers the semantic model's section of the dump wherever the source is accepted, and a source a
+/// <c>semantics</c> row refuses is refused; the reader's request itself, which bundle sjl-13-001's part A runner compiles,
+/// is unchanged. <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i>
 /// </summary>
 internal static class CorpusDigest
 {
@@ -91,8 +96,10 @@ internal static class CorpusDigest
                     continue;
                 }
 
-                var result = SyntaxParser.Parse(corpus.Request(text, variant, "V", AlgorithmsLibrary.RunnerRegularExpressions.Instance));
-                into[index] = row.Id + "\t" + variant + "\t" + (result.Outcome == ParseOutcome.Accepted ? "accepted" : "refused") + "\t" + SyntaxDump.Digest(result);
+                // With the semantic model (SJL-15.2 stage 8, decision D-js-digest-model): the corpus reader's request, copied
+                // with ParseRequest.BuildSemanticModel on, so that the digest covers the model's section.
+                var result = SyntaxParser.Parse(CorpusDigestRequest.WithModel(corpus.Request(text, variant, "V", AlgorithmsLibrary.RunnerRegularExpressions.Instance)));
+                into[index] = CorpusDigestRequest.Line(row.Id, variant, result);
             }
         }
 
