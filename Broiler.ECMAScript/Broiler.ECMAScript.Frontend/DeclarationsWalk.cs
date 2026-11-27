@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   138
-// Annotated:        138/138
-// Exempt:           81
-// Human-reviewed:   0/138
+// Relevant units:   145
+// Annotated:        145/145
+// Exempt:           82
+// Human-reviewed:   0/145
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       138
+// Unverified:       145
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -48,9 +48,12 @@ namespace Broiler.ECMAScript.Semantics;
 /// stage 4)</i>, so that the
 /// walk's sequence, which orders the diagnostics and the tables, is the same on or off on every parse the member's on path
 /// accepts. Only <see cref="Run"/> builds it; a partial walk before a grammar refusal never does, but with the member on it
-/// reports the model's rows (below). <i>(Revised 2026-11-25, at SJL-15.2 stage 2, when the model's rows joined the
+/// reports the model's rows but stage 6's (below).
+/// <i>(Revised 2026-11-25, at SJL-15.2 stage 2, when the model's rows joined the
 /// diagnostics; it read "so that the walk's sequence, which orders the diagnostics and the tables, is the same on or off.
 /// Only <see cref="Run"/> builds it; a partial walk before a grammar refusal never does.")</i>
+/// <i>(Revised 2026-11-27, at SJL-15.2 stage 6, whose rows the whole ModuleItemList decides; it read "reports the model's
+/// rows (below).")</i>
 /// From stage 5a the same visit also records, in visit order, every reference and every binding the language resolves
 /// when it runs, every direct-<c>eval</c> candidate and every <c>with</c> statement with the function whose code holds
 /// it, each function's enclosing function, and each function's <c>arguments</c> binding, which no scope holds; after the
@@ -64,21 +67,32 @@ namespace Broiler.ECMAScript.Semantics;
 /// sloppy eval code whose request gives its caller's records (<see cref="InheritedContext.CallerScopes"/>), the alias pass
 /// and the resolutions read them, adding no statement to the visit and numbering nothing. <i>(Added 2026-11-26, at
 /// SJL-15.2 stage 5c.)</i>
+/// From stage 6 the model also holds a Module's record, built after the visit from the top level's items, the module
+/// scope and the tree's top-level-await fact, a pass over them and not a second walk, numbering nothing. <i>(Added
+/// 2026-11-27, at SJL-15.2 stage 6.)</i>
 /// </para>
 /// <para>
 /// <b>No <c>request</c> or <c>engine</c> row is reported, and a <c>semantics</c> row only with the member on</b>: with it
 /// off every refusal is one of <see cref="Rows"/>; with it on the walk also reports the rows of <see cref="SemanticRows"/>,
-/// each a construct's refusal at its construct, through the same report and the same sequence, so that decision D11's order
+/// each a construct's refusal at its construct, stage 6's decided over the whole ModuleItemList and reported by the full
+/// walk after its visit, through the same report and the same sequence, so that decision D11's order
 /// merges them with the <c>syntax</c> rows (the session's decisions D-js-channel and D-js-semantic-rows). The walk's
 /// <c>semantics</c> flag, set from the member for <see cref="Run"/> and for the partial walk alike, guards every statement
-/// that reports one. The top-level-<c>await</c> switch (EX0023, the one <c>request</c> row) reaches the walk only as the
-/// [Await] parameter of the top level, as it reaches the parser (decision D10). <i>(Revised 2026-11-25, at SJL-15.2 stage
+/// that reports one. The top-level-<c>await</c> switch (EX0023, the one <c>request</c> row) reaches the walk as the
+/// [Await] parameter of the top level, as it reaches the parser (decision D10), and from stage 6 as the tree's
+/// <see cref="ProgramNode.HasTopLevelAwait"/>, which only that switch lets the parser set, read into the module record.
+/// <i>(Revised 2026-11-25, at SJL-15.2 stage
 /// 2; it read "<b>No <c>request</c>, <c>engine</c> or <c>semantics</c> row is reported</b>: every refusal is one of
 /// <see cref="Rows"/>.")</i>
 /// From stage 5c the program's walk also reports, under the same flag and only for sloppy eval code whose request gives
 /// its caller's records, the rows of EvalDeclarationInstantiation step 3.d (EA0007 and EA0008) at each colliding
 /// var-declared name's first declaration, in the partial walk too, over the statements it finished. <i>(Added 2026-11-26,
 /// at SJL-15.2 stage 5c.)</i>
+/// <i>(Revised 2026-11-27, at SJL-15.2 stage 6; it read "each a construct's refusal at its construct, through the same
+/// report" and "reaches the walk only as the [Await] parameter of the top level, as it reaches the parser (decision
+/// D10).")</i> From stage 6 the full walk also reports, under the same flag and only for a Module, after its visit, the rows
+/// of ModuleBody's ExportedNames and ExportedBindings (EE0170 and EE0171), each at its construct; the partial walk reports
+/// neither. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
 /// </para>
 /// </remarks>
 // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=B38FCA
@@ -176,6 +190,10 @@ internal sealed class DeclarationsWalk
     // Hairs-Human:        PENDING
     private readonly Dictionary<SyntaxNode, SyntaxNode?>? enclosingOf;
     private int modelSequence;
+
+    // From stage 6, a Module's record, built after the visit only when the request asks for the model. (Added 2026-11-27,
+    // at SJL-15.2 stage 6.)
+    private ModuleRecord? moduleRecord;
 
     // Each class constructor's kind, on every request (the functions' facts are the same with the model on or off).
     private Dictionary<FunctionNode, FunctionKind>? constructorKinds;
@@ -311,7 +329,9 @@ internal sealed class DeclarationsWalk
     /// Walks the top-level statements a parse completed before the grammar refused at <paramref name="refusedAt"/>: their
     /// early errors come before the grammar's refusal (decision D11). The top level's own scope never closed, so its conflicts
     /// are not checked. It builds no model; with the request's <see cref="ParseRequest.BuildSemanticModel"/> on it reports
-    /// the model's rows, each of which its construct decides whole (SJL-15.2 stage 2).
+    /// the model's rows each construct decides whole (SJL-15.2 stage 2), but not stage 6's EE0170 and EE0171, which the whole
+    /// ModuleItemList decides. <i>(Revised 2026-11-27, at SJL-15.2 stage 6; it read "it reports the model's rows, each of
+    /// which its construct decides whole (SJL-15.2 stage 2).")</i>
     /// </summary>
     // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=49D611
     // Hairs-Human:        PENDING
@@ -361,7 +381,7 @@ internal sealed class DeclarationsWalk
     /// sequence; each declaration by its node, the tables' first, so that a class declaration's name answers its outer
     /// declaration (the session's decision D-js-declaration-of).
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=71AF2E
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, JSD-0080 semantic model; IP=Low; Security=Medium; Resources=1; Fingerprint=BC480E
     // Hairs-Human:        PENDING
     private SemanticModel Model(Scope[] tableScopes)
     {
@@ -397,7 +417,7 @@ internal sealed class DeclarationsWalk
         // aliases (SJL-15.2 stage 5b), from the model's scopes and facts.
         var (resolutionOf, environmentOf, annexBAliasOf) = Resolutions(scopeList, functionList, declarationOf, callerNames);
         return new SemanticModel(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), scopeOf!, parentOf!, declarationOf, factsOf!, targetOf!, privateOf!, privateEnvironmentOf!, resolutionOf, environmentOf, annexBAliasOf,
-            directEvalCalls, callerScopesOf);
+            directEvalCalls, callerScopesOf, moduleRecord);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -1135,7 +1155,7 @@ internal sealed class DeclarationsWalk
     // ---------------------------------------------------------------------------------------------------------------
     // The program.
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=1CCEDB
+    // Hairs-AI:           Origin=AI; Spec=JSD-0083 D7 D10 D11 declarations walk, ECMA-262 static semantics early errors; IP=Low; Security=Medium; Resources=1; Fingerprint=5651CC
     // Hairs-Human:        PENDING
     private void WalkProgram(ProgramNode program, IReadOnlyList<Statement> body, bool closed)
     {
@@ -1263,6 +1283,17 @@ internal sealed class DeclarationsWalk
         };
         Run(program.Parameters, parameterContext);
         Run(body, context);
+
+        // The model's rows of a Module's exported names (SJL-15.2 stage 6; ModuleBody's early errors, clause 16.2.1.1):
+        // decided over the whole ModuleItemList, so by the full walk alone and after its visit, each placed at its
+        // construct. With the member off, or on a goal that is not Module, nothing is read and nothing is reported.
+        if (closed && semantics && isModule)
+            CheckModuleExports(body, lexical, vars);
+
+        // The model's module record (SJL-15.2 stage 6), from the top level's items, its scope and the tree's
+        // top-level-await fact, after the visit; it numbers nothing.
+        if (model && isModule)
+            moduleRecord = BuildModuleRecord(program, body, programScope);
     }
 
     /// <summary>
@@ -3195,6 +3226,301 @@ internal sealed class DeclarationsWalk
             if (!keys.Add(key))
                 Report(Rows.EE0180, attribute.Key, key);
         }
+    }
+
+    // ---------------------------------------------------------------------------------------------------------------
+    // The module record and its rows (SJL-15.2 stage 6), each decided over the whole ModuleItemList after the visit.
+    // (Added 2026-11-27, at SJL-15.2 stage 6.)
+
+    /// <summary>
+    /// The rows of a Module's exported names (the session's decision D-js-module-rows; ModuleBody's early errors, clause
+    /// 16.2.1.1), reported by the full walk alone, after its visit: first ExportedNames' duplicates (EE0170), each name that
+    /// repeats once, at its second occurrence, with the name as the argument; then ExportedBindings not declared (EE0171),
+    /// at each specifier of an <c>export { … }</c> without a FromClause whose local name the module neither declares nor
+    /// imports, with the local name as the argument, but not on a specifier another row already refuses: an occurrence of
+    /// a repeated exported name, a string local name (EE0181) or a reserved one (EE0182), one row per construct. Each is
+    /// placed where Broiler.VM's binder names it: the specifier, the exported declaration, the <c>export default</c>; for
+    /// <c>export * as</c> the exported name, where the binder names the <c>as</c> token, which the tree has no node for.
+    /// Names are StringValues, compared ordinally.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s16.2.1.1 ModuleBody early errors ExportedNames ExportedBindings, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=ED3EB4
+    // Hairs-Human:        PENDING
+    private void CheckModuleExports(IReadOnlyList<Statement> body, List<Declaration> lexical, List<Declaration> vars)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var reported = new HashSet<string>(StringComparer.Ordinal);
+        var repeated = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
+        var names = new List<(string Name, SyntaxNode At)>();
+        var exportsDefault = false;
+        foreach (var statement in body)
+        {
+            exportsDefault |= statement is ExportDefaultDeclaration;
+            names.Clear();
+            ExportedNames(statement, names);
+            foreach (var (name, at) in names)
+            {
+                if (seen.Add(name))
+                    continue;
+                repeated.Add(at);
+                if (reported.Add(name))
+                    Report(SemanticRows.EE0170, at, name);
+            }
+        }
+
+        // The declared names: LexicallyDeclaredNames and VarDeclaredNames of the items, the imports' bindings among them,
+        // and *default* wherever the module exports a default, as BoundNames of each form of export default holds it.
+        var declared = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var declaration in lexical)
+            declared.Add(declaration.Name);
+        foreach (var declaration in vars)
+            declared.Add(declaration.Name);
+        if (exportsDefault)
+            declared.Add("*default*");
+        foreach (var statement in body)
+        {
+            if (statement is not ExportNamedDeclaration { Declaration: null, Source: null } export)
+                continue;
+            foreach (var specifier in export.Specifiers)
+            {
+                if (specifier.Local is IdentifierName local && !repeated.Contains(specifier) && !RefusedLocalName(local.Name) && !declared.Contains(local.Name))
+                    Report(SemanticRows.EE0171, specifier, local.Name);
+            }
+        }
+    }
+
+    /// <summary>The condition by which <see cref="CheckExport"/> refuses a reserved local name without a FromClause (EE0182), read again.</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s16.2.3.1 ExportDeclaration early errors ReferencedBindings, SJL-15.2 semantics rows; IP=Low; Security=Low; Resources=0; Fingerprint=D9214A
+    // Hairs-Human:        PENDING
+    private static bool RefusedLocalName(string name) => Reserved.Contains(name) || (StrictReserved.Contains(name) && name != "yield");
+
+    /// <summary>
+    /// ExportedNames of one module item, in order, each with the node its row is placed at: an exported declaration's
+    /// BoundNames at the declaration, a specifier's exported name (its local name where none is written) at the specifier,
+    /// <c>"default"</c> at the <c>export default</c>, and <c>export * as</c>'s name at that name; a bare <c>export *</c> and
+    /// every other item give none.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ExportedNames, JSD-0080 module record; IP=Low; Security=Low; Resources=1; Fingerprint=3D6352
+    // Hairs-Human:        PENDING
+    private static void ExportedNames(Statement statement, List<(string Name, SyntaxNode At)> names)
+    {
+        switch (statement)
+        {
+            case ExportNamedDeclaration { Declaration: { } declaration }:
+                foreach (var node in ExportedBindings(declaration))
+                    names.Add((node.Name, declaration));
+                return;
+            case ExportNamedDeclaration export:
+                foreach (var specifier in export.Specifiers)
+                    names.Add((ModuleExportName(specifier.Exported ?? specifier.Local), specifier));
+                return;
+            case ExportDefaultDeclaration exportDefault:
+                names.Add(("default", exportDefault));
+                return;
+            case ExportAllDeclaration { Exported: { } exported }:
+                names.Add((ModuleExportName(exported), exported));
+                return;
+        }
+    }
+
+    /// <summary>BoundNames of an exported declaration, its binding identifiers in source order, through the iterative <see cref="BoundNames"/>.</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s8.2.1 BoundNames, JSD-0080 module record; IP=Low; Security=Low; Resources=1; Fingerprint=7D55CD
+    // Hairs-Human:        PENDING
+    private static List<BindingIdentifier> ExportedBindings(Statement declaration)
+    {
+        var nodes = new List<BindingIdentifier>();
+        switch (declaration)
+        {
+            case VariableDeclaration variables:
+                foreach (var declarator in variables.Declarations)
+                    BoundNames(declarator.Target, null, nodes);
+                break;
+            case FunctionDeclaration { Function.Name: { } name }:
+                nodes.Add(name);
+                break;
+            case ClassDeclaration { Class.Name: { } name }:
+                nodes.Add(name);
+                break;
+        }
+
+        return nodes;
+    }
+
+    /// <summary>The StringValue of a ModuleExportName: an <see cref="IdentifierName"/>'s name or a <see cref="StringLiteral"/>'s SV.</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s16.2.3 ModuleExportName StringValue, JSD-0080 module record; IP=Low; Security=Low; Resources=0; Fingerprint=9FC335
+    // Hairs-Human:        PENDING
+    private static string ModuleExportName(SyntaxNode name) => name switch
+    {
+        IdentifierName identifier => identifier.Name,
+        StringLiteral text => text.Value,
+        _ => string.Empty,
+    };
+
+    /// <summary>
+    /// A Module's record (the session's decision D-js-module-record; ParseModule): the requests of the items in the order
+    /// of their first statement, an equal one by ModuleRequestsEqual, with the phase added, sharing the first's instance,
+    /// each with its first statement's attributes in that statement's order; the import entries; the export entries,
+    /// partitioned by ParseModule's step 10 into the local, indirect and star lists in source order; and the tree's
+    /// top-level-await fact. Each request is found among those before it, a cost linear in the requests so far. Model-only.
+    /// </summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ParseModule, ModuleRequests, ModuleRequestsEqual, ImportEntries, ExportEntries, JSD-0080 module record; IP=Low; Security=Medium; Resources=1; Fingerprint=56D2BC
+    // Hairs-Human:        PENDING
+    private static ModuleRecord BuildModuleRecord(ProgramNode program, IReadOnlyList<Statement> body, Scope moduleScope)
+    {
+        // The requests: the first statement's specifier, attributes and phase, and every statement that makes each.
+        var pending = new List<(string Specifier, ModuleRequestAttribute[] Attributes, ImportPhase Phase, List<Statement> Statements)>();
+        var requestOf = new Dictionary<Statement, int>(ReferenceEqualityComparer.Instance);
+        foreach (var statement in body)
+        {
+            (StringLiteral? source, IReadOnlyList<ImportAttribute>? attributes, ImportPhase phase) = statement switch
+            {
+                ImportDeclaration import => (import.Source, import.Attributes, import.Phase),
+                ExportNamedDeclaration { Source: { } from } export => (from, export.Attributes, ImportPhase.Evaluation),
+                ExportAllDeclaration exportAll => (exportAll.Source, exportAll.Attributes, ImportPhase.Evaluation),
+                _ => (null, null, ImportPhase.Evaluation),
+            };
+            if (source is null)
+                continue;
+            var written = new ModuleRequestAttribute[attributes?.Count ?? 0];
+            for (var i = 0; i < written.Length; i++)
+                written[i] = new ModuleRequestAttribute(ModuleExportName(attributes![i].Key), attributes[i].Value.Value);
+            var index = -1;
+            for (var r = 0; r < pending.Count && index < 0; r++)
+            {
+                if (pending[r].Phase == phase && string.Equals(pending[r].Specifier, source.Value, StringComparison.Ordinal) && SameAttributes(pending[r].Attributes, written))
+                    index = r;
+            }
+
+            if (index < 0)
+            {
+                index = pending.Count;
+                pending.Add((source.Value, written, phase, new List<Statement>()));
+            }
+
+            pending[index].Statements.Add(statement);
+            requestOf[statement] = index;
+        }
+
+        var requests = new ModuleRequest[pending.Count];
+        for (var r = 0; r < requests.Length; r++)
+            requests[r] = new ModuleRequest(pending[r].Specifier, Array.AsReadOnly(pending[r].Attributes), pending[r].Phase, Array.AsReadOnly(pending[r].Statements.ToArray()));
+
+        // The module scope's declarations by node, and each name's first in the scope's order.
+        var declarationOfNode = new Dictionary<SyntaxNode, Declaration>(ReferenceEqualityComparer.Instance);
+        var firstOfName = new Dictionary<string, Declaration>(StringComparer.Ordinal);
+        foreach (var declaration in moduleScope.Declarations)
+        {
+            declarationOfNode.TryAdd(declaration.Node, declaration);
+            firstOfName.TryAdd(declaration.Name, declaration);
+        }
+
+        // The import entries, in source order.
+        var imports = new List<ImportEntry>();
+        var importOf = new Dictionary<string, ImportEntry>(StringComparer.Ordinal);
+        foreach (var statement in body)
+        {
+            if (statement is not ImportDeclaration import)
+                continue;
+            var request = requests[requestOf[import]];
+            void Add(ImportNameKind kind, string? importName, BindingIdentifier binding)
+            {
+                var entry = new ImportEntry(request, kind, importName, binding.Name, binding, declarationOfNode[binding]);
+                imports.Add(entry);
+                importOf.TryAdd(entry.LocalName, entry);
+            }
+
+            if (import.DefaultBinding is { } defaultBinding)
+            {
+                if (import.Phase == ImportPhase.Source)
+                    Add(ImportNameKind.Source, null, defaultBinding);
+                else
+                    Add(ImportNameKind.Name, "default", defaultBinding);
+            }
+
+            if (import.NamespaceBinding is { } namespaceBinding)
+                Add(ImportNameKind.NamespaceObject, null, namespaceBinding);
+            if (import.NamedImports is { } named)
+            {
+                foreach (var specifier in named)
+                    Add(ImportNameKind.Name, specifier.Imported is { } imported ? ModuleExportName(imported) : specifier.Local.Name, specifier.Local);
+            }
+        }
+
+        // The export entries in source order, partitioned as ParseModule's step 10 partitions them.
+        var locals = new List<ExportEntry>();
+        var indirects = new List<ExportEntry>();
+        var stars = new List<ExportEntry>();
+        void Local(string exportName, string localName, SyntaxNode node)
+        {
+            if (!importOf.TryGetValue(localName, out var import))
+                locals.Add(new ExportEntry(exportName, null, ImportNameKind.None, null, localName, node, firstOfName.GetValueOrDefault(localName)));
+            else if (import.ImportKind == ImportNameKind.NamespaceObject)
+                indirects.Add(new ExportEntry(exportName, import.ModuleRequest, ImportNameKind.All, null, null, node, null));
+            else
+                indirects.Add(new ExportEntry(exportName, import.ModuleRequest, import.ImportKind, import.ImportName, null, node, null));
+        }
+
+        foreach (var statement in body)
+        {
+            switch (statement)
+            {
+                case ExportNamedDeclaration { Declaration: { } declaration }:
+                    foreach (var binding in ExportedBindings(declaration))
+                        Local(binding.Name, binding.Name, binding);
+                    break;
+                case ExportNamedDeclaration { Source: null } export:
+                    foreach (var specifier in export.Specifiers)
+                    {
+                        var localName = ModuleExportName(specifier.Local);
+                        Local(specifier.Exported is { } exported ? ModuleExportName(exported) : localName, localName, specifier);
+                    }
+
+                    break;
+                case ExportNamedDeclaration export:
+                    foreach (var specifier in export.Specifiers)
+                    {
+                        var importName = ModuleExportName(specifier.Local);
+                        indirects.Add(new ExportEntry(specifier.Exported is { } exported ? ModuleExportName(exported) : importName, requests[requestOf[export]], ImportNameKind.Name, importName, null, specifier, null));
+                    }
+
+                    break;
+                case ExportDefaultDeclaration exportDefault:
+                    var defaultName = exportDefault.Declaration switch
+                    {
+                        FunctionDeclaration { Function.Name: { } functionName } => functionName.Name,
+                        ClassDeclaration { Class.Name: { } className } => className.Name,
+                        _ => "*default*",
+                    };
+                    Local("default", defaultName, exportDefault);
+                    break;
+                case ExportAllDeclaration { Exported: null } exportAll:
+                    stars.Add(new ExportEntry(null, requests[requestOf[exportAll]], ImportNameKind.AllButDefault, null, null, exportAll, null));
+                    break;
+                case ExportAllDeclaration exportAll:
+                    indirects.Add(new ExportEntry(ModuleExportName(exportAll.Exported!), requests[requestOf[exportAll]], ImportNameKind.All, null, null, exportAll, null));
+                    break;
+            }
+        }
+
+        return new ModuleRecord(Array.AsReadOnly(requests), Array.AsReadOnly(imports.ToArray()), Array.AsReadOnly(locals.ToArray()), Array.AsReadOnly(indirects.ToArray()), Array.AsReadOnly(stars.ToArray()), program.HasTopLevelAwait);
+    }
+
+    /// <summary>ModuleRequestsEqual's attributes: the same count, and each key and value of one in the other.</summary>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 ModuleRequestsEqual, JSD-0080 module record; IP=Low; Security=Low; Resources=0; Fingerprint=2F43B5
+    // Hairs-Human:        PENDING
+    private static bool SameAttributes(ModuleRequestAttribute[] left, ModuleRequestAttribute[] right)
+    {
+        if (left.Length != right.Length)
+            return false;
+        foreach (var l in left)
+        {
+            var found = false;
+            foreach (var r in right)
+                found |= string.Equals(l.Key, r.Key, StringComparison.Ordinal) && string.Equals(l.Value, r.Value, StringComparison.Ordinal);
+            if (!found)
+                return false;
+        }
+
+        return true;
     }
 
     // ---------------------------------------------------------------------------------------------------------------

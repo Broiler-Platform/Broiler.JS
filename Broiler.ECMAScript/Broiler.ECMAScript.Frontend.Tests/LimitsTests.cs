@@ -547,5 +547,62 @@ public sealed class LimitsTests
         Assert.Same(innermost[^2], model.CallerScopesOf(model.DirectEvalCalls[0])![0]);
     }
 
+    /// <summary>
+    /// The module record at the supported maximum (SJL-15.2 stage 6): a binding pattern nested to the bound under
+    /// <c>export var</c>, and a Module of many specifiers and requests, each on the documented stack, the same parse with the
+    /// model on and off; the record names the deepest binding, every specifier and every request once.
+    /// <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+    /// </summary>
+    [Fact]
+    public void The_module_record_at_the_supported_maximum()
+    {
+        static ParseResult ParseM(string text, int nesting, bool model) => OnDocumentedStack(() => SyntaxParser.Parse(
+            new ParseRequest(new SourceText(text), ParseGoal.Module, Runners.UnicodeDataHome.Tables, NoValidator.Instance)
+            {
+                Limits = new ParseLimits { NestingDepth = new DepthLimit(nesting) },
+                BuildSemanticModel = model,
+            }));
+
+        static void Same(string text, int nesting, string name)
+        {
+            var off = ParseM(text, nesting, model: false);
+            var on = ParseM(text, nesting, model: true);
+            Assert.True(off.Outcome == on.Outcome, name + ": the outcome differs with the semantic model on");
+            Assert.True(off.Diagnostics.Select(static d => (d.Code, d.Span)).SequenceEqual(on.Diagnostics.Select(static d => (d.Code, d.Span))), name + ": the diagnostics differ");
+            Assert.True((on.Outcome == ParseOutcome.Accepted) == (on.Model?.Module is not null), name + ": the record is not there as the outcome says");
+        }
+
+        static string Deep(int levels) => "export var " + new string('[', levels) + "x" + new string(']', levels) + " = o;";
+        var bound = ParseLimits.MaximumSupportedNestingDepth;
+        var (low, high) = (0, bound + 1);
+        while (high - low > 1)
+        {
+            var middle = (low + high) / 2;
+            if (ParseM(Deep(middle), bound, model: false).Outcome == ParseOutcome.Refused)
+                high = middle;
+            else
+                low = middle;
+        }
+
+        Assert.True(low >= bound / 4, "accepted at " + low.ToString(CultureInfo.InvariantCulture) + " levels");
+        Same(Deep(low), bound, "a deep pattern under export var");
+        Assert.Equal("x", Assert.Single(ParseM(Deep(low), bound, model: true).Model!.Module!.LocalExportEntries).LocalName);
+
+        var many = new StringBuilder();
+        const int count = 2000;
+        for (var i = 0; i < count; i++)
+        {
+            var n = i.ToString(CultureInfo.InvariantCulture);
+            many.Append("import a").Append(n).Append(" from \"m").Append(n).Append("\"; export { a").Append(n).Append(" as b").Append(n).Append(" }; var c").Append(n).Append("; export { c").Append(n).Append(" }; ");
+        }
+
+        Same(many.ToString(), bound, "many specifiers and requests");
+        var record = ParseM(many.ToString(), bound, model: true).Model!.Module!;
+        Assert.Equal(count, record.RequestedModules.Count);
+        Assert.Equal(count, record.ImportEntries.Count);
+        Assert.Equal(count, record.LocalExportEntries.Count);
+        Assert.Equal(count, record.IndirectExportEntries.Count);
+    }
+
     private const string ManyReferences = "v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v + v";
 }

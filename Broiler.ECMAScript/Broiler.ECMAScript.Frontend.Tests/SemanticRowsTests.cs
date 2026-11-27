@@ -230,6 +230,11 @@ public sealed class SemanticRowsTests
         // EA0008 for any record with it off. (Added 2026-11-26, at SJL-15.2 stage 5c.)
         new("EA0007", "e s:x", "var x;", "x", 0, "x", "e s:y", "var x;"),
         new("EA0008", "e c:e nb", "var e;", "e", 0, "e", "e c:e", "var e;"),
+
+        // Stage 6: a Module's exported names, at the construct with the exported name (EE0170) or the local name (EE0171)
+        // as the argument; the full walk alone reports them, after its visit. (Added 2026-11-27, at SJL-15.2 stage 6.)
+        new("EE0170", "m", "var a, b; export { a as c, b as c };", "b as c", 0, "c", "m", "var a, b; export { a as c, b as d };"),
+        new("EE0171", "m", "export { a };", "a", 0, "a", "m", "export { a }; var a;"),
     ];
 
     public static TheoryData<Fixture> FixtureData()
@@ -338,6 +343,27 @@ public sealed class SemanticRowsTests
         { "EA0007", "e s:x", "try {} catch (e) { var x; }" },
         { "EA0007", "e s:arguments if", "var arguments;" },
         { "EA0008", "e c:e nb", "function e() {}" },
+
+        // Stage 6: a Module's exported names. (Added 2026-11-27, at SJL-15.2 stage 6.)
+        { "EE0170", "m", "export var [a, a] = o;" },
+        { "EE0170", "m", "export let {a} = o; export { a };" },
+        { "EE0170", "m", "export * as a from \"m\"; var b; export { b as a };" },
+        { "EE0170", "m", "export { a } from \"m\"; export { a } from \"n\";" },
+        { "EE0170", "m", "export function f() {} export { f };" },
+        { "EE0170", "m", "var x; export default x; export { x as default };" },
+        { "EE0170", "m", "export default function f() {} export default 1;" },
+        { "EE0170", "m", "export default function f() {} export default class C {}" },
+        { "EE0170", "m", "const a = 1; export { a, a };" },
+        { "EE0170", "m", "export var a, a;" },
+        { "EE0170", "m", "export var a; export var a;" },
+        { "EE0170", "m", "var b; export { b }; export { b as \"b\" };" },
+        { "EE0170", "m", "var a; export { \\u0061 }; export { a };" },
+        { "EE0171", "m", "export { x }; function g() { var x; }" },
+        { "EE0171", "m", "export { x }; { let x; }" },
+        { "EE0171", "m", "export { f }; { function f() {} }" },
+        { "EE0171", "m", "export { arguments };" },
+        { "EE0171", "m", "export { Number };" },
+        { "EE0171", "m", "import { a as b } from \"m\"; export { a };" },
     };
 
     // The nearest admitted variants of the dynamic goals and of each eval context: accepted on and off.
@@ -439,6 +465,19 @@ public sealed class SemanticRowsTests
         { "e s:", "var x;" },
         { "e s:y,z c:w", "var x; function v() {}" },
         { "s:x", "var x;" },
+
+        // Stage 6: what a Module's exports leave admitted. (Added 2026-11-27, at SJL-15.2 stage 6.)
+        { "m", "export { f }; function f() {}" },
+        { "m", "import a from \"m\"; export { a };" },
+        { "m", "import * as ns from \"m\"; export { ns as n };" },
+        { "m", "export * from \"m\"; export * from \"n\";" },
+        { "m", "export { a } from \"m\"; export { a as b } from \"m\";" },
+        { "m", "{ var x; } export { x };" },
+        { "m", "export default class {} export { };" },
+        { "m", "export {} from \"m\";" },
+        { "m", "export { \"x\" as y } from \"m\";" },
+        { "m", "export { a as \"b c\" }; var a;" },
+        { "m", "export * as \"s\" from \"m\";" },
     };
 
     [Theory]
@@ -919,6 +958,85 @@ public sealed class SemanticRowsTests
         var on = Parse("e all", "this.#x; (");
         Assert.Single(off.Diagnostics);
         Assert.Equal(Describe(off), Describe(on));
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // A Module's exported names (SJL-15.2 stage 6; the session's decision D-js-module-rows). (Added 2026-11-27, at SJL-15.2
+    // stage 6.)
+
+    /// <summary>
+    /// The places: EE0170 at a specifier, at an exported declaration for every name of it, at the <c>export default</c>,
+    /// and at <c>export * as</c>'s exported name, once per name, at its second occurrence, a name exported three times
+    /// included, with the name as the argument; EE0171 at each specifier, with the local name; and on a specifier a repeated
+    /// exported name refuses, the duplicate alone. Off, every source is accepted. <i>(Added 2026-11-27, at SJL-15.2 stage
+    /// 6.)</i>
+    /// </summary>
+    [Fact]
+    public void Each_module_row_is_placed_at_its_construct()
+    {
+        void At(string text, params (string Row, string At, int Nth)[] rows)
+        {
+            Assert.Equal(rows.Select(r => (Code(r.Row), Offset(text, r.At, r.Nth))), Reported("m all", text));
+            Assert.Empty(Parse("m all", text, model: false).Diagnostics);
+        }
+
+        At("var a, b; export { a, b as a };", ("EE0170", "b as a", 0));
+        At("export var a, a;", ("EE0170", "var", 0));
+        At("export var a; export var b, a;", ("EE0170", "var", 1));
+        At("export default function f() {} export default 1;", ("EE0170", "export", 1));
+        At("var n; export { n }; export * as n from \"m\";", ("EE0170", "n from", 0));
+        At("var a; export { a }; export { a }; export { a };", ("EE0170", "a }", 1));
+        At("var a, b; export { a, b }; export { a, b };", ("EE0170", "a, b }", 1), ("EE0170", "b }", 1));
+        At("export { a as b, c };", ("EE0171", "a as b", 0), ("EE0171", "c", 0));
+        At("export { a }; export { a };", ("EE0171", "a", 0), ("EE0170", "a", 1));
+        At("export { a as x }; export { b as x };", ("EE0171", "a as x", 0), ("EE0170", "b as x", 0));
+        Assert.Equal(["a"], Parse("m all", "var a, b; export { a, b as a };").Diagnostics.Select(static d => d.Arguments.Single()));
+        Assert.Equal(["b", "c"], Parse("m all", "export { b as a, c };").Diagnostics.Select(static d => d.Arguments.Single()));
+        Assert.Equal(["x"], Parse("m all", "var a; export * as x from \"m\"; export { a as x };").Diagnostics.Select(static d => d.Arguments.Single()));
+    }
+
+    /// <summary>
+    /// A module row among the <c>syntax</c> rows (decision D11's order): two defaults, which the off path refuses at the
+    /// module's close (EE0168), give EE0170 first on, and EE0170 alone under first error; a specifier EE0182 or EE0181
+    /// refuses gets that row alone, on and off. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+    /// </summary>
+    [Fact]
+    public void A_module_row_takes_its_place_among_the_syntax_rows()
+    {
+        foreach (var text in new[] { "export default 1; export default 2;", "export function f() {} export function* f() {}" })
+        {
+            Assert.Equal([CodeOfSyntax("EE0168")], Parse("m all", text, model: false).Diagnostics.Select(static d => d.Code));
+            Assert.Equal([Code("EE0170"), CodeOfSyntax("EE0168")], Parse("m all", text).Diagnostics.Select(static d => d.Code));
+            Assert.Equal([Code("EE0170")], Parse("m", text).Diagnostics.Select(static d => d.Code));
+        }
+
+        foreach (var (text, row) in new[]
+        {
+            ("export { if };", "EE0182"),
+            ("export { \"a\" };", "EE0181"),
+            ("export { \"*default*\" }; export default function f() {}", "EE0181"),
+            ("export default function () {} export { default as x };", "EE0182"),
+        })
+        {
+            foreach (var model in new[] { false, true })
+                Assert.Equal([CodeOfSyntax(row)], Parse("m all", text, model).Diagnostics.Select(static d => d.Code));
+        }
+    }
+
+    /// <summary>
+    /// The partial walk reports neither module row: before a grammar refusal the grammar's refusal alone, on and off, since
+    /// a declaration after the refusal could declare the name. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+    /// </summary>
+    [Theory]
+    [InlineData("export { x }; (")]
+    [InlineData("var a; export { a, a }; (")]
+    public void The_partial_walk_reports_neither_module_row(string text)
+    {
+        var off = Parse("m all", text, model: false);
+        var on = Parse("m all", text);
+        Assert.Single(off.Diagnostics);
+        Assert.Equal(Describe(off), Describe(on));
+        Assert.Null(on.Model);
     }
 
     // -----------------------------------------------------------------------------------------------------------------

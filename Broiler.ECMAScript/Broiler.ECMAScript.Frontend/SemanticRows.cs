@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   53
-// Annotated:        53/53
+// Relevant units:   55
+// Annotated:        55/55
 // Exempt:           0
-// Human-reviewed:   0/53
+// Human-reviewed:   0/55
 // IP risk:          Low
 // Security risk:    Low
 // Criteria:         0/0
 // Resource impact:  0/10 max
-// Unverified:       53
+// Unverified:       55
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -34,6 +34,9 @@ namespace Broiler.ECMAScript.Syntax;
 /// one of <see cref="Rows"/>'.
 /// Stage 5c's rows of eval code's <c>var</c>s against its caller's records, EvalDeclarationInstantiation step 3.d
 /// (the session's decision D-js-caller-scope-rows), join them. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+/// Stage 6's rows of the module record, ExportedNames' duplicates and ExportedBindings not declared (the session's decision
+/// D-js-module-rows), join them; the full walk alone reports them, after its visit, the whole ModuleItemList deciding
+/// them. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
 /// </summary>
 // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=92ED1E
 // Hairs-Human:        PENDING
@@ -238,6 +241,16 @@ internal static class SemanticRows
     // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=067FF5
     // Hairs-Human:        PENDING
     internal static readonly LexicalRefusal EE0167 = new("JSE1608", "class.private-name.undeclared");
+
+    /// <summary>EE0170: <c>module.export.duplicate</c>, ExportedNames of a Module's items contains a duplicate entry (clause 16.2.1.1); stage 6.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=941B01
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EE0170 = new("JSE1611", "module.export.duplicate");
+
+    /// <summary>EE0171: <c>module.export.undeclared</c>, an ExportedBindings element of a Module's items is in neither VarDeclaredNames nor LexicallyDeclaredNames (clause 16.2.1.1); stage 6.</summary>
+    // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=3B2CFA
+    // Hairs-Human:        PENDING
+    internal static readonly LexicalRefusal EE0171 = new("JSE1612", "module.export.undeclared");
 
     /// <summary>EE0172: <c>super.outside-method</c>, <c>super</c> in a Module's own code (clause 16.2.1.1).</summary>
     // Hairs-AI:           Origin=AI; Spec=catalogue shared codes and message identifiers, stage table semantics rows, JSD-0083 D11; IP=Low; Security=Low; Resources=0; Fingerprint=120EF9
