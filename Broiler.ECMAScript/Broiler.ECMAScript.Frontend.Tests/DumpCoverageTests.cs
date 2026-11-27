@@ -156,6 +156,20 @@ public sealed class DumpCoverageTests
         return data;
     }
 
+    // The type list itself is held to the library: every public class of the Semantics namespace, and the caller's
+    // records, so that a model type added later without its members in the table fails here.
+    [Fact]
+    public void The_model_s_types_are_the_semantics_namespace_s_public_classes_and_the_caller_s_records()
+    {
+        var expected = typeof(SemanticModel).Assembly.GetExportedTypes()
+            .Where(static t => t.Namespace == "Broiler.ECMAScript.Semantics" && !t.IsEnum)
+            .Append(typeof(CallerScope))
+            .Select(static t => t.FullName!)
+            .Order(StringComparer.Ordinal);
+
+        Assert.Equal(expected, ModelTypes.Select(static t => t.FullName!).Order(StringComparer.Ordinal));
+    }
+
     [Fact]
     public void The_table_names_every_public_member_of_the_model_s_types_once()
     {

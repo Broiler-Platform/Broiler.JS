@@ -1015,12 +1015,14 @@ public sealed class PrivateEnvironment
     /// Its [[OuterPrivateEnvironment]] as the source gives it: the private environment the class is evaluated in, so that a
     /// class in another class's heritage skips that class; null for the unit's outermost classes, eval code's included.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "PrivateEnvironment Records" ([[OuterPrivateEnvironment]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public PrivateEnvironment? Outer { get; }
 
     /// <summary>
     /// Its [[Names]]: the class's PrivateBoundIdentifiers in source order, once each, <c>#constructor</c> among them where the
     /// class writes it; empty when it declares none.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "PrivateEnvironment Records" ([[Names]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public IReadOnlyList<PrivateNameBinding> Names => names;
 
     /// <summary>The environment's names, set once by the walk that builds the model, before the model is published.</summary>
@@ -1606,6 +1608,7 @@ public sealed class ModuleRequest
     /// [[Specifier]], the SV of the ModuleSpecifier (<see cref="StringLiteral.Value"/>), as written, lone surrogates kept, so
     /// that <c>"m"</c>, <c>'m'</c> and <c>"\u006d"</c> are one specifier; an engine refuses what it cannot load.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ModuleRequest Records" ([[Specifier]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public string Specifier { get; }
 
     /// <summary>
@@ -1656,9 +1659,11 @@ public sealed class ModuleRequestAttribute
     }
 
     /// <summary>[[Key]], the PropName of the AttributeKey: an <see cref="IdentifierName"/>'s name or a <see cref="StringLiteral"/>'s SV.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ImportAttribute Records" ([[Key]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public string Key { get; }
 
     /// <summary>[[Value]], the SV of the attribute's <see cref="StringLiteral"/>.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ImportAttribute Records" ([[Value]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public string Value { get; }
 }
 
@@ -1673,9 +1678,11 @@ public sealed class ModuleRequestAttribute
 public enum ImportNameKind
 {
     /// <summary>A null [[ImportName]]: a local export entry's.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ExportEntry Records" ([[ImportName]] null). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     None = 0,
 
     /// <summary>A String [[ImportName]], the entry's <c>ImportName</c>: a named or default import, or a re-export of one.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clauses "ImportEntry Records" and "ExportEntry Records" ([[ImportName]] a String). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     Name = 1,
 
     /// <summary>~namespace-object~: an import entry's namespace binding, <c>import * as ns</c>, a deferred one among them.</summary>
@@ -1695,6 +1702,7 @@ public enum ImportNameKind
     /// and an export of one: the library's kind, beyond the pinned edition, whose rule for an ImportedDefaultBinding would
     /// name the default export, which the binding is not. The entry's <c>ImportName</c> is null.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ImportEntry Records" ([[ImportName]]), whose spellings the source-phase kind extends. <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     Source = 5,
 }
 
@@ -1726,15 +1734,19 @@ public sealed class ImportEntry
     }
 
     /// <summary>[[ModuleRequest]], the element of <see cref="ModuleRecord.RequestedModules"/> itself.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ImportEntry Records" ([[ModuleRequest]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public ModuleRequest ModuleRequest { get; }
 
     /// <summary>What [[ImportName]] is: <see cref="ImportNameKind.Name"/>, <see cref="ImportNameKind.NamespaceObject"/> or <see cref="ImportNameKind.Source"/>.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ImportEntry Records" ([[ImportName]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public ImportNameKind ImportKind { get; }
 
     /// <summary>[[ImportName]] where it is a String, non-null exactly for <see cref="ImportNameKind.Name"/>.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ImportEntry Records" ([[ImportName]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public string? ImportName { get; }
 
     /// <summary>[[LocalName]], the StringValue of the ImportedBinding.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ImportEntry Records" ([[LocalName]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public string LocalName { get; }
 
     /// <summary>The ImportedBinding.</summary>
@@ -1788,9 +1800,11 @@ public sealed class ExportEntry
     }
 
     /// <summary>[[ExportName]], null only for <c>export * from</c>.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ExportEntry Records" ([[ExportName]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public string? ExportName { get; }
 
     /// <summary>[[ModuleRequest]], the element of <see cref="ModuleRecord.RequestedModules"/> itself; null for a local entry.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ExportEntry Records" ([[ModuleRequest]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public ModuleRequest? ModuleRequest { get; }
 
     /// <summary>
@@ -1798,12 +1812,15 @@ public sealed class ExportEntry
     /// <see cref="ImportNameKind.All"/> or <see cref="ImportNameKind.AllButDefault"/>, or <see cref="ImportNameKind.Source"/>
     /// for a rewritten export of a source-phase binding.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ExportEntry Records" ([[ImportName]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public ImportNameKind ImportKind { get; }
 
     /// <summary>[[ImportName]] where it is a String, non-null exactly for <see cref="ImportNameKind.Name"/>.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ExportEntry Records" ([[ImportName]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public string? ImportName { get; }
 
     /// <summary>[[LocalName]], non-null exactly for a local entry.</summary>
+    /// <remarks>ECMA-262 at the pinned edition, clause "ExportEntry Records" ([[LocalName]]). <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     public string? LocalName { get; }
 
     /// <summary>The entry's node: the <see cref="ExportSpecifier"/>, the bound name's <see cref="BindingIdentifier"/>, the <see cref="ExportDefaultDeclaration"/> or the <see cref="ExportAllDeclaration"/>.</summary>
