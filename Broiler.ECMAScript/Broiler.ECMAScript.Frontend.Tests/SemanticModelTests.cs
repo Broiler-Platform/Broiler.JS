@@ -4512,4 +4512,813 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         Assert.DoesNotContain(System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(Model("var v;").Result)).Split('\n'), static l => l.StartsWith("model-module", StringComparison.Ordinal));
         Assert.DoesNotContain(System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(Parse(text, ParseGoal.Module, model: false))).Split('\n'), static l => l.StartsWith("model-", StringComparison.Ordinal));
     }
+    // -----------------------------------------------------------------------------------------------------------------
+    // Named evaluation, free names and captures (SJL-15.2 stage 7). (Added 2026-11-27, at SJL-15.2 stage 7.)
+
+    private static ParseResult EvalParse(string text, bool model = true, bool strict = false) =>
+        SyntaxParser.Parse(new ParseRequest(new SourceText(text), ParseGoal.Eval, UnicodeDataHome.Tables, NoValidator.Instance)
+        {
+            BuildSemanticModel = model,
+            Switches = ParseSwitches.For(ParseGoal.Eval) with { ForcedStrict = strict },
+            Context = new InheritedContext { InFunction = strict },
+        });
+
+    private static ParseResult Accepted(string text, ParseGoal goal, ProposalFlags proposals = ProposalFlags.None)
+    {
+        var result = goal == ParseGoal.Eval ? EvalParse(text) : Parse(text, goal, proposals: proposals);
+        Assert.True(result.Outcome == ParseOutcome.Accepted, text + ": " + (result.Diagnostics.Count > 0 ? result.Diagnostics[0].Code + " " + result.Diagnostics[0].MessageId : "-"));
+        Assert.NotNull(result.Model);
+        return result;
+    }
+
+    // Every function and class node's answer in tree order: its name in quotes, "[key]" for a computed key, or "-".
+    private static string Named(ParseResult result)
+    {
+        var model = result.Model!;
+        var parts = new List<string>();
+        foreach (var node in Nodes(result.Tree!))
+        {
+            if (node is not (FunctionNode or ClassNode))
+                continue;
+            var name = model.NamedEvaluationName(node);
+            var key = model.NamedEvaluationKey(node);
+            Assert.False(name is not null && key is not null, "both a name and a key");
+            parts.Add(key is not null ? "[key]" : name is null ? "-" : "\"" + name + "\"");
+        }
+
+        return string.Join(" ", parts);
+    }
+
+    /// <summary>
+    /// Each named-evaluation site of the specification, with its guards and its exclusions, the readings beyond the
+    /// edition among them: the answer of every function and class node in tree order. The correspondence vectors' and
+    /// probes' sources come first, each with the specification's name. <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    [Theory]
+    // The vectors of row NE1 (conformance/vectors/semantics/named-evaluation.vectors), ne1/0001 to ne1/0018.
+    [InlineData("var f = function () {}; f.name", "\"f\"")]
+    [InlineData("var g = () => 1; g.name", "\"g\"")]
+    [InlineData("let c = class {}; c.name", "\"c\"")]
+    [InlineData("var o = { m: function () {} }; o.m.name", "\"m\"")]
+    [InlineData("var h; h = function () {}; h.name", "\"h\"")]
+    [InlineData("var o = {}; o.q = function () {}; o.q.name", "-")]
+    [InlineData("var a; a ??= function () {}; a.name", "\"a\"")]
+    [InlineData("var b = 0; b ||= () => 1; b.name", "\"b\"")]
+    [InlineData("var x = (function () {}); x.name", "\"x\"")]
+    [InlineData("var y = (0, function () {}); y.name", "-")]
+    [InlineData("var z = function w() {}; z.name", "-")]
+    [InlineData("var [k = function () {}] = []; k.name", "\"k\"")]
+    [InlineData("var { p = () => 0 } = {}; p.name", "\"p\"")]
+    [InlineData("var o = { ['c' + 1]: function () {} }; o.c1.name", "[key]")]
+    [InlineData("var s = Symbol('d'); var o = { [s]: function () {} }; o[s].name", "[key]")]
+    [InlineData("function f(g = function () {}) { return g.name; } f()", "- \"g\"")]
+    [InlineData("class C { static #m = function () {}; static n() { return C.#m.name; } } C.n()", "- \"#m\" -")]
+    [InlineData("class C { x = function () {}; } new C().x.name", "- \"x\"")]
+    // The sites of the specification, the guarded ones included.
+    [InlineData("[x = function () {}] = [];", "\"x\"")]
+    [InlineData("var { p = function () {} } = {};", "\"p\"")]
+    [InlineData("var { k: p = function () {} } = {};", "\"p\"")]
+    [InlineData("try {} catch ({ k: p = function () {} }) {}", "\"p\"")]
+    [InlineData("for (var [q = function () {}] of []);", "\"q\"")]
+    [InlineData("({ x = function () {} } = {});", "\"x\"")]
+    [InlineData("var a; [t = function () {}] = a;", "\"t\"")]
+    [InlineData("({ k: t = function () {} } = {});", "\"t\"")]
+    [InlineData("var x; x &&= function () {};", "\"x\"")]
+    [InlineData("var x; x ||= function () {};", "\"x\"")]
+    [InlineData("var x; x ??= function () {};", "\"x\"")]
+    [InlineData("var a, b; a = b = function () {};", "\"b\"")]
+    [InlineData("var o = {}; for (var x = function () {} in o);", "\"x\"")]
+    [InlineData("for (let i = function () {}; ;) break;", "\"i\"")]
+    // The exclusions, each answering neither.
+    [InlineData("var x; x += function () {};", "-")]
+    [InlineData("var a; (a) = function () {};", "-")]
+    [InlineData("var a = {}; a.b = function () {};", "-")]
+    [InlineData("var y = (0, function () {});", "-")]
+    [InlineData("[{ a } = function () {}] = [];", "-")]
+    [InlineData("({ __proto__: function () {} });", "-")]
+    [InlineData("({ \"__proto__\": function () {} });", "-")]
+    [InlineData("({ __pr\\u006fto__: function () {} });", "-")] // an inference: StringValue "__proto__", isProtoSetter
+    [InlineData("var a; [(a) = function () {}] = [];", "-")]
+    [InlineData("var t; ({ k: (t) = function () {} } = {});", "-")]
+    [InlineData("var o = {}; [o.p = function () {}] = [];", "-")]
+    [InlineData("var a; (a) ??= function () {};", "-")]
+    [InlineData("var o = {}; o.p ||= function () {};", "-")]
+    [InlineData("var f = function () {}.bind(); var g = (function () {})();", "- -")]
+    // The literal keys, a computed __proto__ key named at run time.
+    [InlineData("({ [\"__proto__\"]: function () {} });", "[key]")]
+    [InlineData("({ 1e3: function () {} });", "\"1000\"")]
+    [InlineData("({ 0x10: function () {} });", "\"16\"")]
+    [InlineData("({ 0x10n: function () {} });", "\"16\"")]
+    [InlineData("({ 1_0n: function () {} });", "\"10\"")]
+    [InlineData("({ 1n: function () {} });", "\"1\"")]
+    [InlineData("({ 0.000001: function () {}, 1e21: () => 0 });", "\"0.000001\" \"1e+21\"")]
+    [InlineData("({ \"a b\": function () {} });", "\"a b\"")]
+    // Class fields, which have no isProtoSetter exclusion.
+    [InlineData("class C { __proto__ = function () {} }", "- \"__proto__\"")]
+    [InlineData("class C { 1e3 = function () {}; 'a b' = function () {} }", "- \"1000\" \"a b\"")]
+    [InlineData("class C { static x = function () {} }", "- \"x\"")]
+    [InlineData("class C { #m = () => 1 }", "- \"#m\"")]
+    [InlineData("var k; class C { [k] = function () {}; static [k] = class {} }", "- [key] [key]")]
+    // The other value forms.
+    [InlineData("let c = class {};", "\"c\"")]
+    [InlineData("var a = async () => 1;", "\"a\"")]
+    [InlineData("var g = function* () {};", "\"g\"")]
+    [InlineData("var h = async function* () {};", "\"h\"")]
+    [InlineData("var v = ((() => 0));", "\"v\"")]
+    // A site inside a static block names; the block itself is no function node.
+    [InlineData("class C { static { var f = function () {}; } }", "- \"f\"")]
+    // Methods, getters and setters answer null: DefineMethod names them by their key.
+    [InlineData("({ m() {}, get g() { return 1; }, set s(v) {}, *h() {}, async i() {} });", "- - - - -")]
+    [InlineData("class C { m() {} get g() { return 1; } set s(v) {} static t() {} constructor() {} }", "- - - - - -")]
+    // A function or class with its own name answers null.
+    [InlineData("var f = function g() {}; var C = class D {};", "- -")]
+    // The static-precedence case: the declaration's name is its own, so its node answers null.
+    [InlineData("class C { static name() {} }", "- -")]
+    // A reading beyond the edition: using, in a block, as test262's statements/using/fn-name-fn.js writes it.
+    [InlineData("{ using x = function () {}; }", "\"x\"")]
+    [InlineData("async function g() { await using x = function () {}; }", "- \"x\"")]
+    public void Each_named_evaluation_site_names_its_anonymous_definition(string text, string expected)
+    {
+        Assert.Equal(expected, Named(Accepted(text, ParseGoal.Script)));
+    }
+
+    /// <summary>
+    /// The Module goal's sites: <c>export default</c> of an expression and the anonymous default declarations, each
+    /// "default"; a named default declaration answers null; and <c>await using</c> at a Module's top level. <i>(Added
+    /// 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    [Theory]
+    [InlineData("export default function () {}", "\"default\"")]
+    [InlineData("export default function* () {}", "\"default\"")]
+    [InlineData("export default async function () {}", "\"default\"")]
+    [InlineData("export default async function* () {}", "\"default\"")]
+    [InlineData("export default class {}", "\"default\"")]
+    [InlineData("export default (function () {});", "\"default\"")]
+    [InlineData("export default (class {});", "\"default\"")]
+    [InlineData("export default () => 1;", "\"default\"")]
+    [InlineData("export default function f() {}", "-")]
+    [InlineData("export default class C {}", "-")]
+    [InlineData("export default (0, function () {});", "-")]
+    [InlineData("await using x = function () {};", "\"x\"")]
+    public void The_module_goal_s_default_export_answers_default(string text, string expected)
+    {
+        Assert.Equal(expected, Named(Accepted(text, ParseGoal.Module)));
+    }
+
+    /// <summary>
+    /// The vectors of row NE1 under the Eval goal (ne1/0019 to ne1/0021) and the probes V039 to V045 of the bundle's
+    /// <c>probes/probes.tsv</c> in eval code, each with the specification's answer (<c>probes/answers.tsv</c>): "f", none,
+    /// "a", "x", none, "#m" and "k". C1's row NE1 names V039, V041 and V042, where Broiler.JS gives none. <i>(Added
+    /// 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    [Theory]
+    [InlineData("var f = function () {}; f.name", "\"f\"")]
+    [InlineData("var a; a ??= function () {}; a.name", "\"a\"")]
+    [InlineData("var x = (function () {}); x.name", "\"x\"")]
+    [InlineData("__reached = true; var f = function () {}; f.name", "\"f\"")]
+    [InlineData("__reached = true; var o = {}; o.q = function () {}; o.q.name", "-")]
+    [InlineData("__reached = true; var a; a ??= function () {}; a.name", "\"a\"")]
+    [InlineData("__reached = true; var x = (function () {}); x.name", "\"x\"")]
+    [InlineData("__reached = true; var y = (0, function () {}); y.name", "-")]
+    [InlineData("__reached = true; class C { static #m = function () {}; static n() { return C.#m.name; } } C.n()", "- \"#m\" -")]
+    [InlineData("__reached = true; var [k = function () {}] = []; k.name", "\"k\"")]
+    public void The_eval_goal_s_vectors_and_probes_answer_the_specification_s_names(string text, string expected)
+    {
+        Assert.Equal(expected, Named(Accepted(text, ParseGoal.Eval)));
+    }
+
+    /// <summary>
+    /// An auto-accessor field names as a field does, a reading of the tree's beyond the edition (the decorators proposal's
+    /// flag); the wrappers, the parentheses, the site nodes and the static block answer neither; and a computed key's
+    /// answer is that key, the same instance. <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    [Fact]
+    public void The_key_is_the_definition_s_node_and_the_answer_names_the_argument()
+    {
+        Assert.Equal("- \"x\"", Named(Accepted("class C { accessor x = function () {} }", ParseGoal.Script, ProposalFlags.AutoAccessors)));
+
+        var result = Accepted("var a = (function () {}); var b; b = class {}; var o = { [k]: () => 0 }; class C { static { var s = function () {}; } }", ParseGoal.Script);
+        var model = result.Model!;
+        foreach (var node in Nodes(result.Tree!))
+        {
+            if (node is FunctionExpression or ArrowFunctionExpression or ClassExpression or ParenthesizedExpression or VariableDeclarator or AssignmentExpression or PropertyDefinition or StaticBlock or BindingIdentifier or Identifier)
+            {
+                Assert.Null(model.NamedEvaluationName(node));
+                Assert.Null(model.NamedEvaluationKey(node));
+            }
+        }
+
+        var arrow = First<ArrowFunctionExpression>(result).Function;
+        Assert.Same(First<ComputedPropertyName>(result), model.NamedEvaluationKey(arrow));
+        Assert.Null(model.NamedEvaluationName(arrow));
+
+        // The answer is the name passed, not the final name property: a static name member overrides the class's.
+        var precedence = Accepted("var C = class { static name() {} };", ParseGoal.Script);
+        Assert.Equal("C", precedence.Model!.NamedEvaluationName(First<ClassNode>(precedence)));
+    }
+
+    /// <summary>
+    /// Every function and class node of the population and of the fixtures answers what an oracle of the tree recomputes
+    /// from the specification's sites, read upward from each definition through its wrapper and parentheses to the site
+    /// that holds it; at most one of the two members answers. <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    [Fact]
+    public void Every_definition_of_an_accepted_tree_answers_the_name_an_oracle_of_the_tree_recomputes()
+    {
+        var items = DeterminismTests.Population.Value;
+        var (definitions, named, keyed) = OnDocumentedStack(() =>
+        {
+            var (d, n, k) = (0, 0, 0);
+            void One(string name, ParseResult result)
+            {
+                if (result.Model is not { } model)
+                    return;
+                var nodes = Nodes(result.Tree!);
+                var parents = new Dictionary<SyntaxNode, SyntaxNode>(ReferenceEqualityComparer.Instance);
+                var children = new List<SyntaxNode>();
+                foreach (var node in nodes)
+                {
+                    children.Clear();
+                    node.AddChildren(children);
+                    foreach (var child in children)
+                        parents[child] = node;
+                }
+
+                foreach (var node in nodes)
+                {
+                    if (node is not (FunctionNode or ClassNode))
+                        continue;
+                    d++;
+                    var (expectedName, expectedKey) = OracleName(node, parents);
+                    var actualName = model.NamedEvaluationName(node);
+                    var actualKey = model.NamedEvaluationKey(node);
+                    Assert.True(expectedName == actualName, name + ": at " + node.Span.Offset.ToString(CultureInfo.InvariantCulture) + " the name is " + (actualName ?? "null") + ", the oracle's " + (expectedName ?? "null"));
+                    Assert.Same(expectedKey, actualKey);
+                    Assert.False(actualName is not null && actualKey is not null, name + ": both a name and a key");
+                    n += actualName is null ? 0 : 1;
+                    k += actualKey is null ? 0 : 1;
+                }
+            }
+
+            foreach (var item in items)
+                One(Name(item), SyntaxParser.Parse(DeterminismTests.Request(item, model: true)));
+            foreach (var (text, goal, proposals) in NamedFixtureSources())
+                One("fixture \"" + text + "\"", Accepted(text, goal, proposals));
+            return (d, n, k);
+        });
+
+        Assert.True(definitions > 0 && named > 0 && keyed > 0);
+        output.WriteLine("named evaluation: definitions " + definitions.ToString(CultureInfo.InvariantCulture) + ", named " + named.ToString(CultureInfo.InvariantCulture) + ", keyed " + keyed.ToString(CultureInfo.InvariantCulture));
+    }
+
+    // The fixtures of this section's named-evaluation theories, with their goals.
+    private static IEnumerable<(string Text, ParseGoal Goal, ProposalFlags Proposals)> NamedFixtureSources()
+    {
+        foreach (var (theory, goal) in new[] { (nameof(Each_named_evaluation_site_names_its_anonymous_definition), ParseGoal.Script), (nameof(The_module_goal_s_default_export_answers_default), ParseGoal.Module), (nameof(The_eval_goal_s_vectors_and_probes_answer_the_specification_s_names), ParseGoal.Eval) })
+        {
+            foreach (var data in typeof(SemanticModelTests).GetMethod(theory)!.GetCustomAttributes<InlineDataAttribute>())
+                yield return ((string)data.Data[0]!, goal, ProposalFlags.None);
+        }
+
+        yield return ("class C { accessor x = function () {}; static accessor [k] = () => 0 }", ParseGoal.Script, ProposalFlags.AutoAccessors);
+    }
+
+    // The oracle's answer for a function or class node: up from the definition through its expression or declaration and
+    // every parenthesis, then the specification's site rules at the node that holds the value.
+    private static (string? Name, ComputedPropertyName? Key) OracleName(SyntaxNode definition, Dictionary<SyntaxNode, SyntaxNode> parents)
+    {
+        if (definition is FunctionNode { IsArrow: false, Name: not null } or ClassNode { Name: not null })
+            return (null, null);
+        if (!parents.TryGetValue(definition, out var holder))
+            return (null, null);
+        if (holder is FunctionDeclaration or ClassDeclaration)
+            return parents.TryGetValue(holder, out var export) && export is ExportDefaultDeclaration ? ("default", null) : (null, null);
+        if (holder is not (FunctionExpression or ArrowFunctionExpression or ClassExpression))
+            return (null, null);
+        SyntaxNode value = holder;
+        while (parents.TryGetValue(value, out var up) && up is ParenthesizedExpression)
+            value = up;
+        if (!parents.TryGetValue(value, out var site))
+            return (null, null);
+        switch (site)
+        {
+            case VariableDeclarator declarator when ReferenceEquals(declarator.Initializer, value) && declarator.Target is BindingIdentifier target:
+                return (target.Name, null);
+            case AssignmentPattern pattern when ReferenceEquals(pattern.Initializer, value):
+                return pattern.Target switch
+                {
+                    BindingIdentifier target => (target.Name, null),
+                    TargetPattern { Target: Identifier target } => (target.Name, null),
+                    _ => (null, null),
+                };
+            case AssignmentExpression assignment when ReferenceEquals(assignment.Value, value)
+                && assignment.Operator is AssignmentOperator.Assign or AssignmentOperator.AndAssign or AssignmentOperator.OrAssign or AssignmentOperator.CoalesceAssign
+                && assignment.Target is Identifier target:
+                return (target.Name, null);
+            case PropertyDefinition { PropertyKind: PropertyKind.Init } property when ReferenceEquals(property.Value, value):
+                return property.Key switch
+                {
+                    ComputedPropertyName computed => (null, computed),
+                    IdentifierName { Name: "__proto__" } or StringLiteral { Value: "__proto__" } => (null, null),
+                    var key => (OracleKey(key), null),
+                };
+            case FieldDefinition field when ReferenceEquals(field.Value, value):
+                return field.Key switch
+                {
+                    ComputedPropertyName computed => (null, computed),
+                    PrivateIdentifier privateName => (privateName.Name, null),
+                    var key => (OracleKey(key), null),
+                };
+            case ExportDefaultDeclaration export when ReferenceEquals(export.Declaration, value):
+                return ("default", null);
+            default:
+                return (null, null);
+        }
+    }
+
+    // A literal key's property name, as the oracle reads it: a Number by Number::toString, a BigInt by its integer in
+    // decimal, read by System.Numerics from its radix.
+    private static string? OracleKey(SyntaxNode key)
+    {
+        switch (key)
+        {
+            case IdentifierName identifier:
+                return identifier.Name;
+            case StringLiteral text:
+                return text.Value;
+            case NumericLiteral { Flags: var flags } numeric when (flags & NumericLiteralFlags.BigInt) != 0:
+            {
+                var digits = numeric.Text.Replace("_", string.Empty, StringComparison.Ordinal).TrimEnd('n').ToLowerInvariant();
+                var radix = digits.StartsWith("0x", StringComparison.Ordinal) ? 16 : digits.StartsWith("0o", StringComparison.Ordinal) ? 8 : digits.StartsWith("0b", StringComparison.Ordinal) ? 2 : 10;
+                if (radix != 10)
+                    digits = digits[2..];
+                var value = System.Numerics.BigInteger.Zero;
+                foreach (var c in digits)
+                    value = value * radix + (c <= '9' ? c - '0' : c - 'a' + 10);
+                return value.ToString(CultureInfo.InvariantCulture);
+            }
+
+            case NumericLiteral numeric:
+                return Broiler.ECMAScript.Numbers.NumberText.ToString(numeric.Value);
+            default:
+                return null;
+        }
+    }
+    // ---- Free names and captures.
+
+    private static string Free(SemanticModel model, SyntaxNode node) => string.Join(",", model.FreeNames(node));
+
+    private static Declaration[] Caught(SemanticModel model, SyntaxNode node) => model.Captured(node).ToArray();
+
+    private static FieldDefinition Field(ParseResult result, int index = 0) => Nth<FieldDefinition>(result, index);
+
+    // The first function's environment facts and free names, from one parse.
+    private static EnvironmentFacts Facts1(string text)
+    {
+        var (result, model) = Model(text);
+        return model.EnvironmentOf(First<FunctionNode>(result));
+    }
+
+    private static string Free1(string text)
+    {
+        var (result, model) = Model(text);
+        return Free(model, First<FunctionNode>(result));
+    }
+
+    /// <summary>
+    /// The facts of the probes and fixtures the stage names: the reach an arrow's direct eval gives its function, which
+    /// stage 5a's own-code facts leave out; the candidates of every strictness; <c>this</c>, <c>super</c>,
+    /// <c>new.target</c> and <c>arguments</c>; an outer <c>with</c>; a class inside a field initialiser; the self-name,
+    /// direct and through an arrow; parameter expressions; the dynamic function's goals; and eval code's own bindings.
+    /// <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    [Fact]
+    public void Each_function_s_free_names_captures_and_flags_are_its_code_s()
+    {
+        // The reach: f's own environments gain nothing, yet the arrow's direct eval reaches f's x by name.
+        var (r1, m1) = Model("function f() { var x; (() => eval(\"x = 1\"))(); }");
+        var f1 = Fn(r1, "f");
+        var arrow1 = First<ArrowFunctionExpression>(r1).Function;
+        Assert.False(m1.EnvironmentOf(f1).DirectEvalInBody);
+        Assert.True(m1.EnvironmentOf(f1).DirectEvalOrWithWithin);
+        Assert.True(m1.EnvironmentOf(arrow1).DirectEvalOrWithWithin);
+        Assert.True(m1.EnvironmentOf(r1.Tree!).DirectEvalOrWithWithin);
+        Assert.Equal("eval", Free(m1, f1));
+        Assert.Empty(m1.Captured(f1));
+
+        // Candidates: eval?.() is none, (eval)() is one, a strict and a nested one count.
+        Assert.False(Facts1("function f() { eval?.(x); }").DirectEvalOrWithWithin);
+        var (r2, m2) = Model("function f() { (eval)(x); } function g() { \"use strict\"; eval(x); } function h() { return function () { eval(x); }; } function i() { return 1; }");
+        Assert.True(m2.EnvironmentOf(Fn(r2, "f")).DirectEvalOrWithWithin);
+        Assert.True(m2.EnvironmentOf(Fn(r2, "g")).DirectEvalOrWithWithin);
+        Assert.True(m2.EnvironmentOf(Fn(r2, "h")).DirectEvalOrWithWithin);
+        Assert.False(m2.EnvironmentOf(Fn(r2, "i")).DirectEvalOrWithWithin);
+        Assert.False(Facts1("function f() { debugger; }").DirectEvalOrWithWithin);
+
+        // An outer with around a nested function: the function's free name is the with's fallback, and the reach is
+        // the with's owner's and the program's, not the nested function's.
+        var (r3, m3) = Model("var o = {}; function f() { with (o) { return function g() { return y; }; } }");
+        Assert.True(m3.EnvironmentOf(Fn(r3, "f")).DirectEvalOrWithWithin);
+        Assert.False(m3.EnvironmentOf(Fn(r3, "g")).DirectEvalOrWithWithin);
+        Assert.Equal("y", Free(m3, Fn(r3, "g")));
+        Assert.Equal("o,y", Free(m3, Fn(r3, "f")));
+        Assert.Same(Decl(m3.Scopes[0], "o"), Assert.Single(m3.Captured(Fn(r3, "f"))));
+
+        // this, super and new.target are no names; arguments is a reference like any other.
+        var (r4, m4) = Model("function f() { return () => [this, new.target, arguments]; } class C extends Object { x = () => this; m() { return () => super.m; } static { this; } }");
+        var arrow4 = First<ArrowFunctionExpression>(r4).Function;
+        Assert.Equal("arguments", Free(m4, arrow4));
+        Assert.Same(m4.EnvironmentOf(Fn(r4, "f")).Arguments, Assert.Single(m4.Captured(arrow4)));
+        Assert.Equal(string.Empty, Free(m4, Fn(r4, "f")));
+        Assert.All(m4.Functions, facts => Assert.DoesNotContain("this", m4.FreeNames(facts.Node)));
+        Assert.Equal("Object", Free(m4, r4.Tree!));
+        Assert.Equal("arguments", Free1("var f = () => arguments;"));
+
+        // A class inside a field initialiser: the field captures nothing of D, m captures D's inner name.
+        var (r5, m5) = Model("class C { x = class D { m() { return D; } } }");
+        var field5 = Field(r5);
+        var method5 = First<FunctionNode>(r5);
+        Assert.Equal(string.Empty, Free(m5, field5));
+        Assert.Equal("D", Free(m5, method5));
+        var inner5 = Assert.Single(m5.Captured(method5));
+        Assert.Equal(BindingKind.ClassName, inner5.Kind);
+        Assert.Same(Of(m5, ScopeKind.ClassBody, Class(r5, 1)).Declarations[0], inner5);
+
+        // A class's inner name is free in its members and not in the code that holds it; its heritage and computed keys
+        // stand in that code.
+        var (r6, m6) = Model("function f() { class C extends B { [k] = C; m() { return C; } static { C; } } return C; }");
+        Assert.Equal("B,k", Free(m6, Fn(r6, "f")));
+        Assert.Equal("C", Free(m6, Field(r6)));
+        Assert.Equal("C", Free(m6, First<StaticBlock>(r6)));
+
+        // The self-name, through an arrow and directly; the name is never free in its own function.
+        var (r7, m7) = Model("var f = function g() { return () => g; }; var h = function i() { return i; }; var j = function k() { return 1; };");
+        var g7 = Fn(r7, "g");
+        var arrow7 = First<ArrowFunctionExpression>(r7).Function;
+        Assert.True(m7.EnvironmentOf(g7).FunctionNameReferenced);
+        Assert.False(m7.EnvironmentOf(arrow7).FunctionNameReferenced);
+        Assert.Equal(string.Empty, Free(m7, g7));
+        Assert.Equal("g", Free(m7, arrow7));
+        Assert.Equal(BindingKind.FunctionName, Assert.Single(m7.Captured(arrow7)).Kind);
+        Assert.True(m7.EnvironmentOf(Fn(r7, "i")).FunctionNameReferenced);
+        Assert.False(m7.EnvironmentOf(Fn(r7, "k")).FunctionNameReferenced);
+        Assert.All(m7.Functions, facts => Assert.True(facts.Node is FunctionNode { Name: not null } named && !m7.FreeNames(named).Contains(named.Name!.Name) || facts.Node is not FunctionNode { Name: not null }));
+
+        // Parameter expressions: a closure in the parameters does not see the body's declarations (FF4).
+        var (r8, m8) = Model("function f(a = () => b) { var b; }");
+        var arrow8 = First<ArrowFunctionExpression>(r8).Function;
+        Assert.Equal("b", Free(m8, arrow8));
+        Assert.Empty(m8.Captured(arrow8));
+        Assert.Equal("b", Free(m8, Fn(r8, "f")));
+
+        // The dynamic function's goals: the program's Parameters scope and its body's scope are the program's own.
+        var body = Accepted("return a + b;", ParseGoal.FunctionBody);
+        Assert.Equal("a,b", Free(body.Model!, body.Tree!));
+        var parameters = Accepted("a, b = () => a", ParseGoal.FormalParameters);
+        Assert.Equal(string.Empty, Free(parameters.Model!, parameters.Tree!));
+        Assert.Equal("a", Free(parameters.Model!, First<ArrowFunctionExpression>(parameters).Function));
+
+        // Eval code's own var-scoped bindings are no uses; a reference to one is free and not captured.
+        var eval1 = Accepted("var x = 1;", ParseGoal.Eval);
+        Assert.Equal(string.Empty, Free(eval1.Model!, eval1.Tree!));
+        var eval2 = Accepted("var x = 1; x", ParseGoal.Eval);
+        Assert.Equal("x", Free(eval2.Model!, eval2.Tree!));
+        Assert.Empty(eval2.Model!.Captured(eval2.Tree!));
+        Assert.Equal(ResolutionKind.Inherited, eval2.Model!.Resolve(Reference(eval2, "x")).Kind);
+
+        // Annex B's aliases are captured as BlockFunctionAlias declarations; eval code's inherited alias is free and not
+        // captured.
+        var (r9, m9) = Model("function f() { { function g() {} } return () => g; }");
+        var alias9 = Assert.Single(m9.Captured(First<ArrowFunctionExpression>(r9).Function));
+        Assert.Equal(BindingKind.BlockFunctionAlias, alias9.Kind);
+        var eval3 = Accepted("{ function g() {} } (() => g)();", ParseGoal.Eval);
+        var arrow10 = First<ArrowFunctionExpression>(eval3).Function;
+        Assert.Equal("g", Free(eval3.Model!, arrow10));
+        Assert.Empty(eval3.Model!.Captured(arrow10));
+    }
+
+    /// <summary>
+    /// The shapes where Broiler.JS's <c>FreeNameScan</c> answers otherwise, each pinned to the model's answer, the
+    /// specification's, with <c>FreeNameScan</c>'s in the comment (an inference by reading its code, not run).
+    /// <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    [Fact]
+    public void Where_FreeNameScan_answers_otherwise_the_model_answers_the_specification_s_free_names()
+    {
+        // 1. this: FreeNameScan's bridge makes it an identifier, a free name "this"; never a name here.
+        Assert.Equal(string.Empty, Free1("function f() { return this; }"));
+
+        // 2. A class's name: FreeNameScan visits it as a reference, never bound; here it is bound in the class's scope.
+        var (r2, m2) = Model("function f() { class C { m() { return C; } } var D = class E {}; }");
+        Assert.Equal(string.Empty, Free(m2, Fn(r2, "f")));
+        Assert.Equal("C", Free(m2, First<MethodDefinition>(r2).Function));
+
+        // 3. Non-computed class element keys and private names: free in FreeNameScan; no references here.
+        var (r3, m3) = Model("function f() { class C { #x; y = 1; m(o) { return #x in o; } } }");
+        Assert.Equal(string.Empty, Free(m3, Fn(r3, "f")));
+        Assert.Equal(string.Empty, Free(m3, First<MethodDefinition>(r3).Function));
+
+        // 4. A let referenced from a nested function placed earlier: FreeNameScan binds it only when its walk reaches it.
+        var (r4, m4) = Model("function f() { var g = () => x; let x = 1; return g; }");
+        Assert.Equal(string.Empty, Free(m4, Fn(r4, "f")));
+        Assert.Equal("x", Free(m4, First<ArrowFunctionExpression>(r4).Function));
+
+        // 5. A for-of lexical head: FreeNameScan binds i in the enclosing scope, so the later reference is missed.
+        Assert.Equal("a,i", Free1("function f() { for (let i of a) {} return i; }"));
+
+        // 6. A block function in strict code: FreeNameScan hoists it to the function, so the later reference is missed.
+        Assert.Equal("g", Free1("function f() { \"use strict\"; { function g() {} } return g; }"));
+
+        // 7. Parameters naming later parameters or arguments: FreeNameScan gives b and arguments; here they are bound.
+        Assert.Equal(string.Empty, Free1("function f(a = b, b) {}"));
+        Assert.Equal(string.Empty, Free1("function f(a = arguments) {}"));
+
+        // 8. Decorators: the bridge drops them, so FreeNameScan misses their references; here they are references.
+        var (r8, m8) = Model("function f() { @dec class C {} }", proposals: ProposalFlags.Decorators);
+        Assert.Equal("dec", Free(m8, Fn(r8, "f")));
+
+        // 9. eval?.(x): FreeNameScan's callee is an identifier named eval, so it is dynamic; here it is no candidate.
+        var (r9, m9) = Model("function f() { eval?.(x); }");
+        Assert.False(m9.EnvironmentOf(Fn(r9, "f")).DirectEvalOrWithWithin);
+        Assert.Equal("eval,x", Free(m9, Fn(r9, "f")));
+
+        // 10. The self-name through a nested function: FreeNameScan's flag stays false; here it is transitive.
+        var (r10, m10) = Model("var f = function g() { return () => g; };");
+        Assert.True(m10.EnvironmentOf(Fn(r10, "g")).FunctionNameReferenced);
+
+        // 11. A field initialiser: FreeNameScan has no entry; here it has one.
+        var (r11, m11) = Model("class C { x = y; }");
+        Assert.Equal("y", Free(m11, Field(r11)));
+
+        // 12. debugger: neither counts it.
+        Assert.False(Facts1("function f() { debugger; }").DirectEvalOrWithWithin);
+    }
+
+    /// <summary>
+    /// Broiler.JS's <c>FreeNameScan</c> tests' sources and their expected sets, ported literally without referencing
+    /// Broiler.JS (rule SL1), and the capture-layout tests' shapes with sets written by hand (an inference: those tests
+    /// assert counters, not sets): the model gives the same sets, compared sorted, since those tests assert no order.
+    /// Each function's set is in tree order of the functions. <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    [Theory]
+    // FreeNameScanTests' TheOnePassFormAgreesWithAnIndependentOracle, with the sets its oracle computes.
+    [InlineData("var f = function (x) { return x; };", "")]
+    [InlineData("var f = function () { return x; };", "x")]
+    [InlineData("var f = function () { { var x = 1; } return x; };", "")]
+    [InlineData("var f = function () { return function () { return outer; }; };", "outer|outer")]
+    [InlineData("var f = function () { return function (outer) { return outer; }; };", "|")]
+    [InlineData("var f = function (a) { return function () { return function () { return a + b; }; }; };", "b|a,b|a,b")]
+    [InlineData("var f = function () { try { } catch (q) { } return e; };", "e")]
+    [InlineData("var f = function ({ a, b = fallback }) { return a + b; };", "fallback")]
+    [InlineData("var f = function (o) { return { a: 1, b: o.c }; };", "")]
+    [InlineData("var o = function () { f(); function f() { return z; } };", "z|z")]
+    [InlineData("var f = function (a) { return function (b) { return function (c) { return a + b + c + d; }; }; };", "d|a,d|a,b,d")]
+    // Its facts.
+    [InlineData("var f = function (a) { return function (b) { return a + b + c; }; };", "c|a,c")]
+    [InlineData("var f = function () { { let x = 1; } return x; };", "x")]
+    [InlineData("var o = function () { f(); function f() {} };", "|")]
+    [InlineData("var o = function () { return x; var x = 1; };", "")]
+    [InlineData("var f = function g () { return g; };", "")]
+    [InlineData("var f = function () { return arguments; };", "")]
+    [InlineData("var f = () => arguments;", "arguments")]
+    [InlineData("var f = function () { try { } catch (e) { return e; } };", "")]
+    [InlineData("var f = function () { var { p: q } = src; return q; };", "src")]
+    [InlineData("var f = function () { var [m, n] = src; return m + n; };", "src")]
+    [InlineData("var f = function (o) { return o[k]; };", "k")]
+    [InlineData("var f = function () { eval('x = 1'); };", "eval")]
+    [InlineData("var f = function (o) { with (o) { y; } };", "y")]
+    [InlineData("var f = function () { for (var i = 0; i < limit; i++) { } return i; };", "limit")]
+    [InlineData("var f = function () { for (const it of items) { it; } };", "items")]
+    // The capture-layout tests' shapes, by hand: a declaration's and an expression's self-reference, a per-iteration
+    // let, a catch parameter, and shadowing.
+    [InlineData("function f() { return f; }", "f")]
+    [InlineData("var g = function h() { return h; };", "")]
+    [InlineData("for (let i = 0; i < 3; i++) { fs.push(() => i); }", "i")]
+    [InlineData("try {} catch (e) { (() => e)(); }", "e")]
+    [InlineData("function f(x) { return function (x) { return x; }; }", "|")]
+    public void The_model_gives_FreeNameScan_s_sets_on_its_own_tests_sources(string text, string expected)
+    {
+        var (result, model) = Model(text);
+        var sets = Nodes(result.Tree!).OfType<FunctionNode>().Select(f => string.Join(",", model.FreeNames(f).OrderBy(static n => n, StringComparer.Ordinal)));
+        Assert.Equal(expected, string.Join("|", sets));
+    }
+
+    /// <summary>
+    /// Every facts node of the population, the resolution fixtures and this section's sources answers the free names,
+    /// captures and flags an oracle of the tree recomputes: each node's owning facts node and each scope's owner read from
+    /// the tree by the model's rules, each reference's binding from <see cref="SemanticModel.Resolve(Identifier)"/>, the
+    /// names in start order with no early stop; every name once, one declaration per name, each the resolution's own
+    /// instance; and every list read-only. <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    [Fact]
+    public void Every_facts_node_s_free_names_and_captures_are_the_ones_an_oracle_of_the_tree_recomputes()
+    {
+        var items = DeterminismTests.Population.Value;
+        var (facts, names, captured) = OnDocumentedStack(() =>
+        {
+            var (f, n, c) = (0, 0, 0);
+            void One(string name, ParseResult result)
+            {
+                if (result.Model is not { } model)
+                    return;
+                var oracle = OracleCaptures(result.Tree!, model);
+                foreach (var entry in model.Functions)
+                {
+                    f++;
+                    var node = entry.Node;
+                    var free = model.FreeNames(node);
+                    var declarations = model.Captured(node);
+                    Assert.True(free is System.Collections.ObjectModel.ReadOnlyCollection<string> && declarations is System.Collections.ObjectModel.ReadOnlyCollection<Declaration>, name + ": a list that is not read-only");
+                    var expected = oracle.Names[node];
+                    Assert.True(expected.SequenceEqual(free), name + ": at " + node.Span.Offset.ToString(CultureInfo.InvariantCulture) + " the free names are " + string.Join(",", free) + ", the oracle's " + string.Join(",", expected));
+                    Assert.Equal(oracle.Declarations[node].Count, declarations.Count);
+                    for (var i = 0; i < declarations.Count; i++)
+                        Assert.Same(oracle.Declarations[node][i], declarations[i]);
+                    var environment = model.EnvironmentOf(node);
+                    Assert.True(oracle.Reach.Contains(node) == environment.DirectEvalOrWithWithin, name + ": at " + node.Span.Offset.ToString(CultureInfo.InvariantCulture) + " the reach differs from the oracle's");
+                    Assert.True(oracle.SelfNamed.Contains(node) == environment.FunctionNameReferenced, name + ": at " + node.Span.Offset.ToString(CultureInfo.InvariantCulture) + " the self-name use differs from the oracle's");
+                    n += free.Count;
+                    c += declarations.Count;
+                }
+            }
+
+            foreach (var item in items)
+                One(Name(item), SyntaxParser.Parse(DeterminismTests.Request(item, model: true)));
+            foreach (var (goal, text) in ResolutionSources)
+                One("fixture \"" + text + "\"", goal == ParseGoal.Eval ? EvalParse(text) : Parse(text, goal));
+            foreach (var data in typeof(SemanticModelTests).GetMethod(nameof(The_model_gives_FreeNameScan_s_sets_on_its_own_tests_sources))!.GetCustomAttributes<InlineDataAttribute>())
+                One("fixture \"" + (string)data.Data[0]! + "\"", Parse((string)data.Data[0]!));
+            foreach (var text in CaptureSources)
+                One("fixture \"" + text + "\"", Parse(text));
+            foreach (var text in EvalCaptureSources)
+                One("fixture (eval code) \"" + text + "\"", EvalParse(text));
+            return (f, n, c);
+        });
+
+        Assert.True(facts > 0 && names > 0 && captured > 0);
+        output.WriteLine("captures: facts nodes " + facts.ToString(CultureInfo.InvariantCulture) + ", free names " + names.ToString(CultureInfo.InvariantCulture) + ", captured " + captured.ToString(CultureInfo.InvariantCulture));
+    }
+
+    private static readonly string[] CaptureSources =
+    [
+        "function f() { var x; (() => eval(\"x = 1\"))(); }",
+        "var o = {}; function f() { with (o) { return function g() { return y; }; } }",
+        "function f() { return () => [this, new.target, arguments]; } class C extends Object { x = () => this; m() { return () => super.m; } static { this; } }",
+        "class C { x = class D { m() { return D; } } }",
+        "function f() { class C extends B { [k] = C; m() { return C; } static { C; } } return C; }",
+        "var f = function g() { return () => g; }; var h = function i() { return i; };",
+        "function f(a = () => b) { var b; }",
+        "function f() { { function g() {} } return () => g; }",
+        "function f() { var g = () => x; let x = 1; return g; } function h() { for (let i of a) {} return i; }",
+        "function f() { var x = 1; return function () { x; return function () { x; y; return () => [x, y, z]; }; }; }",
+        "function f(x) { return [function () { return x; }, function (x) { return x; }, () => x]; }",
+        "label: for (var i of a) { try { throw i; } catch ({ e = i }) { (function () { e; i; })(); } }",
+        "switch (s) { case 1: let a = 1; break; default: (() => a)(); }",
+    ];
+
+    private static readonly string[] EvalCaptureSources =
+    [
+        "var x = 1;",
+        "var x = 1; x",
+        "{ function g() {} } (() => g)();",
+        "let y; var z; (function () { return [y, z, w]; })();",
+    ];
+
+    // The oracle's lists: each facts node's names and declarations, the facts nodes with the reach and with the
+    // self-name use.
+    private sealed record OracleFree(Dictionary<SyntaxNode, List<string>> Names, Dictionary<SyntaxNode, List<Declaration>> Declarations, HashSet<SyntaxNode> Reach, HashSet<SyntaxNode> SelfNamed);
+
+    private static OracleFree OracleCaptures(ProgramNode program, SemanticModel model)
+    {
+        var nodes = Nodes(program);
+        var parents = new Dictionary<SyntaxNode, SyntaxNode>(ReferenceEqualityComparer.Instance);
+        var children = new List<SyntaxNode>();
+        foreach (var node in nodes)
+        {
+            children.Clear();
+            node.AddChildren(children);
+            foreach (var child in children)
+                parents[child] = node;
+        }
+
+        // The facts node whose code holds a node: up the tree to a function, a static block or the program, or to a
+        // field through its initialiser, never through its key.
+        SyntaxNode? Holder(SyntaxNode node)
+        {
+            var below = node;
+            while (parents.TryGetValue(below, out var up))
+            {
+                if (up is FunctionNode or StaticBlock or ProgramNode)
+                    return up;
+                if (up is FieldDefinition field && ReferenceEquals(field.Value, below))
+                    return up;
+                below = up;
+            }
+
+            return null;
+        }
+
+        bool IsFacts(SyntaxNode node) => node is FunctionNode or StaticBlock or ProgramNode || node is FieldDefinition { Value: not null };
+
+        // A scope's owner: its node where that is a facts node, and otherwise the facts node whose code holds its node.
+        SyntaxNode? OwnerOf(Scope scope) => IsFacts(scope.Node) ? scope.Node : Holder(scope.Node);
+
+        var names = new Dictionary<SyntaxNode, List<string>>(ReferenceEqualityComparer.Instance);
+        var declarations = new Dictionary<SyntaxNode, List<Declaration>>(ReferenceEqualityComparer.Instance);
+        var declarationOf = new Dictionary<(SyntaxNode, string), Declaration?>();
+        foreach (var facts in model.Functions)
+        {
+            names[facts.Node] = new List<string>();
+            declarations[facts.Node] = new List<Declaration>();
+        }
+
+        var references = nodes.OfType<Identifier>().Select((r, i) => (r, i)).OrderBy(static p => p.r.Span.Offset).ThenBy(static p => p.i).Select(static p => p.r).ToList();
+        var selfNamed = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
+        foreach (var reference in references)
+        {
+            var answer = model.Resolve(reference);
+            var final = answer.Kind == ResolutionKind.Dynamic ? answer.Fallback! : answer;
+            SyntaxNode? boundary = null;
+            Declaration? declaration = null;
+            if (final.Kind == ResolutionKind.Static)
+            {
+                boundary = OwnerOf(final.Scope!);
+                declaration = final.Declaration;
+                if (declaration!.Kind == BindingKind.FunctionName)
+                    selfNamed.Add(final.Scope!.Node);
+            }
+
+            var reached = false;
+            for (var node = Holder(reference); node is not null; node = Holder(node))
+            {
+                if (ReferenceEquals(node, boundary))
+                {
+                    reached = true;
+                    break;
+                }
+
+                // Every name once, one declaration per name.
+                if (declarationOf.TryGetValue((node, reference.Name), out var known))
+                {
+                    Assert.True(ReferenceEquals(known, declaration), "the name " + reference.Name + " gives two declarations in one node");
+                    continue;
+                }
+
+                declarationOf[(node, reference.Name)] = declaration;
+                names[node].Add(reference.Name);
+                if (declaration is not null)
+                    declarations[node].Add(declaration);
+            }
+
+            Assert.True(reached || boundary is null, "the binding of " + reference.Name + " is not around its reference");
+        }
+
+        // The reach: each candidate's and each with statement's holder, and every facts node around it.
+        var reach = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
+        foreach (var node in nodes)
+        {
+            var candidate = node is CallExpression { IsOptional: false } call && Unwrapped(call.Callee) is Identifier { Name: "eval" };
+            if (!candidate && node is not WithStatement)
+                continue;
+            for (var holder = Holder(node); holder is not null; holder = Holder(holder))
+                reach.Add(holder);
+        }
+
+        return new OracleFree(names, declarations, reach, selfNamed);
+    }
+
+    private static Expression Unwrapped(Expression expression)
+    {
+        while (expression is ParenthesizedExpression parenthesized)
+            expression = parenthesized.Expression;
+        return expression;
+    }
+
+    /// <summary>
+    /// The four members refuse a null node and a node of another tree, and <c>FreeNames</c> and <c>Captured</c> a node of
+    /// the tree that has no facts, as <see cref="SemanticModel.FactsOf"/> does. <i>(Added 2026-11-27, at SJL-15.2 stage
+    /// 7.)</i>
+    /// </summary>
+    [Fact]
+    public void A_null_or_foreign_node_or_a_node_without_facts_is_refused_by_the_four_members()
+    {
+        var (result, model) = Model("var f = function () { return x; };");
+        var other = Model("var f = function () {};").Result;
+        var foreign = First<FunctionNode>(other);
+        Assert.Throws<ArgumentNullException>(() => model.NamedEvaluationName(null!));
+        Assert.Throws<ArgumentNullException>(() => model.NamedEvaluationKey(null!));
+        Assert.Throws<ArgumentNullException>(() => model.FreeNames(null!));
+        Assert.Throws<ArgumentNullException>(() => model.Captured(null!));
+        Assert.Throws<ArgumentException>(() => model.NamedEvaluationName(foreign));
+        Assert.Throws<ArgumentException>(() => model.NamedEvaluationKey(foreign));
+        Assert.Throws<ArgumentException>(() => model.FreeNames(foreign));
+        Assert.Throws<ArgumentException>(() => model.Captured(foreign));
+        var statement = First<VariableDeclaration>(result);
+        Assert.Throws<ArgumentException>(() => model.FreeNames(statement));
+        Assert.Throws<ArgumentException>(() => model.Captured(statement));
+        Assert.Null(model.NamedEvaluationName(statement));
+        Assert.Equal("x", Assert.Single(model.FreeNames(First<FunctionNode>(result))));
+        Assert.Throws<NotSupportedException>(() => ((IList<string>)model.FreeNames(First<FunctionNode>(result))).Add("y"));
+        Assert.Throws<NotSupportedException>(() => ((IList<Declaration>)model.Captured(First<FunctionNode>(result))).Clear());
+    }
 }

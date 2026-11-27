@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   32
-// Annotated:        32/32
-// Exempt:           104
-// Human-reviewed:   0/32
+// Relevant units:   36
+// Annotated:        36/36
+// Exempt:           110
+// Human-reviewed:   0/36
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       32
+// Unverified:       36
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -109,7 +109,9 @@ public enum FunctionKind
 /// stage 5b each block function's Annex B alias (<see cref="AnnexBAlias"/>, Annex B.3.2, which row AB1 names by an
 /// earlier edition's number, B.3.3), and from stage 5c the calls that may be direct evals and the caller's records a direct
 /// <c>eval</c> at each receives (<see cref="DirectEvalCalls"/>, <see cref="CallerScopesOf"/>), and from stage 6 a Module's
-/// record (<see cref="Module"/>); named evaluation, captures and the early
+/// record (<see cref="Module"/>), and from stage 7 the name each anonymous function or class definition's named evaluation
+/// passes it and each function's free names and captures (<see cref="NamedEvaluationName"/>,
+/// <see cref="NamedEvaluationKey"/>, <see cref="FreeNames"/>, <see cref="Captured"/>); the early
 /// errors that are not purely grammatical are later stages'. From stage 2 the walk that builds it also reports its
 /// early errors of the function context (the super rows, ContainsArguments, eval code's from the caller's context, and
 /// three of expressions') among the parse's diagnostics, so that a source they refuse has no model, from stage 3 those
@@ -141,6 +143,9 @@ public enum FunctionKind
 /// cref="DirectEvalCalls"/>, <see cref="CallerScopesOf"/>); the module record, named evaluation, captures and the early
 /// errors that are not purely grammatical are later stages'" and "eval code against the private names its caller sees);
 /// the early errors of the module record are later stages'.")</i>
+/// <i>(Revised 2026-11-27, at SJL-15.2 stage 7, when named evaluation and captures joined the model; it read "record (<see
+/// cref="Module"/>); named evaluation, captures and the early errors that are not purely grammatical are later
+/// stages'.")</i>
 /// </summary>
 /// <remarks>
 /// <para>
@@ -177,10 +182,15 @@ public enum FunctionKind
 /// <i>(Added 2026-11-26, at SJL-15.2 stage 5b.)</i>
 /// So does <see cref="CallerScopesOf"/>, for a call that is not in the model's tree or is not a direct-eval candidate.
 /// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+/// So do <see cref="NamedEvaluationName"/> and <see cref="NamedEvaluationKey"/>, for a node that is not in the model's
+/// tree, and <see cref="FreeNames"/> and <see cref="Captured"/>, for such a node and, as <see cref="FactsOf"/> does, for a
+/// node of it that has no facts. <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
 /// </para>
 /// <para><b>Immutable, and safe to call concurrently</b> (convention 10). The <see cref="CallerScope"/> instances
 /// <see cref="CallerScopesOf"/> answers are init-only and copy their names, so that an instance shared by several answers,
-/// or taken from the request, stays as it was. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i></para>
+/// or taken from the request, stays as it was. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+/// The lists <see cref="FreeNames"/> and <see cref="Captured"/> answer are built with the model and read-only.
+/// <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i></para>
 /// </remarks>
 // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design, ECMA-262 s9.1 environment records, s8.2 scope analysis; IP=Low; Security=Medium; Resources=1; Fingerprint=ADA8F1
 // Hairs-Human:        PENDING
@@ -197,8 +207,12 @@ public sealed class SemanticModel
     private readonly Dictionary<SyntaxNode, EnvironmentFacts> environmentOf;
     private readonly Dictionary<Declaration, Declaration> annexBAliasOf;
     private readonly Dictionary<CallExpression, IReadOnlyList<CallerScope>?> callerScopesOf;
+    private readonly Dictionary<SyntaxNode, string> namedEvaluationNameOf;
+    private readonly Dictionary<SyntaxNode, ComputedPropertyName> namedEvaluationKeyOf;
+    private readonly Dictionary<SyntaxNode, IReadOnlyList<string>> freeNamesOf;
+    private readonly Dictionary<SyntaxNode, IReadOnlyList<Declaration>> capturedOf;
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design; IP=Low; Security=Low; Resources=1; Fingerprint=80D7BE
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design; IP=Low; Security=Low; Resources=1; Fingerprint=A28072
     // Hairs-Human:        PENDING
     internal SemanticModel(
         IReadOnlyList<Scope> scopes,
@@ -215,7 +229,11 @@ public sealed class SemanticModel
         Dictionary<Declaration, Declaration> annexBAliasOf,
         IReadOnlyList<CallExpression> directEvalCalls,
         Dictionary<CallExpression, IReadOnlyList<CallerScope>?> callerScopesOf,
-        ModuleRecord? module)
+        ModuleRecord? module,
+        Dictionary<SyntaxNode, string> namedEvaluationNameOf,
+        Dictionary<SyntaxNode, ComputedPropertyName> namedEvaluationKeyOf,
+        Dictionary<SyntaxNode, IReadOnlyList<string>> freeNamesOf,
+        Dictionary<SyntaxNode, IReadOnlyList<Declaration>> capturedOf)
     {
         Scopes = scopes;
         Functions = functions;
@@ -232,6 +250,10 @@ public sealed class SemanticModel
         DirectEvalCalls = directEvalCalls;
         this.callerScopesOf = callerScopesOf;
         Module = module;
+        this.namedEvaluationNameOf = namedEvaluationNameOf;
+        this.namedEvaluationKeyOf = namedEvaluationKeyOf;
+        this.freeNamesOf = freeNamesOf;
+        this.capturedOf = capturedOf;
     }
 
     /// <summary>
@@ -709,6 +731,175 @@ public sealed class SemanticModel
     /// <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
     /// </summary>
     public ModuleRecord? Module { get; }
+
+    /// <summary>
+    /// The name an anonymous function or class definition's named evaluation passes it, where the source fixes that name
+    /// (JSD-0080: "named-evaluation names"; correspondence row NE1; ECMA-262 NamedEvaluation, IsAnonymousFunctionDefinition
+    /// and SetFunctionName; the session's decision D-js-named-evaluation): for the <see cref="FunctionNode"/> of an
+    /// anonymous function expression, generator, async function, async generator or arrow, or the <see cref="ClassNode"/>
+    /// of an anonymous class expression, that is the value of a named-evaluation site, through any number of
+    /// <see cref="ParenthesizedExpression"/>s: the StringValue of a declarator's or a single-name binding's
+    /// <see cref="BindingIdentifier"/>, of an assignment's, a logical assignment's or a destructuring assignment
+    /// element's <see cref="Identifier"/> target, or of an assignment pattern shorthand's name; an object literal's or a
+    /// class field's literal key's property name (an <see cref="IdentifierName"/>'s name, a <see cref="StringLiteral"/>'s
+    /// value, a Number key's <c>Number::toString</c>, a BigInt key's digits in decimal); a private field's name with its
+    /// <c>#</c>; and <c>"default"</c> for <c>export default</c> of an expression. The anonymous default declarations,
+    /// <c>export default function () {}</c> (a generator, an async function and an async generator among them) and
+    /// <c>export default class {}</c>, answer <c>"default"</c> too, which the specification gives them by SetFunctionName
+    /// and not by NamedEvaluation; their binding is <c>*default*</c>, the record's local name, not the function's name.
+    /// <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Where named evaluation applies</b> this member or <see cref="NamedEvaluationKey"/> answers, never both; every other
+    /// node answers neither. A compound assignment (<c>x += f</c>), a parenthesised or member target (<c>(a) = f</c>,
+    /// <c>a.b = f</c>, <c>[(a) = f] = []</c>), a target that is a pattern, a comma expression (<c>(0, f)</c>) and an
+    /// assignment as the value (<c>a = b = f</c> names <c>f</c> by <c>b</c> alone) give none, and so does an object
+    /// literal's non-computed <c>__proto__</c> key, which sets the prototype; a class field's <c>__proto__</c> key names. A
+    /// method, a getter and a setter, of an object literal or a class, answer null: DefineMethod names them by their key and
+    /// prefix, which is not a named evaluation. So do a function or class with its own name, the
+    /// <see cref="FunctionExpression"/>, <see cref="ArrowFunctionExpression"/> and <see cref="ClassExpression"/> wrappers,
+    /// and every other node.
+    /// </para>
+    /// <para>
+    /// <b>The answer is the name passed, not the final <c>name</c> property.</b> A class's name is set before its static
+    /// elements are defined (ClassDefinitionEvaluation), so a static member named <c>name</c> overrides it. Where no name is
+    /// passed the function's <c>name</c> is the empty string at run time, not a missing property; the member answers null.
+    /// </para>
+    /// <para>
+    /// <b>Beyond the pinned edition</b>, as readings of the library's: a <c>using</c> or <c>await using</c> declarator names
+    /// as a <c>let</c> or <c>const</c> one does, which test262's <c>statements/using/fn-name-fn.js</c> expects, while the
+    /// pinned edition has no such declaration; and an auto-accessor field (<c>accessor x = f</c>, under the decorators
+    /// proposal's flag) names as a field does, the tree's reading, whether the proposal names it being unknown. Annex B's
+    /// <c>for (var x = f in o)</c> names as a <c>var</c> declarator does.
+    /// </para>
+    /// </remarks>
+    /// <param name="node">A node of the model's tree.</param>
+    /// <returns>The name, or null.</returns>
+    /// <exception cref="ArgumentNullException">The node is null.</exception>
+    /// <exception cref="ArgumentException">The node is not in the model's tree.</exception>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 NamedEvaluation IsAnonymousFunctionDefinition SetFunctionName, JSD-0080 named-evaluation names; IP=Low; Security=Medium; Resources=1; Fingerprint=F233B1
+    // Hairs-Human:        PENDING
+    public string? NamedEvaluationName(SyntaxNode node)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+        if (!scopeOf.ContainsKey(node))
+            throw new ArgumentException("The node is not in the semantic model's tree.", nameof(node));
+        return namedEvaluationNameOf.TryGetValue(node, out var name) ? name : null;
+    }
+
+    /// <summary>
+    /// The computed key whose value names an anonymous function or class definition at run time (JSD-0080:
+    /// "named-evaluation names"; correspondence row NE1; ECMA-262 NamedEvaluation and SetFunctionName; the session's
+    /// decision D-js-named-evaluation): for the node <see cref="NamedEvaluationName"/> takes, the
+    /// <see cref="ComputedPropertyName"/> of the object literal entry <c>[k]: f</c> or the class field <c>[k] = f</c>, a
+    /// static one among them, whose value it is. The name is SetFunctionName's of the key's ToPropertyKey: a String as it
+    /// is, a Symbol as <c>"["</c>, its description and <c>"]"</c>, or the empty string for a Symbol without one; so
+    /// <c>{ ["__proto__"]: f }</c> names <c>f</c> "__proto__". Where named evaluation applies this member or
+    /// <see cref="NamedEvaluationName"/> answers, never both; every other node answers null. A key whose value the source
+    /// writes, <c>['x']</c>, is not folded: the specification evaluates it at run time. <i>(Added 2026-11-27, at SJL-15.2
+    /// stage 7.)</i>
+    /// </summary>
+    /// <param name="node">A node of the model's tree.</param>
+    /// <returns>The key, or null.</returns>
+    /// <exception cref="ArgumentNullException">The node is null.</exception>
+    /// <exception cref="ArgumentException">The node is not in the model's tree.</exception>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 NamedEvaluation SetFunctionName PropertyDefinitionEvaluation ClassFieldDefinitionEvaluation, JSD-0080 named-evaluation names; IP=Low; Security=Medium; Resources=1; Fingerprint=FE39C8
+    // Hairs-Human:        PENDING
+    public ComputedPropertyName? NamedEvaluationKey(SyntaxNode node)
+    {
+        ArgumentNullException.ThrowIfNull(node);
+        if (!scopeOf.ContainsKey(node))
+            throw new ArgumentException("The node is not in the semantic model's tree.", nameof(node));
+        return namedEvaluationKeyOf.TryGetValue(node, out var key) ? key : null;
+    }
+
+    /// <summary>
+    /// The free names of the program, a <see cref="FunctionNode"/>, a <see cref="StaticBlock"/> or an initialised
+    /// <see cref="FieldDefinition"/>, the nodes <see cref="FactsOf"/> accepts (JSD-0080: "free names and captures, per
+    /// function"; correspondence row FC1; the session's decision D-js-captures): each name an <see cref="Identifier"/> in
+    /// its code, nested code included, resolves to a binding that no scope of its own, nor of a facts node nested in it,
+    /// holds, once each by ordinal comparison, in the source order of its first such reference. <i>(Added 2026-11-27, at
+    /// SJL-15.2 stage 7.)</i>
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>The model's definition.</b> The specification defines neither free names nor captures: a closure reaches an outer
+    /// binding by resolving its name through its <c>[[Environment]]</c> chain. Each model scope belongs to one facts node:
+    /// a scope made for a facts node to that node (a function's <see cref="ScopeKind.FunctionName"/>,
+    /// <see cref="ScopeKind.Parameters"/> and <see cref="ScopeKind.Function"/> scopes, a static block's, and the program's,
+    /// the dynamic function's parameters' among them), a class's <see cref="ScopeKind.ClassBody"/> scope to the facts node
+    /// whose code holds the class, and every other scope to the facts node whose code makes it. A reference's binding is
+    /// <see cref="Resolve(Identifier)"/>'s answer, or a dynamic answer's <see cref="Resolution.Fallback"/>: a
+    /// <see cref="ResolutionKind.Static"/> one stands in its scope, and a <see cref="ResolutionKind.Global"/> or
+    /// <see cref="ResolutionKind.Inherited"/> one outside every facts node. A dynamic answer's <c>with</c> objects and
+    /// scopes that may gain bindings change nothing here, so the list may name more than run time reaches, never less.
+    /// </para>
+    /// <para>
+    /// <b>What counts.</b> Only references, not bindings: a <c>var</c> declarator's binding resolved when it runs is no
+    /// use, so eval code's <c>var x = 1;</c> gives the program no free name and <c>var x = 1; x</c> gives "x". <c>this</c>,
+    /// <c>super</c> and <c>new.target</c> are no names; <c>arguments</c> is an <see cref="Identifier"/> like any other, so
+    /// an arrow's is free in the arrow and resolves to the enclosing function's <see cref="EnvironmentFacts.Arguments"/>. A
+    /// named function expression's own name is in its <see cref="ScopeKind.FunctionName"/> scope, its own, so it is never
+    /// its free name: <see cref="EnvironmentFacts.FunctionNameReferenced"/> says whether its code uses it. A class's inner
+    /// name is free in its methods, field initialisers and static blocks that use it, and not in the code that holds the
+    /// class; its heritage and computed keys stand in that code.
+    /// </para>
+    /// <para>
+    /// The list is built with the model and read-only. The order is the source's; the specification gives none.
+    /// </para>
+    /// </remarks>
+    /// <param name="function">The <see cref="ProgramNode"/>, a <see cref="FunctionNode"/>, a <see cref="StaticBlock"/> or an initialised <see cref="FieldDefinition"/> of the model's tree.</param>
+    /// <returns>Its free names, empty where it has none.</returns>
+    /// <exception cref="ArgumentNullException">The node is null.</exception>
+    /// <exception cref="ArgumentException">The node is not in the model's tree, or is a node of it that has no facts: none of those four.</exception>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s9.1 environment records OuterEnv, OrdinaryFunctionCreate Environment, ResolveBinding, JSD-0080 free names and captures; IP=Low; Security=Medium; Resources=1; Fingerprint=DB7149
+    // Hairs-Human:        PENDING
+    public IReadOnlyList<string> FreeNames(SyntaxNode function)
+    {
+        ArgumentNullException.ThrowIfNull(function);
+        if (!scopeOf.ContainsKey(function))
+            throw new ArgumentException("The node is not in the semantic model's tree.", nameof(function));
+        if (!freeNamesOf.TryGetValue(function, out var names))
+            throw new ArgumentException("The node is not a program, a function, a static block or an initialised field.", nameof(function));
+        return names;
+    }
+
+    /// <summary>
+    /// The declarations the free names of the program, a <see cref="FunctionNode"/>, a <see cref="StaticBlock"/> or an
+    /// initialised <see cref="FieldDefinition"/> resolve to (JSD-0080: "free names and captures, per function";
+    /// correspondence row FC1; the area design's <c>Captured</c>; the session's decision D-js-captures): for each name of
+    /// <see cref="FreeNames"/> whose binding is <see cref="ResolutionKind.Static"/>, directly or as a dynamic answer's
+    /// <see cref="Resolution.Fallback"/>, its <see cref="Resolution.Declaration"/>, the model's own instance, once each by
+    /// reference and in <see cref="FreeNames"/>' order. A name resolving <see cref="ResolutionKind.Global"/> or
+    /// <see cref="ResolutionKind.Inherited"/> is free and not captured: eval code's inherited binding is created in its
+    /// caller's environment, not in any of this unit's, even where the answer carries the unit's own declaration.
+    /// <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    /// <remarks>
+    /// Past the node's outermost scope every free reference of one name resolves to one binding, so a name gives one
+    /// declaration. A captured declaration may be one of the model's own: an outer function's
+    /// <see cref="EnvironmentFacts.Arguments"/>, which an arrow's <c>arguments</c> reaches; an Annex B alias
+    /// (<see cref="BindingKind.BlockFunctionAlias"/>); or an outer function's <see cref="BindingKind.FunctionName"/> or an
+    /// outer class's <see cref="BindingKind.ClassName"/>. A <c>for</c> statement's per-iteration copies of one binding are
+    /// one declaration. The list is built with the model and read-only; the facts are the specification's, and where
+    /// Broiler.JS's <c>FreeNameScan</c> answers otherwise the session's records name the difference.
+    /// </remarks>
+    /// <param name="function">The <see cref="ProgramNode"/>, a <see cref="FunctionNode"/>, a <see cref="StaticBlock"/> or an initialised <see cref="FieldDefinition"/> of the model's tree.</param>
+    /// <returns>Its captured declarations, empty where it has none.</returns>
+    /// <exception cref="ArgumentNullException">The node is null.</exception>
+    /// <exception cref="ArgumentException">The node is not in the model's tree, or is a node of it that has no facts: none of those four.</exception>
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s9.1 environment records OuterEnv, OrdinaryFunctionCreate Environment, ResolveBinding, JSD-0080 free names and captures; IP=Low; Security=Medium; Resources=1; Fingerprint=67C779
+    // Hairs-Human:        PENDING
+    public IReadOnlyList<Declaration> Captured(SyntaxNode function)
+    {
+        ArgumentNullException.ThrowIfNull(function);
+        if (!scopeOf.ContainsKey(function))
+            throw new ArgumentException("The node is not in the semantic model's tree.", nameof(function));
+        if (!capturedOf.TryGetValue(function, out var declarations))
+            throw new ArgumentException("The node is not a program, a function, a static block or an initialised field.", nameof(function));
+        return declarations;
+    }
 }
 
 /// <summary>
@@ -1165,8 +1356,9 @@ public sealed class Resolution
 /// call is the arrow's, which has an environment of its own. <see cref="DirectEvalInParameters"/> and
 /// <see cref="DirectEvalInBody"/> say whether this node's own environments may gain bindings; they do not say whether a
 /// nested direct <c>eval</c> can read this node's bindings by name: in <c>function f() { var x; (() => eval("x = 1"))(); }</c>
-/// f's <see cref="DirectEvalInBody"/> is false, yet the arrow's call reaches f's <c>x</c> at run time. That reach is a
-/// later stage's, with captures.
+/// f's <see cref="DirectEvalInBody"/> is false, yet the arrow's call reaches f's <c>x</c> at run time. That reach is
+/// <see cref="DirectEvalOrWithWithin"/>, beside captures (<see cref="SemanticModel.Captured"/>). <i>(Revised 2026-11-27,
+/// at SJL-15.2 stage 7, when the reach joined the facts; it read "That reach is a later stage's, with captures.")</i>
 /// </para>
 /// <para>
 /// <b>The dynamic function's goals</b> are answered with the other piece empty, as <see cref="Resolution"/> says:
@@ -1179,9 +1371,10 @@ public sealed class Resolution
 // Hairs-Human:        PENDING
 public sealed class EnvironmentFacts
 {
-    // Hairs-AI:           Origin=AI; Spec=JSD-0080 per-function facts; IP=Low; Security=Low; Resources=1; Fingerprint=EC3BFD
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 per-function facts; IP=Low; Security=Low; Resources=1; Fingerprint=ED2B6C
     // Hairs-Human:        PENDING
-    internal EnvironmentFacts(SyntaxNode node, Declaration? arguments, bool argumentsNeeded, bool argumentsMapped, bool directEvalInParameters, bool directEvalInBody, bool containsWith)
+    internal EnvironmentFacts(SyntaxNode node, Declaration? arguments, bool argumentsNeeded, bool argumentsMapped, bool directEvalInParameters, bool directEvalInBody, bool containsWith,
+        bool directEvalOrWithWithin, bool functionNameReferenced)
     {
         Node = node;
         Arguments = arguments;
@@ -1190,6 +1383,8 @@ public sealed class EnvironmentFacts
         DirectEvalInParameters = directEvalInParameters;
         DirectEvalInBody = directEvalInBody;
         ContainsWith = containsWith;
+        DirectEvalOrWithWithin = directEvalOrWithWithin;
+        FunctionNameReferenced = functionNameReferenced;
     }
 
     /// <summary>The node, as <see cref="FunctionFacts.Node"/>: the <see cref="ProgramNode"/>, a <see cref="FunctionNode"/>, a <see cref="StaticBlock"/> or a <see cref="FieldDefinition"/>.</summary>
@@ -1233,6 +1428,30 @@ public sealed class EnvironmentFacts
 
     /// <summary>Whether a <c>with</c> statement stands in this node's own code, arrows excluded, as Contains crosses no function boundary; strict code refuses one.</summary>
     public bool ContainsWith { get; }
+
+    /// <summary>
+    /// Whether a direct-<c>eval</c> candidate of any strictness, or a <c>with</c> statement, stands in this node's own code
+    /// or in the code of any function, arrow, method, field initialiser or static block nested in it (JSD-0080: "free names
+    /// and captures"; correspondence row FC1; the session's decision D-js-captures): code that may reach this node's
+    /// bindings, or its free names' bindings, by a name its text does not hold, eval code reaching every enclosing binding
+    /// by name and a <c>with</c> object standing before them. Transitive, and whatever the strictness, unlike
+    /// <see cref="DirectEvalInParameters"/> and <see cref="DirectEvalInBody"/>, which say whether this node's own
+    /// environments may gain bindings; a candidate is the one those define, so <c>(eval)(s)</c> counts and
+    /// <c>eval?.(s)</c> does not. A <c>debugger</c> statement does not count: it gives no binding access.
+    /// <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    public bool DirectEvalOrWithWithin { get; }
+
+    /// <summary>
+    /// Whether this node is a named function expression whose own name, its <see cref="ScopeKind.FunctionName"/>
+    /// scope's <see cref="BindingKind.FunctionName"/> declaration, a reference in its code or in code nested in it resolves
+    /// to, directly or as a dynamic answer's <see cref="Resolution.Fallback"/> (JSD-0080: "free names and captures";
+    /// correspondence row FC1; the session's decision D-js-captures): so in <c>var f = function g() { return () => g; }</c>
+    /// it is true for <c>g</c> and false for the arrow. False for every other node. The name is never among
+    /// <see cref="SemanticModel.FreeNames"/>, its scope being the function's own. <i>(Added 2026-11-27, at SJL-15.2 stage
+    /// 7.)</i>
+    /// </summary>
+    public bool FunctionNameReferenced { get; }
 }
 
 /// <summary>
