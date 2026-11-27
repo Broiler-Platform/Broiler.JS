@@ -5321,4 +5321,32 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         Assert.Throws<NotSupportedException>(() => ((IList<string>)model.FreeNames(First<FunctionNode>(result))).Add("y"));
         Assert.Throws<NotSupportedException>(() => ((IList<Declaration>)model.Captured(First<FunctionNode>(result))).Clear());
     }
+
+    /// <summary>
+    /// The dump's lines of this stage (D-js-part-g): per facts entry its flags and free names, then its captured
+    /// declarations, and per function and class node with an answer its name or key; a dump without a model gains none.
+    /// <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    [Fact]
+    public void The_dump_s_model_section_holds_the_free_names_the_captures_and_the_names()
+    {
+        const string text = "var g = 1; var f = function h() { return () => [h, g, z]; }; var o = { [k]: () => 0 }; with (o) {} var q = class {};";
+        var lines = System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(Model(text).Result)).Split('\n');
+        var captures = lines.Where(static l => l.StartsWith("model-captures ", StringComparison.Ordinal)).ToList();
+        var captured = lines.Where(static l => l.StartsWith("model-captured ", StringComparison.Ordinal)).ToList();
+        var named = lines.Where(static l => l.StartsWith("model-named ", StringComparison.Ordinal)).ToList();
+        Assert.Equal(4, captures.Count);
+        Assert.Equal(4, captured.Count);
+        Assert.EndsWith(" 10 \"z\" \"k\"", captures[0], StringComparison.Ordinal);
+        Assert.EndsWith(" 01 \"g\" \"z\"", captures[1], StringComparison.Ordinal);
+        Assert.EndsWith(" 00 \"h\" \"g\" \"z\"", captures[2], StringComparison.Ordinal);
+        Assert.EndsWith(" 00", captures[3], StringComparison.Ordinal);
+        Assert.Equal(2, captured[0].Split(' ').Length);
+        Assert.Equal(3, captured[1].Split(' ').Length);
+        Assert.Equal(4, captured[2].Split(' ').Length);
+        Assert.Equal(2, named.Count);
+        Assert.Contains(" key ", named[0], StringComparison.Ordinal);
+        Assert.EndsWith(" \"q\"", named[1], StringComparison.Ordinal);
+        Assert.DoesNotContain(System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(Parse(text, model: false))).Split('\n'), static l => l.StartsWith("model-", StringComparison.Ordinal));
+    }
 }

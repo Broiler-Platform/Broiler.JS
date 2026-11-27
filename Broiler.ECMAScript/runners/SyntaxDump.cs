@@ -78,6 +78,14 @@ namespace Broiler.ECMAScript.Runners;
 /// eval code's and a dynamic function's model gain no line, and a parse without a model is dumped as before. The
 /// program's own fact line already writes its top-level-await fact. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
 /// </para>
+/// <para>
+/// From SJL-15.2 stage 7 the model section also holds, after those lines, per facts entry in the model's order, one
+/// <c>model-captures</c> line (its node, its dynamic-reach and self-name flags, and its free names in order) and one
+/// <c>model-captured</c> line (its node and each captured declaration in order, named as the resolution lines name a
+/// declaration); then, per function and class node in tree order that has an answer, one <c>model-named</c> line: the node
+/// and its name, or the node, <c>key</c> and the computed key (decision D-js-part-g). A parse without a model is dumped as
+/// before. <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+/// </para>
 /// </remarks>
 internal static class SyntaxDump
 {
@@ -168,7 +176,10 @@ internal static class SyntaxDump
         }
 
         if (model && result.Model is { } semantic)
+        {
             Model(text, semantic, order, nodes);
+            Captures(text, semantic, order, nodes);
+        }
 
         return Encoding.UTF8.GetBytes(text.ToString());
     }
@@ -401,6 +412,57 @@ internal static class SyntaxDump
 
         foreach (var entry in module.StarExportEntries)
             text.Append("model-export-star ").Append(Number(requestIndex[entry.ModuleRequest!])).Append(' ').Append(Reference(order, entry.Node)).Append('\n');
+    }
+
+    // Each facts entry's free names, flags and captured declarations in the model's order, then each function and class
+    // node's named-evaluation answer in tree order, by the nodes' own references (SJL-15.2 stage 7); never the model's
+    // maps. A declaration is named as the resolution lines name one.
+    private static void Captures(StringBuilder text, SemanticModel model, Dictionary<SyntaxNode, int> order, List<SyntaxNode> nodes)
+    {
+        var declarationIndex = new Dictionary<Declaration, string>(ReferenceEqualityComparer.Instance);
+        for (var s = 0; s < model.Scopes.Count; s++)
+        {
+            for (var d = 0; d < model.Scopes[s].Declarations.Count; d++)
+                declarationIndex.TryAdd(model.Scopes[s].Declarations[d], Number(s) + "." + Number(d));
+        }
+
+        string Declared(Declaration declaration) => declaration.Kind == BindingKind.Arguments ? "args:" + Reference(order, declaration.Node)
+            : declaration.Kind == BindingKind.BlockFunctionAlias ? "alias:" + Reference(order, declaration.Node)
+            : declarationIndex[declaration];
+
+        foreach (var function in model.Functions)
+        {
+            var environment = model.EnvironmentOf(function.Node);
+            text.Append("model-captures ").Append(Reference(order, function.Node)).Append(' ')
+                .Append(Flag(environment.DirectEvalOrWithWithin)).Append(Flag(environment.FunctionNameReferenced));
+            foreach (var name in model.FreeNames(function.Node))
+            {
+                text.Append(' ');
+                Escaped(text, name);
+            }
+
+            text.Append('\n');
+            text.Append("model-captured ").Append(Reference(order, function.Node));
+            foreach (var declaration in model.Captured(function.Node))
+                text.Append(' ').Append(Declared(declaration));
+            text.Append('\n');
+        }
+
+        foreach (var node in nodes)
+        {
+            if (node is not (FunctionNode or ClassNode))
+                continue;
+            if (model.NamedEvaluationKey(node) is { } key)
+            {
+                text.Append("model-named ").Append(Reference(order, node)).Append(" key ").Append(Reference(order, key)).Append('\n');
+            }
+            else if (model.NamedEvaluationName(node) is { } name)
+            {
+                text.Append("model-named ").Append(Reference(order, node)).Append(' ');
+                Escaped(text, name);
+                text.Append('\n');
+            }
+        }
     }
 
     /// <summary>The SHA-256 of the canonical dump, in lowercase hexadecimal.</summary>

@@ -24,6 +24,8 @@ namespace Broiler.ECMAScript.Conformance.Tests;
 /// From stage 5c (D-js-adapter-caller-scopes) the eval code also receives its caller's records, read
 /// from the Script's model, and a direct eval the eval code holds is followed; the vectors of EA0007 are answered, those of
 /// EA0006 stay not implemented. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+/// From stage 7 (D-js-named-evaluation-vectors) group <c>ne1</c>, the value vectors of row NE1, stays not implemented.
+/// <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
 /// </summary>
 public class SemanticsAdapterTests
 {
@@ -322,6 +324,20 @@ public class SemanticsAdapterTests
         Assert.All(SemanticsVectors, static v => Assert.DoesNotContain("ee0170", v.Id, StringComparison.OrdinalIgnoreCase));
         Assert.All(SemanticsVectors, static v => Assert.DoesNotContain("ee0171", v.Id, StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(Answered, static v => AlgorithmsLibrary.SemanticsRow(v) is "EE0170" or "EE0171");
+    }
+
+    /// <summary>
+    /// Stage 7 answers no vector (SJL-15.2 stage 7; D-js-named-evaluation-vectors): the value vectors of row NE1, group
+    /// <c>ne1</c>, name no catalogue row, and read at the parse each would match by acceptance alone, so the group stays
+    /// not implemented, as <c>pn1</c> does. <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    [Fact]
+    public void No_named_evaluation_vector_is_answered()
+    {
+        var named = SemanticsVectors.Where(static v => AlgorithmsLibrary.SemanticsGroup(v) == "ne1").ToList();
+        Assert.NotEmpty(named);
+        Assert.All(named, static v => Assert.False(AlgorithmsLibrary.IsLibrarySemantics(v), v.Id));
+        Assert.DoesNotContain(AlgorithmsLibrary.SemanticsAnsweredGroups, static g => g.Group == "ne1");
     }
 
     /// <summary>
