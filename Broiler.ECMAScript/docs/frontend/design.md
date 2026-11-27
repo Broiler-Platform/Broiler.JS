@@ -661,6 +661,9 @@ at SJL-15.2 stage 6.)*
 *(Revised 2026-11-27, at SJL-15.2 stage 7, when named evaluation and captures landed; it read "(named evaluation,
 captures and the early errors)".)* Stage 7 adds named evaluation, free names and captures (section 10.11). *(Added
 2026-11-27, at SJL-15.2 stage 7.)*
+Stage 8, the library's last model commit, adds no member: it holds the rows table equal to the stage table's
+`semantics` rows but EA0006, has the probe's corpus digest mode request the model, and maps part F's checklist and site
+listing onto the members the earlier stages added (section 10.12). *(Added 2026-11-27, at SJL-15.2 stage 8.)*
 
 ### 10.1 The entry
 
@@ -740,9 +743,11 @@ no model. With the member off the parse is exactly the one before: no row is rep
 that reports, sorts or numbers anything it did not before.
 
 **The table.** `SemanticRows`, internal, beside `Rows`: one entry per row of the stage table's `semantics` rows that the
-library reports, each the catalogue's shared code and message identifier. The Frontend tests hold it a subset of those
-rows, to be equal at stage 8 but for EA0006, and hold that no code in it is one of `Rows`'. `Rows` is unchanged, and the
-test holding it equal to the stage table's `syntax` rows stands.
+library reports, each the catalogue's shared code and message identifier. The Frontend tests hold it equal to those rows
+but EA0006, a row only a run reaches, and hold that no code in it is one of `Rows`'. *(Revised 2026-11-27, at SJL-15.2
+stage 8, when the test became an equality; it read "The Frontend tests hold it a subset of those rows, to be equal at
+stage 8 but for EA0006, and hold that no code in it is one of `Rows`'.")* `Rows` is unchanged, and the test holding it
+equal to the stage table's `syntax` rows stands.
 
 **Decision D11's order and the walk's sequence.** Each row is reported through the walk's one report, at its construct's
 offset, numbered by the walk's one sequence; so a `syntax` row and a `semantics` row at one place keep the order the walk
@@ -1726,6 +1731,95 @@ them (an inference, not run). Broiler.VM computes no capture.
 Section 4's sketch, `public string? NamedEvaluationName(SyntaxNode node);` and
 `public IReadOnlyList<Declaration> Captured(FunctionNode function);`, stays as it is ("Section 4 stays the sketch"). No
 text in sections 1 to 9 is touched, so no Corrections entry is owed.
+
+### 10.12 Stage 8: the rows table, the dump mode and part F's map
+
+*(Added 2026-11-27, at SJL-15.2 stage 8.)* The library's last model commit of SJL-15.2, which adds no public member and
+no row. Like the sections before it, it restates the decisions of `docs/roadmap/SharedLibraries.md`'s section "Shared
+static semantics (SJL-15)" (D-js-digest-model, D-js-vector-listing, D-js-part-f-tools, D-js-library-readings,
+D-js-adapter-final and D-js-last-model-commit, each of 2026-11-27) and decides nothing.
+
+**The rows table, equal.** The Frontend test that held `SemanticRows` a subset of the stage table's `semantics` rows now
+holds it equal to them, as a set, but EA0006, with the catalogue's codes and identifiers, so decision D-js-semantic-rows'
+"A test holds the table a subset of the stage table's `semantics` rows, to be equal at stage 8 except EA0006" is
+fulfilled (section 10.4). EA0006 stays a row only a run reaches: its step reads the realm's global lexical declarations,
+which no parse request describes (section 10.9).
+
+**The dump mode's member.** The probe's corpus digest mode (`Broiler.ECMAScript.Probe/CorpusDigest.cs`, "the home rule's
+part C, "the corpus runner's dump mode"") parses every input, variant and eval request of configuration V with
+`ParseRequest.BuildSemanticModel` on, through a copy of the request the corpus reader (`ParseCorpus.Request`) builds, so
+that each line's digest covers the dump's model section wherever the source is accepted, and a source a `semantics` row
+refuses is refused. The reader's request is unchanged, since bundle `sjl-13-001`'s part A runner compiles it. A Frontend
+test holds the copy equal to the reader's request in every public property but the member, by reflection, for each kind
+of variant and each eval flag set; another holds the digest lines to their classes. The probe's vector run (`--report`)
+is unchanged, and the Native AOT image runs the same digest mode, so decision D-js-part-g's "the corpus runner's dump mode
+and the Native AOT probe request the model by stage 8" is fulfilled. A Frontend test also holds the canonical dump to the
+model's members: each public member of `SemanticModel` and of its types has a fixture whose dump holds the line that
+writes it, and where a second fixture differs in the member's value, those lines differ.
+
+**Part F's checklist, fact by fact.** The checklist (`docs/evidence/sjl-15-001/tools/model_check.py`) looks for each of
+the milestone's facts at these members, all of them, taken from the earlier stages' hand-ons:
+- "scopes and their kinds": `ParseResult.Model`, `SemanticModel.Scopes`, `ScopeOf`, `ParentOf`, `Scope.Kind` and
+  `Scope.Node`, and the kinds JSD-0080 names, program (`ScopeKind.Script` and `Module`), function, block, `With`, class
+  body (`ClassBody`) and the separate parameter scope (`Parameters`), with eval code's `FunctionKind.EvalCode` (decision
+  D-js-kinds, section 10.2);
+- "declarations and conflicts": `DeclarationOf`, `Scope.Declarations`, `Declaration`'s name, kind, node and
+  `IsMutable`, and the binding kinds JSD-0080 names; every conflict is a `syntax` row, carried by
+  `ParseResult.Diagnostics`;
+- "Annex B.3.3 aliases": `AnnexBAlias`, `BindingKind.BlockFunctionAlias`, `Declaration.IsBlockFunction` and `Resolve`
+  (section 10.8: "the rule's "Annex B.3.3 aliases" is `AnnexBAlias`, `BindingKind.BlockFunctionAlias` and `Resolve`");
+- "per-function flags": `Functions`, `FactsOf`, `FunctionFacts`' flags and kind, `EnvironmentOf` and `EnvironmentFacts`'
+  flags (section 10.7: "per-function flags" are `EnvironmentOf`, `EnvironmentFacts` and
+  `FunctionFacts.HasSeparateVariableEnvironment`);
+- "reference resolution with dynamic markers": both `Resolve` overloads of references and bindings, `Resolution`'s
+  members, `ResolutionKind` and `DynamicReason` (section 10.7: "is `Resolve` and `Resolution`");
+- "labels and jump targets": both `TargetOf` overloads and `LabelTarget`'s members;
+- "private-name environments": `PrivateEnvironmentOf`, `PrivateEnvironment`'s members, `Resolve(PrivateIdentifier)` and
+  `PrivateNameBinding`'s members;
+- "module records": `SemanticModel.Module` and its record's members, as section 10.10 maps JSD-0080's "**The module
+  record**", "their errors" being the module rows in `ParseResult.Diagnostics`; who reports each module row, EE0170 and
+  EE0171 among them, is the site listing's (below), not the checklist's;
+- "named-evaluation names": `NamedEvaluationName` and `NamedEvaluationKey`; "free names and captures": `FreeNames`,
+  `Captured` and `EnvironmentFacts`' `DirectEvalOrWithWithin` and `FunctionNameReferenced` (section 10.11);
+- "every early error": `ParseRequest.BuildSemanticModel`, `ParseResult.Diagnostics`, `DiagnosticPhase.Semantics` and
+  `SyntaxDiagnostic.Code`, `SemanticRows` being internal.
+JSD-0080's input row "the caller's lexical names" is looked for at `InheritedContext.CallerScopes`, `CallerScope`,
+`SemanticModel.DirectEvalCalls`, an item of its own, and `SemanticModel.CallerScopesOf` (section 10.9: "is
+`InheritedContext.CallerScopes`, `CallerScope`, `SemanticModel.DirectEvalCalls` and `SemanticModel.CallerScopesOf`"), and
+its output row "Semantic model" also at the model's entry. The listing of the milestone's facts and the listing of
+engine-namespace lines decide part F, with the rule's control; JSD-0080's rows, the engine rows with a producer and bundle
+`sjl-13-001`'s part H's controls are printed and kept.
+
+**The site listing** (`docs/evidence/sjl-15-001/tools/row_sites.py`) names, per `semantics` row of the stage table, each
+line of the library outside `SemanticRows.cs` that names the row's entry, the stage table's basis, the entry, and whether
+a vector names the row, with labels that judge nothing: EE0021's site no source reaches; EA0008's, reachable only with
+Annex B off, and no vector; EE0170's and EE0171's, which no vector names; and EP0017 and EP0018, with no site, carried.
+The stage table's EA0008 cell, "no parse-time site (eval-time; neither engine refuses: CAT `neither`)", is stale for the
+library since stage 5c gave the row a site; the table is left as written, since bundle `sjl-13-001`'s tools read it, and
+the listing prints the cell with that note.
+
+**The vectors left unanswered.** Groups `ab1`, `ff3`, `ff4`, `ff5`, `ne1`, `pn1` and `rs2` stay not implemented, each by
+the decision that left it, since the model decides no value at the parse; a Conformance test lists them with their
+decisions, and lists EA0006's vectors apart, a row's and not a group's. Another lists the answered rows no vector names.
+
+**The per-vector listing.** A Conformance test writes, per answered `semantics` vector, its line of the library-level
+run's report into the test's output, its verdict read at the parse (decision D-js-adapter-form), so that a run with a
+`trx` logger keeps part F's "per vector the adapter answers, its verdict".
+
+**The readings before any run.** The readings parts F and G depend on are recorded with the decisions above and in bundle
+`sjl-15-001`'s README, on this stage's branch before any run of either part: when the runs at stage 8's commit count;
+part G's text (bundle `sjl-13-001`'s part C as its first revision restates K2, its part D as first written at the library
+commit, the hosted run's first attempt deciding); the dump mode; which of the checklist's outcomes decide part F; the
+per-vector listing; bundle `sjl-13-001`'s part E taken as checks; part F's control on EE0018's report; the value groups;
+and EP0017 and EP0018.
+
+**EP0017 and EP0018** have no report of their own (section 10.4: no goal is ShadowRealm's, and EA0003, EA0004 or EE0162
+refuses their source first). They are read as "named, with its reason, as no row the model can report" under the rule's
+part F, a reading of the session's flagged for the owner, the most contestable of the readings above, since the rule's
+parenthetical describes the rows it names as rows only a run reaches; a reporting site would need a request-level
+ShadowRealm evaluation, new public API, and is not taken.
+
+No text in sections 1 to 9 is touched, so no Corrections entry is owed.
 
 ## Corrections
 

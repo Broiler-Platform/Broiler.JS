@@ -29,12 +29,20 @@
     version of the shared stream carries part of the library, and is true now, on the shared stream's 0.1.0-preview.N
     scheme with the other shared packages, with package validation as they have it (a first version, validated without
     a baseline). Publishing that version is the owner's, with the owner's approval (decision D30).
+
+    (Added 2026-11-27, at SJL-15.2 stage 8.) From milestone SJL-15.2 the same declarations walk also builds the
+    semantic model in Broiler.ECMAScript.Semantics, the facts Broiler.VM's milestone SJL-15 lists, from scopes and
+    declarations to module records, named-evaluation names and captures, and reports the catalogue's semantics rows,
+    each only when the request's BuildSemanticModel member is on; it is off by default (the session's decision
+    D-js-default-off), and with it off nothing moves. The Description below gains a sentence that says so. IsPackable
+    and the InternalsVisibleTo items are unchanged; publishing a version that carries the model is the owner's
+    (decision D30).
   -->
   <PropertyGroup>
     <RootNamespace>Broiler.ECMAScript.Syntax</RootNamespace>
     <AssemblyName>Broiler.ECMAScript.Frontend</AssemblyName>
     <PackageId>Broiler.ECMAScript.Frontend</PackageId>
-    <Description>The shared syntax library of the Broiler JavaScript engines (ECMA-262): an immutable parse request with goals, switches, the inherited context of eval code, proposal flags, a lexer extension, limits and providers (Broiler.Unicode's tables, a regular-expression validator each engine supplies, an optional work meter), an immutable syntax tree with full spans and raw facts, and diagnostics with shared codes, message identifiers, phases and spans. The tokenizer reads the lexical grammar of ECMA-262 and the parser its syntactic grammar for scripts, modules, eval code and the dynamic function's parameters and body, with cover grammars converted, the declarations walk reports the parse-time early errors with side tables of each scope's declarations, and the nesting depth and tree depth are checked before the stack is.</Description>
+    <Description>The shared syntax library of the Broiler JavaScript engines (ECMA-262): an immutable parse request with goals, switches, the inherited context of eval code, proposal flags, a lexer extension, limits and providers (Broiler.Unicode's tables, a regular-expression validator each engine supplies, an optional work meter), an immutable syntax tree with full spans and raw facts, and diagnostics with shared codes, message identifiers, phases and spans. The tokenizer reads the lexical grammar of ECMA-262 and the parser its syntactic grammar for scripts, modules, eval code and the dynamic function's parameters and body, with cover grammars converted, the declarations walk reports the parse-time early errors with side tables of each scope's declarations, and the nesting depth and tree depth are checked before the stack is. With a request member that is off by default, the same walk also builds a semantic model of the source (scopes and declarations, resolution, the function facts, labels, private names, module records, named-evaluation names, free names and captures) and reports the static-semantics early errors.</Description>
     <PackageTags>broiler;ecmascript;javascript;shared;frontend;parser;syntax;ecma-262</PackageTags>
     <IsPackable>true</IsPackable>
     <EnablePackageValidation>true</EnablePackageValidation>

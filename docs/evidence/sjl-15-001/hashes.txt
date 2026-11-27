@@ -1,4 +1,4 @@
-c8d8acb6eb4e70d8acbc6c3f51637f072c7e42c6b845ad01406f29603a341221  ./README.md
+97aaee9e594ede19900641e08511fc84d775b1fb2484a5990b1287653e58a0f7  ./README.md
 c618357fe96d185511b338bbfae4a473285758d220ad82640643083844b2a8c1  ./corrections.md
 4a7a6b9ce1defd5cd538116f7997b612623cef5f089e68556cfffebb1d1efd33  ./corrections/class-e.tsv
 5e184fb9ac9b8b0c7e2e2a2d4ccaec1f711d6f69b26ba3417f9aad8be454e848  ./corrections/class-t.tsv
@@ -894,4 +894,7 @@ a4a709b75e3bf4d8ac339030df6310e31d41290e608529cb4e9e36dec52d2174  ./probes/runs/
 150cb0f52f9fd4d68b77ca881db236ddbce1baad5854beb1e5b222df16c8308d  ./probes/runs/vm/answers.tsv
 c5ef34d4d00ca9f7c37b2d44021ed641a9defd74f0b4b3071282c9fa2dd833c6  ./probes/runs/vm/program.js
 7dce0e65bed63923d1e8e8e44a25e27d7edb0f24b861020448f4e47a71f3d48f  ./probes/runs/vm/transcript.txt
+c05e34979a188e7ca4bacd3c42d5c21a2af7563084a59f2c9ebba5666cf05817  ./tools/broiler-vm-inputs.sha256
+5154625c061580bf52cfd18328357423f6affafc84b249d1e05050bc91836a55  ./tools/model_check.py
+11ab254df99d4ef32f44397d20f5597b2700e4874e83e1be8e075af8ddc85fee  ./tools/row_sites.py
 0f61aff8c8604b183783b8f9c6c6ec857d12bd2d1f2144aa307a14a98b756356  ./tools/write_lists.py

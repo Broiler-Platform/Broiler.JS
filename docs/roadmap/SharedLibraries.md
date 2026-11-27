@@ -4760,6 +4760,112 @@ decision D-js-stages fixes ("Stages 1, 2, 3, 4, 5a, 5b, 5c, 6, 7 and 8, one merg
 part B against its own first parent; stage 7's note above names no next step of its own. None of it is accepted: no
 second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
 
+*(Noted 2026-11-27, at SJL-15.2 stage 8, whose merge is the tenth model commit.)* The note above reads "Next: SJL-15.2
+stage 8, the tenth model commit, named in this section's stage list as "**stage 8**, the library's last model commit",
+in the order decision D-js-stages fixes ("Stages 1, 2, 3, 4, 5a, 5b, 5c, 6, 7 and 8, one merge each, in that order"),
+judged by its part B against its own first parent; stage 7's note above names no next step of its own." The change before
+this one is stage 7's part B records, Broiler-Platform/Broiler.JS#1150 (`b92ef028`), after stage 7's merge,
+Broiler-Platform/Broiler.JS#1149 (`950bea8f`). This change is stage 8, the library's last model commit, as this
+section's stage list names it. It adds no public member and no row, and answers no new vector. The Frontend test of the
+rows table holds `SemanticRows` equal, as a set, to the stage table's `semantics` rows but EA0006, so it fulfils, without
+editing it, decision D-js-semantic-rows' "A test holds the table a subset of the stage table's `semantics` rows, to be
+equal at stage 8 except EA0006". The probe's corpus digest mode requests the model, through a copy of the corpus reader's
+request that a Frontend test holds equal to it in every public member but `ParseRequest.BuildSemanticModel`, and the
+Native AOT image runs the same mode, so it fulfils decision D-js-part-g's "the corpus runner's dump mode and the Native
+AOT probe request the model by stage 8"; a Frontend test holds the canonical dump to every member of the model. Part
+F's tools, `docs/evidence/sjl-15-001/tools/model_check.py` and `row_sites.py`, with the Broiler.VM commit their inputs
+come from in `tools/broiler-vm-inputs.sha256`, are committed on this branch before any run of part F; the Conformance
+tests write each answered `semantics` vector's verdict at the parse into their output, list the value groups left
+unanswered with their decisions and EA0006's vectors apart, and list the answered rows no vector names; and the model's
+public members gain XML remarks citing the clauses they answer (convention 15), with the Frontend project file's comment
+and description naming the model. With the member off nothing moves. Rule SL6's `PublicAPI.txt` gains no line and loses
+none. Decision D-js-packable's "asked only after stage 8 and stage 9's listing" is answered by the owner's answer of
+2026-11-27, "All publish-decisions can be done and run. So if a publish yes/no is the question, do the publish, wait for
+the nuget-package-availability and continue", given in chat, unasked: the publication follows stage 9's listing, and
+JSD-0083's decision D30's syntax-half check is still read as the records require; the decision's text is left as written,
+and this stage publishes nothing.
+
+**The merge condition.** Both workflows are green on the PR; after the merge, nothing merges to `main` until both push
+runs at the merge have concluded. For ci.yml's run that includes the one re-run D-js-part-b-attempt allows
+(`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run (`.github/workflows/ci.yml:25-27`,
+:36-39). A later push never cancels Shared libraries' push run, because its push group carries the commit
+(`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1 ("Nothing merged to the
+default branch until both push runs at it had concluded", `docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken
+after the merge, against the merge's own first parent. Stage 7's part B records say the same of stage 7: "Nothing
+merged to the default branch until both push runs at it had concluded" (`docs/roadmap/SharedLibraries.md:4734-4735`).
+Shared libraries' push run at the merge is also part G's hosted half if this merge is the library commit ("at stage 8's
+commit, the library commit if no model commit lands before the base commit", decision D-js-library-runs), read as
+decision D-js-library-readings below reads it: its first attempt decides, and every attempt is retained.
+
+**The readings parts F and G depend on** are decisions D-js-digest-model, D-js-vector-listing, D-js-part-f-tools,
+D-js-library-readings, D-js-adapter-final and D-js-last-model-commit below, each with the alternatives it did not take,
+and bundle [`sjl-15-001`](../evidence/sjl-15-001/README.md)'s README records them with their citations. They were
+recorded on this branch, in its first change, before any run of parts F and G. None was put to the owner first, and each
+is flagged for the owner, who may rule otherwise: above all the reading of EP0017 and EP0018 as "named, with its reason,
+as no row the model can report", which the stage 2 note above recorded as unknown, the reading of which of the
+checklist's outcomes decide part F, the reading of bundle `sjl-13-001`'s rule part G applies, and the first attempt of
+Shared libraries' push run deciding part G's hosted half.
+
+**This stage's decisions of 2026-11-27**, each taken as recommended under the owner's direction and recorded as the
+owner's decision of 2026-11-27. Their authority is the direction quoted above, which leaves out only "the start ...;
+decision D-census ...; and each publication of the shared stream (JSD-0083's decision D30)"; none below is one of those.
+Every later stage's decisions are recorded when that stage lands (the note of 2026-11-24 above); these are stage 8's,
+SJL-15.2's last model commit. This stage adds no public type beyond D-js-names' list. Each is recorded on this branch in
+its first change, before any run of parts F and G of bundle [`sjl-15-001`](../evidence/sjl-15-001/README.md)'s rule
+(the rule's "No run is taken before the base it names exists"), and each is a reading or a decision of the session's,
+flagged for the owner, who may rule otherwise; a reading changed after a rehearsal or a run is seen is the owner's.
+
+| Decision | Taken | Not taken, and why |
+|---|---|---|
+| D-js-digest-model | **The corpus runner's dump mode requests the semantic model** for every input, variant and eval request of configuration V, at its own request alone, through a copy of every member of the request the corpus reader builds, held equal by a test; the bundle `sjl-13-001` runner's request builder is unchanged | (a) A second digest with the member off: it changes the line part C reads. (b) The request builder's default changed: it changes a retained bundle's tool. (c) An option chosen at run time: the configuration would be the run's choice |
+| D-js-vector-listing | **Conformance.Tests' library-level run writes, per answered `semantics` vector, its verdict into the test's output**, kept in the run's test log, so that part F's "per vector the adapter answers, its verdict" is retained; the verdict is the vector's at the parse, as decision D-js-adapter-form reads part F's "matches" | (a) A file named by an environment variable: the runs carry none. (b) The passing assertion read as the per-vector comparison: the rule asks for each vector's verdict. (c) The probe's report as the listing: it is not Conformance.Tests' run |
+| D-js-part-f-tools | **Part F's checklist and site listing are scripts in bundle `sjl-15-001`'s `tools/`, `model_check.py` and `row_sites.py`, committed on this branch before any run of part F and held by the tenth model commit's tree**, with `tools/broiler-vm-inputs.sha256` naming the Broiler.VM commit whose JSD-0080 and milestone file the checklist reads. The checklist extends `contract_check.py` without editing it, to the milestone's facts and to `SemanticRows`, missing any listed member counting as a problem, and prints an outcome for each listing and for bundle `sjl-13-001`'s part H's controls; it exits by the strictest of them, as a matter of form. **Its listing of the milestone's facts and its listing of engine types decide part F, with the rule's part F control**, as the rule's "if and only if" names them ("every fact has a public member and no public type names an engine type"); JSD-0080's rows, the engine rows with a producer and bundle `sjl-13-001`'s part H's controls are printed and kept and decide nothing of part F. "The caller's lexical names" is looked for at stage 5c's members, `InheritedContext.CallerScopes`, `CallerScope`, `SemanticModel.DirectEvalCalls`, an item of its own, and `SemanticModel.CallerScopesOf`. The site listing names per `semantics` row its sites in the library's code, the stage table's basis and its `SemanticRows` entry, and judges nothing | (a) A listing written by hand: the run would shape its own listing. (b) Every outcome line counting toward part F, as bundle `sjl-13-001`'s part H reads its checklist: the rule's part F names its facts and an engine type, its population holds no row of JSD-0080's, and each part decides alone. (c) The caller's lexical names listed absent with decision D16's reason, as `contract_check.py` lists them: D16 gives that reason only "until SJL-15's model". (d) `DirectEvalCalls` only as a member of the caller's records' row: a separate item adds a way to fail at no cost |
+| D-js-library-readings | **For parts F and G, "the base it names" is the library commit they name; a run taken at stage 8's commit after it exists is a run at the library commit if, once the base commit exists, stage 8's commit is the last model commit before it; until then it is read conditionally, as D-js-library-runs says. Part G reads bundle `sjl-13-001`'s part C as its first revision restates K2, and its part D as first written, at this rule's library commit: its hosted half Shared libraries' push run there, both `native-aot-probe` legs, whose first attempt decides, every attempt retained, a failed first attempt going to the owner; its local half the linux-x64 publications there. Part C's dump mode is the probe's corpus digest mode, as at bundle `sjl-13-001`'s library commit. Bundle `sjl-13-001`'s part E is taken as checks and no part decides by it. Part F's control suppresses EE0018's report, not its entry, and its revert is checked against the whole run's listing. EP0017 and EP0018 are named, with their reason, as no row the model can report: "EP0017 and EP0018 have no report of their own: no goal is ShadowRealm's, and EA0003, EA0004 or EE0162 refuses their source first" (`SemanticRows.cs`), with decision D-js-semantic-rows; EA0006 is named as a row only a run reaches.** The first-attempt rule differs from D-js-part-b-attempt's, which reaches ci.yml's run for part B only; each part decides alone | (a) The early runs not admitted: the runs at stage 8's commit would be rehearsals only, and the hosted half would need a dispatch only the owner may make. (b) Bundle `sjl-13-001`'s rule as first written: K2 could not be met. (c) Its third revision's part D: it names another bundle's commits. (d) The run as it concludes after a re-run: no re-run reaches this half. (e) The control by removing the entry: the table's equality fails first. (f) A reporting site for EP0017 and EP0018: new public API that changes JSD-0080's input rows, and it would have to land in this merge or move the library commit. (g) EP0017 and EP0018 read as no rows the rule names: part F could then never be met without (f) |
+| D-js-adapter-final | **The value vectors that earlier stages left to part F stay not implemented**: groups `ab1` (D-js-annexb-vectors), `ff3`, `ff4`, `ff5` and `rs2` (D-js-environment-vectors), `ne1` (D-js-named-evaluation-vectors) and `pn1` (D-js-adapter-visible-names), each listed with its decision in a Conformance test, since the model decides no value at the parse; EA0006's vectors are listed apart, as a row the rule's part F names | (a) Answering them at the parse: vacuous matches. (b) Reading their values: not library-level |
+| D-js-last-model-commit | **Until SJL-15.5's base, the session lands no change to `Broiler.ECMAScript.Frontend*` but an SJL-15.2 model commit**, each judged by its part B, with parts F and G and bundle `sjl-13-001`'s part E then taken again at it; each later stage's preconditions check that no other merge changed those paths. Merges the session does not make are not bound by it: holding the default branch was the owner's to order at W2 ("Allow the W2 hold", above) | (a) Every merge bound, the owner's included: it would hold the default branch longer than any decision taken under the direction. (b) No commitment: a change to the library could land unjudged before the library commit |
+
+Bundle `sjl-15-001`'s README records these readings with their alternatives and citations, in its note of 2026-11-27 at
+SJL-15.2 stage 8. None of it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in both
+repositories.
+
+*(Noted 2026-11-27, at SJL-15.2 stage 8, after its check 3b was seen; the note and decisions above are left as
+written.)* **Check 3b's bound, and the owner's answer of 2026-11-27.** The stage's check 3b, a rehearsal that decides
+nothing, parsed the whole parse corpus by the probe's corpus digest mode at the stage's head then, `20e53654`, which
+requests the model, and at its parent `b92ef028`. It was not taken again at the stage's later commits, which change no
+code the digest mode reads. Before it ran, the session wrote down the bound of the inputs that could move from accepted
+to refused. Lines moved from accepted to refused outside that bound, so the bound, predeclared before the rehearsal ran,
+was too narrow; each of them was traced to a row `SemanticRows` holds. Bundle
+[`sjl-15-001`](../evidence/sjl-15-001/README.md)'s README names every one of them by input and variant, with the row
+behind each, in its note of 2026-11-27 on check 3b's bound; this plan holds no figure, so they are named there and not
+here. They are E6 eval requests refused by row EA0005 (`class.initializer.arguments`, PerformEval step 11.h), and
+test262 negative tests refused by rows EE0054 (`assignment.target.invalid`) and EE0171 (`module.export.undeclared`); and
+one module input refused both ways moves its first diagnostic to row EE0170 (`module.export.duplicate`), a move inside
+the digest class written before the rehearsal, "refused both ways: the digest may move only where the member-on parse
+reports a `semantics` row". The E6 lines differ from bundle `sjl-13-001`'s classification, which gives them `accepted`,
+with reason `eval-vm`; nothing in bundle `sjl-13-001` is revised here.
+
+The owner's answer of 2026-11-27, given in chat, is the owner's own. It is quoted verbatim but for the sentences that
+count lines, which are left out here because this plan holds no figure; the README's note quotes it whole. Asked: "Stage
+8 (Broiler.JS's last semantic-model change) is built and pushed, and every other check passed. One rehearsal check
+failed, and its own rule makes that your call. That check, 3b, parses the whole corpus with the model switched on, at
+stage 8 and at its parent. ... The library now refuses them, as test262 expects. ... Row EA0005 refuses these, as the
+spec's PerformEval step 11.h requires, but the existing classification in bundle sjl-13-001 expected them to be
+accepted, as Broiler.VM's E6 result. The rehearsal decides nothing on its own, but rewriting the list after seeing the
+results is a reading you reserve. How should I proceed?" Chosen: "Acknowledge, merge (Recommended)" — "... Then open
+stage 8's PR and merge it, and take part B and parts F and G after the merge as planned. No code changes." Not taken:
+"Hold, examine E6 first" and "Hold, revise classification", whose texts the README's note quotes. In the question as
+quoted here, "them" is the test262 negative tests and "these" is the E6 eval requests whose code runs from a class field
+initialiser and uses `arguments`, which the sentences left out name.
+
+Revising the bound after the rehearsal was seen is a reading the owner reserves, as the question says, and it is the
+owner's: by this answer the bound is read as too narrow and the lines outside it are named, and that reading is weaker
+evidence, because it is written after the rehearsal was seen (as bundle `sjl-13-001`'s first revision counted runs
+"taken and seen at the stage's branch heads", "none of which is a run of a part"). The bound and the expected moves stay
+as they were written and logged before the rehearsal, and are not derived again. Nothing is declared met or accepted by
+it: check 3b decides nothing, and part B and parts F and G of bundle [`sjl-15-001`](../evidence/sjl-15-001/README.md)'s
+rule are taken after the merge and read by that rule as planned. None of it is accepted: no second holder exists to
+review it. Every SJL-15 clause is unmet, in both repositories.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

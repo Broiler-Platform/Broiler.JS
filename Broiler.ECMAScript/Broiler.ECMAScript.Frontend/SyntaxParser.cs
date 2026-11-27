@@ -137,6 +137,7 @@ public sealed class ParseResult
     /// accepted; null otherwise. It is held by the side tables, so that the result keeps the layout it had at
     /// 0.1.0-preview.9.
     /// </summary>
+    /// <remarks>ECMA-262 at the pinned edition, the static semantics the model answers, from "Environment Records" to "Static Semantics: Early Errors". <i>(Added 2026-11-27, at SJL-15.2 stage 8.)</i></remarks>
     // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model per compilation unit, JSD-0083 D10 side tables; IP=Low; Security=Low; Resources=1; Fingerprint=2CCF58
     // Hairs-Human:        PENDING
     public Semantics.SemanticModel? Model => Declarations?.Model;

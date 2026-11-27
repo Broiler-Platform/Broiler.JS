@@ -29,9 +29,11 @@ namespace Broiler.ECMAScript.Syntax;
 /// context and of expressions, and stage 3's rows of jump targets (the session's decision D-js-jump-rows).")</i> The declarations walk reports them only when the request sets
 /// <see cref="ParseRequest.BuildSemanticModel"/>, through the same report as <see cref="Rows"/>' rows, in decision D11's
 /// order (the session's decisions D-js-channel and D-js-semantic-rows). EP0017 and EP0018 have no report of their own:
-/// no goal is ShadowRealm's, and EA0003, EA0004 or EE0162 refuses their source first. The Frontend tests hold this list a
-/// subset of the stage table's <c>semantics</c> rows, to be equal at stage 8 but for EA0006, and hold that no code here is
-/// one of <see cref="Rows"/>'.
+/// no goal is ShadowRealm's, and EA0003, EA0004 or EE0162 refuses their source first. The Frontend tests hold this list
+/// equal to the stage table's <c>semantics</c> rows but EA0006, a row only a run reaches, and hold that no code here is one
+/// of <see cref="Rows"/>'. <i>(Revised 2026-11-27, at SJL-15.2 stage 8, when the test became an equality; it read "The
+/// Frontend tests hold this list a subset of the stage table's <c>semantics</c> rows, to be equal at stage 8 but for
+/// EA0006, and hold that no code here is one of <see cref="Rows"/>'.")</i>
 /// Stage 5c's rows of eval code's <c>var</c>s against its caller's records, EvalDeclarationInstantiation step 3.d
 /// (the session's decision D-js-caller-scope-rows), join them. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
 /// Stage 6's rows of the module record, ExportedNames' duplicates and ExportedBindings not declared (the session's decision
