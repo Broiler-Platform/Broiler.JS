@@ -1006,3 +1006,63 @@ D-js-packable leaves to the owner, "asked only after stage 8 and stage 9's listi
 stage 9's listing, and JSD-0083's decision D30's syntax-half check is still read as the records require. This stage
 publishes nothing, and D-js-packable's text is left as written. No rule file is added or edited, and no earlier output
 changes. "What it will hold" above is left as written.
+
+*(Noted 2026-11-27, at SJL-15.2 stage 8, after its check 3b was seen; the note above is left as written.)* **Check 3b's
+bound, and the owner's answer of 2026-11-27.** The stage's check 3b, a rehearsal that decides nothing, parsed the whole
+parse corpus by the probe's corpus digest mode (`Broiler.ECMAScript/Broiler.ECMAScript.Probe/CorpusDigest.cs`) at this
+branch's head, which requests the model, and at its parent. Before it ran, the session wrote down, and logged by SHA-256
+outside the repository, the bound of the inputs that could move from accepted to refused: the lines of configuration V
+whose expectation in bundle `sjl-13-001`'s [`classification.tsv.gz`](../sjl-13-001/classification/classification.tsv.gz)
+is `either`. The check's words for a line outside its classes are "Any line outside these is a fault: stop and report."
+Lines moved from accepted to refused outside that bound, so the bound, predeclared before the rehearsal ran, was too
+narrow. A scratch harness parsed each of them with the member off and on: each is accepted off and refused on, and its
+first diagnostic is a row `SemanticRows` holds. They are, by input and variant, with the row behind each, and its shared
+code and message identifier as
+[`SemanticRows.cs`](../../../Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs) gives them:
+
+- **E6**, the eval request whose caller is a class field initialiser: T028759, T028761, T028764, T028766, T028768,
+  T029504 and T029513 (variant E6 each), each refused by EA0005 (`JSE1905`, `class.initializer.arguments`, for
+  `arguments` in eval code whose caller is a field initialiser, PerformEval step 11.h). Bundle `sjl-13-001`'s
+  classification gives each of these lines `accepted`, with expectation `eval-vm` and reason `B3:E6`, so the model's
+  refusal differs from that classification. Nothing in bundle `sjl-13-001` is revised here.
+- **test262 negative tests**, each `parse:SyntaxError` in
+  [`corpus.manifest`](../../../conformance/parse/corpus.manifest), classified `refused` with expectation `test262` in
+  bundle `sjl-13-001`'s classification, and accepted with the member off: T037840, T037841 and T037842 (variant module),
+  refused by EE0054 (`JSE1415`, `assignment.target.invalid`); T041636 and T041638 (variant module), refused by EE0171
+  (`JSE1612`, `module.export.undeclared`); and T048863, T048869, T049556 and T049562 (variants strict and sloppy each),
+  refused by EE0054 (`JSE1415`). Bundle `sjl-13-001`'s
+  [`classification-readings.tsv`](../sjl-13-001/readings/classification-readings.tsv) reads each of these lines `either`
+  (reading S1, or S2 for T041636 and T041638), which the bound, written from the classification file alone, left out.
+- **The line refused both ways whose digest moves**, T041624 (variant module): its first diagnostic is EE0168
+  (`JSE1609`, `scope.lexical.duplicate`, a row of `Rows.cs`) with the member off and EE0170 (`JSE1611`,
+  `module.export.duplicate`) with it on, a `semantics` row `SemanticRows` holds. That is inside the digest class written
+  before the rehearsal, "refused both ways: the digest may move only where the member-on parse reports a `semantics`
+  row".
+
+**The owner's answer of 2026-11-27**, given in chat, the owner's own, quoted verbatim: Asked (2026-11-27, in chat):
+"Stage 8 (Broiler.JS's last semantic-model change) is built and pushed, and every other check passed. One rehearsal
+check failed, and its own rule makes that your call. That check, 3b, parses the whole corpus with the model switched on,
+at stage 8 and at its parent. Before it ran, I wrote down which inputs could move from accepted to refused: 2,488 moved,
+and 20 of them were outside that list. Each of the 20 was traced to a named early-error row. 13 are test262 negative
+tests that test262 expects to fail with SyntaxError. The library now refuses them, as test262 expects. The other 7 are
+an eval case (E6) whose code runs from a class field initializer and uses `arguments`. Row EA0005 refuses these, as the
+spec's PerformEval step 11.h requires, but the existing classification in bundle sjl-13-001 expected them to be
+accepted, as Broiler.VM's E6 result. The rehearsal decides nothing on its own, but rewriting the list after seeing the
+results is a reading you reserve. How should I proceed?" Chosen: "Acknowledge, merge (Recommended)" — "Record a dated
+note that the predeclared list was too narrow and name all 20 lines with the row behind each, marked as weaker evidence
+because it is written after the rehearsal. Note that the 7 E6 lines differ from sjl-13-001's classification. Then open
+stage 8's PR and merge it, and take part B and parts F and G after the merge as planned. No code changes." Not taken:
+"Hold, examine E6 first" — "Keep stage 8 unmerged. First check each of the 7 E6 lines against the spec and Broiler.VM,
+and report back on whether EA0005's refusal or sjl-13-001's classification is right. Then ask you again. Everything
+after it waits, about a few hours."; "Hold, revise classification" — "Keep stage 8 unmerged and prepare a dated revision
+of bundle sjl-13-001's classification for the 7 E6 lines for you to approve. Then re-take check 3b against it and
+merge."
+
+Revising the bound after the rehearsal was seen is a reading the owner reserves, as the question says, and it is the
+owner's: by this answer the bound is read as too narrow and the lines above are named, each with the row behind it, and
+that reading is weaker evidence, because it is written after the rehearsal was seen (as bundle `sjl-13-001`'s [first
+revision](../sjl-13-001/decision-rule-revised-2026-11-02.md) counted runs "taken and seen at the stage's branch heads",
+"none of which is a run of a part"). The bound and the expected moves stay as they were written and logged before the
+rehearsal, and are not derived again. Nothing is declared met or accepted by it: check 3b decides nothing, and part B
+and parts F and G of this bundle's rule are taken after the merge and read by the rule as planned. No rule file is added
+or edited, and no earlier output changes.

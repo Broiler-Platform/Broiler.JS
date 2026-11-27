@@ -4828,6 +4828,41 @@ Bundle `sjl-15-001`'s README records these readings with their alternatives and 
 SJL-15.2 stage 8. None of it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in both
 repositories.
 
+*(Noted 2026-11-27, at SJL-15.2 stage 8, after its check 3b was seen; the note and decisions above are left as
+written.)* **Check 3b's bound, and the owner's answer of 2026-11-27.** The stage's check 3b, a rehearsal that decides
+nothing, parsed the whole parse corpus by the probe's corpus digest mode at this branch's head, which requests the
+model, and at its parent. Before it ran, the session wrote down the bound of the inputs that could move from accepted to
+refused. Lines moved from accepted to refused outside that bound, so the bound, predeclared before the rehearsal ran,
+was too narrow; each of them was traced to a row `SemanticRows` holds. Bundle
+[`sjl-15-001`](../evidence/sjl-15-001/README.md)'s README names every one of them by input and variant, with the row
+behind each, in its note of 2026-11-27 on check 3b's bound; this plan holds no figure, so they are named there and not
+here. They are E6 eval requests refused by row EA0005 (`class.initializer.arguments`, PerformEval step 11.h), and
+test262 negative tests refused by rows EE0054 (`assignment.target.invalid`) and EE0171 (`module.export.undeclared`); and
+one module input refused both ways moves its first diagnostic to row EE0170 (`module.export.duplicate`), a move inside
+the digest class written before the rehearsal, "refused both ways: the digest may move only where the member-on parse
+reports a `semantics` row". The E6 lines differ from bundle `sjl-13-001`'s classification, which gives them `accepted`,
+with expectation `eval-vm`; nothing in bundle `sjl-13-001` is revised here.
+
+The owner's answer of 2026-11-27, given in chat, is the owner's own. It is quoted verbatim but for the sentences that
+count lines, which are left out here because this plan holds no figure; the README's note quotes it whole. Asked: "Stage
+8 (Broiler.JS's last semantic-model change) is built and pushed, and every other check passed. One rehearsal check
+failed, and its own rule makes that your call. That check, 3b, parses the whole corpus with the model switched on, at
+stage 8 and at its parent. ... The library now refuses them, as test262 expects. ... Row EA0005 refuses these, as the
+spec's PerformEval step 11.h requires, but the existing classification in bundle sjl-13-001 expected them to be
+accepted, as Broiler.VM's E6 result. The rehearsal decides nothing on its own, but rewriting the list after seeing the
+results is a reading you reserve. How should I proceed?" Chosen: "Acknowledge, merge (Recommended)" — "... Then open
+stage 8's PR and merge it, and take part B and parts F and G after the merge as planned. No code changes." Not taken:
+"Hold, examine E6 first" and "Hold, revise classification", whose texts the README's note quotes.
+
+Revising the bound after the rehearsal was seen is a reading the owner reserves, as the question says, and it is the
+owner's: by this answer the bound is read as too narrow and the lines outside it are named, and that reading is weaker
+evidence, because it is written after the rehearsal was seen (as bundle `sjl-13-001`'s first revision counted runs
+"taken and seen at the stage's branch heads", "none of which is a run of a part"). The bound and the expected moves stay
+as they were written and logged before the rehearsal, and are not derived again. Nothing is declared met or accepted by
+it: check 3b decides nothing, and part B and parts F and G of bundle [`sjl-15-001`](../evidence/sjl-15-001/README.md)'s
+rule are taken after the merge and read by that rule as planned. None of it is accepted: no second holder exists to
+review it. Every SJL-15 clause is unmet, in both repositories.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
