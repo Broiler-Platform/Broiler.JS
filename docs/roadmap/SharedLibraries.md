@@ -4760,6 +4760,52 @@ decision D-js-stages fixes ("Stages 1, 2, 3, 4, 5a, 5b, 5c, 6, 7 and 8, one merg
 part B against its own first parent; stage 7's note above names no next step of its own. None of it is accepted: no
 second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
 
+*(Noted 2026-11-27, at SJL-15.2 stage 8, whose merge is the tenth model commit.)* The note above reads "Next: SJL-15.2
+stage 8, the tenth model commit, named in this section's stage list as "**stage 8**, the library's last model commit",
+in the order decision D-js-stages fixes ("Stages 1, 2, 3, 4, 5a, 5b, 5c, 6, 7 and 8, one merge each, in that order"),
+judged by its part B against its own first parent; stage 7's note above names no next step of its own." The change before
+this one is stage 7's part B records, Broiler-Platform/Broiler.JS#1150 (`b92ef028`), after stage 7's merge,
+Broiler-Platform/Broiler.JS#1149 (`950bea8f`). This change is stage 8, the library's last model commit, as this
+section's stage list names it. It adds no public member and no row, and answers no new vector. The Frontend test of the
+rows table holds `SemanticRows` equal, as a set, to the stage table's `semantics` rows but EA0006, so it fulfils, without
+editing it, decision D-js-semantic-rows' "A test holds the table a subset of the stage table's `semantics` rows, to be
+equal at stage 8 except EA0006". The probe's corpus digest mode requests the model, through a copy of the corpus reader's
+request that a Frontend test holds equal to it in every public member but `ParseRequest.BuildSemanticModel`, and the
+Native AOT image runs the same mode, so it fulfils decision D-js-part-g's "the corpus runner's dump mode and the Native
+AOT probe request the model by stage 8"; a Frontend test holds the canonical dump to every member of the model. Part
+F's tools, `docs/evidence/sjl-15-001/tools/model_check.py` and `row_sites.py`, with the Broiler.VM commit their inputs
+come from in `tools/broiler-vm-inputs.sha256`, are committed on this branch before any run of part F; the Conformance
+tests write each answered `semantics` vector's verdict at the parse into their output, list the value groups left
+unanswered with their decisions and EA0006's vectors apart, and list the answered rows no vector names; and the model's
+public members gain XML remarks citing the clauses they answer (convention 15), with the Frontend project file's comment
+and description naming the model. With the member off nothing moves. Rule SL6's `PublicAPI.txt` gains no line and loses
+none. Decision D-js-packable's "asked only after stage 8 and stage 9's listing" is answered by the owner's answer of
+2026-11-27, "All publish-decisions can be done and run. So if a publish yes/no is the question, do the publish, wait for
+the nuget-package-availability and continue", given in chat, unasked: the publication follows stage 9's listing, and
+JSD-0083's decision D30's syntax-half check is still read as the records require; the decision's text is left as written,
+and this stage publishes nothing.
+
+**The merge condition.** Both workflows are green on the PR; after the merge, nothing merges to `main` until both push
+runs at the merge have concluded. For ci.yml's run that includes the one re-run D-js-part-b-attempt allows
+(`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run (`.github/workflows/ci.yml:25-27`,
+:36-39). A later push never cancels Shared libraries' push run, because its push group carries the commit
+(`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1 ("Nothing merged to the
+default branch until both push runs at it had concluded", `docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken
+after the merge, against the merge's own first parent. Stage 7's part B records say the same of stage 7: "Nothing
+merged to the default branch until both push runs at it had concluded" (`docs/roadmap/SharedLibraries.md:4734-4735`).
+Shared libraries' push run at the merge is also part G's hosted half if this merge is the library commit ("at stage 8's
+commit, the library commit if no model commit lands before the base commit", decision D-js-library-runs), read as
+decision D-js-library-readings below reads it: its first attempt decides, and every attempt is retained.
+
+**The readings parts F and G depend on** are decisions D-js-digest-model, D-js-vector-listing, D-js-part-f-tools,
+D-js-library-readings, D-js-adapter-final and D-js-last-model-commit below, each with the alternatives it did not take,
+and bundle [`sjl-15-001`](../evidence/sjl-15-001/README.md)'s README records them with their citations. They were
+recorded on this branch, in its first change, before any run of parts F and G. None was put to the owner first, and each
+is flagged for the owner, who may rule otherwise: above all the reading of EP0017 and EP0018 as "named, with its reason,
+as no row the model can report", which the stage 2 note above recorded as unknown, the reading of which of the
+checklist's outcomes decide part F, the reading of bundle `sjl-13-001`'s rule part G applies, and the first attempt of
+Shared libraries' push run deciding part G's hosted half.
+
 **This stage's decisions of 2026-11-27**, each taken as recommended under the owner's direction and recorded as the
 owner's decision of 2026-11-27. Their authority is the direction quoted above, which leaves out only "the start ...;
 decision D-census ...; and each publication of the shared stream (JSD-0083's decision D30)"; none below is one of those.

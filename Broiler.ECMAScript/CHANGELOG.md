@@ -908,6 +908,18 @@ Not yet packed under a version of its own: the stream's next version is set when
   (`runners/SyntaxDump.cs`) writes a `model-captures` and a `model-captured` line per facts entry and a `model-named`
   line per function or class node with an answer. No observable change: no published version carries the member, and
   with it off nothing moves.
+- `Broiler.ECMAScript.Frontend`: **the library's last model commit of SJL-15.2** (milestone SJL-15.2, stage 8; the
+  decisions of 2026-11-27, D-js-digest-model, D-js-vector-listing, D-js-part-f-tools, D-js-library-readings,
+  D-js-adapter-final and D-js-last-model-commit, in `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics
+  (SJL-15)"; design [`docs/frontend/design.md`](docs/frontend/design.md), section 10.12). No public line is added and none
+  is removed: rule SL6's `PublicAPI.txt` is unchanged. The Frontend tests hold the internal rows table equal to the stage
+  table's `semantics` rows but EA0006, and the canonical dump to every member of the model; the probe's corpus digest mode
+  (`Broiler.ECMAScript.Probe`, internal) requests the model through a copy of the corpus reader's request; the
+  Conformance tests list each answered `semantics` vector's verdict at the parse in their output, list the value groups
+  left unanswered with their decisions, and list the answered rows no vector names. The model's public members gain XML
+  remarks citing the clauses they answer, and the project file's comment and description name the model. Every API line
+  added since `0.1.0-preview.12` is listed in an entry above. No observable change: no published version carries the
+  member, and with it off nothing moves.
 
 ### Changed
 
