@@ -188,8 +188,8 @@ public enum FunctionKind
 /// </para>
 /// <para><b>Immutable, and safe to call concurrently</b> (convention 10). The <see cref="CallerScope"/> instances
 /// <see cref="CallerScopesOf"/> answers are init-only and copy their names, so that an instance shared by several answers,
-/// or taken from the request, stays as it was. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
-/// The lists <see cref="FreeNames"/> and <see cref="Captured"/> answer are built with the model and read-only.
+/// or taken from the request, stays as it was. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i></para>
+/// <para>The lists <see cref="FreeNames"/> and <see cref="Captured"/> answer are built with the model and read-only.
 /// <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i></para>
 /// </remarks>
 // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design, ECMA-262 s9.1 environment records, s8.2 scope analysis; IP=Low; Security=Medium; Resources=1; Fingerprint=ADA8F1
@@ -1356,9 +1356,10 @@ public sealed class Resolution
 /// call is the arrow's, which has an environment of its own. <see cref="DirectEvalInParameters"/> and
 /// <see cref="DirectEvalInBody"/> say whether this node's own environments may gain bindings; they do not say whether a
 /// nested direct <c>eval</c> can read this node's bindings by name: in <c>function f() { var x; (() => eval("x = 1"))(); }</c>
-/// f's <see cref="DirectEvalInBody"/> is false, yet the arrow's call reaches f's <c>x</c> at run time. That reach is
-/// <see cref="DirectEvalOrWithWithin"/>, beside captures (<see cref="SemanticModel.Captured"/>). <i>(Revised 2026-11-27,
-/// at SJL-15.2 stage 7, when the reach joined the facts; it read "That reach is a later stage's, with captures.")</i>
+/// f's <see cref="DirectEvalInBody"/> is false, yet the arrow's call reaches f's <c>x</c> at run time. That reach is a
+/// fact of its own, <see cref="DirectEvalOrWithWithin"/>, beside captures (<see cref="SemanticModel.Captured"/>).
+/// <i>(Revised 2026-11-27, at SJL-15.2 stage 7, when the reach joined the facts; it read "That reach is a later stage's,
+/// with captures.")</i>
 /// </para>
 /// <para>
 /// <b>The dynamic function's goals</b> are answered with the other piece empty, as <see cref="Resolution"/> says:
