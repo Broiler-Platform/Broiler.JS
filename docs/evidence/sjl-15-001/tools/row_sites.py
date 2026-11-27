@@ -23,7 +23,7 @@ For each row of the stage table whose stage is `semantics`, in the table's order
   "run-time" where the table's basis is `run-time`;
 - a `label` line for each label below that applies, which names a fact of the code or the corpus and judges nothing;
 - a `reason` line for a row named as no row the model can report, quoting the committed line that states the reason,
-  with its path and line.
+  with its path and line, and the lines after it that carry its sentence through its closing period, with their range.
 Then the stage table's `rows` cell of EA0008 verbatim, with "stale for the library: a site exists" where the library
 has a site for it. It exits 0, or 2 when an input cannot be read.
 """
@@ -104,11 +104,27 @@ def main():
                 tie = "reports here" if "Report(" in line else "report not tied by this listing"
                 sites.setdefault(row, []).append("%s:%d\t%s\t%s" % (relative.replace(os.sep, "/"), number, tie, line.strip()))
 
+    # The line that holds the words, and, where its sentence goes on past it, the lines that carry the sentence through
+    # its closing period, each continuation line's leading `///` dropped; the path's line is the first and last line.
     def quote(source, words):
         lines, path = (rule, args.rule) if source == "rule" else (semantic_rows, args.semantic_rows)
         for number, line in enumerate(lines, 1):
             if words in line:
-                return "%s:%d\t%s" % (path.replace(os.sep, "/"), number, line.strip())
+                text = line.strip()
+                start = text.index(words) + len(words)
+                last = number
+                end = re.search(r"\.(\s|$)", text[start:])
+                while end is None and last < len(lines):
+                    following = re.sub(r"^\s*(///)?\s*", "", lines[last]).rstrip()
+                    last += 1
+                    if not following:
+                        break
+                    text += " " + following
+                    end = re.search(r"\.(\s|$)", text[start:])
+                if end is not None and last > number:
+                    text = text[: start + end.start() + 1]
+                where = "%d" % number if last == number else "%d-%d" % (number, last)
+                return "%s:%s\t%s" % (path.replace(os.sep, "/"), where, text)
         return "-\tnot found: " + words
 
     out = ["# Per semantics row of the stage table, the library's sites (bundle sjl-15-001's part F; this listing judges nothing)"]

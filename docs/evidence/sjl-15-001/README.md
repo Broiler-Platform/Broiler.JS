@@ -935,7 +935,8 @@ a rehearsal or a run is seen is the owner's.
   taken, reports the difference"), since as first written "rule SL9 must fail" "cannot hold of a correct control"; that
   revision was written after runs were seen at branch heads and is weaker evidence. Part D is read as that bundle's rule
   first wrote it, at this rule's library commit: its third revision's part D is bound to that bundle's library commit
-  and its part D commit, so only its attempt clause is taken. The result draws on that bundle's rule and on its first and third revisions, and it is said so.
+  and its part D commit, so only its attempt clause is taken. Part G thus draws on that bundle's rule and on its first
+  and third revisions.
 - **Part D's hosted half.** Shared libraries' push run at the library commit, both `native-aot-probe` legs, imported by
   GET only; "its first attempt decides, and every attempt is retained"
   ([`decision-rule-revised-2026-11-03-third.md`](../sjl-13-001/decision-rule-revised-2026-11-03-third.md)); a failed
@@ -976,8 +977,8 @@ a rehearsal or a run is seen is the owner's.
   list left as they are; the library-level run must report EE0018's refusal vectors, and only them, as differences; it is
   reverted, and the whole run's per-vector listing at the reverted tree is checked against the unpatched run's.
 - **"E" in D-js-library-runs is bundle `sjl-13-001`'s part E**, since this rule's own part E runs at the base and after
-  commits only: it is taken as checks and retained, and no part of the rule decides by it, since the rule is "Ten predeclared decisions, one per part"
-  and none of its MET lines reads that part; a verdict would need a rule revision.
+  commits only: it is taken as checks and retained, and no part of the rule decides by it, since the rule is "Ten
+  predeclared decisions, one per part" and none of its MET lines reads that part; a verdict would need a rule revision.
 - **EP0017 and EP0018** have no site in the library. They are read as "named, with its reason, as no row the model can
   report" under the rule's part F: the reason is the committed line of
   `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs`, "EP0017 and EP0018 have no report of their own: no

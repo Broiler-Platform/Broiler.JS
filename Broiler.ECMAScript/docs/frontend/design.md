@@ -1777,7 +1777,8 @@ the milestone's facts at these members, all of them, taken from the earlier stag
 - "private-name environments": `PrivateEnvironmentOf`, `PrivateEnvironment`'s members, `Resolve(PrivateIdentifier)` and
   `PrivateNameBinding`'s members;
 - "module records": `SemanticModel.Module` and its record's members, as section 10.10 maps JSD-0080's "**The module
-  record**", "their errors" being the module rows in `ParseResult.Diagnostics`;
+  record**", "their errors" being the module rows in `ParseResult.Diagnostics`; who reports each module row, EE0170 and
+  EE0171 among them, is the site listing's (below), not the checklist's;
 - "named-evaluation names": `NamedEvaluationName` and `NamedEvaluationKey`; "free names and captures": `FreeNames`,
   `Captured` and `EnvironmentFacts`' `DirectEvalOrWithWithin` and `FunctionNameReferenced` (section 10.11);
 - "every early error": `ParseRequest.BuildSemanticModel`, `ParseResult.Diagnostics`, `DiagnosticPhase.Semantics` and

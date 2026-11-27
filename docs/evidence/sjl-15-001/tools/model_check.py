@@ -10,8 +10,9 @@ Usage:
 
 It extends bundle sjl-13-001's docs/evidence/sjl-13-001/tools/contract_check.py without editing it. That script's lines
 1 to 3 (the header), 26 to 131 (the imports, the engine-namespace list, the item lists ITEMS, ABSENT_REASONS and
-contract_rows) are kept here verbatim, and its main's three listings are kept as listings 1b, 2 and 3 below, with
-additions; its docstring is replaced by this one. FILE for --jsd0080 and --milestone is Broiler.VM's JSD-0080 and its
+contract_rows) are kept here verbatim but for an added `import hashlib` line among the imports and a second blank line
+after contract_rows, and its main's three listings are kept as listings 1b, 2 and 3 below, with additions; its
+docstring is replaced by this one. FILE for --jsd0080 and --milestone is Broiler.VM's JSD-0080 and its
 milestone file docs/javascript-shared-libraries/milestones/sjl-15-static-semantics.md, as the Broiler.VM commit
 docs/evidence/sjl-15-001/tools/broiler-vm-inputs.sha256 names holds them (`git show <commit>:<path>`); --vm-digests is
 that file, and when it is given each input's SHA-256 must be the one it lists. The others are
