@@ -881,6 +881,33 @@ Not yet packed under a version of its own: the stream's next version is set when
   request with a `model-attribute` line per attribute, and a `model-import`, `model-export-local`,
   `model-export-indirect` or `model-export-star` line per entry. No observable change: no published version carries the
   member, and with it off nothing moves.
+- `Broiler.ECMAScript.Frontend`: **named evaluation, free names and captures** (milestone SJL-15.2, stage 7; the
+  decisions of 2026-11-27, D-js-named-evaluation, D-js-captures, D-js-debugger and D-js-named-evaluation-vectors, in
+  `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)"; design
+  [`docs/frontend/design.md`](docs/frontend/design.md), section 10.11). A minor change under convention 16, which no
+  published version carries: nothing is removed, and with the request member off the parse answers as before, its tree,
+  side tables and diagnostics unchanged. It adds, as rule SL6's `PublicAPI.txt` lists them:
+  - `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_DirectEvalOrWithWithin() method System.Boolean`:
+    whether a direct-`eval` candidate of any strictness or a `with` statement stands in the node's code or in code
+    nested in it, the reach an arrow's direct `eval` has to its function's names;
+  - `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_FunctionNameReferenced() method System.Boolean`:
+    whether a named function expression's own name is used in its code or in code nested in it;
+  - ``Broiler.ECMAScript.Semantics.SemanticModel.Captured(Broiler.ECMAScript.Syntax.SyntaxNode) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.Declaration>``:
+    the declarations a facts node's free names resolve to, in their order, a global or inherited name captured by none;
+  - ``Broiler.ECMAScript.Semantics.SemanticModel.FreeNames(Broiler.ECMAScript.Syntax.SyntaxNode) method System.Collections.Generic.IReadOnlyList`1<System.String>``:
+    the names a facts node's code and the code nested in it use that no scope of its own binds, in the order of their
+    first such reference;
+  - `Broiler.ECMAScript.Semantics.SemanticModel.NamedEvaluationKey(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Syntax.ComputedPropertyName`:
+    the computed key whose run-time value names an anonymous function or class definition;
+  - `Broiler.ECMAScript.Semantics.SemanticModel.NamedEvaluationName(Broiler.ECMAScript.Syntax.SyntaxNode) method System.String`:
+    the name an anonymous function or class definition's named evaluation passes, where the source fixes it, and
+    "default" for the anonymous default declarations.
+
+  No row is added and no vector is newly answered: the library-level adapter (`runners/AlgorithmsLibrary.Semantics.cs`)
+  leaves group `ne1`, the value vectors of row NE1, not implemented. The canonical dump's model section
+  (`runners/SyntaxDump.cs`) writes a `model-captures` and a `model-captured` line per facts entry and a `model-named`
+  line per function or class node with an answer. No observable change: no published version carries the member, and
+  with it off nothing moves.
 
 ### Changed
 

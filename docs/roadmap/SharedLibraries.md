@@ -4644,6 +4644,88 @@ captures", in the order decision D-js-stages fixes ("Stages 1, 2, 3, 4, 5a, 5b, 
 order"), judged by its part B against its own first parent; stage 6's note above names no next step of its own. None of
 it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
 
+*(Noted 2026-11-27, at SJL-15.2 stage 7, whose merge is the ninth model commit.)* The note above reads "Next: SJL-15.2
+stage 7, the ninth model commit, named in this section's stage list as "**stage 7**, named evaluation, free names and
+captures", in the order decision D-js-stages fixes ("Stages 1, 2, 3, 4, 5a, 5b, 5c, 6, 7 and 8, one merge each, in that
+order"), judged by its part B against its own first parent; stage 6's note above names no next step of its own." The
+change before this one is stage 6's part B records, Broiler-Platform/Broiler.JS#1148 (`26c6d6ec`), after stage 6's merge,
+Broiler-Platform/Broiler.JS#1147 (`2c48beb1`). This change is stage 7: named evaluation, free names and captures, as this
+section's stage list names it. With `ParseRequest.BuildSemanticModel` on, the semantic model answers, for an anonymous
+function or class definition's node, the name its named evaluation passes where the source fixes it
+(`SemanticModel.NamedEvaluationName`) or the computed key whose value names it at run time
+(`SemanticModel.NamedEvaluationKey`), and for the program, every function, every static block and every initialised
+field, its free names in source order (`SemanticModel.FreeNames`) and the declarations they resolve to
+(`SemanticModel.Captured`); `EnvironmentFacts` gains `DirectEvalOrWithWithin`, the reach of a direct `eval` candidate of
+any strictness or a `with` statement in the node's code or code nested in it, and `FunctionNameReferenced`, a named
+function expression's use of its own name. The declarations walk records each reference's owning facts node, each class
+scope's owner and each named-evaluation site's name or key at visits it already makes, and a pass over its lists and the
+final resolutions, after every resolution revision and before the environment facts are built, computes the rest; it is
+no second walk. No type and no row is added, and no vector is newly answered. It fulfils, without editing them, decision
+D-js-environment-facts' "that reach is stage 7's", decision D-js-arguments-binding's alternative (b), "stage 7's
+captures return declarations", and the differences paragraph of the stage 5a note above, "the reach of an arrow's `eval`
+to the enclosing function's names that the model leaves to stage 7"; the design's section 10.7 ("That reach is stage
+7's, with captures and the rebuild of Broiler.JS's `FreeNameScan.Dynamic`, which is transitive and ignores strictness",
+and "which covers the reach the model leaves to stage 7") gains dated additions that name the property. The members that
+answer each correspondence row, for Broiler.VM's catch-up: NE1, `NamedEvaluationName` and `NamedEvaluationKey`; FC1,
+`FreeNames`, `Captured` and `EnvironmentFacts`' `DirectEvalOrWithWithin` and `FunctionNameReferenced`. Where this departs
+from JSD-0080's forms and the area design's sketch, named for Broiler.VM's catch-up as an inference: `NamedEvaluationKey`
+beside the name, which JSD-0080 does not name ("Named-evaluation names") and the sketch's nullable string cannot carry;
+`Captured` of a node the sketch types as a function node; and `FreeNames` and the `EnvironmentFacts` properties, beyond
+the sketch. With the member off nothing moves. Rule SL6's `PublicAPI.txt` gains these lines and loses none:
+- `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_DirectEvalOrWithWithin() method System.Boolean`
+- `Broiler.ECMAScript.Semantics.EnvironmentFacts.get_FunctionNameReferenced() method System.Boolean`
+- ``Broiler.ECMAScript.Semantics.SemanticModel.Captured(Broiler.ECMAScript.Syntax.SyntaxNode) method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.Declaration>``
+- ``Broiler.ECMAScript.Semantics.SemanticModel.FreeNames(Broiler.ECMAScript.Syntax.SyntaxNode) method System.Collections.Generic.IReadOnlyList`1<System.String>``
+- `Broiler.ECMAScript.Semantics.SemanticModel.NamedEvaluationKey(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Syntax.ComputedPropertyName`
+- `Broiler.ECMAScript.Semantics.SemanticModel.NamedEvaluationName(Broiler.ECMAScript.Syntax.SyntaxNode) method System.String`
+
+**The merge condition.** Both workflows are green on the PR; after the merge, nothing merges to `main` until both push
+runs at the merge have concluded. For ci.yml's run that includes the one re-run D-js-part-b-attempt allows
+(`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run (`.github/workflows/ci.yml:25-27`,
+:36-39). A later push never cancels Shared libraries' push run, because its push group carries the commit
+(`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1 ("Nothing merged to the
+default branch until both push runs at it had concluded", `docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken
+after the merge, against the merge's own first parent. Stage 6's part B records say the same of stage 6: "Nothing
+merged to the default branch until both push runs at it had concluded" (`docs/roadmap/SharedLibraries.md:4619-4620`).
+
+**This stage's decisions of 2026-11-27**, each taken as recommended under the owner's direction and recorded as the
+owner's decision of 2026-11-27. Their authority is the direction quoted above, which leaves out only "the start ...;
+decision D-census ...; and each publication of the shared stream (JSD-0083's decision D30)"; none below is one of those.
+Every later stage's decisions are recorded when that stage lands (the note of 2026-11-24 above); these are stage 7's.
+This stage adds no public type beyond D-js-names' list. That free names and captures are, in this section's words,
+"**and an adoption for Broiler.VM**, which computes none" (`docs/roadmap/SharedLibraries.md:2930-2932`; Broiler.VM's
+`docs/evidence/sjl-15-001/correspondence.md`, row FC1) is Broiler.VM's position, not among the decisions that bind this
+repository above, and is not taken here.
+
+| Decision | Taken | Not taken, and why |
+|---|---|---|
+| D-js-named-evaluation | **`SemanticModel.NamedEvaluationName` answers, for an anonymous function or class definition's function or class node, the name its NamedEvaluation passes where the source fixes it, and `NamedEvaluationKey` the computed key whose value names it at run time**; where named evaluation applies the name or the key answers, never both, and elsewhere neither does. The name is a binding's or a reference's StringValue, a literal key's property name, a private name's description, or "default"; the anonymous default declarations, which the specification names by SetFunctionName, answer "default" too. Every other node answers neither, the wrappers and the parentheses included, and so do methods, getters and setters, which their keys name. The sites are the specification's: declarators, single-name bindings and assignment targets with a default, assignments and logical assignments to a name, object literal values other than a non-computed `__proto__`, class fields, `export default`, and Annex B's `for`-`in` initialiser; compound assignment, a parenthesised or member target, and a comma expression give none. The answer is the argument, not the final `name` property, which a static `name` member overrides. `using` declarations and auto-accessor fields are named as declarations and fields are, readings beyond the edition | (a) The sketch's nullable string alone: it cannot carry a computed or symbol key. (b) A result type with a name and a key: a new type for the same facts. (c) Null for a computed key, left to the lowering: null would then mean no name and a run-time name alike. (d) A sentinel string: it can collide with a real name. (e) Folding a literal computed key: a back end's policy. (f) Keying by the expression: the anonymous default declarations have none. (g) The specification's NamedEvaluation sites alone: each engine would name the anonymous default declarations itself. (h) Methods' names with their prefixes: a property key, not a named evaluation. (i) No name for `using` declarations: the suite the corpus reads expects one |
+| D-js-captures | **`SemanticModel.FreeNames` and `Captured` answer, for the program, a function, a static block or an initialised field, the names its code and the code nested in it use that no scope of its own binds, and the declarations they resolve to**, from stage 5a's recorded references and the final resolutions, with no second walk. A scope belongs to the facts node it is made for, or else to the facts node whose own code makes it; a class's scope belongs to the code that holds the class. Only references count, not bindings. A name resolving to a declaration outside is captured; a global or inherited name is free and not captured. Each name appears at its first free reference only, and each declaration at its name's place. `this`, `super` and `new.target` are not names, and `arguments` is an ordinary reference. **`EnvironmentFacts` gains the dynamic reach, `DirectEvalOrWithWithin`**, a direct `eval` candidate of any strictness or a `with` in the node's code or code nested in it, **and the self-name use, `FunctionNameReferenced`**, a named function expression's own name used in its code or code nested in it. The facts are the specification's; where `FreeNameScan` answers otherwise, the differences are named for SJL-15.5 | (a) Port `FreeNameScan`'s walker: a second walk over the bridged tree. (b) The sketch's `Captured` of a function node alone: it misses field initialisers, static blocks and the names with no declaration. (c) A list of free references with their resolutions: more than the facts the contract names. (d) A type for a function's captures: no fact the lists and the properties lack. (e) The funcEnv as outside the function: the facade would subtract the name `FunctionNameReferenced` already carries. (f) The carried declaration for inherited names: its binding is the caller's, and it may be null. (g) Separate flags for `eval` and `with`: either makes a free-name set incomplete. (h) No reach property, derived by each consumer: the same fact rebuilt in each consumer rather than kept with the model. (i) A lexical `this` fact: no consumer reads one. (j) Counting eval code's own inherited bindings: a declaration is not a use |
+| D-js-debugger | **No `debugger` fact.** `debugger` gives no binding access in the specification, and `FreeNameScan`'s dynamic flag does not count it in code, whatever its documentation says | A language-neutral "contains `debugger`" fact: public API with no consumer before publication, and the facade would answer differently from today |
+| D-js-named-evaluation-vectors | **The value vectors of row NE1 (group `ne1`) stay not implemented**, as groups `ff3`, `ff4`, `ff5` and `rs2` do under D-js-environment-vectors: they name no catalogue row, and read at the parse each would match by acceptance alone | (a) Listing them as a group: vacuous matches. (b) Reading their values: part F's to decide, not this stage's |
+
+The places where the library differs from either engine, named for SJL-15.3 and SJL-15.5. Row NE1: Broiler.JS names at
+lowering (the bundle's `correspondence-broiler-js.md`, row NE1), and in indirect-eval code its answers to probes V039,
+V041 and V042 give no name where the specification names each (the bundle's `probes/answers.tsv`; C1's row NE1 in
+`corrections/corrections.tsv`); the model's names are the specification's answers that C1's row NE1 names, and
+SJL-15.5 applies the correction. Broiler.VM names in its lowering's `CompileNamedValue` and gives an anonymous default
+declaration "default" in its binder (its correspondence row NE1), naming that leaves the binder at its window (an
+inference); its rule admits no NE class at that window (an inference), so that an accepted input where the model's name
+differs from its naming today, such as an anonymous class with a static element at a computed key, which keeps the empty
+name (JSC-238), or a parenthesised destructuring target, `[(a) = function () {}] = []`, which it names "a" and the
+specification does not (an inference, not probed), would read as a regression in its part B; and its milestone's
+SJL-15.3 list does not name the names, which its row NE1's last cell says SJL-15.3 reads (an inference). Row FC1:
+Broiler.JS's `FreeNameScan` is the only producer (the bundle's row FC1); its documentation and that row's cell say its
+dynamic flag covers `debugger`, which its code does not; it counts `eval?.()` as dynamic, `this` as a name, and class
+names, class element keys and private names as references; it binds lexical declarations only as its walk meets them, so
+that a later reference to a `for`-`of` head's binding outside the loop is missed; it hoists block functions in strict
+code to the function; it gives parameters naming later parameters or `arguments` free; it misses references in
+decorators, which the bridge drops; its self-name flag is not transitive; and it has no entry for a field initialiser,
+each an inference by reading its code, not run. Whether its ordered list's order is the model's start order is
+unverified (an inference), and the facade's "each public member answering as today" (the bundle's `dispositions.md`)
+is SJL-15.5's to read. Broiler.VM has no producer and reads no capture (its row FC1). None of it is accepted: no second
+holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
