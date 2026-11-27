@@ -1244,7 +1244,7 @@ public sealed class EnvironmentFacts
 /// </summary>
 /// <remarks>
 /// <para>
-/// <b>In source order</b> (JSD-0080: "every collection in source order"): the requests by their first statement, the
+/// <b>In source order</b> (JSD-0080: "Every collection is in source order"): the requests by their first statement, the
 /// entries by their node, so that ParseModule's step 10 partition keeps the order of the ExportEntries it reads and a
 /// rewritten entry stands among the true indirect ones where its export does. Every list is built with the model and
 /// read-only.
@@ -1347,13 +1347,13 @@ public sealed class ModuleRequest
 
     /// <summary>
     /// [[Specifier]], the SV of the ModuleSpecifier (<see cref="StringLiteral.Value"/>), as written, lone surrogates kept, so
-    /// that <c>"m"</c>, <c>'m'</c> and <c>"m"</c> are one specifier; an engine refuses what it cannot load.
+    /// that <c>"m"</c>, <c>'m'</c> and <c>"\u006d"</c> are one specifier; an engine refuses what it cannot load.
     /// </summary>
     public string Specifier { get; }
 
     /// <summary>
     /// The WithClause's attributes of <see cref="Statements"/>' first statement, in that statement's source order (JSD-0080:
-    /// "every collection is in source order"), each key its AttributeKey's PropName, so that <c>type</c> and <c>"type"</c>
+    /// "Every collection is in source order"), each key its AttributeKey's PropName, so that <c>type</c> and <c>"type"</c>
     /// are one key, and each value its SV; empty for <c>with {}</c> and for no <c>with</c>. The specification's
     /// [[Attributes]] is this list sorted by <see cref="ModuleRequestAttribute.Key"/> under
     /// <see cref="StringComparer.Ordinal"/>, UTF-16 code unit by code unit (WithClauseToAttributes), whose NOTE reads: "This

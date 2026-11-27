@@ -84,13 +84,14 @@ namespace Broiler.ECMAScript.Semantics;
 /// <i>(Revised 2026-11-25, at SJL-15.2 stage
 /// 2; it read "<b>No <c>request</c>, <c>engine</c> or <c>semantics</c> row is reported</b>: every refusal is one of
 /// <see cref="Rows"/>.")</i>
+/// <i>(Revised 2026-11-27, at SJL-15.2 stage 6; it read "each a construct's refusal at its construct, through the same
+/// report" and "reaches the walk only as the [Await] parameter of the top level, as it reaches the parser (decision
+/// D10).")</i>
 /// From stage 5c the program's walk also reports, under the same flag and only for sloppy eval code whose request gives
 /// its caller's records, the rows of EvalDeclarationInstantiation step 3.d (EA0007 and EA0008) at each colliding
 /// var-declared name's first declaration, in the partial walk too, over the statements it finished. <i>(Added 2026-11-26,
 /// at SJL-15.2 stage 5c.)</i>
-/// <i>(Revised 2026-11-27, at SJL-15.2 stage 6; it read "each a construct's refusal at its construct, through the same
-/// report" and "reaches the walk only as the [Await] parameter of the top level, as it reaches the parser (decision
-/// D10).")</i> From stage 6 the full walk also reports, under the same flag and only for a Module, after its visit, the rows
+/// From stage 6 the full walk also reports, under the same flag and only for a Module, after its visit, the rows
 /// of ModuleBody's ExportedNames and ExportedBindings (EE0170 and EE0171), each at its construct; the partial walk reports
 /// neither. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
 /// </para>
@@ -3237,19 +3238,20 @@ internal sealed class DeclarationsWalk
     /// 16.2.1.1), reported by the full walk alone, after its visit: first ExportedNames' duplicates (EE0170), each name that
     /// repeats once, at its second occurrence, with the name as the argument; then ExportedBindings not declared (EE0171),
     /// at each specifier of an <c>export { … }</c> without a FromClause whose local name the module neither declares nor
-    /// imports, with the local name as the argument, but not on a specifier another row already refuses: an occurrence of
-    /// a repeated exported name, a string local name (EE0181) or a reserved one (EE0182), one row per construct. Each is
+    /// imports, with the local name as the argument, but not on a specifier another row already refuses: the occurrence of
+    /// a repeated exported name EE0170 is reported at, a string local name (EE0181) or a reserved one (EE0182), one row per
+    /// construct; a later occurrence of that name, which no row refuses, is checked like any other specifier. Each is
     /// placed where Broiler.VM's binder names it: the specifier, the exported declaration, the <c>export default</c>; for
     /// <c>export * as</c> the exported name, where the binder names the <c>as</c> token, which the tree has no node for.
     /// Names are StringValues, compared ordinally.
     /// </summary>
-    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s16.2.1.1 ModuleBody early errors ExportedNames ExportedBindings, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=ED3EB4
+    // Hairs-AI:           Origin=AI; Spec=ECMA-262 s16.2.1.1 ModuleBody early errors ExportedNames ExportedBindings, SJL-15.2 semantics rows; IP=Low; Security=Medium; Resources=1; Fingerprint=56A626
     // Hairs-Human:        PENDING
     private void CheckModuleExports(IReadOnlyList<Statement> body, List<Declaration> lexical, List<Declaration> vars)
     {
         var seen = new HashSet<string>(StringComparer.Ordinal);
         var reported = new HashSet<string>(StringComparer.Ordinal);
-        var repeated = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
+        var duplicate = new HashSet<SyntaxNode>(ReferenceEqualityComparer.Instance);
         var names = new List<(string Name, SyntaxNode At)>();
         var exportsDefault = false;
         foreach (var statement in body)
@@ -3259,11 +3261,10 @@ internal sealed class DeclarationsWalk
             ExportedNames(statement, names);
             foreach (var (name, at) in names)
             {
-                if (seen.Add(name))
+                if (seen.Add(name) || !reported.Add(name))
                     continue;
-                repeated.Add(at);
-                if (reported.Add(name))
-                    Report(SemanticRows.EE0170, at, name);
+                duplicate.Add(at);
+                Report(SemanticRows.EE0170, at, name);
             }
         }
 
@@ -3282,7 +3283,7 @@ internal sealed class DeclarationsWalk
                 continue;
             foreach (var specifier in export.Specifiers)
             {
-                if (specifier.Local is IdentifierName local && !repeated.Contains(specifier) && !RefusedLocalName(local.Name) && !declared.Contains(local.Name))
+                if (specifier.Local is IdentifierName local && !duplicate.Contains(specifier) && !RefusedLocalName(local.Name) && !declared.Contains(local.Name))
                     Report(SemanticRows.EE0171, specifier, local.Name);
             }
         }

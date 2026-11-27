@@ -967,9 +967,9 @@ public sealed class SemanticRowsTests
     /// <summary>
     /// The places: EE0170 at a specifier, at an exported declaration for every name of it, at the <c>export default</c>,
     /// and at <c>export * as</c>'s exported name, once per name, at its second occurrence, a name exported three times
-    /// included, with the name as the argument; EE0171 at each specifier, with the local name; and on a specifier a repeated
-    /// exported name refuses, the duplicate alone. Off, every source is accepted. <i>(Added 2026-11-27, at SJL-15.2 stage
-    /// 6.)</i>
+    /// included, with the name as the argument; EE0171 at each specifier, with the local name; and on the specifier EE0170
+    /// refuses, the duplicate alone, a later occurrence of an undeclared name, which no row refuses, getting EE0171 of its
+    /// own. Off, every source is accepted. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
     /// </summary>
     [Fact]
     public void Each_module_row_is_placed_at_its_construct()
@@ -989,6 +989,7 @@ public sealed class SemanticRowsTests
         At("var a, b; export { a, b }; export { a, b };", ("EE0170", "a, b }", 1), ("EE0170", "b }", 1));
         At("export { a as b, c };", ("EE0171", "a as b", 0), ("EE0171", "c", 0));
         At("export { a }; export { a };", ("EE0171", "a", 0), ("EE0170", "a", 1));
+        At("export { a }; export { a }; export { a };", ("EE0171", "a", 0), ("EE0170", "a", 1), ("EE0171", "a", 2));
         At("export { a as x }; export { b as x };", ("EE0171", "a as x", 0), ("EE0170", "b as x", 0));
         Assert.Equal(["a"], Parse("m all", "var a, b; export { a, b as a };").Diagnostics.Select(static d => d.Arguments.Single()));
         Assert.Equal(["b", "c"], Parse("m all", "export { b as a, c };").Diagnostics.Select(static d => d.Arguments.Single()));
