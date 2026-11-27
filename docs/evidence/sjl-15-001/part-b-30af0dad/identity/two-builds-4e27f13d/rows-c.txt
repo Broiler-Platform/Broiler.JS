@@ -1,0 +1,16 @@
+base rows: 213927, head rows: 213927, differing rows: 0
+base end: #% end	213926
+head end: #% end	213926
+header lines differing:
+  base: #% assembly	Broiler.JavaScript.Ast	0.1.0-preview.1	530f0046-2293-4457-a3d3-5754a6bfb3a5
+  head: #% assembly	Broiler.JavaScript.Ast	0.1.0-preview.1	7c87f25a-7da1-4b38-941c-2bd0917ced3b
+  base: #% assembly	Broiler.JavaScript.Parser	0.1.0-preview.1	d362a327-3011-4f6e-b5ef-49609a1600d0
+  head: #% assembly	Broiler.JavaScript.Parser	0.1.0-preview.1	b3381f35-14ac-46b0-82c2-fcb92c718539
+  base: #% assembly	Broiler.JavaScript.Compiler	0.1.0-preview.1	83eea71a-1175-499e-a09f-a75e5ade5296
+  head: #% assembly	Broiler.JavaScript.Compiler	0.1.0-preview.1	e41e5f4f-17c9-4fc1-9b73-e124a44f99f2
+  base: #% assembly	Broiler.JavaScript.Engine	0.1.0-preview.1	8432dcdb-2236-448e-acd6-0d62d32361cf
+  head: #% assembly	Broiler.JavaScript.Engine	0.1.0-preview.1	865fb5af-342b-41b4-82d0-1b020b1b2ba9
+  base: #% assembly	Broiler.JavaScript.Runtime	0.1.0-preview.1	966988ef-5cbe-42d7-b0d9-06e21ea972df
+  head: #% assembly	Broiler.JavaScript.Runtime	0.1.0-preview.1	9afcf2b3-a63d-4292-b56e-6a617f79992b
+identical in every row: yes; both complete: yes
+rc=0
