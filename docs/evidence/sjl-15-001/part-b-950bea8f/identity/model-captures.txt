@@ -1,0 +1,189 @@
+# Why stage 7's named-evaluation, free-name and capture lines cannot reach part B's --dump output or its P and K
+# answers; read 2026-11-27 by read-only git in the stage's worktree, each command with its output below it. Stage 7
+# (950bea8f) adds, per facts entry, one 'model-captures' line (its node, its dynamic-reach and self-name flags and its
+# free names) and one 'model-captured' line (its node and each captured declaration), and per function and class node
+# with an answer one 'model-named' line, to the model section of the shared library's canonical dump,
+# Broiler.ECMAScript/runners/SyntaxDump.cs, written only when ParseResult.Model is present, which
+# ParseRequest.BuildSemanticModel asks for (default false). Part B's tool, docs/evidence/sjl-12-001/tools/parse-corpus,
+# writes its own canonical dump (CanonicalDump.cs) of Broiler.JS's tree and reaches the Frontend only through
+# Broiler.JS's parser, whose request never sets the member. Stage 7 also adds SemanticModel.NamedEvaluationName,
+# NamedEvaluationKey, FreeNames and Captured, and EnvironmentFacts' DirectEvalOrWithWithin and FunctionNameReferenced;
+# the walk records each reference's owning facts node, each class scope's owner and each named-evaluation site only
+# with the model on, and computes free names and captures only inside the model's build, none of which Broiler.JS sets
+# or reads. It adds no type and no row.
+
+$ git diff --stat 26c6d6ec 950bea8f -- Broiler.JS docs/evidence/sjl-12-001
+(exit 0)
+
+$ git grep -n -e model-captures -e model-captured -e model-named 950bea8f -- Broiler.ECMAScript/runners
+950bea8f:Broiler.ECMAScript/runners/SyntaxDump.cs:83:/// <c>model-captures</c> line (its node, its dynamic-reach and self-name flags, and its free names in order) and one
+950bea8f:Broiler.ECMAScript/runners/SyntaxDump.cs:84:/// <c>model-captured</c> line (its node and each captured declaration in order, named as the resolution lines name a
+950bea8f:Broiler.ECMAScript/runners/SyntaxDump.cs:85:/// declaration); then, per function and class node in tree order that has an answer, one <c>model-named</c> line: the node
+950bea8f:Broiler.ECMAScript/runners/SyntaxDump.cs:436:            text.Append("model-captures ").Append(Reference(order, function.Node)).Append(' ')
+950bea8f:Broiler.ECMAScript/runners/SyntaxDump.cs:445:            text.Append("model-captured ").Append(Reference(order, function.Node));
+950bea8f:Broiler.ECMAScript/runners/SyntaxDump.cs:457:                text.Append("model-named ").Append(Reference(order, node)).Append(" key ").Append(Reference(order, key)).Append('\n');
+950bea8f:Broiler.ECMAScript/runners/SyntaxDump.cs:461:                text.Append("model-named ").Append(Reference(order, node)).Append(' ');
+(exit 0)
+
+$ git grep -n -e model-captures -e model-captured -e model-named 26c6d6ec -- Broiler.ECMAScript/runners
+(exit 1)
+
+$ git grep -n -e 'if (model && result.Model is' -e 'Captures(text, semantic, order, nodes);' -e 'private static void Captures(' 950bea8f -- Broiler.ECMAScript/runners
+950bea8f:Broiler.ECMAScript/runners/SyntaxDump.cs:178:        if (model && result.Model is { } semantic)
+950bea8f:Broiler.ECMAScript/runners/SyntaxDump.cs:181:            Captures(text, semantic, order, nodes);
+950bea8f:Broiler.ECMAScript/runners/SyntaxDump.cs:420:    private static void Captures(StringBuilder text, SemanticModel model, Dictionary<SyntaxNode, int> order, List<SyntaxNode> nodes)
+(exit 0)
+
+$ git grep -n 'BuildSemanticModel { get; init; }' 950bea8f -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs:236:    public bool BuildSemanticModel { get; init; }
+(exit 0)
+
+$ git grep -n BuildSemanticModel 950bea8f -- Broiler.JS docs/evidence/sjl-12-001
+(exit 1)
+
+$ git grep -n SyntaxDump 950bea8f -- Broiler.JS docs/evidence/sjl-12-001/tools
+(exit 1)
+
+$ git grep -n -e NamedEvaluationName -e NamedEvaluationKey -e DirectEvalOrWithWithin -e FunctionNameReferenced -e ModuleRecord -e ImportNameKind -e ModuleRequestAttribute -e CallerScope -e DirectEvalCalls -e AnnexBAlias -e BlockFunctionAlias -e DynamicReason -e EnvironmentOf -e ResolutionKind 950bea8f -- Broiler.JS docs/evidence/sjl-12-001
+(exit 1)
+
+$ git grep -n -e 'using Broiler.ECMAScript.Semantics' -e Broiler.ECMAScript.Semantics. 950bea8f -- Broiler.JS docs/evidence/sjl-12-001
+950bea8f:Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:4:using Broiler.ECMAScript.Semantics;
+950bea8f:Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:5:using Broiler.ECMAScript.Semantics;
+(exit 0)
+
+$ git grep -n -w -e Model -e FreeNames -e Captured -e NamedEvaluationName -e NamedEvaluationKey -e EnvironmentOf -e EnvironmentFacts -e DirectEvalOrWithWithin -e FunctionNameReferenced 950bea8f -- Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs
+(exit 1)
+
+$ git grep -l -w -e FreeNames -e Captured 950bea8f -- Broiler.JS docs/evidence/sjl-12-001
+950bea8f:Broiler.JS/Broiler.JavaScript.BuiltIns/Function/JSAsyncFunction.cs
+950bea8f:Broiler.JS/Broiler.JavaScript.Compiler.Tests/DeferralPopulationTests.cs
+950bea8f:Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateFunction.cs
+950bea8f:Broiler.JS/Broiler.JavaScript.Expressions/CompilationStack.cs
+950bea8f:Broiler.JS/Broiler.JavaScript.Expressions/DeferredCaptureLayout.cs
+(exit 0)
+
+$ git grep -n ProjectReference 950bea8f -- docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj
+950bea8f:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:24:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj" />
+950bea8f:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:25:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj" />
+950bea8f:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:26:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj" />
+950bea8f:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:27:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj" />
+950bea8f:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:28:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj" />
+950bea8f:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:29:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj" />
+950bea8f:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:30:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj" />
+950bea8f:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:31:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj" />
+(exit 0)
+
+$ git grep -n 'new ParseRequest(' 950bea8f -- Broiler.JS
+950bea8f:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs:168:        return new ParseRequest(source, goal, request.UnicodeTables ?? JSUnicodeTables.Instance, BridgeRegularExpressions.Instance)
+950bea8f:Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs:84:        var request = new ParseRequest(new SourceText(source, string.Empty, 0), ParseGoal.Script, JSUnicode.Tables, RegularExpressions.Instance)
+(exit 0)
+
+$ git grep -n -e 'new DeclarationsWalk(request' -e 'model = buildModel;' -e 'if (buildModel)' -e 'referenceOwners = new(' -e 'classScopeOwners = new(' -e 'namedNames = new(' -e 'namedKeys = new(' -e 'this.semantics = semantics;' -e 'model ? Model(scopeList) : null' -e 'private SemanticModel Model(' -e 'Captured) Resolutions(Scope' -e '= Resolutions(scopeList' -e 'namedNames!, namedKeys!, freeNamesOf, capturedOf);' -e 'var captures = Captures(scopeList' -e 'SelfNamed) Captures(Scope' 950bea8f -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:244:        model = buildModel;
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:245:        if (buildModel)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:262:            referenceOwners = new(ReferenceEqualityComparer.Instance);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:263:            classScopeOwners = new(ReferenceEqualityComparer.Instance);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:264:            namedNames = new(ReferenceEqualityComparer.Instance);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:265:            namedKeys = new(ReferenceEqualityComparer.Instance);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:268:        this.semantics = semantics;
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:349:        var walk = new DeclarationsWalk(request, request.BuildSemanticModel, request.BuildSemanticModel);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:366:        var walk = new DeclarationsWalk(request, buildModel: false, semantics: request.BuildSemanticModel);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:402:        return new DeclarationTables(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), model ? Model(scopeList) : null);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:412:    private SemanticModel Model(Scope[] tableScopes)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:444:        var (resolutionOf, environmentOf, annexBAliasOf, freeNamesOf, capturedOf) = Resolutions(scopeList, functionList, declarationOf, callerNames);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:446:            directEvalCalls, callerScopesOf, moduleRecord, namedNames!, namedKeys!, freeNamesOf, capturedOf);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:602:        Dictionary<SyntaxNode, IReadOnlyList<string>> FreeNames, Dictionary<SyntaxNode, IReadOnlyList<Declaration>> Captured) Resolutions(Scope[] scopeList, FunctionFacts[] functionList, Dictionary<SyntaxNode, Declaration> declarationOf,
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:682:        var captures = Captures(scopeList, functionList, resolutionOf);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:716:    private (Dictionary<SyntaxNode, IReadOnlyList<string>> FreeNames, Dictionary<SyntaxNode, IReadOnlyList<Declaration>> Captured, HashSet<SyntaxNode> Reach, HashSet<SyntaxNode> SelfNamed) Captures(Scope[] scopeList,
+(exit 0)
+
+$ git grep -n -e 'if (model' -e 'when model' -e 'NameAt(' -e 'namedNames!\[' -e 'namedKeys!\[' -e 'referenceOwners!\[' -e 'classScopeOwners!\[' 950bea8f -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:742:                    owner = classScopeOwners![current];
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:785:            for (SyntaxNode? node = referenceOwners![reference]; node is not null && !ReferenceEquals(node, boundary); node = enclosingOf!.TryGetValue(node, out var outer) ? outer : null)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1205:        if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1226:        if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1353:        if (model && isDynamic)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1391:        if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1453:        if (model && isModule)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1569:            if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1619:                if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1623:                if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1624:                    referenceOwners![identifier] = context.ModelFunction!;
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1665:                if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1680:                if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1699:                if (model && assignment.Operator is AssignmentOperator.Assign or AssignmentOperator.AndAssign or AssignmentOperator.OrAssign or AssignmentOperator.CoalesceAssign
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1701:                    NameAt(assignment.Value, assigned.Name, null);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1733:                if (model && declaration.DeclarationKind == DeclarationKind.Var)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1738:                if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1743:                            NameAt(declarator.Initializer, declared.Name, null);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1773:                if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1794:                if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1803:                if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1882:            case CallExpression call when model && IsDirectEvalCandidate(call):
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1890:            case AssignmentPattern withDefault when model:
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1892:                    NameAt(withDefault.Initializer, single.Name, null);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1894:                    NameAt(withDefault.Initializer, element.Name, null);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1897:            case ExportDefaultDeclaration exportDefault when model:
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1901:                        namedNames![anonymousFunction] = "default";
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1904:                        namedNames![anonymousClass] = "default";
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1907:                        NameAt(defaultValue, "default", null);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2066:        if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2119:        if (model && !function.IsArrow && ArgumentsBinding(function, parameterNames, !simple && ContainsExpression(function.Parameters), lexical, vars) is { } functionArguments)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2418:        if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2426:            classScopeOwners![classScope] = outer.ModelFunction;
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2483:                    if (model && field.Value is not null)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2488:                case StaticBlock block when model:
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2513:                    if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2526:                            NameAt(field.Value, field.Key is PrivateIdentifier privateKey ? privateKey.Name : KeyName(field.Key), field.Key as ComputedPropertyName);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2575:        if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2649:        if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2694:        if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2723:            if (model && scope.Environment is { } environment)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2764:        if (model && property.PropertyKind == PropertyKind.Init && (property.Key is ComputedPropertyName || PropName(property.Key) != "__proto__"))
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2765:            NameAt(property.Value, KeyName(property.Key), property.Key as ComputedPropertyName);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2777:    private void NameAt(Expression? value, string? name, ComputedPropertyName? key)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2791:            namedKeys![definition] = key;
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2793:            namedNames![definition] = name;
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2963:            if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2971:                    NameAt(shorthandDefault, identifier.Name, null);
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3018:        if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3143:            if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3166:            if (model && left is VariableDeclaration { DeclarationKind: DeclarationKind.Var } varHead)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3197:                if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3223:        if (model)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3331:            if (model)
+(exit 0)
+
+$ git grep -n -e 'public string? NamedEvaluationName(' -e 'public ComputedPropertyName? NamedEvaluationKey(' -e 'public IReadOnlyList<string> FreeNames(' -e 'public IReadOnlyList<Declaration> Captured(' -e 'public bool DirectEvalOrWithWithin { get; }' -e 'public bool FunctionNameReferenced { get; }' 950bea8f -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs:783:    public string? NamedEvaluationName(SyntaxNode node)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs:809:    public ComputedPropertyName? NamedEvaluationKey(SyntaxNode node)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs:865:    public IReadOnlyList<string> FreeNames(SyntaxNode function)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs:901:    public IReadOnlyList<Declaration> Captured(SyntaxNode function)
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs:1451:    public bool DirectEvalOrWithWithin { get; }
+950bea8f:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs:1464:    public bool FunctionNameReferenced { get; }
+(exit 0)
+
+# Notes: the first command's empty output says that no file of Broiler.JS/ or of bundle sjl-12-001 (the tool
+# included) differs between the two commits; the second's and third's that the model-captures, model-captured and
+# model-named lines are stage 7's, written by Captures, which the fourth's lines call only beside Model, when the parse
+# built a model; the sixth's, seventh's and eighth's (exit 1, no match) that nothing in Broiler.JS or the bundle sets
+# BuildSemanticModel, uses the library's SyntaxDump or names a member stage 7 adds by a name of its own (or stage 6's,
+# 5c's, 5b's and 5a's module-record, caller's-records, alias, environment and resolution members; the pattern
+# CallerScope also matches CallerScopes and CallerScopesOf). The ninth's: only the bridge's BridgeScopes.cs and
+# BridgeTreeBuilder.cs use the Frontend's Semantics namespace; the tenth's (exit 1, no match): neither names the model, a
+# member stage 7 adds or the environment facts; the eleventh's: the files of Broiler.JS that use the words FreeNames or
+# Captured are its own compiler's, expressions', builtins' and tests', none of which uses the Frontend's Semantics namespace (ninth
+# command). The tool references only Broiler.JS projects. The two ParseRequest constructions in Broiler.JS (the
+# bridge's, which the tool's P and K reach, and the portable compiler's) set no BuildSemanticModel, so the member keeps
+# its default, false, and the parse builds no model. The full walk is built with buildModel and semantics equal to the
+# request's BuildSemanticModel, and the partial walk with buildModel false; stage 7's four maps (referenceOwners,
+# classScopeOwners, namedNames, namedKeys) are made only inside 'if (buildModel)' (lines 245 to 265), and the free names
+# and captures are computed only by Captures (declared at line 716), called at line 682 in Resolutions (declared at line
+# 602), which Model (declared at line 412) calls at line 444, and the tables call Model only when model is set (line
+# 402; fourteenth command). The fifteenth's lines show each write of those maps and each call of NameAt, the one writer
+# of the named-evaluation maps besides export default's, below a guard on model: line 1624 below 1623, 1701 below 1699,
+# 1743 below 1738, 1892 and 1894 below 'when model' at 1890, 1901, 1904 and 1907 below 'when model' at 1897, 2426 below
+# 2418, 2526 below 2513, 2765 below 2764 and 2971 below 2963 (lines 742 and 785 read the maps inside Captures). So with
+# the member off none of stage 7's maps exists, no name, key, free name or capture is computed, and the dumps' hashes
+# are identical in every row at both commits (rows-d1.txt), as P's and K's answers are (rows-c.txt).
