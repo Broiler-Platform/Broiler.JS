@@ -833,7 +833,13 @@ public sealed class SemanticModel
     /// <see cref="Resolve(Identifier)"/>'s answer, or a dynamic answer's <see cref="Resolution.Fallback"/>: a
     /// <see cref="ResolutionKind.Static"/> one stands in its scope, and a <see cref="ResolutionKind.Global"/> or
     /// <see cref="ResolutionKind.Inherited"/> one outside every facts node. A dynamic answer's <c>with</c> objects and
-    /// scopes that may gain bindings change nothing here, so the list may name more than run time reaches, never less.
+    /// scopes that may gain bindings change nothing here, so for them the list may name more than run time reaches.
+    /// </para>
+    /// <para>
+    /// <b>What a direct <c>eval</c>'s text names is not listed.</b> That text is no part of the tree, so a name only it
+    /// uses is no reference here: in <c>function f() { var x; (() => eval("x"))(); }</c> the arrow reaches f's <c>x</c> at
+    /// run time, and its list holds only "eval". <see cref="EnvironmentFacts.DirectEvalOrWithWithin"/> says where code may
+    /// so reach bindings by names the list leaves out.
     /// </para>
     /// <para>
     /// <b>What counts.</b> Only references, not bindings: a <c>var</c> declarator's binding resolved when it runs is no
@@ -841,7 +847,8 @@ public sealed class SemanticModel
     /// <c>super</c> and <c>new.target</c> are no names; <c>arguments</c> is an <see cref="Identifier"/> like any other, so
     /// an arrow's is free in the arrow and resolves to the enclosing function's <see cref="EnvironmentFacts.Arguments"/>. A
     /// named function expression's own name is in its <see cref="ScopeKind.FunctionName"/> scope, its own, so it is never
-    /// its free name: <see cref="EnvironmentFacts.FunctionNameReferenced"/> says whether its code uses it. A class's inner
+    /// its free name, though it is a free name of a function nested in it that uses it:
+    /// <see cref="EnvironmentFacts.FunctionNameReferenced"/> says whether its code uses it. A class's inner
     /// name is free in its methods, field initialisers and static blocks that use it, and not in the code that holds the
     /// class; its heritage and computed keys stand in that code.
     /// </para>
@@ -1448,9 +1455,11 @@ public sealed class EnvironmentFacts
     /// scope's <see cref="BindingKind.FunctionName"/> declaration, a reference in its code or in code nested in it resolves
     /// to, directly or as a dynamic answer's <see cref="Resolution.Fallback"/> (JSD-0080: "free names and captures";
     /// correspondence row FC1; the session's decision D-js-captures): so in <c>var f = function g() { return () => g; }</c>
-    /// it is true for <c>g</c> and false for the arrow. False for every other node. The name is never among
-    /// <see cref="SemanticModel.FreeNames"/>, its scope being the function's own. <i>(Added 2026-11-27, at SJL-15.2 stage
-    /// 7.)</i>
+    /// it is true for <c>g</c> and false for the arrow. False for every other node. The name is never among this node's
+    /// own <see cref="SemanticModel.FreeNames"/>, its scope being the function's own, though it is among those of a
+    /// function nested in it that uses it, as the arrow's are. A use only in a direct <c>eval</c>'s text is no reference
+    /// of the tree and does not count: in <c>var f = function g() { return eval("g"); }</c> it is false, and
+    /// <see cref="DirectEvalOrWithWithin"/> is true. <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
     /// </summary>
     public bool FunctionNameReferenced { get; }
 }

@@ -1665,14 +1665,17 @@ definition is its own:
 Only references count, not bindings: eval code's `var x = 1;` gives the program no free name, while `var x = 1; x`
 gives "x", free and not captured, its binding being the caller's. `this`, `super` and `new.target` are no names, and
 `arguments` is an ordinary reference: an arrow's is free in the arrow and captures its function's `Arguments`
-declaration. A named function expression's own name is in its own `FunctionName` scope, so it is never its free name; a
-class's inner name is free in the methods, field initialisers and static blocks that use it, and not in the code that
-holds the class, whose heritage and computed keys stand in that code. Parameters with expressions have their own scope,
-and a `for` statement's per-iteration copies share their declaration. Each name appears at its first free reference only,
-and each declaration at its name's place; the specification gives no order. A dynamic answer's `with` objects and
-scopes that may gain bindings change nothing, so a list may name more than run time reaches, never less. The model's
-own declarations can be captured: an outer function's `Arguments`, an Annex B alias, an outer `FunctionName` and an
-outer `ClassName`.
+declaration. A named function expression's own name is in its own `FunctionName` scope, so it is never its own free
+name, though it is a free name of a function nested in it that uses it; a class's inner name is free in the methods,
+field initialisers and static blocks that use it, and not in the code that holds the class, whose heritage and computed
+keys stand in that code. Parameters with expressions have their own scope, and a `for` statement's per-iteration copies
+share their declaration. Each name appears at its first free reference only, and each declaration at its name's place;
+the specification gives no order. A dynamic answer's `with` objects and scopes that may gain bindings change nothing, so
+for them a list may name more than run time reaches. What a direct `eval`'s text names is not listed, that text being
+no part of the tree: in `function f() { var x; (() => eval("x"))(); }` the arrow reaches f's `x` at run time and its
+list holds only "eval"; `DirectEvalOrWithWithin` says where code may so reach bindings by names a list leaves out. The
+model's own declarations can be captured: an outer function's `Arguments`, an Annex B alias, an outer `FunctionName`
+and an outer `ClassName`.
 
 **How the walk feeds them.** The walk records, at visits it already makes and only with the member on, each reference's
 owning facts node, each `ClassBody` scope's owner and each named-evaluation site's answer; after the walk a pass over
@@ -1685,8 +1688,10 @@ of any strictness or a `with` statement stands in the node's code or in code nes
 here, transitive and whatever the strictness, as Broiler.JS's `FreeNameScan.Dynamic` is; a candidate is section 10.7's,
 so `(eval)(s)` counts and `eval?.(s)` does not. `EnvironmentFacts.FunctionNameReferenced` says whether a named function
 expression's own name is used in its code or in code nested in it, so that it is true for `g` in
-`var f = function g() { return () => g; }`. **No `debugger` fact**: `debugger` gives no binding access in the
-specification, and `FreeNameScan`'s dynamic flag does not count it in code, whatever its documentation says.
+`var f = function g() { return () => g; }`; a use only in a direct `eval`'s text does not count, so it is false in
+`var f = function g() { return eval("g"); }`, where `DirectEvalOrWithWithin` is true. **No `debugger` fact**:
+`debugger` gives no binding access in the specification, and `FreeNameScan`'s dynamic flag does not count it in code,
+whatever its documentation says.
 
 **The vectors.** The value vectors of row NE1, group `ne1`, stay not implemented: they name no catalogue row, and read
 at the parse each would match by acceptance alone. FC1 has no vector file.
