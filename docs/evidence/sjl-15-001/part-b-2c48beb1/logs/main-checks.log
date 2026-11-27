@@ -1,0 +1,6 @@
+2026-11-27T10:09:20Z step0-start 2c48beb1e332dd7c9fa1577705ed5458b5686c1f	refs/heads/main
+2026-11-27T10:10:57Z before base run at 59ccb11c: 2c48beb1e332dd7c9fa1577705ed5458b5686c1f	refs/heads/main
+2026-11-27T10:17:47Z before after run at 2c48beb1 (CI in progress at last status read): 2c48beb1e332dd7c9fa1577705ed5458b5686c1f	refs/heads/main
+2026-11-27T10:18:10Z both push runs concluded (status read 20261127T101809Z): 2c48beb1e332dd7c9fa1577705ed5458b5686c1f	refs/heads/main
+2026-11-27T10:24:58Z after both runs, the comparison and the CI import (both CI runs concluded at 10:18:09Z): 2c48beb1e332dd7c9fa1577705ed5458b5686c1f	refs/heads/main
+2026-11-27T10:25:46Z before step 4 (retain): 2c48beb1e332dd7c9fa1577705ed5458b5686c1f	refs/heads/main

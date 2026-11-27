@@ -1,0 +1,135 @@
+# Why stage 6's module-record lines and its rows EE0170 and EE0171 cannot reach part B's --dump output or its P and K
+# answers; read 2026-11-27 by read-only git in the stage's worktree, each command with its output below it. Stage 6
+# (2c48beb1) adds, for a Module only, one 'model-module' line, per request a 'model-request' line and its
+# 'model-attribute' lines, and 'model-import', 'model-export-local', 'model-export-indirect' and 'model-export-star'
+# lines to the model section of the shared library's canonical dump, Broiler.ECMAScript/runners/SyntaxDump.cs, written
+# only when ParseResult.Model is present, which ParseRequest.BuildSemanticModel asks for (default false), and there only
+# when the model holds a module record. Part B's tool, docs/evidence/sjl-12-001/tools/parse-corpus, writes its own
+# canonical dump (CanonicalDump.cs) of Broiler.JS's tree and reaches the Frontend only through Broiler.JS's parser, whose
+# request never sets the member. Stage 6 also adds SemanticModel.Module and the public types ModuleRecord,
+# ModuleRequest, ModuleRequestAttribute, ImportEntry, ExportEntry and ImportNameKind; the walk builds the record only
+# when it builds the model, and reports the rows EE0170 and EE0171 only in its full walk, with the member on and on the
+# Module goal, none of which Broiler.JS sets or reads.
+
+$ git diff --stat 59ccb11c 2c48beb1 -- Broiler.JS docs/evidence/sjl-12-001
+(exit 0)
+
+$ git grep -n -e model-module -e model-request -e model-attribute -e model-import -e model-export- 2c48beb1 -- Broiler.ECMAScript/runners
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:69:/// From SJL-15.2 stage 6 a Module's model also holds, after those lines, its record: one <c>model-module</c> line with its
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:70:/// top-level-await fact; per request in the record's order, a <c>model-request</c> line with its place, its specifier, its
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:71:/// phase and the statements that make it, then one <c>model-attribute</c> line per attribute, key and value, in the
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:73:/// <c>model-import</c> line per import entry (its request's place, its kind, its import name or <c>-</c>, its local name,
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:74:/// its node and its declaration), one <c>model-export-local</c> line per local export entry (its export name, its local
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:75:/// name, its node and its declaration), one <c>model-export-indirect</c> line per indirect one (its export name or
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:76:/// <c>-</c>, its request's place, its kind, its import name or <c>-</c>, and its node) and one <c>model-export-star</c>
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:354:        text.Append("model-module ").Append(Flag(module.HasTopLevelAwait)).Append('\n');
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:359:            text.Append("model-request ").Append(Number(requestIndex[request])).Append(' ');
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:367:                text.Append("model-attribute ");
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:377:            text.Append("model-import ").Append(Number(requestIndex[entry.ModuleRequest])).Append(' ').Append(Number((int)entry.ImportKind)).Append(' ');
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:386:            text.Append("model-export-local ");
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:395:            text.Append("model-export-indirect ");
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:403:            text.Append("model-export-star ").Append(Number(requestIndex[entry.ModuleRequest!])).Append(' ').Append(Reference(order, entry.Node)).Append('\n');
+(exit 0)
+
+$ git grep -n -e model-module -e model-request -e model-attribute -e model-import -e model-export- 59ccb11c -- Broiler.ECMAScript/runners
+(exit 1)
+
+$ git grep -n -e 'if (model && result.Model is' -e 'if (model.Module is not { } module)' 2c48beb1 -- Broiler.ECMAScript/runners
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:170:        if (model && result.Model is { } semantic)
+2c48beb1:Broiler.ECMAScript/runners/SyntaxDump.cs:352:        if (model.Module is not { } module)
+(exit 0)
+
+$ git grep -n 'BuildSemanticModel { get; init; }' 2c48beb1 -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs:236:    public bool BuildSemanticModel { get; init; }
+(exit 0)
+
+$ git grep -n BuildSemanticModel 2c48beb1 -- Broiler.JS docs/evidence/sjl-12-001
+(exit 1)
+
+$ git grep -n SyntaxDump 2c48beb1 -- Broiler.JS docs/evidence/sjl-12-001/tools
+(exit 1)
+
+$ git grep -n -e ModuleRecord -e ImportNameKind -e ModuleRequestAttribute -e CallerScope -e DirectEvalCalls -e AnnexBAlias -e BlockFunctionAlias -e DynamicReason -e EnvironmentOf -e ResolutionKind 2c48beb1 -- Broiler.JS docs/evidence/sjl-12-001
+(exit 1)
+
+$ git grep -n -e 'using Broiler.ECMAScript.Semantics' -e Broiler.ECMAScript.Semantics. 2c48beb1 -- Broiler.JS docs/evidence/sjl-12-001
+2c48beb1:Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:4:using Broiler.ECMAScript.Semantics;
+2c48beb1:Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:5:using Broiler.ECMAScript.Semantics;
+(exit 0)
+
+$ git grep -n -w -e Module -e Model -e ModuleRequest -e ImportEntry -e ExportEntry -e RequestedModules -e ImportEntries -e LocalExportEntries -e IndirectExportEntries -e StarExportEntries -e EE0170 -e EE0171 2c48beb1 -- Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs
+(exit 1)
+
+$ git grep -n -e 'internal sealed record ModuleRequest(' -e 'internal sealed record ImportEntry(' -e 'internal sealed record ExportEntry(' -e '^namespace ' 2c48beb1 -- Broiler.JS/Broiler.JavaScript.Modules/ModuleSourceAnalysis.cs
+2c48beb1:Broiler.JS/Broiler.JavaScript.Modules/ModuleSourceAnalysis.cs:6:namespace Broiler.JavaScript.Modules;
+2c48beb1:Broiler.JS/Broiler.JavaScript.Modules/ModuleSourceAnalysis.cs:9:internal sealed record ModuleRequest(string Specifier, string Type)
+2c48beb1:Broiler.JS/Broiler.JavaScript.Modules/ModuleSourceAnalysis.cs:17:internal sealed record ImportEntry(ModuleRequest Request, string ImportName, string LocalName);
+2c48beb1:Broiler.JS/Broiler.JavaScript.Modules/ModuleSourceAnalysis.cs:21:internal sealed record ExportEntry(string ExportName, ModuleRequest Request, string ImportName, string LocalName);
+(exit 0)
+
+$ git grep -n ProjectReference 2c48beb1 -- docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj
+2c48beb1:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:24:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj" />
+2c48beb1:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:25:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj" />
+2c48beb1:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:26:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj" />
+2c48beb1:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:27:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj" />
+2c48beb1:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:28:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj" />
+2c48beb1:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:29:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj" />
+2c48beb1:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:30:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj" />
+2c48beb1:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:31:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj" />
+(exit 0)
+
+$ git grep -n 'new ParseRequest(' 2c48beb1 -- Broiler.JS
+2c48beb1:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs:168:        return new ParseRequest(source, goal, request.UnicodeTables ?? JSUnicodeTables.Instance, BridgeRegularExpressions.Instance)
+2c48beb1:Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs:84:        var request = new ParseRequest(new SourceText(source, string.Empty, 0), ParseGoal.Script, JSUnicode.Tables, RegularExpressions.Instance)
+(exit 0)
+
+$ git grep -n -e 'new DeclarationsWalk(request' -e 'model = buildModel;' -e 'this.semantics = semantics;' -e 'model ? Model(scopeList) : null' -e 'walk.WalkProgram(program, program.Body, closed: true);' -e 'walk.WalkProgram(program, completed, closed: false);' -e 'if (closed && semantics && isModule)' -e 'CheckModuleExports(body, lexical, vars);' -e 'if (model && isModule)' -e 'moduleRecord = BuildModuleRecord(program, body, programScope);' -e 'directEvalCalls, callerScopesOf, moduleRecord);' 2c48beb1 -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:223:        model = buildModel;
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:243:        this.semantics = semantics;
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:324:        var walk = new DeclarationsWalk(request, request.BuildSemanticModel, request.BuildSemanticModel);
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:325:        walk.WalkProgram(program, program.Body, closed: true);
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:341:        var walk = new DeclarationsWalk(request, buildModel: false, semantics: request.BuildSemanticModel);
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:344:        walk.WalkProgram(program, completed, closed: false);
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:377:        return new DeclarationTables(Array.AsReadOnly(scopeList), Array.AsReadOnly(functionList), model ? Model(scopeList) : null);
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:421:            directEvalCalls, callerScopesOf, moduleRecord);
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1291:        if (closed && semantics && isModule)
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1292:            CheckModuleExports(body, lexical, vars);
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1296:        if (model && isModule)
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1297:            moduleRecord = BuildModuleRecord(program, body, programScope);
+(exit 0)
+
+$ git grep -n -e 'private SemanticModel Model(' -e ') CallerChains()' -e 'private void CheckModuleExports(' -e 'Report(SemanticRows.EE0170' -e 'Report(SemanticRows.EE0171' -e 'private static bool RefusedLocalName(' 2c48beb1 -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:387:    private SemanticModel Model(Scope[] tableScopes)
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:438:    private (IReadOnlyList<CallExpression> Calls, Dictionary<CallExpression, IReadOnlyList<CallerScope>?> ScopesOf) CallerChains()
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3250:    private void CheckModuleExports(IReadOnlyList<Statement> body, List<Declaration> lexical, List<Declaration> vars)
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3267:                Report(SemanticRows.EE0170, at, name);
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3287:                    Report(SemanticRows.EE0171, specifier, local.Name);
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3295:    private static bool RefusedLocalName(string name) => Reserved.Contains(name) || (StrictReserved.Contains(name) && name != "yield");
+(exit 0)
+
+$ git grep -n -e 'Module = module;' -e 'public ModuleRecord? Module { get; }' 2c48beb1 -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs:234:        Module = module;
+2c48beb1:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs:711:    public ModuleRecord? Module { get; }
+(exit 0)
+
+# Notes: the first command's empty output says that no file of Broiler.JS/ or of bundle sjl-12-001 (the tool
+# included) differs between the two commits; the second's and third's that the module-record lines are stage 6's,
+# written in the model section, which the fourth's lines write only when the parse built a model and, of that model,
+# only when it holds a module record; the sixth's, seventh's and eighth's (exit 1, no match) that nothing in Broiler.JS
+# or the bundle sets BuildSemanticModel, uses the library's SyntaxDump or names a type stage 6 adds that Broiler.JS has
+# no record of its own by (or stage 5c's, 5b's and 5a's caller's-records, alias, environment and resolution members; the
+# pattern CallerScope also matches CallerScopes and CallerScopesOf). The ninth's: only the bridge's BridgeScopes.cs and
+# BridgeTreeBuilder.cs use the Frontend's Semantics namespace; the tenth's (exit 1, no match): neither names the model,
+# the module, a member of the module record or a row stage 6 adds; the eleventh's: the ModuleRequest, ImportEntry and
+# ExportEntry the engine's modules use, and their lists, are Broiler.JS's own internal records in
+# Broiler.JavaScript.Modules, whose file does not use the Frontend's Semantics namespace (ninth command). The tool
+# references only Broiler.JS projects. The two ParseRequest constructions in Broiler.JS (the bridge's, which the tool's
+# P and K reach, and the portable compiler's) set no BuildSemanticModel, so the member keeps its default, false, and the
+# parse builds no model. The full walk is built with buildModel and semantics equal to the request's BuildSemanticModel,
+# and the partial walk with buildModel false; the module record is built only with model set and on the Module goal, and
+# reaches the model only through Model (the call with moduleRecord at line 421, between Model's declaration at line 387
+# and CallerChains' after it), which the tables call only when model is set; EE0170 and EE0171 are reported only inside
+# CheckModuleExports (lines 3267 and 3287, between its declaration at line 3250 and RefusedLocalName's at line 3295),
+# which the walk calls only with the walk closed (the full walk alone), semantics set and the Module goal. So with the
+# member off no record is built and neither row is reported, and the dumps' hashes are identical in every row at both
+# commits (rows-d1.txt), as P's and K's answers are (rows-c.txt).

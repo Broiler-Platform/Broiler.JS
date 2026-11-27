@@ -1,0 +1,8 @@
+2026-11-27T10:11:10Z lock pb-59ccb11c WAIT
+2026-11-27T10:11:10Z lock pb-59ccb11c HELD
+2026-11-27T10:11:10Z gate pb-59ccb11c PASS load1=0.25 procs=none checks=0
+2026-11-27T10:17:35Z stop-servers: done, remaining:
+2026-11-27T10:17:47Z lock pb-2c48beb1 WAIT
+2026-11-27T10:17:47Z lock pb-2c48beb1 HELD
+2026-11-27T10:17:48Z gate pb-2c48beb1 PASS load1=0.98 procs=none checks=0
+2026-11-27T10:23:31Z stop-servers: done, remaining:
