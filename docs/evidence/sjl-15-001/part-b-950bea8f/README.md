@@ -196,12 +196,14 @@ retention (`activity-main-*.tsv`), and the stage's notes (`notes.log`).
   unchanged. It was written by a scratch script that runs each command it shows and writes its output and exit; the
   script is not kept. It is a copy of the scratch script that wrote `model-module.txt`, with the commits, its header and
   notes, and its commands' patterns changed to stage 7's line names and members (stage 6's, 5c's, 5b's and 5a's
-  members kept in the search of Broiler.JS and the bundle), and stage 6's three commands on Broiler.JS's own module
-  records, its two commands on the walk and its command on `SemanticModel` replaced by four: the files of Broiler.JS
-  and the bundle that use the words `FreeNames` or `Captured`; the walk's construction, its stage 7 maps and the
-  model's one call of the pass that computes free names and captures; every write of those maps and every
-  named-evaluation call beside the walk's guards on the model; and the six new members' declarations. Its runner and
-  command printer are unchanged.
+  members kept in the search of Broiler.JS and the bundle). Both scripts run sixteen commands. Of stage 6's, the ninth
+  (the files of Broiler.JS and the bundle that use the Frontend's Semantics namespace) is kept as it was and the tenth
+  (member names in the bridge files) only re-patterned; its eleventh (Broiler.JS's own module records), its fourteenth
+  and fifteenth (the walk) and its sixteenth (`SemanticModel`) are replaced by this script's eleventh, fourteenth,
+  fifteenth and sixteenth: the files of Broiler.JS and the bundle that use the words `FreeNames` or `Captured`; the
+  walk's construction, its stage 7 maps and the model's one call of the pass that computes free names and captures;
+  every write of those maps and every named-evaluation call beside the walk's guards on the model; and the six new
+  members' declarations. Its runner and command printer are unchanged.
 - Changed from the eighth model commit's folder: both push runs had concluded before this stage began, so this folder
   keeps one status read taken through the API, at 16:38:05Z, during the base run's build step, when both had concluded
   (an unkept read of the same list shortly before gave the same answer, `logs/notes.log`); that both runs had concluded
