@@ -3859,7 +3859,7 @@ Every later stage's decisions are recorded when that stage lands (the note of 20
 
 | Decision | Taken | Not taken, and why |
 |---|---|---|
-| D-js-channel | **With `BuildSemanticModel` on, the model's `semantics` rows join `ParseResult.Diagnostics` in decision D11's order.** Each is a construct's refusal at its construct, made through the walk's one `Report` and its one sequence. They refuse the parse as the walk's diagnostics do, so `Model` is null on a refusal. First error or all errors stays the existing `ParseLimits` parameter. One member asks for the model and its rows. The partial walk before a grammar refusal reports the rows and builds no model, by a `semantics` flag beside the model's. Each row is placed where Broiler.VM's binder names it (design.md section 3), except EA0005, which takes the library's own place, and ContainsArguments, which reports at every enclosing member. The differences from both engines are listed | (a) A model on a refused source, with an `EarlyErrors` list of its own: two channels and two orders for one fact. (b) A separate request member for reporting the rows: a model without its early errors answers less than JSD-0080's one early-error stage. (c) A counter of the rows' own: it cannot order a `syntax` row against a `semantics` row at one place. (d) Each `arguments` of a field initialiser or a static block reported at the identifier rather than once at the member: it departs from the binder's place (`VMC/JsBinder.EarlyErrors.cs:185-207`, `JsTreeFacts.At(member)`) for no fact. (e) Only the innermost member for ContainsArguments, as Broiler.VM reports: it leaves out a refusal the specification makes and changes the first error |
+| D-js-channel | **With `BuildSemanticModel` on, the model's `semantics` rows join `ParseResult.Diagnostics` in decision D11's order.** Each is a construct's refusal at its construct, made through the walk's one `Report` and its one sequence. They refuse the parse as the walk's diagnostics do, so `Model` is null on a refusal. First error or all errors stays the existing `ParseLimits` parameter. One member asks for the model and its rows. The partial walk before a grammar refusal reports the rows and builds no model, by a `semantics` flag beside the model's. Each row is placed where Broiler.VM's binder names it (design.md section 3), except EA0005, which takes the library's own place, and ContainsArguments, which reports at every enclosing member. The differences from both engines are listed *(noted 2026-11-27, at SJL-15.2 stage 6: the cell reads "Each is a construct's refusal at its construct", "The partial walk before a grammar refusal reports the rows" and "Each row is placed where Broiler.VM's binder names it (design.md section 3), except EA0005, which takes the library's own place, and ContainsArguments, which reports at every enclosing member"; stage 6's EE0170 and EE0171 are placed at their construct but decided over the whole module, reported by the full walk only and after its visit, the partial walk reporting neither, and `export * as` takes the exported name in place of the binder's `as` token (decision D-js-module-rows). The cell is left as written)* | (a) A model on a refused source, with an `EarlyErrors` list of its own: two channels and two orders for one fact. (b) A separate request member for reporting the rows: a model without its early errors answers less than JSD-0080's one early-error stage. (c) A counter of the rows' own: it cannot order a `syntax` row against a `semantics` row at one place. (d) Each `arguments` of a field initialiser or a static block reported at the identifier rather than once at the member: it departs from the binder's place (`VMC/JsBinder.EarlyErrors.cs:185-207`, `JsTreeFacts.At(member)`) for no fact. (e) Only the innermost member for ContainsArguments, as Broiler.VM reports: it leaves out a refusal the specification makes and changes the first error |
 | D-js-semantic-rows | **A separate internal `SemanticRows` table beside `Rows`.** Each entry is a `semantics` row of the stage table, with the catalogue's shared code and message identifier, reported only with the member on. Stage 2's rows are the super group with EE0172, EE0130, EE0138, EA0003 to EA0005, EE0018, EE0021 and EE0054. EP0017 and EP0018 are carried with no report of their own: EA0003, EA0004 or EE0162 refuses first, as EA0002 does for EP0015 and EP0016. EE0021 sits at a site no source reaches. One row per construct: a method's shape row before its placement row, EG0008 in place of EE0054 for a non-optional call head, and the EA rows for every eval request. A test holds the table a subset of the stage table's `semantics` rows, to be equal at stage 8 except EA0006 | (a) The rows moved into `Rows`: it revises the Frontend tests that hold `Rows` equal to the stage table's `syntax` rows and that hold that no `semantics` row is reported on the default request. (b) EE0172 left to stage 6: no fact it needs is stage 6's |
 | D-js-adapter-form | **D-js-adapter carried by id.** `AlgorithmsLibrary` answers a `semantics` vector through its record entry when the vector's identifier names a row in the adapter's own list. A test holds that list equal to `SemanticRows`. A `DirectEval` vector's caller context comes from the Script's model. R's part F's "every vector the adapter answers matches" is read at the parse, as bundle `sjl-13-001`'s rule states for its syntax vectors: `error: SyntaxError` as a refusal, and any other outcome as an acceptance. This is a reading of the session's, taken before any run of part F, which the owner ruled on 2026-11-25 to keep ("Keep the reading at the parse (Recommended)") *(noted 2026-11-26, at SJL-15.2 stage 5c: the cell reads "A `DirectEval` vector's caller context comes from the Script's model"; decision D-js-adapter-caller-scopes extends it to a nested eval's context, taken from the eval code's model, read at the parse as the owner ruled. The cell is left as written)* | (a) Reading `SemanticRows` from the adapter: the library would decide which vectors it is judged on, and R's part F control would report nothing. (b) A dated revision of part F saying so, before any run of it: this stage adds no rule file. (c) Answering only refusal vectors, so that a match is literal: part F would then not read the model's acceptances |
 | D-js-probe-semantics | **The Native AOT probe judges the answered `semantics` vectors at the parse**, on a summary line of its own; every other one is still not implemented | Recorded, not judged, as stage SJL-13.2a did: the probe would then not check what Conformance.Tests' run checks |
@@ -4490,6 +4490,122 @@ runs, each as it concluded in its first attempt. The readings at `be6c4a5c`, at 
 2026-11-25 and 2026-11-26 above, stay as written. Next: SJL-15.2 stage 6, the module records (correspondence rows MR1 and
 MR2, hand-off H19), the eighth model commit, judged by its part B against its own first parent. None of it is accepted:
 no second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
+
+*(Noted 2026-11-27, at SJL-15.2 stage 6, whose merge is the eighth model commit.)* The note above reads "Next: SJL-15.2
+stage 6, the module records (correspondence rows MR1 and MR2, hand-off H19), the eighth model commit, judged by its part B
+against its own first parent." The change before this one is stage 5c's part B records, Broiler-Platform/Broiler.JS#1146
+(`59ccb11c`), after stage 5c's merge, Broiler-Platform/Broiler.JS#1145 (`30af0dad`). This change is stage 6: module
+records, as this section's stage list names it. With `ParseRequest.BuildSemanticModel` on, a Module's semantic model
+holds its record: `SemanticModel.Module` answers a `ModuleRecord`, a new public type, with ParseModule's requested
+modules, its import entries, its local, indirect and star export entries, and whether the module awaits at its top level,
+and answers null for every other goal; each request is a `ModuleRequest` with its attributes as
+`ModuleRequestAttribute`s, and each entry an `ImportEntry` or an `ExportEntry`, its import name's kind an
+`ImportNameKind`, each a new public type. The declarations walk reports ModuleBody's early errors of exported names, and
+the canonical dump's model section writes a Module's record. With the member off nothing moves. Rule SL6's
+`PublicAPI.txt` gains these lines and loses none:
+- `Broiler.ECMAScript.Semantics.ExportEntry sealed class`
+- `Broiler.ECMAScript.Semantics.ExportEntry.get_Declaration() method Broiler.ECMAScript.Semantics.Declaration`
+- `Broiler.ECMAScript.Semantics.ExportEntry.get_ExportName() method System.String`
+- `Broiler.ECMAScript.Semantics.ExportEntry.get_ImportKind() method Broiler.ECMAScript.Semantics.ImportNameKind`
+- `Broiler.ECMAScript.Semantics.ExportEntry.get_ImportName() method System.String`
+- `Broiler.ECMAScript.Semantics.ExportEntry.get_LocalName() method System.String`
+- `Broiler.ECMAScript.Semantics.ExportEntry.get_ModuleRequest() method Broiler.ECMAScript.Semantics.ModuleRequest`
+- `Broiler.ECMAScript.Semantics.ExportEntry.get_Node() method Broiler.ECMAScript.Syntax.SyntaxNode`
+- `Broiler.ECMAScript.Semantics.ImportEntry sealed class`
+- `Broiler.ECMAScript.Semantics.ImportEntry.get_Declaration() method Broiler.ECMAScript.Semantics.Declaration`
+- `Broiler.ECMAScript.Semantics.ImportEntry.get_ImportKind() method Broiler.ECMAScript.Semantics.ImportNameKind`
+- `Broiler.ECMAScript.Semantics.ImportEntry.get_ImportName() method System.String`
+- `Broiler.ECMAScript.Semantics.ImportEntry.get_LocalName() method System.String`
+- `Broiler.ECMAScript.Semantics.ImportEntry.get_ModuleRequest() method Broiler.ECMAScript.Semantics.ModuleRequest`
+- `Broiler.ECMAScript.Semantics.ImportEntry.get_Node() method Broiler.ECMAScript.Syntax.BindingIdentifier`
+- `Broiler.ECMAScript.Semantics.ImportNameKind enum`
+- `Broiler.ECMAScript.Semantics.ImportNameKind.All = 3`
+- `Broiler.ECMAScript.Semantics.ImportNameKind.AllButDefault = 4`
+- `Broiler.ECMAScript.Semantics.ImportNameKind.Name = 1`
+- `Broiler.ECMAScript.Semantics.ImportNameKind.NamespaceObject = 2`
+- `Broiler.ECMAScript.Semantics.ImportNameKind.None = 0`
+- `Broiler.ECMAScript.Semantics.ImportNameKind.Source = 5`
+- `Broiler.ECMAScript.Semantics.ImportNameKind.value__ field System.Int32`
+- `Broiler.ECMAScript.Semantics.ModuleRecord sealed class`
+- `Broiler.ECMAScript.Semantics.ModuleRecord.get_HasTopLevelAwait() method System.Boolean`
+- ``Broiler.ECMAScript.Semantics.ModuleRecord.get_ImportEntries() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.ImportEntry>``
+- ``Broiler.ECMAScript.Semantics.ModuleRecord.get_IndirectExportEntries() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.ExportEntry>``
+- ``Broiler.ECMAScript.Semantics.ModuleRecord.get_LocalExportEntries() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.ExportEntry>``
+- ``Broiler.ECMAScript.Semantics.ModuleRecord.get_RequestedModules() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.ModuleRequest>``
+- ``Broiler.ECMAScript.Semantics.ModuleRecord.get_StarExportEntries() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.ExportEntry>``
+- `Broiler.ECMAScript.Semantics.ModuleRequest sealed class`
+- ``Broiler.ECMAScript.Semantics.ModuleRequest.get_Attributes() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.ModuleRequestAttribute>``
+- `Broiler.ECMAScript.Semantics.ModuleRequest.get_Phase() method Broiler.ECMAScript.Syntax.ImportPhase`
+- `Broiler.ECMAScript.Semantics.ModuleRequest.get_Specifier() method System.String`
+- ``Broiler.ECMAScript.Semantics.ModuleRequest.get_Statements() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.Statement>``
+- `Broiler.ECMAScript.Semantics.ModuleRequestAttribute sealed class`
+- `Broiler.ECMAScript.Semantics.ModuleRequestAttribute.get_Key() method System.String`
+- `Broiler.ECMAScript.Semantics.ModuleRequestAttribute.get_Value() method System.String`
+- `Broiler.ECMAScript.Semantics.SemanticModel.get_Module() method Broiler.ECMAScript.Semantics.ModuleRecord`
+
+EE0170 (ExportedNames' duplicates) and EE0171 (ExportedBindings not declared) join `SemanticRows`, reported with the
+member on by the full walk only, after its visit, since the whole module decides them; the partial walk before a grammar
+refusal reports neither. The library-level adapter lists them, as the Conformance test holding its rows equal to the
+table requires, and answers no new vector: no `semantics` vector reaches the Module goal, which schema 1 has no field for
+(decision D61 above). `SemanticRows` now holds every `semantics` row of the stage table but EA0006, and decision
+D-js-semantic-rows' "equal at stage 8 except EA0006" stands; the Frontend test keeps it a subset until stage 8. The
+record's top-level `await` is the tree's fact, `ProgramNode.HasTopLevelAwait`, read and not recomputed: an `await` in a
+top-level async arrow does not set it, as Contains does not look into an arrow. It is the fact correspondence row MR2 and
+hand-off H19 route to the model's module record (Broiler.VM's `docs/evidence/sjl-15-001/correspondence.md`, row MR2;
+this repository's bundle, `correspondence-broiler-js.md`, row MR2). H19's correction is Broiler.VM's, read at SJL-15.3,
+as JSD-0088's decision D-handoffs routes it; nothing here declares it met, and neither correspondence row is edited. An
+`export { x }` local, which `Resolve` and `DeclarationOf` do not answer, being an `IdentifierName`, is answered by the
+record's local export entry and its declaration.
+
+**The merge condition.** Both workflows are green on the PR; after the merge, nothing merges to `main` until both push
+runs at the merge have concluded. For ci.yml's run that includes the one re-run D-js-part-b-attempt allows
+(`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run (`.github/workflows/ci.yml:25-27`,
+:36-39). A later push never cancels Shared libraries' push run, because its push group carries the commit
+(`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1 ("Nothing merged to the
+default branch until both push runs at it had concluded", `docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken
+after the merge, against the merge's own first parent. Stage 5c's part B records say the same of stage 5c: "Nothing
+merged to the default branch until both push runs at it had concluded" (`docs/roadmap/SharedLibraries.md:4469-4470`).
+
+**This stage's decisions of 2026-11-27**, each taken as recommended under the owner's direction and recorded as the
+owner's decision of 2026-11-27. Their authority is the direction quoted above, which leaves out only "the start ...;
+decision D-census ...; and each publication of the shared stream (JSD-0083's decision D30)"; none below is one of those.
+Every later stage's decisions are recorded when that stage lands (the note of 2026-11-24 above); these are stage 6's.
+The plan lists no decision for this stage, and D-js-names lists only `ModuleRecord` of its types, so the further types are
+recorded here.
+
+| Decision | Taken | Not taken, and why |
+|---|---|---|
+| D-js-module-record | **With `BuildSemanticModel` on, `SemanticModel.Module` answers a Module's `ModuleRecord`, and null for every other goal.** The record holds the requested modules, the import entries, the local, indirect and star export entries, and whether the module awaits at its top level. **Requests** are ParseModule's: a request for each distinct request, in order of first appearance; imports and every `export … from` each make a request; equality is as ModuleRequestsEqual decides, with the phase added. Each request is a `ModuleRequest` with its specifier as written, its phase, the statements that make it, and its attributes as `ModuleRequestAttribute`s in its first statement's source order; each statement's own order stays reachable through that statement. **Entries** are `ImportEntry` and `ExportEntry` with the specification's values, named by `ImportNameKind`. The export entries are partitioned as ParseModule does: a re-exported import becomes an indirect entry, and each list keeps source order. Every entry shares its request's instance, and every entry has its node. An import entry has its declaration, and a local export entry has the module scope's first declaration of its name. A source-phase binding's entry takes a kind of its own, beyond the edition, never the default export's name; a deferred import keeps the namespace form with its phase. **Top-level `await` is the tree's fact**, read and not recomputed; for `await using` and for decorators it is a reading beyond the edition. `ModuleRecord`, `ModuleRequest`, `ModuleRequestAttribute`, `ImportEntry`, `ExportEntry` and `ImportNameKind` are new types; D-js-names lists only the first. The specification sorts the attributes by key; the record keeps source order, as JSD-0080 orders every collection, and says how to sort them | (a) The specification's sorted attributes: exact for every statement of a shared request, but it departs from JSD-0080's ordering rule. (b) No phase: it merges a deferred request with an evaluating one, and drops a fact the tree has. (c) The tree's attribute nodes: their keys need the property name, and a shared request would carry a single statement's nodes. (d) A type named `ImportAttribute`: it collides with the tree's public type. (e) Other names for the request and entry types, to avoid Broiler.JS's internal records: those live in a consumer's own namespace and shadow without an ambiguity. (f) A single member for the namespace object and for all, or separate enums: the specification spells them apart in a single concept. (g) A second computation of top-level `await`: a second producer of the same fact. (h) The function facts' async flag set for a module that awaits: it changes a fact that is the same on every request. (i) A request instance for each statement, as the specification builds them: duplicate requests in place of ParseModule's list, whose attribute orders the statements already hold. (j) The specification's unpartitioned export entries: the lists ParseModule builds are the record's. (k) A source-phase binding read as a default import: it names an export the binding is not. (l) A source-phase binding with no entry: a declared import would have none |
+| D-js-module-rows | **EE0170 and EE0171 join `SemanticRows`**, reported with the member on by the full walk only, after its visit, because the whole module decides them. EE0170 is reported for each exported name that repeats, at its second occurrence. EE0171 is reported for each export clause's local name without a `from` that the module neither declares nor imports, except on a specifier another row already refuses (the duplicate, a string local or a reserved local), as D-js-semantic-rows decides ("One row per construct") and as EG0008 takes EE0054's place. Each is placed where Broiler.VM's binder names it: the specifier, the exported declaration, or the default export. For `export * as` it is placed at the exported name, where the binder names the `as` token, which the tree has no node for. A `syntax` row at the same place comes first. The partial walk reports neither | (a) Both at the module's close, as its declared-name conflicts are: it orders them after every construct refusal and leaves the binder's place. (b) At the construct during the visit: the declarations that follow are not yet known, and the partial walk would report a refusal the full source does not make. (c) Every repeat of an exported name, as Broiler.VM reports: the library's form for conflicts names each repeated name at its second occurrence. (d) The undeclared row beside another row on the same specifier, since the specification's rules are independent: it departs from D-js-semantic-rows' rule, and the binder reports the other row alone there. (e) Both at the export statement's start, as Broiler.JS throws: it leaves the binder's place |
+
+Decision D-js-channel's cell above gains a dated note of 2026-11-27, and the cell is left as written. Decision
+D-js-semantic-rows' cell stays as written: this stage follows its rule.
+
+The places where the library differs from either engine, named for SJL-15.3 and SJL-15.5. Broiler.VM's `CheckModule`
+(`src/Broiler.VM.Profile.JavaScript.Compiler/JsBinder.EarlyErrors.cs`) reports every repeat of an exported name and, like
+the library, skips the undeclared check on a repeated specifier; its place for `export * as` is the `as` token
+(`JsTreeFacts.Exports`); it names an anonymous default declaration's binding `default`, where the specification's local
+name is `*default*`, and its evaluation scope map writes that slot (an inference); its request key is a typed
+specifier, only `type: "json"` being read and any other attribute refused or dropped (`JsCompiler.Modules.cs`,
+`JsCompiler.Requests`, an inference); it reads `from ""` as no `from` (`JsTreeFacts.SourceOrNone`, an inference); and its
+top-level `await` counts an async arrow's `await` (`JsAdmissionWalk`), which is row MR2 and hand-off H19, Broiler.VM's
+correction at its window. Observations for its catch-up, inferences and not classified: turning MR2's flag would
+change a module body unit's flags, an artifact byte difference for an input accepted at both commits, which class F as
+worded admits only where an outcome or a first diagnostic moves; and a requests path that turned the member on would
+refuse inputs it accepts today. Broiler.JS's `SyntaxValidation` module checks throw at the `export` statement's start and
+skip names bound by destructuring (the catalogue's note on EE0170); `FastCompiler.Module` throws the undeclared export at
+the statement's start; its module analysis keys a request by specifier and `type` only (`ModuleSourceAnalysis`) and
+collects local export names through a hash set (an inference); `ModuleSourceAnalysis` declares internal records named
+`ModuleRequest`, `ImportEntry` and `ExportEntry`, which the new public types would shadow if that file ever used the
+model's namespace (an inference); and its top-level `await` reading is the specification's (the bundle's
+`correspondence-broiler-js.md`, row MR2). Under first error the library orders by place, so that a second default export,
+which the off path refuses at the module's close, is refused first by EE0170 at it. Stale cells, reported and
+not edited: the stage table's `vm_site` cells and the catalogue's `vm_wide_site` cells of EE0170 and EE0171; the stage
+table's and the catalogue's `js_site` cells of EE0170, and the `js_site` cell of EE0170's class E row
+(`corrections/class-e.tsv`); row MR1 of the bundle's `correspondence-broiler-js.md`, whose sites have moved; Broiler.VM's
+row MR2, whose model cell does not name `ProgramNode.HasTopLevelAwait`; and `early-errors.md`'s message table, which has
+no row for `module.export.undeclared`. None of it is accepted: no second holder exists to review it. Every SJL-15 clause
+is unmet, in both repositories.
 
 ## Invariants
 

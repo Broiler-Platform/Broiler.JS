@@ -708,3 +708,26 @@ at `4d8aa93a` and at `84d84cc3`, and the first one's flag, in the notes above of
 stay as written. A NOT MET at any later model commit makes part B NOT MET. **Next:** SJL-15.2 stage 6, the module
 records (correspondence rows MR1 and MR2, hand-off H19), the eighth model commit. No rule file is added or edited, and no
 earlier output changes.
+
+*(Noted 2026-11-27, at SJL-15.2 stage 6, written before part B's run at it.)* **The eighth model commit.** This branch's
+merge will be the eighth model commit: SJL-15.2 stage 6, module records, named here once it exists. Part B is taken after
+it, against its own first parent (decision D-js-part-b-method), with both workflows' push runs imported and decision
+D-js-part-b-attempt applying. The merge condition: both workflows are green on the PR; after the merge, nothing merges to
+`main` until both push runs at the merge have concluded. For ci.yml's run that includes the one re-run
+D-js-part-b-attempt allows (`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run
+(`.github/workflows/ci.yml:25-27`, :36-39). A later push never cancels Shared libraries' push run, because its push group
+carries the commit (`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1
+("Nothing merged to the default branch until both push runs at it had concluded",
+`docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken after the merge, against the merge's own first parent.
+Stage 5c's part B records say the same of stage 5c: "Nothing merged to the default branch until both push runs at it had
+concluded" (`docs/roadmap/SharedLibraries.md:4469-4470`). The reading at it will be limited to the model commits taken
+so far.
+
+From this change a Module's semantic model holds its record (`SemanticModel.Module`), and the model reports catalogue
+rows EE0170 and EE0171, ModuleBody's early errors of exported names (decisions D-js-module-record and D-js-module-rows
+in `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)"). The library-level adapter,
+`runners/AlgorithmsLibrary.Semantics.cs`, lists EE0170 and EE0171 and answers no new vector, because no `semantics`
+vector reaches the Module goal (as EE0177 has none). EE0170's and EE0171's class E rows and EE0171's class T row
+([`corrections/class-e.tsv`](corrections/class-e.tsv), [`corrections/class-t.tsv`](corrections/class-t.tsv), their
+EE0170 and EE0171 rows) are unchanged. No rule file is added or edited, and no earlier output changes. "What it will
+hold" above is left as written.

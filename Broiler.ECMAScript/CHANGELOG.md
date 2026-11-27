@@ -801,6 +801,86 @@ Not yet packed under a version of its own: the stream's next version is set when
   canonical dump's model section (`runners/SyntaxDump.cs`) writes a `model-eval-call` line per candidate and a
   `model-caller-scope` line per record. No observable change: no published version carries the member, and with it off
   nothing moves.
+- `Broiler.ECMAScript.Frontend`: **module records** (milestone SJL-15.2, stage 6; the decisions of 2026-11-27,
+  D-js-module-record and D-js-module-rows, in `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics
+  (SJL-15)"; design [`docs/frontend/design.md`](docs/frontend/design.md), section 10.10). A minor change under convention
+  16, which no published version carries: nothing is removed, and with the request member off the parse answers as
+  before, its tree, side tables and diagnostics unchanged. It adds, as rule SL6's `PublicAPI.txt` lists them:
+  - `Broiler.ECMAScript.Semantics.ExportEntry sealed class`:
+    an ExportEntry Record, with its node and, for a local entry, its declaration;
+  - `Broiler.ECMAScript.Semantics.ExportEntry.get_Declaration() method Broiler.ECMAScript.Semantics.Declaration`:
+    a local entry's binding, the module scope's first declaration of its local name; null otherwise;
+  - `Broiler.ECMAScript.Semantics.ExportEntry.get_ExportName() method System.String`:
+    [[ExportName]], null only for `export * from`;
+  - `Broiler.ECMAScript.Semantics.ExportEntry.get_ImportKind() method Broiler.ECMAScript.Semantics.ImportNameKind`:
+    what [[ImportName]] is;
+  - `Broiler.ECMAScript.Semantics.ExportEntry.get_ImportName() method System.String`:
+    [[ImportName]] where it is a String;
+  - `Broiler.ECMAScript.Semantics.ExportEntry.get_LocalName() method System.String`:
+    [[LocalName]], non-null exactly for a local entry;
+  - `Broiler.ECMAScript.Semantics.ExportEntry.get_ModuleRequest() method Broiler.ECMAScript.Semantics.ModuleRequest`:
+    [[ModuleRequest]], the record's request instance; null for a local entry;
+  - `Broiler.ECMAScript.Semantics.ExportEntry.get_Node() method Broiler.ECMAScript.Syntax.SyntaxNode`:
+    the specifier, the bound name, the `export default` or the `export *` statement;
+  - `Broiler.ECMAScript.Semantics.ImportEntry sealed class`:
+    an ImportEntry Record, with its binding and its declaration;
+  - `Broiler.ECMAScript.Semantics.ImportEntry.get_Declaration() method Broiler.ECMAScript.Semantics.Declaration`:
+    the import's declaration, the instance `DeclarationOf` answers for its binding;
+  - `Broiler.ECMAScript.Semantics.ImportEntry.get_ImportKind() method Broiler.ECMAScript.Semantics.ImportNameKind`:
+    what [[ImportName]] is;
+  - `Broiler.ECMAScript.Semantics.ImportEntry.get_ImportName() method System.String`:
+    [[ImportName]] where it is a String;
+  - `Broiler.ECMAScript.Semantics.ImportEntry.get_LocalName() method System.String`:
+    [[LocalName]];
+  - `Broiler.ECMAScript.Semantics.ImportEntry.get_ModuleRequest() method Broiler.ECMAScript.Semantics.ModuleRequest`:
+    [[ModuleRequest]], the record's request instance;
+  - `Broiler.ECMAScript.Semantics.ImportEntry.get_Node() method Broiler.ECMAScript.Syntax.BindingIdentifier`:
+    the ImportedBinding;
+  - `Broiler.ECMAScript.Semantics.ImportNameKind enum`:
+    what an entry's import name is, in the specification's spellings, and `Source`, a source-phase binding's, beyond the pinned edition;
+  - `Broiler.ECMAScript.Semantics.ImportNameKind.All = 3`;
+  - `Broiler.ECMAScript.Semantics.ImportNameKind.AllButDefault = 4`;
+  - `Broiler.ECMAScript.Semantics.ImportNameKind.Name = 1`;
+  - `Broiler.ECMAScript.Semantics.ImportNameKind.NamespaceObject = 2`;
+  - `Broiler.ECMAScript.Semantics.ImportNameKind.None = 0`;
+  - `Broiler.ECMAScript.Semantics.ImportNameKind.Source = 5`;
+  - `Broiler.ECMAScript.Semantics.ImportNameKind.value__ field System.Int32`;
+  - `Broiler.ECMAScript.Semantics.ModuleRecord sealed class`:
+    a Module's record, ParseModule's lists of the Source Text Module Record;
+  - `Broiler.ECMAScript.Semantics.ModuleRecord.get_HasTopLevelAwait() method System.Boolean`:
+    [[HasTLA]], the tree's `ProgramNode.HasTopLevelAwait`, read and not recomputed;
+  - ``Broiler.ECMAScript.Semantics.ModuleRecord.get_ImportEntries() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.ImportEntry>``;
+  - ``Broiler.ECMAScript.Semantics.ModuleRecord.get_IndirectExportEntries() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.ExportEntry>``;
+  - ``Broiler.ECMAScript.Semantics.ModuleRecord.get_LocalExportEntries() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.ExportEntry>``;
+  - ``Broiler.ECMAScript.Semantics.ModuleRecord.get_RequestedModules() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.ModuleRequest>``:
+    ModuleRequests, in the order of their first statement, duplicates removed by ModuleRequestsEqual with the phase added;
+  - ``Broiler.ECMAScript.Semantics.ModuleRecord.get_StarExportEntries() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.ExportEntry>``;
+  - `Broiler.ECMAScript.Semantics.ModuleRequest sealed class`:
+    a ModuleRequest Record, with its phase and the statements that make it;
+  - ``Broiler.ECMAScript.Semantics.ModuleRequest.get_Attributes() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Semantics.ModuleRequestAttribute>``:
+    its first statement's attributes in that statement's source order; the specification sorts them by key;
+  - `Broiler.ECMAScript.Semantics.ModuleRequest.get_Phase() method Broiler.ECMAScript.Syntax.ImportPhase`:
+    the phase, the library's, beyond the pinned edition;
+  - `Broiler.ECMAScript.Semantics.ModuleRequest.get_Specifier() method System.String`;
+  - ``Broiler.ECMAScript.Semantics.ModuleRequest.get_Statements() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Syntax.Statement>``:
+    every statement that makes the request, the first first;
+  - `Broiler.ECMAScript.Semantics.ModuleRequestAttribute sealed class`:
+    an ImportAttribute Record, its key and its value;
+  - `Broiler.ECMAScript.Semantics.ModuleRequestAttribute.get_Key() method System.String`;
+  - `Broiler.ECMAScript.Semantics.ModuleRequestAttribute.get_Value() method System.String`;
+  - `Broiler.ECMAScript.Semantics.SemanticModel.get_Module() method Broiler.ECMAScript.Semantics.ModuleRecord`:
+    a Module's record, null for every other goal; with the member on only.
+
+  The rows EE0170 (ExportedNames contains a duplicate entry) and EE0171 (an ExportedBindings element is not declared),
+  ModuleBody's early errors, are reported with the member on by the full walk only, after its visit, the whole module
+  deciding them: EE0170 at a repeated exported name's second occurrence, EE0171 at an export clause's specifier without
+  a FromClause whose local name the module neither declares nor imports, not on a specifier another row already
+  refuses; the partial walk reports neither. The library-level adapter (`runners/AlgorithmsLibrary.Semantics.cs`) lists
+  both rows and newly answers no vector, since no `semantics` vector reaches the Module goal. The canonical dump's model
+  section (`runners/SyntaxDump.cs`) writes, for a Module's model only, a `model-module` line, a `model-request` line per
+  request with a `model-attribute` line per attribute, and a `model-import`, `model-export-local`,
+  `model-export-indirect` or `model-export-star` line per entry. No observable change: no published version carries the
+  member, and with it off nothing moves.
 
 ### Changed
 

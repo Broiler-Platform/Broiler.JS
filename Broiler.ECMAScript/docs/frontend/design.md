@@ -635,11 +635,11 @@ are this repository's of 2026-11-24, recorded in `docs/roadmap/SharedLibraries.m
 (SJL-15)" (D-js-entry, D-js-default-off, D-js-instances, D-js-kinds, D-js-scope-shape, D-js-parameters,
 D-js-declaration-of, D-js-function-kind and D-js-names among them), and where this section differs from them or from the
 records that win (the header), it is corrected to match. Section 4 stays the sketch as restated at SJL-12.1. Stage 1 is
-the model's foundation; the members the sketch names beyond it (the module record, named evaluation, captures and the
+the model's foundation; the members the sketch names beyond it (named evaluation, captures and the
 early errors) are its later stages', and none is declared before its stage. Stage 2 adds the early errors of the
 function context (section 10.4), stage 3 the jump targets with their early errors (section 10.5), stage 4 the
 private-name environments with their early errors (section 10.6), and stage 5a resolution and the function environment
-facts (section 10.7); the early errors of the module record stay their stage's.
+facts (section 10.7).
 *(Revised 2026-11-25, at SJL-15.2 stage 2; the paragraph ended at "and none is declared before its
 stage".)* *(Revised 2026-11-25, at SJL-15.2 stage 3, when the jump targets landed; it read "(resolution, jump targets,
 private names, the module record, named evaluation, captures and the early errors)" and "Stage 2 adds the early errors
@@ -654,13 +654,17 @@ Stage 5b adds Annex B's block-function aliases (section 10.8), which the model's
 block-function aliases", section 4) and the sketch gives no member. *(Added 2026-11-26, at SJL-15.2 stage 5b.)*
 Stage 5c adds the caller's records to the request, with the model members that answer them and the rows they decide
 (section 10.9). *(Added 2026-11-26, at SJL-15.2 stage 5c.)*
+*(Revised 2026-11-27, at SJL-15.2 stage 6, when the module record landed; it read "(the module record, named
+evaluation, captures and the early errors)" and "facts (section 10.7); the early errors of the module record stay their
+stage's".)* Stage 6 adds the module record with its early errors of exported names (section 10.10). *(Added 2026-11-27,
+at SJL-15.2 stage 6.)*
 
 ### 10.1 The entry
 
 | Item | What | Decisions |
 |---|---|---|
 | The request | `ParseRequest.BuildSemanticModel`, init-only and false by default: a parameter of the request, as `RetainTokens` and the first-error parameter are (section 3), not a switch of the language. With it off the parse is exactly SJL-13's and SJL-14's | D-js-entry, D-js-default-off |
-| The walk | The declarations walk builds the model as it goes, in the same visit and order, with explicit stacks; it starts no second walk (the milestone's words). Its own counter numbers the model's scopes and facts, so the walk's sequence, which orders the diagnostics and the tables, is the same with the model on or off on every parse the member's on path accepts. A partial walk before a grammar refusal builds none, and with the member on reports the model's rows (section 10.4). *(Revised 2026-11-25, at SJL-15.2 stage 2; it read "is the same with the model on or off. A partial walk before a grammar refusal builds none".)* | D-js-entry, D-js-scope-shape, D-js-channel |
+| The walk | The declarations walk builds the model as it goes, in the same visit and order, with explicit stacks; it starts no second walk (the milestone's words). Its own counter numbers the model's scopes and facts, so the walk's sequence, which orders the diagnostics and the tables, is the same with the model on or off on every parse the member's on path accepts. A partial walk before a grammar refusal builds none, and with the member on reports the model's rows but stage 6's (sections 10.4 and 10.10). *(Revised 2026-11-25, at SJL-15.2 stage 2; it read "is the same with the model on or off. A partial walk before a grammar refusal builds none".)* *(Revised 2026-11-27, at SJL-15.2 stage 6, whose rows the whole module decides; it read "reports the model's rows (section 10.4)".)* | D-js-entry, D-js-scope-shape, D-js-channel |
 | The result | `ParseResult.Model`, computed from the side tables (`Declarations?.Model`), so that the result keeps the layout it had at `0.1.0-preview.9`: null unless the member is on and the source is accepted, as `Declarations` is null for a refused source. With the member on, the model's rows also refuse a source (section 10.4); on every source the on path accepts, the tree, the side tables and the diagnostics are those of the parse with it off. *(Revised 2026-11-25, at SJL-15.2 stage 2; it read "With the member on, the tree, the side tables and the diagnostics are those of the parse with it off".)* | D-js-entry, D-js-channel |
 | Who sets it | No engine before its own cut-over: Broiler.JS's bridge does not set it before SJL-15.5, and Broiler.VM reads the model only from a published version its pin commit admits | D-js-default-off |
 
@@ -668,11 +672,11 @@ Stage 5c adds the caller's records to the request, with the model members that a
 
 | Sketch | The library's | What |
 |---|---|---|
-| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)`; `TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)` (section 10.5); `PrivateEnvironmentOf(ClassNode)` and `Resolve(PrivateIdentifier)` (section 10.6); `Resolve(Identifier)`, `Resolve(BindingIdentifier)` and `EnvironmentOf(SyntaxNode)` (section 10.7); `AnnexBAlias(Declaration)` (section 10.8); `DirectEvalCalls` and `CallerScopesOf(CallExpression)` (section 10.9) *(revised 2026-11-25, at SJL-15.2 stage 3; the cell ended at "`FactsOf(SyntaxNode)`")* *(revised 2026-11-25, at SJL-15.2 stage 4; the cell ended at "`TargetOf(ContinueStatement)` (section 10.5)")* *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Resolve(PrivateIdentifier)` (section 10.6)")* *(revised 2026-11-26, at SJL-15.2 stage 5b; the cell ended at "`EnvironmentOf(SyntaxNode)` (section 10.7)")* *(revised 2026-11-26, at SJL-15.2 stage 5c; the cell ended at "`AnnexBAlias(Declaration)` (section 10.8)")* |
+| `SemanticModel` | `Broiler.ECMAScript.Semantics.SemanticModel`, sealed, its constructor internal | `Scopes`; `Functions`; `ScopeOf(SyntaxNode)`; `ParentOf(Scope)`; `DeclarationOf(SyntaxNode)`; `FactsOf(SyntaxNode)`; `TargetOf(BreakStatement)` and `TargetOf(ContinueStatement)` (section 10.5); `PrivateEnvironmentOf(ClassNode)` and `Resolve(PrivateIdentifier)` (section 10.6); `Resolve(Identifier)`, `Resolve(BindingIdentifier)` and `EnvironmentOf(SyntaxNode)` (section 10.7); `AnnexBAlias(Declaration)` (section 10.8); `DirectEvalCalls` and `CallerScopesOf(CallExpression)` (section 10.9); `Module` (section 10.10) *(revised 2026-11-25, at SJL-15.2 stage 3; the cell ended at "`FactsOf(SyntaxNode)`")* *(revised 2026-11-25, at SJL-15.2 stage 4; the cell ended at "`TargetOf(ContinueStatement)` (section 10.5)")* *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Resolve(PrivateIdentifier)` (section 10.6)")* *(revised 2026-11-26, at SJL-15.2 stage 5b; the cell ended at "`EnvironmentOf(SyntaxNode)` (section 10.7)")* *(revised 2026-11-26, at SJL-15.2 stage 5c; the cell ended at "`AnnexBAlias(Declaration)` (section 10.8)")* *(revised 2026-11-27, at SJL-15.2 stage 6; the cell ended at "`CallerScopesOf(CallExpression)` (section 10.9)")* |
 | `Scope` | The tables' `Scope`, the same instances | The model's `Scopes` are a superset of `DeclarationTables.Scopes` in the same relative order, adding the kinds `With`, `ClassBody`, `FunctionName` and `Parameters`. Eval code is not a kind: its program's scope is a `Script` scope and its facts' kind `FunctionKind.EvalCode`; the separate variable environment is a function fact, `FunctionFacts.HasSeparateVariableEnvironment` (section 10.7) *(revised 2026-11-26, at SJL-15.2 stage 5a; it read "the separate variable environment is a function fact of a later stage")* |
 | `Declaration` | The tables' `Declaration`, the same instances | `BindingKind` gains `Parameter`, `FunctionName` (a named function expression's own name) and `ClassName` (a class's inner name), each with its three flags false, and `Declaration.IsMutable`, from the kind; and `Arguments`, the `arguments` binding, the model's alone and in no scope's declarations (section 10.7); and `BlockFunctionAlias`, a block function's var-scoped alias, the model's alone and in no scope's declarations (section 10.8) *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "`Declaration.IsMutable`, from the kind")* *(revised 2026-11-26, at SJL-15.2 stage 5b; the cell ended at "in no scope's declarations (section 10.7)")* |
 | `FunctionFacts` | The tables' `FunctionFacts`, the same instances | `Kind` (`FunctionKind`), `IsAsync`, `IsGenerator`, `HasSimpleParameterList` and `HasParameterExpressions`, the same on every request; the model's `Functions` add one for every static block and every field with an initialiser; and `HasSeparateVariableEnvironment`, computed from them, the same on every request (section 10.7) *(revised 2026-11-26, at SJL-15.2 stage 5a; the cell ended at "every field with an initialiser")* |
-| `IdentifierReference`, `BreakOrContinue`, `PrivateNameReference`, `Diagnostic` | `Identifier`, `BreakStatement` and `ContinueStatement`, `PrivateIdentifier`, `SyntaxDiagnostic` | The tree's types, at the stages that read them; `LabelTarget` is stage 3's new type (section 10.5), `PrivateNameBinding`, with `PrivateEnvironment` and `PrivateNameKind`, stage 4's (section 10.6), `Resolution`, with `ResolutionKind`, `DynamicReason` and `EnvironmentFacts`, stage 5a's (section 10.7), and `ModuleRecord` is a new type of its stage *(revised 2026-11-25, at SJL-15.2 stage 3; it read "`Resolution`, `LabelTarget`, `PrivateNameBinding` and `ModuleRecord` are new types of those stages")* *(revised 2026-11-25, at SJL-15.2 stage 4; it read "and `Resolution`, `PrivateNameBinding` and `ModuleRecord` are new types of their stages")* *(revised 2026-11-26, at SJL-15.2 stage 5a; it read "and `Resolution` and `ModuleRecord` are new types of their stages")* |
+| `IdentifierReference`, `BreakOrContinue`, `PrivateNameReference`, `Diagnostic` | `Identifier`, `BreakStatement` and `ContinueStatement`, `PrivateIdentifier`, `SyntaxDiagnostic` | The tree's types, at the stages that read them; `LabelTarget` is stage 3's new type (section 10.5), `PrivateNameBinding`, with `PrivateEnvironment` and `PrivateNameKind`, stage 4's (section 10.6), `Resolution`, with `ResolutionKind`, `DynamicReason` and `EnvironmentFacts`, stage 5a's (section 10.7), and `ModuleRecord`, with `ModuleRequest`, `ModuleRequestAttribute`, `ImportEntry`, `ExportEntry` and `ImportNameKind`, stage 6's (section 10.10) *(revised 2026-11-25, at SJL-15.2 stage 3; it read "`Resolution`, `LabelTarget`, `PrivateNameBinding` and `ModuleRecord` are new types of those stages")* *(revised 2026-11-25, at SJL-15.2 stage 4; it read "and `Resolution`, `PrivateNameBinding` and `ModuleRecord` are new types of their stages")* *(revised 2026-11-26, at SJL-15.2 stage 5a; it read "and `Resolution` and `ModuleRecord` are new types of their stages")* *(revised 2026-11-27, at SJL-15.2 stage 6; it read "and `ModuleRecord` is a new type of its stage")* |
 
 Every collection is in source order: the scopes and the facts by the start of their node and, for one start, by the order
 the walk made them in, which puts a scope before the scopes inside it; every fact is keyed by node identity. A node
@@ -745,9 +749,12 @@ error an earlier row of the model's displaces the diagnostic the parse with the 
 early-error stage.
 
 **The partial walk.** Before a grammar refusal, the walk over the top-level statements the parse completed reports the
-model's rows, with the member on, and builds no model. Every row is decided inside its construct, from the request and the
+model's rows, with the member on, and builds no model. Every row but stage 6's is decided inside its construct, from the request and the
 enclosing function, class element or literal, so it is complete within those statements; the dynamic function's
 parameters goal hands the partial walk no statement, its body goal its statements under the program's context.
+Stage 6's EE0170 and EE0171, which the whole ModuleItemList decides, are reported by the full walk alone, after its
+visit, and the partial walk reports neither (section 10.10). *(Revised 2026-11-27, at SJL-15.2 stage 6; it read "Every
+row is decided inside its construct".)*
 
 **The rows by group, their facts and their places.**
 
@@ -1463,6 +1470,111 @@ describes SJL-13.2a's types. Each is left as written.
 
 **For part F's checklist** (stage 8): JSD-0080's "the caller's lexical names" is `InheritedContext.CallerScopes`,
 `CallerScope`, `SemanticModel.DirectEvalCalls` and `SemanticModel.CallerScopesOf`.
+
+### 10.10 Module records
+
+*(Added 2026-11-27, at SJL-15.2 stage 6.)* A Module's record and the early errors of its exported names, as the library
+holds and reports them. Like the rest of this section it restates and decides nothing: the decisions are D-js-module-record
+and D-js-module-rows of 2026-11-27, in `docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)".
+
+**The record.** With `ParseRequest.BuildSemanticModel` on, `SemanticModel.Module` answers a `ModuleRecord` for the Module
+goal and null for every other goal, as the sketch's `public ModuleRecord? Module { get; }` (section 4) allows; a Module
+with no import or export has a record with empty lists. It holds ParseModule's lists of the Source Text Module Record:
+`RequestedModules` (`ModuleRequest`), `ImportEntries` (`ImportEntry`), `LocalExportEntries`, `IndirectExportEntries` and
+`StarExportEntries` (`ExportEntry`), and `HasTopLevelAwait`. `ModuleRequestAttribute` is an attribute's key and value, and
+`ImportNameKind` names what an entry's import name is, in the specification's spellings: `Name`, `NamespaceObject`
+(~namespace-object~), `All` (~all~), `AllButDefault` (~all-but-default~), `None` for a local export entry's null, and
+`Source`, the library's, below. D-js-names lists only `ModuleRecord`; the further types are stage 6's decision.
+
+**Requests.** ModuleRequests: a request for each distinct request, in the order of its first statement; every
+`ImportDeclaration`, `import "m"` and `import {} from "m"` among them, and every `export … from`, `export {} from "m"`
+among them, makes one, and an `import()` makes none. Equality is ModuleRequestsEqual: the specifier (the SV, as written,
+lone surrogates kept) compared ordinally, then the attributes as a set, by count and then by each key and value in any
+order; the library adds the phase. Each request lists every statement that makes it, the first first. Its attributes are
+its first statement's WithClause in that statement's source order, each key the AttributeKey's PropName (so `type` and
+`"type"` are the same key) and each value the SV, `with {}` and no `with` both empty: JSD-0080 orders every collection by
+source, and it wins over this document (the header). The specification's [[Attributes]] is that list sorted by key, code
+unit by code unit (WithClauseToAttributes), whose NOTE reads "This sorting is observable only in that hosts are
+prohibited from changing behaviour based on the order in which attributes are enumerated"; the keys of an accepted
+source are distinct (EE0180), so the sort is a total order. A later statement of the same request may write its
+attributes in another order, which its own `Attributes` keeps.
+
+**The phase.** The pinned edition's ModuleRequest Record has no phase. The request carries the tree's
+`ImportDeclaration.Phase`, `Evaluation` for every `export … from`, so that a deferred and an evaluating request of the
+same specifier are apart. A source-phase binding, `import source x from "m"`, has the entry `{request, Source, null, x}`, never
+the default export's name, which the edition's ImportedDefaultBinding rule would give, and an export of it is rewritten by
+step 10.a.ii.4.b with the kind `Source`, the edition's step applied to the proposal's value. A deferred namespace
+import keeps the namespace form, its request's phase `Defer`. Both are the library's readings, beyond the edition; no
+engine sets the declaration flags.
+
+**Entries and ParseModule's partition.** ImportEntries per declaration: the default binding first (`{request, Name,
+"default", local}`), then the namespace binding (`{request, NamespaceObject, null, ns}`) or the named imports, each name
+a StringValue. ExportEntries per form: an exported declaration a local entry per BoundName; `export default` a local
+entry named `default` whose local name is `*default*` for an anonymous function, generator, async function, async
+generator or class and for an expression, and the declared name otherwise; a specifier without a FromClause a local entry;
+one with a FromClause an indirect entry of `Name`; `export *` a star entry of `AllButDefault`; and `export * as n` an
+indirect entry of `All`. Step 10 then partitions them in source order: an entry with no request whose local name no
+import binds is local (10.a.i.1); an export of a namespace import becomes an indirect entry of `All` (10.a.ii.3.b), and an
+export of any other import an indirect entry with the import's request, kind and name (10.a.ii.4.b); `export default a`
+with `a` imported stays local, its local name being `*default*`; `AllButDefault` is star (10.b.ii); every other entry is
+indirect (10.c.i). Rewritten entries stand among the true indirect ones where their exports do. An entry's node is the
+`ExportSpecifier`, the bound name's `BindingIdentifier`, the `ExportDefaultDeclaration` or the `ExportAllDeclaration`, and
+an import entry's its `BindingIdentifier`. Every entry shares its request's instance, each distinct request having an instance of its own.
+An import entry's declaration is the one `DeclarationOf` answers for its node; a local export entry's is the module
+scope's first declaration of its local name, for `*default*` the `ExportDefault` declaration, so that an `export { x }`
+local, an `IdentifierName` that `Resolve` and `DeclarationOf` do not answer, has its binding here.
+
+**Top-level `await`.** `HasTopLevelAwait` is the tree's `ProgramNode.HasTopLevelAwait`, read and not recomputed
+(ParseModule steps 11 and 12, "_body_ Contains `await`"): an `await` expression, a `for await` and an `await using`
+declaration outside every function, arrow, method, field initialiser and static block, a class's heritage and computed
+keys and an object literal's computed keys included, as Contains looks into them. An `await` in a top-level async arrow
+does not set it. `await using` is ecma262 main's, beyond the pinned edition; an `await` in a top-level decorator's
+expression is the tree's reading, beyond the edition, and whether the decorators proposal counts it is not settled.
+`FunctionFacts.IsAsync` stays false for a Module, the same on every request. This is the fact correspondence row MR2 and
+hand-off H19 route to the model's module record; H19's correction is Broiler.VM's, and nothing here declares it met.
+
+**The rows.** EE0170 (ExportedNames contains a duplicate entry) and EE0171 (an ExportedBindings element is in neither
+VarDeclaredNames nor LexicallyDeclaredNames) join `SemanticRows`. The whole ModuleItemList decides them, since `var`s hoist
+and declarations may follow an export, so the full walk alone reports them, after its visit, and the partial walk reports
+neither (the exception named in section 10.4). EE0170 is reported for each repeated name, at its second occurrence, with
+the name as the argument; EE0171 at each specifier of an `export { … }` without a FromClause whose local name the module
+neither declares nor imports, with the local name as the argument. "One row per construct" (D-js-semantic-rows): EE0171 is not reported on a
+specifier a repeated exported name, a string local name (EE0181) or a reserved one (EE0182) already refuses, as EG0008
+takes EE0054's place; so `*default*`, which the declared names hold wherever the module exports a default, never decides
+EE0171. A block function in a Module is lexical to its block, so `{ function f() {} } export { f };` is refused. The
+places are Broiler.VM's binder's (section 3): the specifier, the exported declaration for each of its names, and the
+`export default`, whose span starts at `export`; for `export * as n` the exported name, where the binder names the `as`
+token, which the tree has no node for, an exception to section 10.4's "Each place is the one Broiler.VM's binder names".
+**The order.** A `syntax` row at the same place comes first. Under first error a row placed before the module's close
+comes before its declared-name conflicts: a second `export default`, which the walk with the member off refuses by EE0168
+at the close, is refused first by EE0170 at it; a named default followed by another default, which the member's off
+path accepts, is refused by EE0170 alone. The module checks that report `syntax` rows (EE0178, EE0180 to EE0182), the
+helpers the tables use and the walk's sequence are unchanged, so with the member off nothing moves.
+
+**The vectors.** None: no `semantics` vector reaches the Module goal, which schema 1 has no field for. The adapter lists
+EE0170 and EE0171, its rows being held equal to `SemanticRows`, and answers no new vector.
+
+**The differences from each engine**, as `docs/roadmap/SharedLibraries.md` lists them for SJL-15.3 and SJL-15.5:
+Broiler.VM reports every repeat of an exported name, places `export * as` at the `as` token, names an anonymous default's
+binding `default`, keys a request by a typed specifier, reads `from ""` as no `from`, and counts an async arrow's `await`
+at the top level (row MR2, hand-off H19); Broiler.JS throws at the export statement's start, skips names bound by
+destructuring for its duplicate check, keys a request by specifier and `type`, and declares internal records named
+`ModuleRequest`, `ImportEntry` and `ExportEntry` in its module analysis.
+
+**The decisions**: D-js-module-record and D-js-module-rows, with D-js-semantic-rows' rule followed and a dated note on
+D-js-channel.
+
+**For part F's checklist** (stage 8): JSD-0080's "**The module record**: requests with attributes, top-level `await`,
+import and export entries, and their errors" maps as follows. Requests with attributes are `Module.RequestedModules`, its
+`ModuleRequest`s and their `Attributes`; top-level `await` is `Module.HasTopLevelAwait`; import and export entries are
+`ImportEntries` and the local, indirect and star export lists. "Their errors" are every module row, by who reports it:
+EE0168 and EE0169, the walk's `syntax` rows at the module scope's close; EE0173 and EE0174, `syntax` rows; EE0178 to
+EE0182, the module checks' `syntax` rows, EE0179 subsumed by EE0168; EE0172, stage 2's row; EE0175 and EE0176, stage 3's;
+EE0177, stage 4's; EE0170 and EE0171, stage 6's; and EX0020 and EX0021, engine rows the library never reports. So the
+checklist reads the record as carrying the entries and the module's own rows, and not the rows of the other stages.
+
+Section 4's sketch, `public ModuleRecord? Module { get; }`, stays as it is ("Section 4 stays the sketch"). No text in
+sections 1 to 9 is touched, so no Corrections entry is owed.
 
 ## Corrections
 
