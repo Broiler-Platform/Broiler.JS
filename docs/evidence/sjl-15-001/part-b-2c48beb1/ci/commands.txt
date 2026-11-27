@@ -1,0 +1,39 @@
+# The push runs at the eighth model commit 2c48beb1e332dd7c9fa1577705ed5458b5686c1f, imported 2026-11-27 as bundle
+# sjl-14-001's bridge/w1-ci/ imported W1's and part-b-be6c4a5c/ci/, part-b-6c61879b/ci/, part-b-d87044c9/ci/,
+# part-b-56272150/ci/, part-b-4d8aa93a/ci/, part-b-84d84cc3/ci/ and part-b-30af0dad/ci/ imported the first to seventh
+# model commits': by read-only GitHub API calls (gh api, GET only), each file the API's answer unchanged, but
+# slnx-test-projects.txt, test-projects.tsv and artifact-digests.tsv, written from them. Nothing was dispatched, re-run or
+# cancelled by these reads. The run statuses were first read through the GitHub API during part B's base run at
+# 59ccb11c (10:11:30Z), its answer kept (../logs/status-20261127T101130Z.tsv): Shared libraries 45977304205 attempt 1
+# completed success and CI 45977304084 attempt 1 in progress; CI's run then read through the API (GET
+# runs/45977304084, its status, conclusion, attempt and updated_at, and GET of its jobs) at about 10:18Z, those two
+# answers not kept: completed success in attempt 1, updated_at 10:11:52Z, every job completed success; and both read
+# again through the API at 10:18:09Z, during part B's after run at 2c48beb1, the same, its answer kept
+# (../logs/status-20261127T101809Z.tsv).
+#
+# One read, 2026-11-27T10:18:29Z-10:18:36Z, after both runs had concluded, each in its first attempt, during part B's
+# after run at 2c48beb1 (its build step, ../2c48beb1/logs/runs.tsv), made while that build step held the run lock; the
+# reads change no file the build or the runs read.
+# Added 2026-11-27 after review: the two lines above replace "(its build step, ../logs/runs.tsv), which reads no
+# network:"; that build step begins with a NuGet restore (../2c48beb1/logs/build-parse-corpus.stdout.txt), and nothing
+# kept shows it read no network. ../logs/runs.tsv names part B's two runs; the build step's row is in
+# ../2c48beb1/logs/runs.tsv. The commands of that read:
+R=repos/Broiler-Platform/Broiler.JS/actions/runs
+gh api "$R?head_sha=2c48beb1e332dd7c9fa1577705ed5458b5686c1f&per_page=50" > runs-at-2c48beb1.json
+#   -> two runs at 2c48beb1, each event push, status completed, conclusion success, run_attempt 1:
+#      45977304084 CI (.github/workflows/ci.yml); 45977304205 Shared libraries (.github/workflows/shared-libraries.yml)
+for r in 45977304084 45977304205; do
+  gh api $R/$r > run-$r.json
+  gh api "$R/$r/jobs?per_page=100&filter=all" > jobs-$r.json
+  gh api "$R/$r/artifacts?per_page=100" > artifacts-$r.json
+  gh api $R/$r/logs > logs-$r.zip
+done
+#
+# The artifacts, every one both runs list, downloaded (2026-11-27T10:18:47Z-10:18:54Z) and checked against the API's
+# digest and size; the zips are not kept here (bridge/w1-ci/ kept none), their check is artifact-digests.tsv (every one
+# "match"):
+for id in 15188846435 15188558222 15187014350 15187996606 15187712541 15186834880; do
+  gh api repos/Broiler-Platform/Broiler.JS/actions/artifacts/$id/zip > $id.zip   # then sha256 and size against the API's
+done
+git show 2c48beb1:Broiler.JS.slnx | grep -o 'Path="[^"]*\.csproj"' | sed 's/Path="//;s/"//' | grep -i test | sort > slnx-test-projects.txt
+python3 -I ../scripts/test_projects.py slnx-test-projects.txt . > test-projects.tsv

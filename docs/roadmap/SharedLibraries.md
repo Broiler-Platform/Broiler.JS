@@ -4611,6 +4611,39 @@ whose model cell does not name `ProgramNode.HasTopLevelAwait`; and `early-errors
 no row for `module.export.undeclared`. None of it is accepted: no second holder exists to review it. Every SJL-15 clause
 is unmet, in both repositories.
 
+*(Noted 2026-11-27, after part B's runs at the eighth model commit.)* The note of 2026-11-27 at SJL-15.2 stage 6 reads
+"Part B is taken after the merge, against the merge's own first parent", and its merge condition reads "after the merge,
+nothing merges to `main` until both push runs at the merge have concluded". Stage 6 merged as
+Broiler-Platform/Broiler.JS#1147, `2c48beb1e332dd7c9fa1577705ed5458b5686c1f`, **the eighth model commit**, named with its
+first parent `59ccb11c` (Broiler-Platform/Broiler.JS#1146, no model commit) in bundle
+[`sjl-15-001`](../evidence/sjl-15-001/README.md)'s README. Nothing merged to the default branch until both push runs at it
+had concluded. Part B is taken at it and at its first parent and retained in the bundle's
+[`part-b-2c48beb1/`](../evidence/sjl-15-001/part-b-2c48beb1/README.md), as that README's note of 2026-11-27 records:
+bundle `sjl-12-001`'s tool byte-unchanged, built and run from a clean archive of each commit; both runs complete and
+identical in every field, compared by `scripts/compliance/compare_parse_corpus.py` with no admitted class and by the
+dumps' hashes, the reports' headers differing only in each assembly's module version id, which names a build; the
+module-record lines stage 6 adds to the library's canonical dump for a Module, the record its declarations walk builds
+and the rows EE0170 and EE0171 it reports, all only with the request member on, not reaching the tool's dumps or its P
+and K answers, since the tool writes its own dump of Broiler.JS's tree and nothing in Broiler.JS sets
+`ParseRequest.BuildSemanticModel` or names the model, the record or a type stage 6 adds; Shared libraries' push run and
+ci.yml's push run each green in its first attempt, with no re-run, so the one re-run decision D-js-part-b-attempt allows
+was not needed.
+
+**The reading**, taken as recommended under the owner's direction quoted above and recorded as the owner's decision of
+2026-11-27: **part B read MET on the retained runs at the model commits taken so far
+(`be6c4a5c3e389c7eb2aff71c34e31bdae5efe276`, `6c61879bce81b1a7badf987e16c7b0531030258d`,
+`d87044c9db5fe2a26841782308bd53e2f9294656`, `56272150fe23725a0e70978fb18e3c25f2548548`,
+`4d8aa93ad5023017b66534feb248c4c16f59bf6e`, `84d84cc3f68e3120299eb9faa44c6b9f0f2e7b8b`,
+`30af0dad83f73d2a5cf5495b2d4e3716cc7ed0df`, `2c48beb1e332dd7c9fa1577705ed5458b5686c1f`), limited to them; the part's
+verdict waits for the last model commit before the base.** At `2c48beb1` the rule's "the commit's CI run of every test
+project passed" is read on both workflows' push runs, each as it concluded in its first attempt. The readings at
+`be6c4a5c`, at `6c61879b`, at `d87044c9`, at `56272150`, at `4d8aa93a`, at `84d84cc3` and at `30af0dad`, and the first
+one's flag for the owner, in the notes of 2026-11-24, 2026-11-25 and 2026-11-26 above, stay as written. Next: SJL-15.2
+stage 7, the ninth model commit, named in this section's stage list as "**stage 7**, named evaluation, free names and
+captures", in the order decision D-js-stages fixes ("Stages 1, 2, 3, 4, 5a, 5b, 5c, 6, 7 and 8, one merge each, in that
+order"), judged by its part B against its own first parent; stage 6's note above names no next step of its own. None of
+it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
