@@ -1507,6 +1507,11 @@ step 10.a.ii.4.b with the kind `Source`, the edition's step applied to the propo
 import keeps the namespace form, its request's phase `Defer`. Both are the library's readings, beyond the edition; no
 engine sets the declaration flags.
 
+**What the record does not decide.** The record carries every attribute as written, and a `from ""` request like any
+other: EX0020 and EX0021 stay the engines' refusals, which the library never reports, and an engine refuses a specifier
+it cannot load. Broiler.VM reads `from ""` as no `from`; whether that case is ever reached is unknown. Slot naming stays
+each engine's: the record's `*default*` local name is the specification's.
+
 **Entries and ParseModule's partition.** ImportEntries per declaration: the default binding first (`{request, Name,
 "default", local}`), then the namespace binding (`{request, NamespaceObject, null, ns}`) or the named imports, each name
 a StringValue. ExportEntries per form: an exported declaration a local entry per BoundName; `export default` a local
@@ -1538,10 +1543,12 @@ VarDeclaredNames nor LexicallyDeclaredNames) join `SemanticRows`. The whole Modu
 and declarations may follow an export, so the full walk alone reports them, after its visit, and the partial walk reports
 neither (the exception named in section 10.4). EE0170 is reported for each repeated name, at its second occurrence, with
 the name as the argument; EE0171 at each specifier of an `export { … }` without a FromClause whose local name the module
-neither declares nor imports, with the local name as the argument. "One row per construct" (D-js-semantic-rows): EE0171 is not reported on a
-specifier a repeated exported name, a string local name (EE0181) or a reserved one (EE0182) already refuses, as EG0008
-takes EE0054's place; so `*default*`, which the declared names hold wherever the module exports a default, never decides
-EE0171. A block function in a Module is lexical to its block, so `{ function f() {} } export { f };` is refused. The
+neither declares nor imports, with the local name as the argument. "One row per construct" (D-js-semantic-rows): EE0171 is
+not reported on a specifier that EE0170 (at a repeated name's second occurrence), a string local name (EE0181) or a
+reserved one (EE0182) already refuses, as EG0008 takes EE0054's place, so `*default*`, which the declared names hold
+wherever the module exports a default, never decides EE0171. A later repeat of that name, which no row refuses, is
+checked like any other specifier; Broiler.VM's binder, reporting the duplicate at every repeat, skips the check at every
+repeat. A block function in a Module is lexical to its block, so `{ function f() {} } export { f };` is refused. The
 places are Broiler.VM's binder's (section 3): the specifier, the exported declaration for each of its names, and the
 `export default`, whose span starts at `export`; for `export * as n` the exported name, where the binder names the `as`
 token, which the tree has no node for, an exception to section 10.4's "Each place is the one Broiler.VM's binder names".
