@@ -1,0 +1,3 @@
+# The SHA-256 of the Broiler.VM inputs docs/evidence/sjl-15-001/tools/model_check.py reads, each as `git show c1b33a71db0e91494e8e588a6ad48c2f11dd4c22:<path>` gives it: Broiler.VM's default branch at Broiler-Platform/Broiler.VM#232, c1b33a71db0e91494e8e588a6ad48c2f11dd4c22.
+f814c7912cbba11c67437888401279ec0d93440ef21f16bcb0b2af18b9b9ae17  Broiler.VM c1b33a71db0e91494e8e588a6ad48c2f11dd4c22:src/Broiler.VM.Profile.JavaScript/docs/decisions/0080-the-shared-frontend-contract-and-the-in-place-preparation.md
+af0cd9756925c0fd5c3f32979e2820bd9cfd2fa4a66119a0ad32391a15ed214f  Broiler.VM c1b33a71db0e91494e8e588a6ad48c2f11dd4c22:docs/javascript-shared-libraries/milestones/sjl-15-static-semantics.md

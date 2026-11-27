@@ -39,6 +39,9 @@ default branch on 2026-11-17.
 | [`part-b-30af0dad/`](part-b-30af0dad/README.md) | Part B's runs at the seventh model commit `30af0dad` and at its first parent `4e27f13d`, with their comparison and the push runs at `30af0dad` of both workflows that run the test projects of `Broiler.JS.slnx`; runs of the rule *(row added 2026-11-26, after those runs)* |
 | [`part-b-2c48beb1/`](part-b-2c48beb1/README.md) | Part B's runs at the eighth model commit `2c48beb1` and at its first parent `59ccb11c`, with their comparison and the push runs at `2c48beb1` of both workflows that run the test projects of `Broiler.JS.slnx`; runs of the rule *(row added 2026-11-27, after those runs)* |
 | [`part-b-950bea8f/`](part-b-950bea8f/README.md) | Part B's runs at the ninth model commit `950bea8f` and at its first parent `26c6d6ec`, with their comparison and the push runs at `950bea8f` of both workflows that run the test projects of `Broiler.JS.slnx`; runs of the rule *(row added 2026-11-27, after those runs)* |
+| [`tools/model_check.py`](tools/model_check.py) | Part F's checklist: the semantic model's public members against the milestone's facts and JSD-0080's rows, extending bundle `sjl-13-001`'s `contract_check.py` without editing it, with an outcome line per listing and per control of bundle `sjl-13-001`'s part H (decision D-js-part-f-tools) *(row added 2026-11-27, before any run of part F)* |
+| [`tools/row_sites.py`](tools/row_sites.py) | Part F's listing, per `semantics` row of the stage table, of the library's sites that report it, read from the library's code and the stage table; it judges nothing (decision D-js-part-f-tools) *(row added 2026-11-27, before any run of part F)* |
+| [`tools/broiler-vm-inputs.sha256`](tools/broiler-vm-inputs.sha256) | The Broiler.VM commit whose JSD-0080 and SJL-15 milestone file the checklist reads, with each file's SHA-256 *(row added 2026-11-27, before any run of part F)* |
 | [`hashes.txt`](hashes.txt) | The SHA-256 of every other file of the bundle |
 
 ## What it will hold
@@ -890,3 +893,115 @@ NOT MET. **Next:** SJL-15.2 stage 8, the tenth model commit: in the stage list o
 section "Shared static semantics (SJL-15)", whose order decision D-js-stages fixes ("Stages 1, 2, 3, 4, 5a, 5b, 5c, 6, 7
 and 8, one merge each, in that order"), "**stage 8**, the library's last model commit"; stage 7's records name no next
 step of their own. No rule file is added or edited, and no earlier output changes.
+
+*(Noted 2026-11-27, at SJL-15.2 stage 8, written before part B's run at it and before any run of parts F and G.)* **The
+tenth model commit.** This branch's merge will be the tenth model commit: SJL-15.2 stage 8, the library's last model
+commit, named here once it exists. Part B is taken after it, against its own first parent (decision
+D-js-part-b-method), with both workflows' push runs imported and decision D-js-part-b-attempt applying. The merge
+condition: both workflows are green on the PR; after the merge, nothing merges to `main` until both push runs at the
+merge have concluded. For ci.yml's run that includes the one re-run D-js-part-b-attempt allows
+(`docs/roadmap/SharedLibraries.md:3808`). A later push cancels ci.yml's push run (`.github/workflows/ci.yml:25-27`,
+:36-39). A later push never cancels Shared libraries' push run, because its push group carries the commit
+(`.github/workflows/shared-libraries.yml:34-39`). Its conclusion is imported too, as at stage 1 ("Nothing merged to the
+default branch until both push runs at it had concluded", `docs/roadmap/SharedLibraries.md:3789-3790`). Part B is taken
+after the merge, against the merge's own first parent. Stage 7's part B records say the same of stage 7: "Nothing
+merged to the default branch until both push runs at it had concluded" (`docs/roadmap/SharedLibraries.md:4734-4735`).
+Shared libraries' push run at the merge is also part G's hosted half if this merge is the library commit ("at stage 8's
+commit, the library commit if no model commit lands before the base commit", decision D-js-library-runs), read as
+decision D-js-library-readings reads it: its first attempt decides, and every attempt is retained. The reading at it
+will be limited to the model commits taken so far.
+
+**The readings parts F and G depend on**, each the session's, taken as recommended under the owner's direction and
+recorded on this branch before any run of parts F and G, as the rule's "No run is taken before the base it names exists"
+and the direction's "rules still come before runs" require; they are decisions D-js-digest-model, D-js-vector-listing,
+D-js-part-f-tools, D-js-library-readings, D-js-adapter-final and D-js-last-model-commit in
+`docs/roadmap/SharedLibraries.md`'s section "Shared static semantics (SJL-15)", each with the alternatives it did not
+take. Each is flagged for the owner, who may rule otherwise, and none was put to the owner first; a reading changed after
+a rehearsal or a run is seen is the owner's.
+- **When the runs at stage 8's commit count.** Decision D-js-library-runs reads parts F, G and E "taken at stage 8's
+  commit after its merge, each read "at stage 8's commit, the library commit if no model commit lands before the base
+  commit", and taken again at the actual library commit if another model commit lands or the rule does not admit the
+  early run". For parts F and G, "the base it names" in the rule's "No run is taken before the base it names exists" is
+  the library commit they name; a run taken at stage 8's commit after it exists, as the rule's "Hosted runs are
+  dispatched at any time after their commits exist" allows, is a run at the library commit if, once the base commit
+  exists, stage 8's commit is the last model commit before it; until then it is read conditionally, as D-js-library-runs
+  says.
+- **Part G's text.** The rule reads bundle `sjl-13-001`'s parts C and D "as bundle sjl-13-001's rule defines them, read
+  at the library commit", and was written after that bundle's revisions, whose library commit was read by its rule "as
+  revised by" its first and second revisions ([`commands.txt`](../sjl-13-001/library-commit/commands.txt)). Part C is
+  read as that bundle's first revision restates control K2
+  ([`decision-rule-revised-2026-11-02.md`](../sjl-13-001/decision-rule-revised-2026-11-02.md): "run 1 against run 2
+  must differ, so that this part's comparison of the runs' hashes, which runs in separate processes as the dumps are
+  taken, reports the difference"), since as first written "rule SL9 must fail" "cannot hold of a correct control"; that
+  revision was written after runs were seen at branch heads and is weaker evidence. Part D is read as that bundle's rule
+  first wrote it, at this rule's library commit: its third revision's part D is bound to that bundle's library commit
+  and its part D commit, so only its attempt clause is taken. The result draws on that bundle's rule and on its first and third revisions, and it is said so.
+- **Part D's hosted half.** Shared libraries' push run at the library commit, both `native-aot-probe` legs, imported by
+  GET only; "its first attempt decides, and every attempt is retained"
+  ([`decision-rule-revised-2026-11-03-third.md`](../sjl-13-001/decision-rule-revised-2026-11-03-third.md)); a failed
+  first attempt stops the reading and goes to the owner, since nothing may be dispatched and no re-run reaches this
+  half. Its local half is the linux-x64 Native AOT and JIT publications at the library commit, as bundle `sjl-13-001`'s
+  library commit took them. This differs from D-js-part-b-attempt, which reads ci.yml's push run for part B after the
+  re-run it allows: that decision reaches ci.yml's run for part B only, and each part decides alone. The first model
+  commit's flag above, which records that its part B reading did not follow the first-attempt precedent, stays as
+  written; this reading adopts that precedent for part G.
+- **Part C's dump mode** is the probe's corpus digest mode,
+  `Broiler.ECMAScript/Broiler.ECMAScript.Probe/CorpusDigest.cs` ("the home rule's part C, "the corpus runner's dump
+  mode""), as at bundle `sjl-13-001`'s library commit; by decision D-js-digest-model it requests the semantic model for
+  every input, variant and eval request of configuration V, through a copy of the request the corpus reader builds,
+  whose default is unchanged; its population is bundle `sjl-13-001`'s part A population in configuration V as that
+  bundle's rule commit holds it, test262 read at `ccaac100` and checked by SHA-256.
+- **Part F's tools** are [`tools/model_check.py`](tools/model_check.py) and [`tools/row_sites.py`](tools/row_sites.py),
+  their digests in [`hashes.txt`](hashes.txt), and the Broiler.VM commit whose JSD-0080 and milestone file the checklist
+  reads, `c1b33a71db0e91494e8e588a6ad48c2f11dd4c22` (Broiler-Platform/Broiler.VM#232), is named with their digests in
+  [`tools/broiler-vm-inputs.sha256`](tools/broiler-vm-inputs.sha256). The checklist extends bundle `sjl-13-001`'s
+  [`contract_check.py`](../sjl-13-001/tools/contract_check.py) without editing it and prints an outcome line for its
+  listing of the milestone's facts, for JSD-0080's rows, for engine-namespace lines, for engine rows with a producer, and,
+  over a control archive, for bundle `sjl-13-001`'s part H's controls; it exits by the strictest of them, as a matter of
+  form. **Which of them decide part F** is decided by the rule's "if and only if": the listing of the milestone's facts
+  ("every fact has a public member") and the listing of engine-namespace lines ("no public type names an engine type"),
+  with the rule's part F control; JSD-0080's rows, the engine rows with a producer and bundle `sjl-13-001`'s part H's
+  controls are printed and kept and decide nothing of part F, since the rule's part F names its facts and an engine
+  type, its population holds no row of JSD-0080's, and each part decides alone. "The caller's lexical names" is looked
+  for at stage 5c's members, `InheritedContext.CallerScopes`, `CallerScope`, `SemanticModel.DirectEvalCalls`, an item of
+  its own, and `SemanticModel.CallerScopesOf`, not listed absent with decision D16's reason, which D16 gives only "until
+  SJL-15's model"; `contract_check.py` stays as it is. The site listing names per `semantics` row of the stage table its
+  sites in the library's code, the table's basis, its `SemanticRows` entry and whether a vector names it, and judges
+  nothing.
+- **Part F's per-vector listing** (decision D-js-vector-listing): a Conformance test writes, per answered `semantics`
+  vector, its verdict into the test's output, and part F's library-level run keeps it in the run's `trx` test log. The
+  verdict is the vector's at the parse, as decision D-js-adapter-form reads part F's "matches", the reading the owner
+  ruled on 2026-11-25 to keep ("Keep the reading at the parse (Recommended)").
+- **Part F's control** suppresses the report of row EE0018 in a scratch copy, its `SemanticRows` entry and the adapter's
+  list left as they are; the library-level run must report EE0018's refusal vectors, and only them, as differences; it is
+  reverted, and the whole run's per-vector listing at the reverted tree is checked against the unpatched run's.
+- **"E" in D-js-library-runs is bundle `sjl-13-001`'s part E**, since this rule's own part E runs at the base and after
+  commits only: it is taken as checks and retained, and no part of the rule decides by it, since the rule is "Ten predeclared decisions, one per part"
+  and none of its MET lines reads that part; a verdict would need a rule revision.
+- **EP0017 and EP0018** have no site in the library. They are read as "named, with its reason, as no row the model can
+  report" under the rule's part F: the reason is the committed line of
+  `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs`, "EP0017 and EP0018 have no report of their own: no
+  goal is ShadowRealm's, and EA0003, EA0004 or EE0162 refuses their source first", with decision D-js-semantic-rows
+  ("EP0017 and EP0018 are carried with no report of their own"). The rule's parenthetical describes the rows it names as
+  "the stage table's rows that only a run reaches", and these are not run rows (their basis is `no-parser`), so this is
+  the most contestable of the readings here; the note above of 2026-11-25, which records it unknown "whether part F at
+  stage 8 reads EP0017 and EP0018 ... as having "a site in the library"", stays a record of then. A reporting site in
+  code is not taken: it needs new public API and changes JSD-0080's input rows, which are Broiler.VM's, and it would
+  have to land in this merge or move the library commit. EA0006 is named as a row only a run reaches, its basis
+  `run-time`.
+- **The value-vector groups** (decision D-js-adapter-final): `ab1`, `ff3`, `ff4`, `ff5`, `ne1`, `pn1` and `rs2` stay not
+  implemented, each listed with the decision that leaves it in a Conformance test, since a vector whose outcome the model
+  cannot decide at the parse is read as not a vector the adapter answers; `ea0006`'s vectors are listed apart, as a row.
+- **The library commit's gap** (decision D-js-last-model-commit): until SJL-15.5's base the session lands no change to
+  `Broiler.ECMAScript/Broiler.ECMAScript.Frontend*` but an SJL-15.2 model commit, and each later stage's preconditions
+  check that no other merge changed those paths; merges the session does not make are not bound by it.
+
+The stage table's row EA0008 still reads, in its `rows` cell, "no parse-time site (eval-time; neither engine refuses: CAT
+`neither`)", which stage 5c's site has made stale for the library; the table is left as written, since bundle
+`sjl-13-001`'s tools read it, and the site listing prints the cell with that note. **Publication.** The owner's answer
+of 2026-11-27 ("All publish-decisions can be done and run. So if a publish yes/no is the question, do the publish, wait
+for the nuget-package-availability and continue", given in chat, unasked) answers the publication decision
+D-js-packable leaves to the owner, "asked only after stage 8 and stage 9's listing", as publish: the publication follows
+stage 9's listing, and JSD-0083's decision D30's syntax-half check is still read as the records require. This stage
+publishes nothing, and D-js-packable's text is left as written. No rule file is added or edited, and no earlier output
+changes. "What it will hold" above is left as written.
