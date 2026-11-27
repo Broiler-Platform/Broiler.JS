@@ -4781,7 +4781,394 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         }
 
         yield return ("class C { accessor x = function () {}; static accessor [k] = () => 0 }", ParseGoal.Script, ProposalFlags.AutoAccessors);
+        foreach (var (_, goal, text, _) in Test262NamedSources)
+            yield return (text, goal, ProposalFlags.None);
     }
+
+    /// <summary>
+    /// The test262 files of named evaluation that this stage read at the corpus's pin, each file's code after its front
+    /// matter quoted verbatim from the pinned archive, with the answer of every function and class node in tree order, as
+    /// each file's assertions expect: where an assertion reads a name the specification gives by DefineMethod, or reads
+    /// the final property a class's static <c>name</c> member defines, the comment says so and the member answers null.
+    /// The other fixtures of this section restate these shapes; these quote them. <i>(Added 2026-11-27, at SJL-15.2 stage
+    /// 7.)</i>
+    /// </summary>
+    [Fact]
+    public void The_test262_files_of_named_evaluation_answer_as_their_assertions_expect()
+    {
+        foreach (var (file, goal, text, expected) in Test262NamedSources)
+            Assert.True(expected == Named(Accepted(text, goal)), file + ": " + Named(Accepted(text, goal)));
+    }
+
+    // The test262 files, at pin-test262 of conformance/parse/corpus.manifest, each with its goal, its code after the front
+    // matter verbatim, and its expected answers; the comment quotes or names the file's assertions.
+    private static readonly (string File, ParseGoal Goal, string Text, string Expected)[] Test262NamedSources =
+    [
+        // assert(xCover.name !== 'xCover'); verifyProperty(cover, 'name', { value: 'cover', ... }).
+        ("test/language/expressions/assignment/fn-name-cover.js", ParseGoal.Script, """
+            var xCover, cover;
+
+            xCover = (0, function() {});
+            cover = (function() {});
+
+            assert(xCover.name !== 'xCover');
+
+            verifyProperty(cover, 'name', {
+              value: 'cover',
+              writable: false,
+              enumerable: false,
+              configurable: true,
+            });
+            """, "- \"cover\""),
+        // verifyProperty(fn, "name", { value: "", ... }).
+        ("test/language/expressions/assignment/fn-name-lhs-cover.js", ParseGoal.Script, """
+            var fn;
+
+            (fn) = function() {};
+
+            verifyProperty(fn, "name", {
+              value: "", writable: false, enumerable: false, configurable: true
+            });
+            """, "-"),
+        // verifyProperty(o.attr, "name", { value: "", ... }).
+        ("test/language/expressions/assignment/fn-name-lhs-member.js", ParseGoal.Script, """
+            var o = {};
+
+            o.attr = function() {};
+
+            verifyProperty(o.attr, "name", {
+              value: "", writable: false, enumerable: false, configurable: true
+            });
+            """, "-"),
+        // assert(Object.getPrototypeOf(o).name !== "__proto__").
+        ("test/language/expressions/object/__proto__-fn-name.js", ParseGoal.Script, """
+            var o;
+
+            o = {
+              __proto__: function () {},
+            };
+
+            assert(Object.getPrototypeOf(o).name !== "__proto__");
+            """, "-"),
+        // assert(o.xId.name !== 'xId'); value: 'id'; value: '' and value: '[test262]', each named at run time by its key.
+        ("test/language/expressions/object/fn-name-cover.js", ParseGoal.Script, """
+            var namedSym = Symbol('test262');
+            var anonSym = Symbol();
+            var o;
+
+            o = {
+              xId: (0, function() {}),
+              id: (function() {}),
+              [anonSym]: (function() {}),
+              [namedSym]: (function() {})
+            };
+
+            assert(o.xId.name !== 'xId');
+
+            verifyProperty(o.id, 'name', {
+              value: 'id',
+              writable: false,
+              enumerable: false,
+              configurable: true,
+            });
+
+            verifyProperty(o[anonSym], 'name', {
+              value: '',
+              writable: false,
+              enumerable: false,
+              configurable: true,
+            });
+
+            verifyProperty(o[namedSym], 'name', {
+              value: '[test262]',
+              writable: false,
+              enumerable: false,
+              configurable: true,
+            });
+            """, "- \"id\" [key] [key]"),
+        // value: 'get id', 'get ' and 'get [test262]': DefineMethod's names, not a named evaluation.
+        ("test/language/expressions/object/fn-name-accessor-get.js", ParseGoal.Script, """
+            var namedSym = Symbol('test262');
+            var anonSym = Symbol();
+            var o, getter;
+
+            o = {
+              get id() {},
+              get [anonSym]() {},
+              get [namedSym]() {}
+            };
+
+            getter = Object.getOwnPropertyDescriptor(o, 'id').get;
+            verifyProperty(getter, 'name', {
+              value: 'get id',
+              writable: false,
+              enumerable: false,
+              configurable: true,
+            });
+
+            getter = Object.getOwnPropertyDescriptor(o, anonSym).get;
+            verifyProperty(getter, 'name', {
+              value: 'get ',
+              writable: false,
+              enumerable: false,
+              configurable: true,
+            });
+
+            getter = Object.getOwnPropertyDescriptor(o, namedSym).get;
+            verifyProperty(getter, 'name', {
+              value: 'get [test262]',
+              writable: false,
+              enumerable: false,
+              configurable: true,
+            });
+            """, "- - -"),
+        // assert.sameValue(value.name, "value", "value").
+        ("test/language/expressions/logical-assignment/lgcl-and-assignment-operator-namedevaluation-arrow-function.js", ParseGoal.Script, """
+            var value = 1;
+            value &&= () => {};
+
+            assert.sameValue(value.name, "value", "value");
+            """, "\"value\""),
+        // assert.sameValue(value.name, "value", "value").
+        ("test/language/expressions/logical-assignment/lgcl-and-assignment-operator-namedevaluation-class-expression.js", ParseGoal.Script, """
+            var value = 1;
+            value &&= class {};
+
+            assert.sameValue(value.name, "value", "value");
+            """, "\"value\""),
+        // assert.sameValue(value.name, "value", "value").
+        ("test/language/expressions/logical-assignment/lgcl-and-assignment-operator-namedevaluation-function.js", ParseGoal.Script, """
+            var value = 1;
+            value &&= function() {};
+
+            assert.sameValue(value.name, "value", "value");
+            """, "\"value\""),
+        // assert.sameValue(value.name, "value", "value").
+        ("test/language/expressions/logical-assignment/lgcl-nullish-assignment-operator-namedevaluation-arrow-function.js", ParseGoal.Script, """
+            var value = undefined;
+            value ??= () => {};
+
+            assert.sameValue(value.name, "value", "value");
+            """, "\"value\""),
+        // assert.sameValue(value.name, "value", "value").
+        ("test/language/expressions/logical-assignment/lgcl-nullish-assignment-operator-namedevaluation-class-expression.js", ParseGoal.Script, """
+            var value = undefined;
+            value ??= class {};
+
+            assert.sameValue(value.name, "value", "value");
+            """, "\"value\""),
+        // assert.sameValue(value.name, "value", "value").
+        ("test/language/expressions/logical-assignment/lgcl-nullish-assignment-operator-namedevaluation-function.js", ParseGoal.Script, """
+            var value = undefined;
+            value ??= function() {};
+
+            assert.sameValue(value.name, "value", "value");
+            """, "\"value\""),
+        // assert.sameValue(value.name, "value", "value").
+        ("test/language/expressions/logical-assignment/lgcl-or-assignment-operator-namedevaluation-arrow-function.js", ParseGoal.Script, """
+            var value = 0;
+            value ||= () => {};
+
+            assert.sameValue(value.name, "value", "value");
+            """, "\"value\""),
+        // assert.sameValue(value.name, "value", "value").
+        ("test/language/expressions/logical-assignment/lgcl-or-assignment-operator-namedevaluation-class-expression.js", ParseGoal.Script, """
+            var value = 0;
+            value ||= class {};
+
+            assert.sameValue(value.name, "value", "value");
+            """, "\"value\""),
+        // assert.sameValue(value.name, "value", "value").
+        ("test/language/expressions/logical-assignment/lgcl-or-assignment-operator-namedevaluation-function.js", ParseGoal.Script, """
+            var value = 0;
+            value ||= function() {};
+
+            assert.sameValue(value.name, "value", "value");
+            """, "\"value\""),
+        // assert.sameValue(C.accessPrivateField().name, "#field"); assert.sameValue(C.field.name, "field").
+        ("test/language/expressions/class/elements/static-field-anonymous-function-name.js", ParseGoal.Script, """
+            var C = class {
+              static #field = () => 'Test262';
+              static field = function() { return 42; };
+
+              static accessPrivateField() {
+                return this.#field;
+              }
+
+            }
+
+            assert.sameValue(C.accessPrivateField().name, "#field");
+            assert.sameValue(C.field.name, "field");
+            """, "\"C\" \"#field\" \"field\" -"),
+        // assert.sameValue(C.name, 'default', 'correct name is assigned').
+        ("test/language/module-code/eval-export-dflt-cls-anon.js", ParseGoal.Module, """
+            export default class { valueOf() { return 45; } }
+            import C from './eval-export-dflt-cls-anon.js';
+
+            assert.sameValue(new C().valueOf(), 45, 'binding initialized');
+            assert.sameValue(C.name, 'default', 'correct name is assigned');
+            """, "\"default\" -"),
+        // assert.sameValue(C.name, 'default', 'correct name is assigned').
+        ("test/language/module-code/eval-export-dflt-expr-cls-anon.js", ParseGoal.Module, """
+            export default (class { valueOf() { return 45; } });
+            import C from './eval-export-dflt-expr-cls-anon.js';
+
+            assert.sameValue(new C().valueOf(), 45, 'binding initialized');
+            assert.sameValue(C.name, 'default', 'correct name is assigned');
+            """, "\"default\" -"),
+        // assert.sameValue(f.name, 'default', 'correct name is assigned').
+        ("test/language/module-code/eval-export-dflt-expr-fn-anon.js", ParseGoal.Module, """
+            export default (function() { return 99; });
+            import f from './eval-export-dflt-expr-fn-anon.js';
+
+            assert.sameValue(f(), 99, 'binding initialized');
+            assert.sameValue(f.name, 'default', 'correct name is assigned');
+            """, "\"default\""),
+        // assert.sameValue(count, 1): the declaration's name is "default" by SetFunctionName.
+        ("test/language/module-code/eval-export-dflt-fun-anon-semi.js", ParseGoal.Module, """
+            var count = 0;
+
+            export default function() {} if (true) { count += 1; }
+
+            assert.sameValue(count, 1);
+            """, "\"default\""),
+        // each class's static name member wins: every class has its own name, so every node answers null.
+        ("test/language/statements/class/definition/fn-name-static-precedence.js", ParseGoal.Script, """
+            class A {
+              static method() {
+                throw new Test262Error('Static method should not be executed during definition');
+              }
+              static name() {
+                throw new Test262Error('Static method should not be executed during definition');
+              }
+            }
+
+            assert.sameValue(typeof A.name, 'function');
+
+            var attr = 'name';
+            class B {
+              static [attr]() {
+                throw new Test262Error(
+                  'Static method defined via computed property should not be executed ' +
+                  'during definition'
+                );
+              }
+            }
+
+            assert.sameValue(typeof B.name, 'function');
+
+            var isDefined = false;
+            class C {
+              static get name() {
+                if (isDefined) {
+                  return 'pass';
+                }
+                throw new Test262Error('Static `get` accessor should not be executed during definition');
+              }
+            }
+
+            isDefined = true;
+            assert.sameValue(C.name, 'pass');
+
+            class D {
+              static set name(_) {
+                throw new Test262Error('Static `set` accessor should not be executed during definition');
+              }
+            }
+
+            assert.sameValue(D.name, undefined);
+
+            class E {
+              static *name() {
+                throw new Test262Error('Static GeneratorMethod should not be executed during definition');
+              }
+            }
+
+            assert.sameValue(typeof E.name, 'function');
+            """, "- - - - - - - - - - -"),
+        // the same classes, by their own property names: every node answers null.
+        ("test/language/statements/class/definition/fn-name-static-precedence-order.js", ParseGoal.Script, """
+            class A {
+              static method() {
+                throw new Test262Error('Static method should not be executed during definition');
+              }
+              static name() {
+                throw new Test262Error('Static method should not be executed during definition');
+              }
+            }
+
+            assert.compareArray(Object.getOwnPropertyNames(A), ['length', 'name', 'prototype', 'method'])
+
+            var attr = 'name';
+            class B {
+              static [attr]() {
+                throw new Test262Error(
+                  'Static method defined via computed property should not be executed ' +
+                  'during definition'
+                );
+              }
+            }
+
+            assert.compareArray(Object.getOwnPropertyNames(B), ['length', 'name', 'prototype'])
+
+            class C {
+              static get name() {
+                throw new Test262Error('Static `get` accessor should not be executed during definition');
+              }
+            }
+
+            assert.compareArray(Object.getOwnPropertyNames(C), ['length', 'name', 'prototype'])
+
+            class D {
+              static set name(_) {
+                throw new Test262Error('Static `set` accessor should not be executed during definition');
+              }
+            }
+
+            assert.compareArray(Object.getOwnPropertyNames(D), ['length', 'name', 'prototype'])
+
+            class E {
+              static *name() {
+                throw new Test262Error('Static GeneratorMethod should not be executed during definition');
+              }
+            }
+
+            assert.compareArray(Object.getOwnPropertyNames(E), ['length', 'name', 'prototype'])
+            """, "- - - - - - - - - - -"),
+        // assert(xFn.name !== 'xFn'); assert.sameValue(fn.name, 'fn'), a reading beyond the edition.
+        ("test/language/statements/using/fn-name-fn.js", ParseGoal.Script, """
+            // NOTE: only way to verify is to patch `Function.prototype` so as not to trigger a TypeError from AddDisposableResource
+            Function.prototype[Symbol.dispose] = function () {}
+            {
+                using xFn = function x() {};
+                using fn = function() {};
+
+                assert(xFn.name !== 'xFn');
+
+                assert.sameValue(fn.name, 'fn');
+                verifyNotEnumerable(fn, 'name');
+                verifyNotWritable(fn, 'name');
+                verifyConfigurable(fn, 'name');
+            }
+            """, "- - \"fn\""),
+        // assert(xFn.name !== 'xFn'); assert.sameValue(fn.name, 'fn'), a reading beyond the edition.
+        ("test/language/statements/await-using/fn-name-fn.js", ParseGoal.Script, """
+            // NOTE: only way to verify is to patch `Function.prototype` so as not to trigger a TypeError from AddDisposableResource
+            Function.prototype[Symbol.dispose] = function () {}
+            asyncTest(async function() {
+                await using xFn = function x() {};
+                await using fn = function() {};
+
+                assert(xFn.name !== 'xFn');
+
+                assert.sameValue(fn.name, 'fn');
+                verifyNotEnumerable(fn, 'name');
+                verifyNotWritable(fn, 'name');
+                verifyConfigurable(fn, 'name');
+            });
+            """, "- - - \"fn\""),
+
+    ];
 
     // The oracle's answer for a function or class node: up from the definition through its expression or declaration and
     // every parenthesis, then the specification's site rules at the node that holds the value.
@@ -5104,6 +5491,64 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// Broiler.JS's <c>FreeNameScan</c> tests' <c>Dynamic</c> answers, ported literally with their sources (rule SL1):
+    /// the model's <see cref="EnvironmentFacts.DirectEvalOrWithWithin"/> of the function gives the same answer, a direct
+    /// <c>eval</c> and a <c>with</c> true and a member read false. <i>(Added 2026-11-27, at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    [Theory]
+    [InlineData("var f = function () { eval('x = 1'); };", true)]
+    [InlineData("var f = function (o) { with (o) { y; } };", true)]
+    [InlineData("var f = function (o) { return o.x; };", false)]
+    public void The_model_gives_FreeNameScan_s_dynamic_answers_on_its_own_tests_sources(string text, bool expected)
+    {
+        var (result, model) = Model(text);
+        Assert.Equal(expected, model.EnvironmentOf(First<FunctionNode>(result)).DirectEvalOrWithWithin);
+    }
+
+    /// <summary>
+    /// Eval code parsed with its caller's records (stage 5c's <see cref="InheritedContext.CallerScopes"/>): a reference
+    /// the caller's catch parameter binds answers <see cref="ResolutionKind.Inherited"/> with no declaration, and is free
+    /// in the program and in the arrow that uses it, and captured by neither. <i>(Added 2026-11-27, at SJL-15.2 stage
+    /// 7.)</i>
+    /// </summary>
+    [Fact]
+    public void Eval_code_with_its_caller_s_records_gives_the_inherited_names_free_and_not_captured()
+    {
+        var result = SyntaxParser.Parse(CallerRequest("var x = 1; x; (() => x)();", Records("{c:x}")));
+        Assert.Equal(ParseOutcome.Accepted, result.Outcome);
+        var model = result.Model!;
+        var answer = model.Resolve(Reference(result, "x"));
+        Assert.Equal(ResolutionKind.Inherited, answer.Kind);
+        Assert.Null(answer.Declaration);
+        var arrow = First<ArrowFunctionExpression>(result).Function;
+        Assert.Equal("x", Free(model, result.Tree!));
+        Assert.Empty(model.Captured(result.Tree!));
+        Assert.Equal("x", Free(model, arrow));
+        Assert.Empty(model.Captured(arrow));
+    }
+
+    /// <summary>
+    /// A name that only a direct <c>eval</c>'s text uses is no reference of the tree: it is in no list and no flag, and
+    /// <see cref="EnvironmentFacts.DirectEvalOrWithWithin"/> says where code may so reach bindings. <i>(Added 2026-11-27,
+    /// at SJL-15.2 stage 7.)</i>
+    /// </summary>
+    [Fact]
+    public void A_name_only_a_direct_eval_s_text_uses_is_not_listed_and_the_reach_says_where()
+    {
+        var (r1, m1) = Model("function f() { var x; (() => eval(\"x\"))(); }");
+        var arrow = First<ArrowFunctionExpression>(r1).Function;
+        Assert.Equal("eval", Free(m1, arrow));
+        Assert.Empty(m1.Captured(arrow));
+        Assert.True(m1.EnvironmentOf(arrow).DirectEvalOrWithWithin);
+
+        var (r2, m2) = Model("var f = function g() { return eval(\"g\"); };");
+        var g = Fn(r2, "g");
+        Assert.Equal("eval", Free(m2, g));
+        Assert.False(m2.EnvironmentOf(g).FunctionNameReferenced);
+        Assert.True(m2.EnvironmentOf(g).DirectEvalOrWithWithin);
+    }
+
+    /// <summary>
     /// Every facts node of the population, the resolution fixtures and this section's sources answers the free names,
     /// captures and flags an oracle of the tree recomputes: each node's owning facts node and each scope's owner read from
     /// the tree by the model's rules, each reference's binding from <see cref="SemanticModel.Resolve(Identifier)"/>, the
@@ -5152,6 +5597,12 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
                 One("fixture \"" + text + "\"", Parse(text));
             foreach (var text in EvalCaptureSources)
                 One("fixture (eval code) \"" + text + "\"", EvalParse(text));
+            foreach (var data in typeof(SemanticModelTests).GetMethod(nameof(The_model_gives_FreeNameScan_s_dynamic_answers_on_its_own_tests_sources))!.GetCustomAttributes<InlineDataAttribute>())
+                One("fixture \"" + (string)data.Data[0]! + "\"", Parse((string)data.Data[0]!));
+            foreach (var (text, records) in CallerCaptureSources)
+                One("fixture (eval code, caller records " + records + ") \"" + text + "\"", SyntaxParser.Parse(CallerRequest(text, Records(records))));
+            foreach (var (file, goal, text, _) in Test262NamedSources)
+                One("test262 " + file, Parse(text, goal));
             return (f, n, c);
         });
 
@@ -5182,6 +5633,14 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         "var x = 1; x",
         "{ function g() {} } (() => g)();",
         "let y; var z; (function () { return [y, z, w]; })();",
+    ];
+
+    // Eval code with its caller's records, written as the caller-scope tests write them.
+    private static readonly (string Text, string Records)[] CallerCaptureSources =
+    [
+        ("var x = 1; x; (() => x)();", "{c:x}"),
+        ("x; (function () { return () => x; })();", "{x}"),
+        ("(() => [x, y])();", "{y}{c:x}"),
     ];
 
     // The oracle's lists: each facts node's names and declarations, the facts nodes with the reach and with the
