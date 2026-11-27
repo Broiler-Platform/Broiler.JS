@@ -3,15 +3,15 @@
 //
 // HAIRS Code Assurance
 // --------------------
-// Relevant units:   26
-// Annotated:        26/26
-// Exempt:           67
-// Human-reviewed:   0/26
+// Relevant units:   32
+// Annotated:        32/32
+// Exempt:           104
+// Human-reviewed:   0/32
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       26
+// Unverified:       32
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -108,13 +108,15 @@ public enum FunctionKind
 /// the program, every function, every static block and every initialised field (<see cref="EnvironmentOf"/>), and from
 /// stage 5b each block function's Annex B alias (<see cref="AnnexBAlias"/>, Annex B.3.2, which row AB1 names by an
 /// earlier edition's number, B.3.3), and from stage 5c the calls that may be direct evals and the caller's records a direct
-/// <c>eval</c> at each receives (<see cref="DirectEvalCalls"/>, <see cref="CallerScopesOf"/>); the module record, named evaluation, captures and the early
+/// <c>eval</c> at each receives (<see cref="DirectEvalCalls"/>, <see cref="CallerScopesOf"/>), and from stage 6 a Module's
+/// record (<see cref="Module"/>); named evaluation, captures and the early
 /// errors that are not purely grammatical are later stages'. From stage 2 the walk that builds it also reports its
 /// early errors of the function context (the super rows, ContainsArguments, eval code's from the caller's context, and
 /// three of expressions') among the parse's diagnostics, so that a source they refuse has no model, from stage 3 those
 /// of jump targets (a <c>break</c> or a <c>continue</c> with no target, and an undefined break or continue target), and
 /// from stage 4 those of private names (a private name no enclosing class declares, in a Script, in a Module, and in
-/// eval code against the private names its caller sees); the early errors of the module record are later stages'.
+/// eval code against the private names its caller sees), and from stage 6 those of the module record (ExportedNames'
+/// duplicates and ExportedBindings not declared, catalogue rows EE0170 and EE0171).
 /// <i>(Revised 2026-11-25, at SJL-15.2 stage 2; where it names the early errors, it read "and the early errors that are
 /// not purely grammatical are later stages'.")</i> <i>(Revised 2026-11-25, at SJL-15.2 stage 3, when jump targets
 /// joined the model; it read "resolution, jump targets, private names, the module record, named evaluation, captures
@@ -135,6 +137,10 @@ public enum FunctionKind
 /// are not purely grammatical are later stages'.")</i> From stage 5c the walk also reports eval code's <c>var</c>s against
 /// the caller's records the request gives (EvalDeclarationInstantiation step 3.d, catalogue rows EA0007 and EA0008).
 /// <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+/// <i>(Revised 2026-11-27, at SJL-15.2 stage 6, when the module record joined the model; it read "(<see
+/// cref="DirectEvalCalls"/>, <see cref="CallerScopesOf"/>); the module record, named evaluation, captures and the early
+/// errors that are not purely grammatical are later stages'" and "eval code against the private names its caller sees);
+/// the early errors of the module record are later stages'.")</i>
 /// </summary>
 /// <remarks>
 /// <para>
@@ -148,6 +154,12 @@ public enum FunctionKind
 /// <b>In source order, never a hash table's</b> (JSD-0080: "every collection in source order"): its scopes and its facts are
 /// ordered by the start of their node and, for one start, by the order the walk made them in, which puts a scope before
 /// every scope inside it. Every fact is keyed by node identity.
+/// </para>
+/// <para>
+/// <b>The module record</b> (<see cref="Module"/>) keeps the same rule: its requests in the order of their first
+/// statement and its entries in source order, each request's attributes in its first statement's source order, which
+/// <see cref="ModuleRequest.Attributes"/> says how to sort as the specification does; it takes no node, so that no
+/// <see cref="ArgumentException"/> is added. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
 /// </para>
 /// <para>
 /// <b>A node of another tree is a caller's error</b> (convention 3): <see cref="ScopeOf"/>, <see cref="DeclarationOf"/>,
@@ -186,7 +198,7 @@ public sealed class SemanticModel
     private readonly Dictionary<Declaration, Declaration> annexBAliasOf;
     private readonly Dictionary<CallExpression, IReadOnlyList<CallerScope>?> callerScopesOf;
 
-    // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design; IP=Low; Security=Low; Resources=1; Fingerprint=64A393
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 semantic model design; IP=Low; Security=Low; Resources=1; Fingerprint=80D7BE
     // Hairs-Human:        PENDING
     internal SemanticModel(
         IReadOnlyList<Scope> scopes,
@@ -202,7 +214,8 @@ public sealed class SemanticModel
         Dictionary<SyntaxNode, EnvironmentFacts> environmentOf,
         Dictionary<Declaration, Declaration> annexBAliasOf,
         IReadOnlyList<CallExpression> directEvalCalls,
-        Dictionary<CallExpression, IReadOnlyList<CallerScope>?> callerScopesOf)
+        Dictionary<CallExpression, IReadOnlyList<CallerScope>?> callerScopesOf,
+        ModuleRecord? module)
     {
         Scopes = scopes;
         Functions = functions;
@@ -218,6 +231,7 @@ public sealed class SemanticModel
         this.annexBAliasOf = annexBAliasOf;
         DirectEvalCalls = directEvalCalls;
         this.callerScopesOf = callerScopesOf;
+        Module = module;
     }
 
     /// <summary>
@@ -683,6 +697,18 @@ public sealed class SemanticModel
             throw new ArgumentException("The call is not a direct-eval candidate.", nameof(call));
         return scopes;
     }
+
+    /// <summary>
+    /// A Module's record (JSD-0080: "the module record: requests with attributes, top-level <c>await</c>, import and export
+    /// entries, and their errors"; the session's decision D-js-module-record; ECMA-262 ParseModule and the Source Text Module
+    /// Record's fields): the requested modules, the import entries, the local, indirect and star export entries, and whether
+    /// the module awaits at its top level, one instance, built with the model; null for every goal but
+    /// <see cref="ParseGoal.Module"/>, as the sketch's <c>ModuleRecord?</c> allows. A Module with no import or export has a
+    /// record with empty lists. Its early errors, ExportedNames' duplicates (EE0170) and ExportedBindings not declared
+    /// (EE0171), are among the parse's diagnostics, so that a Module they refuse has no model.
+    /// <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+    /// </summary>
+    public ModuleRecord? Module { get; }
 }
 
 /// <summary>
@@ -1207,4 +1233,323 @@ public sealed class EnvironmentFacts
 
     /// <summary>Whether a <c>with</c> statement stands in this node's own code, arrows excluded, as Contains crosses no function boundary; strict code refuses one.</summary>
     public bool ContainsWith { get; }
+}
+
+/// <summary>
+/// A Module's record, as <see cref="SemanticModel.Module"/> answers it (JSD-0080: "the module record: requests with
+/// attributes, top-level <c>await</c>, import and export entries, and their errors"; milestone SJL-15.2, stage 6; the
+/// session's decision D-js-module-record): ParseModule's lists of the Source Text Module Record, [[RequestedModules]],
+/// [[ImportEntries]], [[LocalExportEntries]], [[IndirectExportEntries]] and [[StarExportEntries]], and its
+/// [[HasTLA]]. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+/// </summary>
+/// <remarks>
+/// <para>
+/// <b>In source order</b> (JSD-0080: "Every collection is in source order"): the requests by their first statement, the
+/// entries by their node, so that ParseModule's step 10 partition keeps the order of the ExportEntries it reads and a
+/// rewritten entry stands among the true indirect ones where its export does. Every list is built with the model and
+/// read-only.
+/// </para>
+/// <para>
+/// <b>Shared instances.</b> Every entry that names a request holds the element of <see cref="RequestedModules"/> itself, one
+/// instance per distinct request, where the specification builds a value-equal record for each declaration; an import
+/// entry's <see cref="ImportEntry.Declaration"/> is the instance <see cref="SemanticModel.DeclarationOf"/> answers for its
+/// node, and a local export entry's the module scope's first declaration of its local name. Immutable, and safe to read
+/// concurrently (convention 10).
+/// </para>
+/// </remarks>
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 ParseModule, Source Text Module Records, JSD-0080 module record; IP=Low; Security=Low; Resources=1; Fingerprint=6A4FC1
+// Hairs-Human:        PENDING
+public sealed class ModuleRecord
+{
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 module record; IP=Low; Security=Low; Resources=1; Fingerprint=C55CAA
+    // Hairs-Human:        PENDING
+    internal ModuleRecord(IReadOnlyList<ModuleRequest> requestedModules, IReadOnlyList<ImportEntry> importEntries, IReadOnlyList<ExportEntry> localExportEntries, IReadOnlyList<ExportEntry> indirectExportEntries, IReadOnlyList<ExportEntry> starExportEntries, bool hasTopLevelAwait)
+    {
+        RequestedModules = requestedModules;
+        ImportEntries = importEntries;
+        LocalExportEntries = localExportEntries;
+        IndirectExportEntries = indirectExportEntries;
+        StarExportEntries = starExportEntries;
+        HasTopLevelAwait = hasTopLevelAwait;
+    }
+
+    /// <summary>
+    /// [[RequestedModules]], ModuleRequests of the module's items (ParseModule step 3): a request for each distinct request,
+    /// "in source text occurrence order of the imports", that is, in the order of its first statement, a later statement
+    /// equal to an earlier one by ModuleRequestsEqual, with the phase added, making none of its own. Every
+    /// <see cref="ImportDeclaration"/>, <c>import "m"</c> and <c>import {} from "m"</c> among them, and every
+    /// <c>export … from</c>, <c>export {} from "m"</c> among them, makes a request; an <see cref="ImportCall"/> makes none.
+    /// </summary>
+    public IReadOnlyList<ModuleRequest> RequestedModules { get; }
+
+    /// <summary>
+    /// [[ImportEntries]], ImportEntries of the module's items (ParseModule step 4), in source order: per
+    /// <see cref="ImportDeclaration"/>, its default binding's entry, then its namespace binding's or its named imports'.
+    /// <c>import "m"</c> and <c>import {} from "m"</c> give none.
+    /// </summary>
+    public IReadOnlyList<ImportEntry> ImportEntries { get; }
+
+    /// <summary>
+    /// [[LocalExportEntries]] (ParseModule step 10.a.i.1): each export entry with no request whose local name no import entry
+    /// binds, in source order; <c>export default a</c> with <c>a</c> imported among them, its local name being
+    /// <c>*default*</c>.
+    /// </summary>
+    public IReadOnlyList<ExportEntry> LocalExportEntries { get; }
+
+    /// <summary>
+    /// [[IndirectExportEntries]], in source order: each <c>export … from</c> entry but <c>export *</c>'s (step 10.c.i), an
+    /// <c>export * as n from</c> entry among them, and each export of an imported binding, rewritten to its import's request:
+    /// with <see cref="ImportNameKind.All"/> for a namespace import (step 10.a.ii.3.b) and with the import's kind and name
+    /// for any other (step 10.a.ii.4.b).
+    /// </summary>
+    public IReadOnlyList<ExportEntry> IndirectExportEntries { get; }
+
+    /// <summary>[[StarExportEntries]] (step 10.b.ii): each <c>export * from</c> entry, in source order.</summary>
+    public IReadOnlyList<ExportEntry> StarExportEntries { get; }
+
+    /// <summary>
+    /// [[HasTLA]], "Whether this module is individually asynchronous" (ParseModule steps 11 and 12: the module's items
+    /// Contains <c>await</c>): <see cref="ProgramNode.HasTopLevelAwait"/>, the tree's fact, read and not recomputed. It is
+    /// set for an <c>await</c> expression, a <c>for await</c> and an <c>await using</c> declaration outside every function,
+    /// arrow, method, field initialiser and static block, a class's heritage and computed keys and an object literal's
+    /// computed keys included, as Contains looks into them; an <c>await</c> in a top-level async arrow does not set it. An
+    /// <c>await using</c> declaration is ecma262 main's, beyond the pinned edition, and an <c>await</c> in a top-level
+    /// decorator's expression, under <see cref="ProposalFlags.Decorators"/>, is the tree's reading, beyond the edition; whether
+    /// the decorators proposal counts it is not settled.
+    /// </summary>
+    public bool HasTopLevelAwait { get; }
+}
+
+/// <summary>
+/// A ModuleRequest Record, as <see cref="ModuleRecord.RequestedModules"/> holds it (ECMA-262 ModuleRequest Records:
+/// [[Specifier]] and [[Attributes]]; milestone SJL-15.2, stage 6; the session's decision D-js-module-record): the specifier,
+/// the attributes, the phase, and the statements that make it. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+/// </summary>
+/// <remarks>
+/// Two statements make one request where ModuleRequestsEqual holds of them: the same specifier, compared ordinally, and the
+/// same attributes as a set, by count and then by each key and value in any order; and, the library's addition, beyond the
+/// pinned edition, whose ModuleRequest Record has no phase, the same <see cref="Phase"/>. Immutable, and safe to read
+/// concurrently (convention 10).
+/// </remarks>
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 ModuleRequest Records, ModuleRequests, ModuleRequestsEqual, WithClauseToAttributes, JSD-0080 module record; IP=Low; Security=Low; Resources=1; Fingerprint=7167BC
+// Hairs-Human:        PENDING
+public sealed class ModuleRequest
+{
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 module record; IP=Low; Security=Low; Resources=1; Fingerprint=60C30F
+    // Hairs-Human:        PENDING
+    internal ModuleRequest(string specifier, IReadOnlyList<ModuleRequestAttribute> attributes, ImportPhase phase, IReadOnlyList<Statement> statements)
+    {
+        Specifier = specifier;
+        Attributes = attributes;
+        Phase = phase;
+        Statements = statements;
+    }
+
+    /// <summary>
+    /// [[Specifier]], the SV of the ModuleSpecifier (<see cref="StringLiteral.Value"/>), as written, lone surrogates kept, so
+    /// that <c>"m"</c>, <c>'m'</c> and <c>"\u006d"</c> are one specifier; an engine refuses what it cannot load.
+    /// </summary>
+    public string Specifier { get; }
+
+    /// <summary>
+    /// The WithClause's attributes of <see cref="Statements"/>' first statement, in that statement's source order (JSD-0080:
+    /// "Every collection is in source order"), each key its AttributeKey's PropName, so that <c>type</c> and <c>"type"</c>
+    /// are one key, and each value its SV; empty for <c>with {}</c> and for no <c>with</c>. The specification's
+    /// [[Attributes]] is this list sorted by <see cref="ModuleRequestAttribute.Key"/> under
+    /// <see cref="StringComparer.Ordinal"/>, UTF-16 code unit by code unit (WithClauseToAttributes), whose NOTE reads: "This
+    /// sorting is observable only in that hosts are prohibited from changing behaviour based on the order in which
+    /// attributes are enumerated". The keys of an accepted source are distinct (EE0180), so that sort is a total order. A
+    /// later statement that makes the same request may write the same attributes in another order; its own order is its
+    /// statement's <c>Attributes</c>, which <see cref="Statements"/> reaches.
+    /// </summary>
+    public IReadOnlyList<ModuleRequestAttribute> Attributes { get; }
+
+    /// <summary>
+    /// The phase the request is made in: an <see cref="ImportDeclaration"/>'s <see cref="ImportDeclaration.Phase"/>, and
+    /// <see cref="ImportPhase.Evaluation"/> for every <c>export … from</c>. The pinned edition's ModuleRequest Record has no
+    /// phase; the source-phase and deferred imports are proposals (<see cref="ProposalFlags.ImportSourceDeclarations"/>,
+    /// <see cref="ProposalFlags.ImportDeferDeclarations"/>), and the field is the library's, beyond the edition.
+    /// </summary>
+    public ImportPhase Phase { get; }
+
+    /// <summary>
+    /// Every <see cref="ImportDeclaration"/>, <see cref="ExportNamedDeclaration"/> with a FromClause and
+    /// <see cref="ExportAllDeclaration"/> that makes this request, in source order, the first making it.
+    /// </summary>
+    public IReadOnlyList<Statement> Statements { get; }
+}
+
+/// <summary>
+/// An ImportAttribute Record, as <see cref="ModuleRequest.Attributes"/> holds it (ECMA-262: [[Key]] and [[Value]], both
+/// Strings): an attribute's key and value. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+/// </summary>
+/// <remarks>Immutable, and safe to read concurrently (convention 10).</remarks>
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 ImportAttribute Records, WithClauseToAttributes, JSD-0080 module record; IP=Low; Security=Low; Resources=0; Fingerprint=164001
+// Hairs-Human:        PENDING
+public sealed class ModuleRequestAttribute
+{
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 module record; IP=Low; Security=Low; Resources=0; Fingerprint=25140F
+    // Hairs-Human:        PENDING
+    internal ModuleRequestAttribute(string key, string value)
+    {
+        Key = key;
+        Value = value;
+    }
+
+    /// <summary>[[Key]], the PropName of the AttributeKey: an <see cref="IdentifierName"/>'s name or a <see cref="StringLiteral"/>'s SV.</summary>
+    public string Key { get; }
+
+    /// <summary>[[Value]], the SV of the attribute's <see cref="StringLiteral"/>.</summary>
+    public string Value { get; }
+}
+
+/// <summary>
+/// What an import entry's [[ImportName]] or an export entry's [[ImportName]] is (ECMA-262 ImportEntry and ExportEntry
+/// Records), in the specification's spellings, as <see cref="ImportEntry.ImportKind"/> and
+/// <see cref="ExportEntry.ImportKind"/>. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+/// </summary>
+/// <remarks>The numbers are stable; a later member takes a new number.</remarks>
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 ImportEntry Records ExportEntry Records ImportName, JSD-0080 module record; IP=Low; Security=Low; Resources=0; Fingerprint=ECF5E7
+// Hairs-Human:        PENDING
+public enum ImportNameKind
+{
+    /// <summary>A null [[ImportName]]: a local export entry's.</summary>
+    None = 0,
+
+    /// <summary>A String [[ImportName]], the entry's <c>ImportName</c>: a named or default import, or a re-export of one.</summary>
+    Name = 1,
+
+    /// <summary>~namespace-object~: an import entry's namespace binding, <c>import * as ns</c>, a deferred one among them.</summary>
+    NamespaceObject = 2,
+
+    /// <summary>~all~: an export entry's <c>export * as n from</c>, or the re-export of an imported namespace object.</summary>
+    All = 3,
+
+    /// <summary>~all-but-default~: an export entry's <c>export * from</c>.</summary>
+    AllButDefault = 4,
+
+    /// <summary>
+    /// A source-phase binding, <c>import source x from "m"</c> under <see cref="ProposalFlags.ImportSourceDeclarations"/>,
+    /// and an export of one: the library's kind, beyond the pinned edition, whose rule for an ImportedDefaultBinding would
+    /// name the default export, which the binding is not. The entry's <c>ImportName</c> is null.
+    /// </summary>
+    Source = 5,
+}
+
+/// <summary>
+/// An ImportEntry Record, as <see cref="ModuleRecord.ImportEntries"/> holds it (ECMA-262: [[ModuleRequest]],
+/// [[ImportName]] and [[LocalName]]; milestone SJL-15.2, stage 6), with its binding and its declaration.
+/// <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+/// </summary>
+/// <remarks>
+/// A default binding is <c>{request, Name, "default", local}</c>; a namespace binding <c>{request, NamespaceObject, null,
+/// ns}</c>, a deferred one's request with <see cref="ImportPhase.Defer"/>; a named import <c>{request, Name, the StringValue
+/// of the name before <c>as</c> or of the binding, local}</c>; and a source-phase binding <c>{request, Source, null,
+/// local}</c>, never <c>"default"</c>. Immutable, and safe to read concurrently (convention 10).
+/// </remarks>
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 ImportEntry Records, ImportEntriesForModule, JSD-0080 module record; IP=Low; Security=Low; Resources=1; Fingerprint=36244F
+// Hairs-Human:        PENDING
+public sealed class ImportEntry
+{
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 module record; IP=Low; Security=Low; Resources=1; Fingerprint=3B41E6
+    // Hairs-Human:        PENDING
+    internal ImportEntry(ModuleRequest moduleRequest, ImportNameKind importKind, string? importName, string localName, BindingIdentifier node, Declaration declaration)
+    {
+        ModuleRequest = moduleRequest;
+        ImportKind = importKind;
+        ImportName = importName;
+        LocalName = localName;
+        Node = node;
+        Declaration = declaration;
+    }
+
+    /// <summary>[[ModuleRequest]], the element of <see cref="ModuleRecord.RequestedModules"/> itself.</summary>
+    public ModuleRequest ModuleRequest { get; }
+
+    /// <summary>What [[ImportName]] is: <see cref="ImportNameKind.Name"/>, <see cref="ImportNameKind.NamespaceObject"/> or <see cref="ImportNameKind.Source"/>.</summary>
+    public ImportNameKind ImportKind { get; }
+
+    /// <summary>[[ImportName]] where it is a String, non-null exactly for <see cref="ImportNameKind.Name"/>.</summary>
+    public string? ImportName { get; }
+
+    /// <summary>[[LocalName]], the StringValue of the ImportedBinding.</summary>
+    public string LocalName { get; }
+
+    /// <summary>The ImportedBinding.</summary>
+    public BindingIdentifier Node { get; }
+
+    /// <summary>The <see cref="BindingKind.Import"/> declaration the binding makes, the instance <see cref="SemanticModel.DeclarationOf"/> answers for <see cref="Node"/>.</summary>
+    public Declaration Declaration { get; }
+}
+
+/// <summary>
+/// An ExportEntry Record, as the export lists of <see cref="ModuleRecord"/> hold it (ECMA-262: [[ExportName]],
+/// [[ModuleRequest]], [[ImportName]] and [[LocalName]]; milestone SJL-15.2, stage 6), with its node and, for a local entry,
+/// its declaration. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+/// </summary>
+/// <remarks>
+/// <para>
+/// Per form (ExportEntriesForModule): an exported declaration gives a local entry per BoundName, in order, each named as
+/// it is bound (<c>export var a, a;</c> would give two, and EE0170 refuses it); <c>export default</c> gives <c>{"default", null, None, null,
+/// local}</c>, the local name <c>*default*</c> for an anonymous function, generator, async function, async generator or
+/// class and for an expression, and the declared name otherwise; a specifier without a FromClause <c>{exported or local,
+/// null, None, null, local}</c>; one with a FromClause <c>{exported or local, request, Name, local, null}</c>; <c>export *
+/// from</c> <c>{null, request, AllButDefault, null, null}</c>; and <c>export * as n from</c> <c>{n, request, All, null,
+/// null}</c>. Every name is a StringValue: an <see cref="IdentifierName"/>'s name or a <see cref="StringLiteral"/>'s SV.
+/// </para>
+/// <para>
+/// <b>The node</b> is the <see cref="ExportSpecifier"/> for a clause's entry, rewritten or not, the
+/// <see cref="BindingIdentifier"/> of each bound name for an exported declaration, the
+/// <see cref="ExportDefaultDeclaration"/>, or the <see cref="ExportAllDeclaration"/>. An export of an imported binding is
+/// rewritten as ParseModule's step 10.a.ii rewrites it, its import's request and kind taken; an export of a source-phase
+/// binding takes <see cref="ImportNameKind.Source"/>, which applies the edition's step to the proposal's value, the
+/// proposal's own rule not being pinned. Immutable, and safe to read concurrently (convention 10).
+/// </para>
+/// </remarks>
+// Hairs-AI:           Origin=AI; Spec=ECMA-262 ExportEntry Records, ExportEntriesForModule, ParseModule step 10, JSD-0080 module record; IP=Low; Security=Low; Resources=1; Fingerprint=B81701
+// Hairs-Human:        PENDING
+public sealed class ExportEntry
+{
+    // Hairs-AI:           Origin=AI; Spec=JSD-0080 module record; IP=Low; Security=Low; Resources=1; Fingerprint=D4B5FF
+    // Hairs-Human:        PENDING
+    internal ExportEntry(string? exportName, ModuleRequest? moduleRequest, ImportNameKind importKind, string? importName, string? localName, SyntaxNode node, Declaration? declaration)
+    {
+        ExportName = exportName;
+        ModuleRequest = moduleRequest;
+        ImportKind = importKind;
+        ImportName = importName;
+        LocalName = localName;
+        Node = node;
+        Declaration = declaration;
+    }
+
+    /// <summary>[[ExportName]], null only for <c>export * from</c>.</summary>
+    public string? ExportName { get; }
+
+    /// <summary>[[ModuleRequest]], the element of <see cref="ModuleRecord.RequestedModules"/> itself; null for a local entry.</summary>
+    public ModuleRequest? ModuleRequest { get; }
+
+    /// <summary>
+    /// What [[ImportName]] is: <see cref="ImportNameKind.None"/> for a local entry, <see cref="ImportNameKind.Name"/>,
+    /// <see cref="ImportNameKind.All"/> or <see cref="ImportNameKind.AllButDefault"/>, or <see cref="ImportNameKind.Source"/>
+    /// for a rewritten export of a source-phase binding.
+    /// </summary>
+    public ImportNameKind ImportKind { get; }
+
+    /// <summary>[[ImportName]] where it is a String, non-null exactly for <see cref="ImportNameKind.Name"/>.</summary>
+    public string? ImportName { get; }
+
+    /// <summary>[[LocalName]], non-null exactly for a local entry.</summary>
+    public string? LocalName { get; }
+
+    /// <summary>The entry's node: the <see cref="ExportSpecifier"/>, the bound name's <see cref="BindingIdentifier"/>, the <see cref="ExportDefaultDeclaration"/> or the <see cref="ExportAllDeclaration"/>.</summary>
+    public SyntaxNode Node { get; }
+
+    /// <summary>
+    /// A local entry's binding: the module scope's first declaration of <see cref="LocalName"/> in its
+    /// <see cref="Scope.Declarations"/>' order, the first in source order, and for <c>*default*</c> the
+    /// <see cref="BindingKind.ExportDefault"/> declaration of the <see cref="ExportDefaultDeclaration"/>; every local entry
+    /// of an accepted Module has one, the rest being refused (EE0171). Null for an indirect or star entry.
+    /// </summary>
+    public Declaration? Declaration { get; }
 }

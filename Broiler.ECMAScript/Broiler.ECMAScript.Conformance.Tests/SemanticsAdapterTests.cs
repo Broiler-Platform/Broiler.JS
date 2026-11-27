@@ -309,6 +309,22 @@ public class SemanticsAdapterTests
     }
 
     /// <summary>
+    /// Stage 6's rows answer no vector (SJL-15.2 stage 6): only the Module goal reaches EE0170 and EE0171, which schema 1 has
+    /// no field for, so no semantics vector's identifier names either, and listing them, as the test above requires, moves no
+    /// vector's answer. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+    /// </summary>
+    [Fact]
+    public void No_semantics_vector_names_the_module_record_s_rows()
+    {
+        Assert.Contains("EE0170", AlgorithmsLibrary.SemanticsAnsweredRows);
+        Assert.Contains("EE0171", AlgorithmsLibrary.SemanticsAnsweredRows);
+        Assert.NotEmpty(SemanticsVectors);
+        Assert.All(SemanticsVectors, static v => Assert.DoesNotContain("ee0170", v.Id, StringComparison.OrdinalIgnoreCase));
+        Assert.All(SemanticsVectors, static v => Assert.DoesNotContain("ee0171", v.Id, StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(Answered, static v => AlgorithmsLibrary.SemanticsRow(v) is "EE0170" or "EE0171");
+    }
+
+    /// <summary>
     /// The adapter's groups (D-js-adapter-groups): each has vectors, all of its operation and answered; every row a group
     /// names is one of the adapter's rows; and every row each of its vectors' notes names is one of the group's, a check on
     /// the corpus, not a dispatch. <i>(Added 2026-11-25, at SJL-15.2 stage 3.)</i>

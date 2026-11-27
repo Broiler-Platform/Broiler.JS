@@ -30,6 +30,8 @@ namespace Broiler.ECMAScript.Syntax.Tests;
 /// From stage 5c, the caller's records of each direct-eval candidate, <see cref="SemanticModel.DirectEvalCalls"/> and
 /// <see cref="SemanticModel.CallerScopesOf"/>, and what the request's own records decide in eval code, on fixtures and over
 /// the same population, with an oracle of the tree. <i>(Added 2026-11-26, at SJL-15.2 stage 5c.)</i>
+/// From stage 6, a Module's record, <see cref="SemanticModel.Module"/>, on fixtures and over the same population, with an
+/// oracle of the tree. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
 /// </summary>
 /// <remarks>
 /// The off/on identity is written so that stage 2 narrows it mechanically: equality wherever the on path accepts, and,
@@ -167,8 +169,22 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     // off path's first, so that the identity test's branch for it runs (SJL-15.2 stage 2's review).
     private static readonly string[] BothRefusedRowSources = ["super.x; let a; let a;", "break; let a; let a;", "this.#x; let a; let a;"];
 
+    // Stage 6's rows, which only the Module goal reaches: sources the off path accepts and the rows refuse, and a source
+    // both paths refuse in which the row comes first, each parsed with a Module request (ModuleRowSourceRequest).
+    // (Added 2026-11-27, at SJL-15.2 stage 6.)
+    private static readonly string[] ModuleRowSources = ["export { x };", "var a; export { a, a };"];
+
+    private static readonly string[] ModuleBothRefusedRowSources = ["var a; export { a, a }; let b; let b;"];
+
     private static ParseRequest RowSourceRequest(string text, bool model, bool allErrors = false) =>
         new(new SourceText(text), ParseGoal.Script, UnicodeDataHome.Tables, NoValidator.Instance)
+        {
+            BuildSemanticModel = model,
+            Limits = new ParseLimits { Reporting = allErrors ? ErrorReporting.AllErrors : ErrorReporting.FirstError },
+        };
+
+    private static ParseRequest ModuleRowSourceRequest(string text, bool model, bool allErrors = false) =>
+        new(new SourceText(text), ParseGoal.Module, UnicodeDataHome.Tables, NoValidator.Instance)
         {
             BuildSemanticModel = model,
             Limits = new ParseLimits { Reporting = allErrors ? ErrorReporting.AllErrors : ErrorReporting.FirstError },
@@ -181,6 +197,8 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     /// SJL-15.2 stage 2, which narrowed it; its refusal branch held every refusal's dump equal, "A refusal has no model, so
     /// its whole dump, the ordered diagnostics with their message ids, arguments and spans among it, is the off path's
     /// byte for byte".)</i>
+    /// From stage 6 the row sources also hold Modules, parsed with a Module request, since only that goal reaches stage
+    /// 6's rows. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
     /// </summary>
     [Fact]
     public void With_the_member_on_every_accepted_parse_is_the_parse_with_it_off()
@@ -235,6 +253,8 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
                 One("row source \"" + text + "\"", SyntaxParser.Parse(RowSourceRequest(text, model: false)), SyntaxParser.Parse(RowSourceRequest(text, model: true)), rowSource: true);
             foreach (var text in BothRefusedRowSources)
                 One("row source \"" + text + "\"", SyntaxParser.Parse(RowSourceRequest(text, model: false)), SyntaxParser.Parse(RowSourceRequest(text, model: true)), rowSource: true);
+            foreach (var text in ModuleRowSources.Concat(ModuleBothRefusedRowSources))
+                One("module row source \"" + text + "\"", SyntaxParser.Parse(ModuleRowSourceRequest(text, model: false)), SyntaxParser.Parse(ModuleRowSourceRequest(text, model: true)), rowSource: true);
             return (a, b, o, s, ro, rs);
         });
 
@@ -245,8 +265,8 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         // sources together, was at least the number of row sources.)
         Assert.True(accepted > items.Count / 2, accepted.ToString(CultureInfo.InvariantCulture) + " of " + items.Count.ToString(CultureInfo.InvariantCulture) + " accepted");
         Assert.True(bothRefused > 0);
-        Assert.Equal(RowSources.Length, onlyOnRowSources);
-        Assert.Equal(BothRefusedRowSources.Length, semanticFirstRowSources);
+        Assert.Equal(RowSources.Length + ModuleRowSources.Length, onlyOnRowSources);
+        Assert.Equal(BothRefusedRowSources.Length + ModuleBothRefusedRowSources.Length, semanticFirstRowSources);
         output.WriteLine("identity branches: accepted on " + accepted.ToString(CultureInfo.InvariantCulture) + ", refused both ways "
             + bothRefused.ToString(CultureInfo.InvariantCulture) + " (of which a SemanticRows row first on " + semanticFirst.ToString(CultureInfo.InvariantCulture)
             + ", of those row sources " + semanticFirstRowSources.ToString(CultureInfo.InvariantCulture)
@@ -260,6 +280,8 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
     /// arguments. Under first error an earlier row of the model's displaces the off path's diagnostic, which the test above
     /// reads. <i>(Revised 2026-11-25, at SJL-15.2 stage 2, which narrowed it; its rows were <c>Rows</c>' alone, and it held
     /// "At stage 1 the refusals are the same, on or off", comparing the first-error lists by code and span.)</i>
+    /// From stage 6 the row sources also hold Modules, parsed with a Module request. <i>(Added 2026-11-27, at SJL-15.2
+    /// stage 6.)</i>
     /// </summary>
     [Fact]
     public void With_the_member_on_no_diagnostic_is_outside_the_library_s_rows()
@@ -292,10 +314,12 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
                 One(Name(item), SyntaxParser.Parse(DeterminismTests.Request(item, allErrors: true)), SyntaxParser.Parse(DeterminismTests.Request(item, model: true, allErrors: true)));
             foreach (var text in RowSources.Concat(BothRefusedRowSources))
                 One("row source \"" + text + "\"", SyntaxParser.Parse(RowSourceRequest(text, model: false, allErrors: true)), SyntaxParser.Parse(RowSourceRequest(text, model: true, allErrors: true)));
+            foreach (var text in ModuleRowSources.Concat(ModuleBothRefusedRowSources))
+                One("module row source \"" + text + "\"", SyntaxParser.Parse(ModuleRowSourceRequest(text, model: false, allErrors: true)), SyntaxParser.Parse(ModuleRowSourceRequest(text, model: true, allErrors: true)));
             return (count, more);
         });
         Assert.True(seen > 0);
-        Assert.True(extra >= RowSources.Length);
+        Assert.True(extra >= RowSources.Length + ModuleRowSources.Length);
         output.WriteLine("all-errors identity: diagnostics on " + seen.ToString(CultureInfo.InvariantCulture) + ", of which SemanticRows rows " + extra.ToString(CultureInfo.InvariantCulture));
     }
 
@@ -2710,7 +2734,9 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
             Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
         }
 
-        (r, m) = Resolved("{ function g() {} } export { g };", ParseGoal.Module);
+        // (Revised 2026-11-27, at SJL-15.2 stage 6, whose EE0171 refuses the module's source, its block function being no
+        // declaration of the module's items; it read "{ function g() {} } export { g };".)
+        (r, m) = Resolved("{ function g() {} } g;", ParseGoal.Module);
         Assert.Null(m.AnnexBAlias(BlockFn(m, "g")));
 
         // With Annex B off, none.
@@ -3908,5 +3934,582 @@ public sealed class SemanticModelTests(ITestOutputHelper output)
         Assert.DoesNotContain(System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(Parse(text, model: false))).Split('\n'), static l => l.StartsWith("model-", StringComparison.Ordinal));
         var evalNull = System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(SyntaxParser.Parse(CallerRequest("eval('')", null)))).Split('\n');
         Assert.EndsWith(" -", evalNull.Single(static l => l.StartsWith("model-eval-call ", StringComparison.Ordinal)), StringComparison.Ordinal);
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // The module record (SJL-15.2 stage 6; the session's decision D-js-module-record). (Added 2026-11-27, at SJL-15.2 stage 6.)
+
+    private static (ParseResult Result, SemanticModel Model, ModuleRecord Record) ModuleOf(string text, ProposalFlags proposals = ProposalFlags.None)
+    {
+        var (result, model) = Model(text, ParseGoal.Module, proposals);
+        Assert.NotNull(model.Module);
+        return (result, model, model.Module!);
+    }
+
+    // The record as text: the requests (specifier, phase number, attributes as written, statements), then the import
+    // entries, the local, indirect and star export entries, each request by its place in the record.
+    private static string Rendered(ModuleRecord record)
+    {
+        var requests = record.RequestedModules.ToList();
+        string R(ModuleRequest? request) => request is null ? "-" : requests.IndexOf(request).ToString(CultureInfo.InvariantCulture);
+        static string N(string? text) => text ?? "-";
+        var parts = new List<string> { "tla " + (record.HasTopLevelAwait ? "1" : "0") };
+        parts.AddRange(requests.Select(r => "req " + r.Specifier + " " + ((int)r.Phase).ToString(CultureInfo.InvariantCulture)
+            + " [" + string.Join(",", r.Attributes.Select(static a => a.Key + "=" + a.Value)) + "] x" + r.Statements.Count.ToString(CultureInfo.InvariantCulture)));
+        parts.AddRange(record.ImportEntries.Select(e => "import " + R(e.ModuleRequest) + " " + e.ImportKind + " " + N(e.ImportName) + " " + e.LocalName));
+        parts.AddRange(record.LocalExportEntries.Select(e => "local " + N(e.ExportName) + " " + N(e.LocalName)));
+        parts.AddRange(record.IndirectExportEntries.Select(e => "indirect " + N(e.ExportName) + " " + R(e.ModuleRequest) + " " + e.ImportKind + " " + N(e.ImportName)));
+        parts.AddRange(record.StarExportEntries.Select(e => "star " + R(e.ModuleRequest)));
+        return string.Join("; ", parts);
+    }
+
+    /// <summary>
+    /// The record of each form (ECMA-262 ParseModule; ImportEntries' and ExportEntries' informative tables, one fixture per
+    /// row, and the rewrites of step 10): the requests in the order of their first statement, duplicates removed by
+    /// ModuleRequestsEqual; the import entries; and the export entries partitioned into the local, indirect and star lists,
+    /// each in source order. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+    /// </summary>
+    [Theory]
+    // The ImportEntry table, one row each, and the default binding before the namespace or the named ones.
+    [InlineData("import v from \"mod\";", "tla 0; req mod 0 [] x1; import 0 Name default v")]
+    [InlineData("import * as ns from \"mod\";", "tla 0; req mod 0 [] x1; import 0 NamespaceObject - ns")]
+    [InlineData("import {x} from \"mod\";", "tla 0; req mod 0 [] x1; import 0 Name x x")]
+    [InlineData("import {x as v} from \"mod\";", "tla 0; req mod 0 [] x1; import 0 Name x v")]
+    [InlineData("import \"mod\";", "tla 0; req mod 0 [] x1")]
+    [InlineData("import x, * as ns from \"m\";", "tla 0; req m 0 [] x1; import 0 Name default x; import 0 NamespaceObject - ns")]
+    [InlineData("import x, {y, z as w} from \"m\";", "tla 0; req m 0 [] x1; import 0 Name default x; import 0 Name y y; import 0 Name z w")]
+    [InlineData("import {default as y} from \"m\";", "tla 0; req m 0 [] x1; import 0 Name default y")]
+    [InlineData("import {\"a b\" as z} from \"m\";", "tla 0; req m 0 [] x1; import 0 Name a b z")]
+    [InlineData("import {\\u0061} from \"m\";", "tla 0; req m 0 [] x1; import 0 Name a a")]
+    [InlineData("import {} from \"m\";", "tla 0; req m 0 [] x1")]
+    [InlineData("import x, {} from \"m\";", "tla 0; req m 0 [] x1; import 0 Name default x")]
+    // The ExportEntry table, one row each.
+    [InlineData("export var v;", "tla 0; local v v")]
+    [InlineData("export default function f() {}", "tla 0; local default f")]
+    [InlineData("export default function () {}", "tla 0; local default *default*")]
+    [InlineData("export default 42;", "tla 0; local default *default*")]
+    [InlineData("var x; export {x};", "tla 0; local x x")]
+    [InlineData("var v; export {v as x};", "tla 0; local x v")]
+    [InlineData("export {x} from \"mod\";", "tla 0; req mod 0 [] x1; indirect x 0 Name x")]
+    [InlineData("export {v as x} from \"mod\";", "tla 0; req mod 0 [] x1; indirect x 0 Name v")]
+    [InlineData("export * from \"mod\";", "tla 0; req mod 0 [] x1; star 0")]
+    [InlineData("export * as ns from \"mod\";", "tla 0; req mod 0 [] x1; indirect ns 0 All -")]
+    // The anonymous defaults, the declarations' bound names, StringValues and string names.
+    [InlineData("export default function* () {}", "tla 0; local default *default*")]
+    [InlineData("export default async function () {}", "tla 0; local default *default*")]
+    [InlineData("export default async function* () {}", "tla 0; local default *default*")]
+    [InlineData("export default class {}", "tla 0; local default *default*")]
+    [InlineData("export default class C {}", "tla 0; local default C")]
+    [InlineData("export var {a, b: [c]} = o;", "tla 0; local a a; local c c")]
+    [InlineData("export var a, b;", "tla 0; local a a; local b b")]
+    [InlineData("export let x = 1; export const y = 2; export function f() {} export class C {}", "tla 0; local x x; local y y; local f f; local C C")]
+    [InlineData("var a; export {\\u0061};", "tla 0; local a a")]
+    [InlineData("var a; export { a as \"b c\" };", "tla 0; local b c a")]
+    [InlineData("export * as \"s\" from \"m\";", "tla 0; req m 0 [] x1; indirect s 0 All -")]
+    [InlineData("export { \"x\" as y } from \"m\";", "tla 0; req m 0 [] x1; indirect y 0 Name x")]
+    // The rewrites of step 10.a.ii, and rewritten entries among the true indirect ones in source order.
+    [InlineData("import {a} from \"m\"; export {a as b};", "tla 0; req m 0 [] x1; import 0 Name a a; indirect b 0 Name a")]
+    [InlineData("import * as ns from \"m\"; export {ns};", "tla 0; req m 0 [] x1; import 0 NamespaceObject - ns; indirect ns 0 All -")]
+    [InlineData("import * as ns from \"m\"; export { ns as default };", "tla 0; req m 0 [] x1; import 0 NamespaceObject - ns; indirect default 0 All -")]
+    [InlineData("import d from \"m\"; export { d };", "tla 0; req m 0 [] x1; import 0 Name default d; indirect d 0 Name default")]
+    [InlineData("import a from \"m\"; export default a;", "tla 0; req m 0 [] x1; import 0 Name default a; local default *default*")]
+    [InlineData("import {a} from \"m\"; export {x} from \"n\"; export {a}; export * as s from \"o\";", "tla 0; req m 0 [] x1; req n 0 [] x1; req o 0 [] x1; import 0 Name a a; indirect x 1 Name x; indirect a 0 Name a; indirect s 2 All -")]
+    // The requests: duplicates removed, by SV, in the order of their first statement.
+    [InlineData("import a from \"m\"; import b from \"m\";", "tla 0; req m 0 [] x2; import 0 Name default a; import 0 Name default b")]
+    [InlineData("import \"m\"; import 'm'; import \"\\u006d\";", "tla 0; req m 0 [] x3")]
+    [InlineData("export {x} from \"m\"; import \"n\";", "tla 0; req m 0 [] x1; req n 0 [] x1; indirect x 0 Name x")]
+    [InlineData("import \"m\" with { type: \"json\" }; import \"m\" with { type: \"css\" };", "tla 0; req m 0 [type=json] x1; req m 0 [type=css] x1")]
+    [InlineData("import \"m\" with { type: \"json\", a: \"b\" }; import \"m\" with { a: \"b\", type: \"json\" };", "tla 0; req m 0 [type=json,a=b] x2")]
+    [InlineData("import \"m\" with { type: \"json\" }; import \"m\" with { \"type\": \"json\" };", "tla 0; req m 0 [type=json] x2")]
+    [InlineData("import \"m\" with {}; import \"m\";", "tla 0; req m 0 [] x2")]
+    [InlineData("export * from \"m\" with { type: \"json\" };", "tla 0; req m 0 [type=json] x1; star 0")]
+    [InlineData("export {} from \"m\";", "tla 0; req m 0 [] x1")]
+    [InlineData("import(\"m\");", "tla 0")]
+    [InlineData("export * from \"m\"; export * from \"n\";", "tla 0; req m 0 [] x1; req n 0 [] x1; star 0; star 1")]
+    [InlineData("export { a } from \"m\"; export { a as b } from \"m\";", "tla 0; req m 0 [] x2; indirect a 0 Name a; indirect b 0 Name a")]
+    // No import and no export: a record with empty lists.
+    [InlineData("var x = 1;", "tla 0")]
+    [InlineData("", "tla 0")]
+    public void Each_form_gives_the_record_ParseModule_builds(string text, string expected)
+    {
+        Assert.Equal(expected, Rendered(ModuleOf(text).Record));
+    }
+
+    /// <summary>
+    /// The attributes of a shared request are its first statement's in that statement's order; each statement's own order
+    /// stays its own, through <see cref="ModuleRequest.Statements"/>; the specification's [[Attributes]] is the list
+    /// sorted by key, ordinally. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+    /// </summary>
+    [Fact]
+    public void A_shared_request_shows_its_first_statement_s_attribute_order()
+    {
+        var (_, _, record) = ModuleOf("import \"m\" with { type: \"json\", a: \"b\" }; import \"m\" with { a: \"b\", type: \"json\" };");
+        var request = Assert.Single(record.RequestedModules);
+        Assert.Equal(["type", "a"], request.Attributes.Select(static a => a.Key));
+        Assert.Equal(2, request.Statements.Count);
+        Assert.Equal(["a", "type"], ((ImportDeclaration)request.Statements[1]).Attributes!.Select(static a => ((IdentifierName)a.Key).Name));
+        Assert.Equal(["a", "type"], request.Attributes.Select(static a => a.Key).Order(StringComparer.Ordinal));
+    }
+
+    /// <summary>A lone surrogate in a specifier is carried as it is, the SV, which an engine refuses at its own row. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i></summary>
+    [Fact]
+    public void A_lone_surrogate_specifier_is_carried_as_it_is()
+    {
+        var request = Assert.Single(ModuleOf("import \"\\uD800\";").Record.RequestedModules);
+        Assert.Equal("\uD800", request.Specifier);
+    }
+
+    /// <summary>
+    /// The phase, the library's, beyond the pinned edition: a deferred and an evaluating request of one specifier are two,
+    /// the deferred one's entry the namespace form; a source-phase binding's entry is its own kind with no import name, never
+    /// <c>"default"</c>, and an export of it is rewritten with that kind. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+    /// </summary>
+    [Fact]
+    public void The_phase_keeps_a_deferred_or_source_request_apart_and_a_source_binding_is_its_own_kind()
+    {
+        const ProposalFlags declarations = ProposalFlags.ImportSourceDeclarations | ProposalFlags.ImportDeferDeclarations;
+        Assert.Equal("tla 0; req m 2 [] x1; req m 0 [] x1; import 0 NamespaceObject - ns; import 1 NamespaceObject - ns2",
+            Rendered(ModuleOf("import defer * as ns from \"m\"; import * as ns2 from \"m\";", declarations).Record));
+        Assert.Equal("tla 0; req m 1 [] x1; import 0 Source - s", Rendered(ModuleOf("import source s from \"m\";", declarations).Record));
+        Assert.Equal("tla 0; req m 1 [] x1; import 0 Source - s; indirect s 0 Source -", Rendered(ModuleOf("import source s from \"m\"; export { s };", declarations).Record));
+        Assert.Equal(ImportPhase.Evaluation, ModuleOf("export * from \"m\";").Record.RequestedModules[0].Phase);
+    }
+
+    /// <summary>
+    /// [[HasTLA]] is the tree's fact, read: true for an <c>await</c> anywhere Contains looks, a class's heritage and computed
+    /// keys and an object literal's computed keys included, and for <c>await using</c> (ecma262 main's, beyond the pinned
+    /// edition); false for an <c>await</c> only inside a function, an async arrow, a method or a static block, and for a module
+    /// with none. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+    /// </summary>
+    [Theory]
+    [InlineData("await 1;", true)]
+    [InlineData("for await (x of y);", true)]
+    [InlineData("{ await 1; }", true)]
+    [InlineData("if (a) await 1;", true)]
+    [InlineData("try { await 1; } catch {}", true)]
+    [InlineData("L: await 1;", true)]
+    [InlineData("{ for await (x of y); }", true)]
+    [InlineData("class C extends (await x) {}", true)]
+    [InlineData("class C { [await x]() {} }", true)]
+    [InlineData("({ [await x]: 1 });", true)]
+    [InlineData("({ [await x]() {} });", true)]
+    [InlineData("await using x = y;", true)]
+    [InlineData("export var f = async () => { await 0; };", false)]
+    [InlineData("(async function () { await 1; })();", false)]
+    [InlineData("async function f() { for await (x of y); }", false)]
+    [InlineData("class C { static { (async () => { await 1; })(); } }", false)]
+    [InlineData("class C { async m() { await 1; } }", false)]
+    [InlineData("var x = 1; export { x };", false)]
+    public void The_record_s_top_level_await_is_the_tree_s(string text, bool expected)
+    {
+        var (result, _, record) = ModuleOf(text);
+        Assert.Equal(expected, record.HasTopLevelAwait);
+        Assert.Equal(result.Tree!.HasTopLevelAwait, record.HasTopLevelAwait);
+        Assert.Equal(expected, ContainsAwait(result.Tree!));
+    }
+
+    /// <summary>
+    /// Only a Module has a record: a Script, eval code and the dynamic function's goals have none, a Script with top-level
+    /// <c>await</c> on keeping the fact on its tree alone. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+    /// </summary>
+    [Fact]
+    public void Only_a_Module_has_a_record()
+    {
+        Assert.Null(Model("var x;").Model.Module);
+        Assert.Null(Model("var x;", ParseGoal.Eval).Model.Module);
+        Assert.Null(Model("a, b", ParseGoal.FormalParameters).Model.Module);
+        Assert.Null(Model("return 1;", ParseGoal.FunctionBody).Model.Module);
+        var script = SyntaxParser.Parse(new ParseRequest(new SourceText("await 1;"), ParseGoal.Script, UnicodeDataHome.Tables, NoValidator.Instance)
+        {
+            Switches = ParseSwitches.For(ParseGoal.Script) with { TopLevelAwait = true },
+            BuildSemanticModel = true,
+        });
+        Assert.Equal(ParseOutcome.Accepted, script.Outcome);
+        Assert.True(script.Tree!.HasTopLevelAwait);
+        Assert.Null(script.Model!.Module);
+        Assert.Null(Parse("import x from \"m\";", ParseGoal.Module, model: false).Model);
+    }
+
+    /// <summary>
+    /// The record's instances: one record; every entry's request the element of the requests itself; an import entry's
+    /// declaration the one <see cref="SemanticModel.DeclarationOf"/> answers, and a local export entry's the module scope's
+    /// first of its name, which a top-level reference resolves to; every list read-only; every entry's node in the tree, in
+    /// the Module scope. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+    /// </summary>
+    [Fact]
+    public void The_record_shares_its_instances_and_its_declarations_are_the_model_s()
+    {
+        const string text = "import a, {b} from \"m\"; import * as ns from \"m\"; var v; var v; export { v, a as x, ns }; export default function () {} export {c} from \"m\"; export * from \"n\"; v; ";
+        var (result, model, record) = ModuleOf(text);
+        Assert.Same(model.Module, model.Module);
+        Assert.Equal(2, record.RequestedModules.Count);
+        foreach (var entry in record.ImportEntries)
+        {
+            Assert.Contains(entry.ModuleRequest, record.RequestedModules);
+            Assert.Same(entry.Declaration, model.DeclarationOf(entry.Node));
+            Assert.Equal(BindingKind.Import, entry.Declaration.Kind);
+        }
+
+        var moduleScope = model.Scopes[0];
+        Assert.Equal(ScopeKind.Module, moduleScope.Kind);
+        foreach (var entry in record.LocalExportEntries)
+        {
+            Assert.Null(entry.ModuleRequest);
+            Assert.Same(moduleScope.Declarations.First(d => d.Name == entry.LocalName), entry.Declaration);
+        }
+
+        foreach (var entry in record.IndirectExportEntries.Concat(record.StarExportEntries))
+        {
+            Assert.Null(entry.Declaration);
+            Assert.Contains(entry.ModuleRequest!, record.RequestedModules);
+        }
+
+        var local = record.LocalExportEntries.Single(static e => e.ExportName == "v");
+        Assert.Same(local.Declaration, model.Resolve(Reference(result, "v")).Declaration);
+        Assert.Equal(BindingKind.ExportDefault, record.LocalExportEntries.Single(static e => e.ExportName == "default").Declaration!.Kind);
+        Assert.IsType<ExportDefaultDeclaration>(record.LocalExportEntries.Single(static e => e.ExportName == "default").Node);
+        Assert.IsType<ExportAllDeclaration>(Assert.Single(record.StarExportEntries).Node);
+        Assert.All(record.IndirectExportEntries, static e => Assert.IsType<ExportSpecifier>(e.Node));
+        var nodes = Nodes(result.Tree!).ToHashSet(ReferenceEqualityComparer.Instance);
+        foreach (var node in record.ImportEntries.Select(static e => (SyntaxNode)e.Node).Concat(record.LocalExportEntries.Concat(record.IndirectExportEntries).Concat(record.StarExportEntries).Select(static e => e.Node)))
+        {
+            Assert.Contains(node, nodes);
+            Assert.Same(moduleScope, model.ScopeOf(node));
+        }
+
+        foreach (var list in new System.Collections.IEnumerable[] { record.RequestedModules, record.ImportEntries, record.LocalExportEntries, record.IndirectExportEntries, record.StarExportEntries, record.RequestedModules[0].Attributes, record.RequestedModules[0].Statements })
+            Assert.True(list is System.Collections.IList { IsReadOnly: true }, "a list is writable");
+    }
+
+    // The test's own oracle of ParseModule over the tree, iterative and apart from the walk: ModuleRequests with
+    // ModuleRequestsEqual and the phase, ImportEntries, ExportEntries with step 10's partition, and Contains await; as text
+    // in the form of Rendered, and beside it each request's statements and each entry's node, in the record's order.
+    private sealed record OracleRecord(string Text, List<List<Statement>> Statements, List<SyntaxNode> Imports, List<SyntaxNode> Locals, List<SyntaxNode> Indirects, List<SyntaxNode> Stars);
+
+    private static OracleRecord Oracle(ProgramNode program)
+    {
+        static string Name(SyntaxNode node) => node is StringLiteral s ? s.Value : ((IdentifierName)node).Name;
+        var requests = new List<(string Specifier, ImportPhase Phase, List<(string, string)> Attributes, List<Statement> Statements)>();
+        int Request(Statement statement, StringLiteral source, IReadOnlyList<ImportAttribute>? attributes, ImportPhase phase)
+        {
+            var list = (attributes ?? []).Select(a => (Name(a.Key), a.Value.Value)).ToList();
+            for (var i = 0; i < requests.Count; i++)
+            {
+                if (requests[i].Specifier == source.Value && requests[i].Phase == phase && requests[i].Attributes.Count == list.Count && list.All(requests[i].Attributes.Contains))
+                {
+                    requests[i].Statements.Add(statement);
+                    return i;
+                }
+            }
+
+            requests.Add((source.Value, phase, list, [statement]));
+            return requests.Count - 1;
+        }
+
+        var imports = new List<(int Request, string Kind, string? Name, string Local, SyntaxNode Node)>();
+        var exports = new List<(string? Export, int Request, string Kind, string? Import, string? Local, SyntaxNode Node)>();
+        foreach (var statement in program.Body)
+        {
+            switch (statement)
+            {
+                case ImportDeclaration import:
+                {
+                    var r = Request(import, import.Source, import.Attributes, import.Phase);
+                    if (import.DefaultBinding is { } d)
+                        imports.Add(import.Phase == ImportPhase.Source ? (r, "Source", null, d.Name, d) : (r, "Name", "default", d.Name, d));
+                    if (import.NamespaceBinding is { } ns)
+                        imports.Add((r, "NamespaceObject", null, ns.Name, ns));
+                    foreach (var s in import.NamedImports ?? [])
+                        imports.Add((r, "Name", s.Imported is null ? s.Local.Name : Name(s.Imported), s.Local.Name, s.Local));
+                    break;
+                }
+
+                case ExportNamedDeclaration { Declaration: { } declaration }:
+                {
+                    var names = new List<BindingIdentifier>();
+                    var pending = new Stack<SyntaxNode>();
+                    var children = new List<SyntaxNode>();
+                    pending.Push(declaration);
+                    while (pending.Count > 0)
+                    {
+                        var node = pending.Pop();
+                        if (node is BindingIdentifier b)
+                        {
+                            names.Add(b);
+                            continue;
+                        }
+
+                        if (node is FunctionNode f)
+                        {
+                            if (f.Name is { } fn)
+                                names.Add(fn);
+                            continue;
+                        }
+
+                        if (node is ClassNode c)
+                        {
+                            if (c.Name is { } cn)
+                                names.Add(cn);
+                            continue;
+                        }
+
+                        if (node is Expression)
+                            continue;
+                        children.Clear();
+                        node.AddChildren(children);
+                        for (var i = children.Count - 1; i >= 0; i--)
+                            pending.Push(children[i]);
+                    }
+
+                    exports.AddRange(names.Select(static n => ((string?)n.Name, -1, "None", (string?)null, (string?)n.Name, (SyntaxNode)n)));
+                    break;
+                }
+
+                case ExportNamedDeclaration export:
+                {
+                    var r = export.Source is { } from ? Request(export, from, export.Attributes, ImportPhase.Evaluation) : -1;
+                    foreach (var s in export.Specifiers)
+                        exports.Add(r < 0 ? (Name(s.Exported ?? s.Local), -1, "None", null, Name(s.Local), s) : (Name(s.Exported ?? s.Local), r, "Name", Name(s.Local), null, s));
+                    break;
+                }
+
+                case ExportDefaultDeclaration exportDefault:
+                    exports.Add(("default", -1, "None", null, exportDefault.Declaration switch
+                    {
+                        FunctionDeclaration { Function.Name: { } n } => n.Name,
+                        ClassDeclaration { Class.Name: { } n } => n.Name,
+                        _ => "*default*",
+                    }, exportDefault));
+                    break;
+                case ExportAllDeclaration all:
+                {
+                    var r = Request(all, all.Source, all.Attributes, ImportPhase.Evaluation);
+                    exports.Add(all.Exported is null ? (null, r, "AllButDefault", null, null, all) : (Name(all.Exported), r, "All", null, null, all));
+                    break;
+                }
+            }
+        }
+
+        var parts = new List<string> { "tla " + (ContainsAwait(program) ? "1" : "0") };
+        parts.AddRange(requests.Select(static r => "req " + r.Specifier + " " + ((int)r.Phase).ToString(CultureInfo.InvariantCulture) + " [" + string.Join(",", r.Attributes.Select(static a => a.Item1 + "=" + a.Item2)) + "] x" + r.Statements.Count.ToString(CultureInfo.InvariantCulture)));
+        parts.AddRange(imports.Select(static i => "import " + i.Request.ToString(CultureInfo.InvariantCulture) + " " + i.Kind + " " + (i.Name ?? "-") + " " + i.Local));
+        var local = new List<string>();
+        var indirect = new List<string>();
+        var star = new List<string>();
+        var (localNodes, indirectNodes, starNodes) = (new List<SyntaxNode>(), new List<SyntaxNode>(), new List<SyntaxNode>());
+        foreach (var e in exports)
+        {
+            if (e.Request < 0)
+            {
+                var ie = imports.FindIndex(i => i.Local == e.Local);
+                if (ie < 0)
+                {
+                    local.Add("local " + e.Export + " " + e.Local);
+                    localNodes.Add(e.Node);
+                    continue;
+                }
+
+                if (imports[ie].Kind == "NamespaceObject")
+                    indirect.Add("indirect " + e.Export + " " + imports[ie].Request.ToString(CultureInfo.InvariantCulture) + " All -");
+                else
+                    indirect.Add("indirect " + e.Export + " " + imports[ie].Request.ToString(CultureInfo.InvariantCulture) + " " + imports[ie].Kind + " " + (imports[ie].Name ?? "-"));
+                indirectNodes.Add(e.Node);
+            }
+            else if (e.Kind == "AllButDefault")
+            {
+                star.Add("star " + e.Request.ToString(CultureInfo.InvariantCulture));
+                starNodes.Add(e.Node);
+            }
+            else
+            {
+                indirect.Add("indirect " + (e.Export ?? "-") + " " + e.Request.ToString(CultureInfo.InvariantCulture) + " " + e.Kind + " " + (e.Import ?? "-"));
+                indirectNodes.Add(e.Node);
+            }
+        }
+
+        parts.AddRange(local);
+        parts.AddRange(indirect);
+        parts.AddRange(star);
+        return new OracleRecord(string.Join("; ", parts), requests.Select(static r => r.Statements).ToList(), imports.Select(static i => i.Node).ToList(), localNodes, indirectNodes, starNodes);
+    }
+
+    // The record's instances against the oracle's, by reference and in order: each request's statements; each entry's
+    // node; an import entry's declaration the one DeclarationOf answers for its node; a local export entry's the module
+    // scope's first declaration of its local name; an indirect or star entry's none.
+    private static void AssertTheOracle_s_instances(string name, OracleRecord oracle, SemanticModel model, ModuleRecord record)
+    {
+        static bool Same(IEnumerable<SyntaxNode> expected, IEnumerable<SyntaxNode> actual) => expected.SequenceEqual<object>(actual, ReferenceEqualityComparer.Instance);
+        Assert.True(oracle.Statements.Count == record.RequestedModules.Count, name + ": the requests' count");
+        for (var r = 0; r < oracle.Statements.Count; r++)
+            Assert.True(Same(oracle.Statements[r], record.RequestedModules[r].Statements), name + ": request " + r.ToString(CultureInfo.InvariantCulture) + "'s statements are not the oracle's");
+        Assert.True(Same(oracle.Imports, record.ImportEntries.Select(static e => (SyntaxNode)e.Node)), name + ": the import entries' nodes");
+        Assert.True(Same(oracle.Locals, record.LocalExportEntries.Select(static e => e.Node)), name + ": the local export entries' nodes");
+        Assert.True(Same(oracle.Indirects, record.IndirectExportEntries.Select(static e => e.Node)), name + ": the indirect export entries' nodes");
+        Assert.True(Same(oracle.Stars, record.StarExportEntries.Select(static e => e.Node)), name + ": the star export entries' nodes");
+        var moduleScope = model.Scopes[0];
+        Assert.True(moduleScope.Kind == ScopeKind.Module, name + ": the first scope is not the module's");
+        foreach (var entry in record.ImportEntries)
+            Assert.True(entry.Declaration is { Kind: BindingKind.Import } && ReferenceEquals(entry.Declaration, model.DeclarationOf(entry.Node)), name + ": import " + entry.LocalName + "'s declaration");
+        foreach (var entry in record.LocalExportEntries)
+            Assert.True(entry.Declaration is not null && ReferenceEquals(entry.Declaration, moduleScope.Declarations.FirstOrDefault(d => d.Name == entry.LocalName)), name + ": local " + entry.LocalName + "'s declaration");
+        foreach (var entry in record.IndirectExportEntries.Concat(record.StarExportEntries))
+            Assert.True(entry.Declaration is null, name + ": an indirect or star entry has a declaration");
+    }
+
+    // Contains await of the module's items, the test's own reading of ECMA-262's Contains: it stops at every function, an
+    // arrow's included (whose Contains answers only new.target, this and super), at a field's initialiser and a static
+    // block, and enters a class's heritage and its elements' computed keys, an object literal's computed keys, and
+    // decorators, which the tree reads beyond the edition.
+    private static bool ContainsAwait(ProgramNode program)
+    {
+        var pending = new Stack<SyntaxNode>();
+        var children = new List<SyntaxNode>();
+        foreach (var statement in program.Body)
+            pending.Push(statement);
+        while (pending.Count > 0)
+        {
+            var node = pending.Pop();
+            switch (node)
+            {
+                case AwaitExpression:
+                case ForOfStatement { IsAwait: true }:
+                case VariableDeclaration { DeclarationKind: DeclarationKind.AwaitUsing }:
+                    return true;
+                case FunctionNode:
+                case StaticBlock:
+                    continue;
+                case FieldDefinition field:
+                    foreach (var decorator in field.Decorators)
+                        pending.Push(decorator);
+                    pending.Push(field.Key);
+                    continue;
+            }
+
+            children.Clear();
+            node.AddChildren(children);
+            foreach (var child in children)
+                pending.Push(child);
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Over every accepted item of the determinism tests' population, and the fixtures' accepted Modules (this class's own,
+    /// its record theories' and facts', and the rows tests' admitted variants and twins of the Module goal): a Module's
+    /// record is the one the test's own oracle of the tree recomputes, field by field, each request's statements and each
+    /// entry's node the oracle's by reference and in order, an import entry's declaration the one
+    /// <see cref="SemanticModel.DeclarationOf"/> answers, a local export entry's the module scope's first of its name, and
+    /// an indirect or star entry's none; its top-level-await fact is the tree's and Contains await; and no other goal has a
+    /// record. <i>(Added 2026-11-27, at SJL-15.2 stage 6.)</i>
+    /// </summary>
+    [Fact]
+    public void Every_accepted_module_s_record_is_the_one_an_oracle_of_the_tree_recomputes()
+    {
+        var items = DeterminismTests.Population.Value;
+        var (modules, others, entries) = OnDocumentedStack(() =>
+        {
+            var (m, o, e) = (0, 0, 0);
+            void One(string name, ParseResult result, bool module)
+            {
+                if (result.Model is not { } model)
+                    return;
+                if (!module)
+                {
+                    Assert.True(model.Module is null, name + ": a record for a goal that is not Module");
+                    o++;
+                    return;
+                }
+
+                var record = model.Module;
+                Assert.True(record is not null, name + ": no record");
+                m++;
+                e += record!.ImportEntries.Count + record.LocalExportEntries.Count + record.IndirectExportEntries.Count + record.StarExportEntries.Count;
+                var oracle = Oracle(result.Tree!);
+                Assert.True(oracle.Text == Rendered(record), name + ": " + Rendered(record) + " against the oracle's " + oracle.Text);
+                AssertTheOracle_s_instances(name, oracle, model, record);
+                Assert.True(result.Tree!.HasTopLevelAwait == record.HasTopLevelAwait, name + ": the top-level-await fact differs from the tree's");
+                Assert.All(record.LocalExportEntries, entry => Assert.True(entry.Declaration is not null, name + ": " + entry.LocalName + " has no declaration"));
+            }
+
+            foreach (var item in items)
+                One(Name(item), SyntaxParser.Parse(DeterminismTests.Request(item, model: true)), item.Variant == "module");
+            foreach (var (text, proposals) in ModuleFixtureSources.Select(static t => (t, ProposalFlags.None)).Concat(AcceptedModuleFixtureSources()))
+            {
+                var fixture = Parse(text, ParseGoal.Module, proposals: proposals);
+                Assert.True(fixture.Outcome == ParseOutcome.Accepted, "fixture \"" + text + "\" is refused");
+                One("fixture \"" + text + "\"", fixture, module: true);
+            }
+
+            return (m, o, e);
+        });
+
+        Assert.True(modules > 0 && others > 0 && entries > 0);
+        output.WriteLine("module records: modules " + modules.ToString(CultureInfo.InvariantCulture) + ", entries " + entries.ToString(CultureInfo.InvariantCulture) + ", other goals " + others.ToString(CultureInfo.InvariantCulture));
+    }
+
+    // The accepted Module sources of the fixtures: this class's record theories and facts, and the rows tests' admitted
+    // variants and twins whose request is the Module goal alone.
+    private static IEnumerable<(string Text, ProposalFlags Proposals)> AcceptedModuleFixtureSources()
+    {
+        foreach (var theory in new[] { nameof(Each_form_gives_the_record_ParseModule_builds), nameof(The_record_s_top_level_await_is_the_tree_s) })
+        {
+            foreach (var data in typeof(SemanticModelTests).GetMethod(theory)!.GetCustomAttributes<InlineDataAttribute>())
+                yield return ((string)data.Data[0]!, ProposalFlags.None);
+        }
+
+        const ProposalFlags declarations = ProposalFlags.ImportSourceDeclarations | ProposalFlags.ImportDeferDeclarations;
+        yield return ("import defer * as ns from \"m\"; import * as ns2 from \"m\";", declarations);
+        yield return ("import source s from \"m\";", declarations);
+        yield return ("import source s from \"m\"; export { s };", declarations);
+        yield return ("import \"m\" with { type: \"json\", a: \"b\" }; import \"m\" with { a: \"b\", type: \"json\" };", ProposalFlags.None);
+        yield return ("import \"\\uD800\";", ProposalFlags.None);
+        yield return ("import a, {b} from \"m\"; import * as ns from \"m\"; var v; var v; export { v, a as x, ns }; export default function () {} export {c} from \"m\"; export * from \"n\"; v; ", ProposalFlags.None);
+        foreach (var data in SemanticRowsTests.MoreAccepted())
+        {
+            if (data.Data.Item1 == "m")
+                yield return (data.Data.Item2, ProposalFlags.None);
+        }
+
+        foreach (var data in SemanticRowsTests.FixtureData())
+        {
+            var fixture = data.Data;
+            if (fixture.AcceptedOptions == "m")
+                yield return (fixture.Accepted, ProposalFlags.None);
+        }
+    }
+
+    private static readonly string[] ModuleFixtureSources =
+    [
+        "import a, {b, c as d, \"e f\" as g} from \"m\" with { type: \"json\" }; import * as ns from \"m\" with { type: \"json\" }; export { a, d as \"h i\", ns as default }; export * from \"n\"; export * as s from \"o\"; var v, w; export { v as x, w }; export {y} from \"m\" with { type: \"json\" }; await 1;",
+        "export default class {} export var [p, {q}] = r; export function f() {} export let z; import(\"x\");",
+        "import \"a\"; import {} from \"b\"; export {} from \"c\"; import x, {} from \"a\"; export { x as y };",
+    ];
+
+    /// <summary>
+    /// The dump's module-record lines (D-js-part-g): the fact line, each request with its attributes in its first
+    /// statement's order, then the entries; a Script's model and a dump without a model gain none. <i>(Added 2026-11-27, at
+    /// SJL-15.2 stage 6.)</i>
+    /// </summary>
+    [Fact]
+    public void The_dump_s_model_section_holds_the_module_record()
+    {
+        const string text = "import a from \"m\" with { type: \"json\", b: \"c\" }; var v; export { v as w }; export { a }; export * from \"n\"; export * as s from \"m\" with { b: \"c\", type: \"json\" };";
+        var lines = System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(ModuleOf(text).Result)).Split('\n');
+        var module = lines.Where(static l => l.StartsWith("model-module ", StringComparison.Ordinal) || l.StartsWith("model-request ", StringComparison.Ordinal)
+            || l.StartsWith("model-attribute ", StringComparison.Ordinal) || l.StartsWith("model-import ", StringComparison.Ordinal) || l.StartsWith("model-export-", StringComparison.Ordinal)).ToList();
+        Assert.Equal("model-module 0", module[0]);
+        Assert.StartsWith("model-request 0 \"m\" 0 ", module[1], StringComparison.Ordinal);
+        Assert.Equal(6, module[1].Split(' ').Length);
+        Assert.Equal(["model-attribute \"type\" \"json\"", "model-attribute \"b\" \"c\""], module.Skip(2).Take(2));
+        Assert.StartsWith("model-request 1 \"n\" 0 ", module[4], StringComparison.Ordinal);
+        Assert.StartsWith("model-import 0 1 \"default\" \"a\" ", module[5], StringComparison.Ordinal);
+        Assert.StartsWith("model-export-local \"w\" \"v\" ", module[6], StringComparison.Ordinal);
+        Assert.StartsWith("model-export-indirect \"a\" 0 1 \"default\" ", module[7], StringComparison.Ordinal);
+        Assert.StartsWith("model-export-indirect \"s\" 0 3 - ", module[8], StringComparison.Ordinal);
+        Assert.StartsWith("model-export-star 1 ", module[9], StringComparison.Ordinal);
+        Assert.Equal(10, module.Count);
+        Assert.DoesNotContain(System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(Model("var v;").Result)).Split('\n'), static l => l.StartsWith("model-module", StringComparison.Ordinal));
+        Assert.DoesNotContain(System.Text.Encoding.UTF8.GetString(SyntaxDump.Dump(Parse(text, ParseGoal.Module, model: false))).Split('\n'), static l => l.StartsWith("model-", StringComparison.Ordinal));
     }
 }
