@@ -1009,25 +1009,27 @@ changes. "What it will hold" above is left as written.
 
 *(Noted 2026-11-27, at SJL-15.2 stage 8, after its check 3b was seen; the note above is left as written.)* **Check 3b's
 bound, and the owner's answer of 2026-11-27.** The stage's check 3b, a rehearsal that decides nothing, parsed the whole
-parse corpus by the probe's corpus digest mode (`Broiler.ECMAScript/Broiler.ECMAScript.Probe/CorpusDigest.cs`) at this
-branch's head, which requests the model, and at its parent. Before it ran, the session wrote down, and logged by SHA-256
-outside the repository, the bound of the inputs that could move from accepted to refused: the lines of configuration V
-whose expectation in bundle `sjl-13-001`'s [`classification.tsv.gz`](../sjl-13-001/classification/classification.tsv.gz)
-is `either`. The check's words for a line outside its classes are "Any line outside these is a fault: stop and report."
-Lines moved from accepted to refused outside that bound, so the bound, predeclared before the rehearsal ran, was too
-narrow. A scratch harness parsed each of them with the member off and on: each is accepted off and refused on, and its
-first diagnostic is a row `SemanticRows` holds. They are, by input and variant, with the row behind each, and its shared
-code and message identifier as
+parse corpus by the probe's corpus digest mode (`Broiler.ECMAScript/Broiler.ECMAScript.Probe/CorpusDigest.cs`) at the
+stage's head then, `20e53654`, which requests the model, and at its parent `b92ef028`; the scratch harness below ran at
+`20e53654` too. Check 3b was not taken again at the stage's later commits, which change no code the digest mode reads:
+in the library they change only documentation-comment lines. Before it ran, the session wrote down, and logged by
+SHA-256 outside the repository, the bound of the inputs that could move from accepted to refused: the lines of
+configuration V whose expectation in bundle `sjl-13-001`'s
+[`classification.tsv.gz`](../sjl-13-001/classification/classification.tsv.gz) is `either`. The check's words for a line
+outside its classes are "Any line outside these is a fault: stop and report." Lines moved from accepted to refused
+outside that bound, so the bound, predeclared before the rehearsal ran, was too narrow. A scratch harness parsed each of
+them with the member off and on: each is accepted off and refused on, and its first diagnostic is a row `SemanticRows`
+holds. They are, by input and variant, with the row behind each, and its shared code and message identifier as
 [`SemanticRows.cs`](../../../Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs) gives them:
 
 - **E6**, the eval request whose caller is a class field initialiser: T028759, T028761, T028764, T028766, T028768,
   T029504 and T029513 (variant E6 each), each refused by EA0005 (`JSE1905`, `class.initializer.arguments`, for
   `arguments` in eval code whose caller is a field initialiser, PerformEval step 11.h). Bundle `sjl-13-001`'s
-  classification gives each of these lines `accepted`, with expectation `eval-vm` and reason `B3:E6`, so the model's
-  refusal differs from that classification. Nothing in bundle `sjl-13-001` is revised here.
+  classification gives each of these lines `accepted` (column `expect`), with reason `eval-vm` and basis `B3:E6`, so the
+  model's refusal differs from that classification. Nothing in bundle `sjl-13-001` is revised here.
 - **test262 negative tests**, each `parse:SyntaxError` in
-  [`corpus.manifest`](../../../conformance/parse/corpus.manifest), classified `refused` with expectation `test262` in
-  bundle `sjl-13-001`'s classification, and accepted with the member off: T037840, T037841 and T037842 (variant module),
+  [`corpus.manifest`](../../../conformance/parse/corpus.manifest), classified `refused` with reason `test262` in bundle
+  `sjl-13-001`'s classification, and accepted with the member off: T037840, T037841 and T037842 (variant module),
   refused by EE0054 (`JSE1415`, `assignment.target.invalid`); T041636 and T041638 (variant module), refused by EE0171
   (`JSE1612`, `module.export.undeclared`); and T048863, T048869, T049556 and T049562 (variants strict and sloppy each),
   refused by EE0054 (`JSE1415`). Bundle `sjl-13-001`'s

@@ -4830,9 +4830,10 @@ repositories.
 
 *(Noted 2026-11-27, at SJL-15.2 stage 8, after its check 3b was seen; the note and decisions above are left as
 written.)* **Check 3b's bound, and the owner's answer of 2026-11-27.** The stage's check 3b, a rehearsal that decides
-nothing, parsed the whole parse corpus by the probe's corpus digest mode at this branch's head, which requests the
-model, and at its parent. Before it ran, the session wrote down the bound of the inputs that could move from accepted to
-refused. Lines moved from accepted to refused outside that bound, so the bound, predeclared before the rehearsal ran,
+nothing, parsed the whole parse corpus by the probe's corpus digest mode at the stage's head then, `20e53654`, which
+requests the model, and at its parent `b92ef028`. It was not taken again at the stage's later commits, which change no
+code the digest mode reads. Before it ran, the session wrote down the bound of the inputs that could move from accepted
+to refused. Lines moved from accepted to refused outside that bound, so the bound, predeclared before the rehearsal ran,
 was too narrow; each of them was traced to a row `SemanticRows` holds. Bundle
 [`sjl-15-001`](../evidence/sjl-15-001/README.md)'s README names every one of them by input and variant, with the row
 behind each, in its note of 2026-11-27 on check 3b's bound; this plan holds no figure, so they are named there and not
@@ -4841,7 +4842,7 @@ test262 negative tests refused by rows EE0054 (`assignment.target.invalid`) and 
 one module input refused both ways moves its first diagnostic to row EE0170 (`module.export.duplicate`), a move inside
 the digest class written before the rehearsal, "refused both ways: the digest may move only where the member-on parse
 reports a `semantics` row". The E6 lines differ from bundle `sjl-13-001`'s classification, which gives them `accepted`,
-with expectation `eval-vm`; nothing in bundle `sjl-13-001` is revised here.
+with reason `eval-vm`; nothing in bundle `sjl-13-001` is revised here.
 
 The owner's answer of 2026-11-27, given in chat, is the owner's own. It is quoted verbatim but for the sentences that
 count lines, which are left out here because this plan holds no figure; the README's note quotes it whole. Asked: "Stage
@@ -4852,7 +4853,9 @@ spec's PerformEval step 11.h requires, but the existing classification in bundle
 accepted, as Broiler.VM's E6 result. The rehearsal decides nothing on its own, but rewriting the list after seeing the
 results is a reading you reserve. How should I proceed?" Chosen: "Acknowledge, merge (Recommended)" — "... Then open
 stage 8's PR and merge it, and take part B and parts F and G after the merge as planned. No code changes." Not taken:
-"Hold, examine E6 first" and "Hold, revise classification", whose texts the README's note quotes.
+"Hold, examine E6 first" and "Hold, revise classification", whose texts the README's note quotes. In the question as
+quoted here, "them" is the test262 negative tests and "these" is the E6 eval requests whose code runs from a class field
+initialiser and uses `arguments`, which the sentences left out name.
 
 Revising the bound after the rehearsal was seen is a reading the owner reserves, as the question says, and it is the
 owner's: by this answer the bound is read as too narrow and the lines outside it are named, and that reading is weaker
