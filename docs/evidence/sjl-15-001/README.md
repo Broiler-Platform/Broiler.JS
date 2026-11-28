@@ -39,6 +39,7 @@ default branch on 2026-11-17.
 | [`part-b-30af0dad/`](part-b-30af0dad/README.md) | Part B's runs at the seventh model commit `30af0dad` and at its first parent `4e27f13d`, with their comparison and the push runs at `30af0dad` of both workflows that run the test projects of `Broiler.JS.slnx`; runs of the rule *(row added 2026-11-26, after those runs)* |
 | [`part-b-2c48beb1/`](part-b-2c48beb1/README.md) | Part B's runs at the eighth model commit `2c48beb1` and at its first parent `59ccb11c`, with their comparison and the push runs at `2c48beb1` of both workflows that run the test projects of `Broiler.JS.slnx`; runs of the rule *(row added 2026-11-27, after those runs)* |
 | [`part-b-950bea8f/`](part-b-950bea8f/README.md) | Part B's runs at the ninth model commit `950bea8f` and at its first parent `26c6d6ec`, with their comparison and the push runs at `950bea8f` of both workflows that run the test projects of `Broiler.JS.slnx`; runs of the rule *(row added 2026-11-27, after those runs)* |
+| [`part-b-159fd811/`](part-b-159fd811/README.md) | Part B's runs at the tenth model commit `159fd811` and at its first parent `b92ef028`, with their comparison and the push runs at `159fd811` of both workflows that run the test projects of `Broiler.JS.slnx`; runs of the rule *(row added 2026-11-28, after those runs)* |
 | [`tools/model_check.py`](tools/model_check.py) | Part F's checklist: the semantic model's public members against the milestone's facts and JSD-0080's rows, extending bundle `sjl-13-001`'s `contract_check.py` without editing it, with an outcome line per listing and per control of bundle `sjl-13-001`'s part H (decision D-js-part-f-tools) *(row added 2026-11-27, before any run of part F)* |
 | [`tools/row_sites.py`](tools/row_sites.py) | Part F's listing, per `semantics` row of the stage table, of the library's sites that report it, read from the library's code and the stage table; it judges nothing (decision D-js-part-f-tools) *(row added 2026-11-27, before any run of part F)* |
 | [`tools/broiler-vm-inputs.sha256`](tools/broiler-vm-inputs.sha256) | The Broiler.VM commit whose JSD-0080 and SJL-15 milestone file the checklist reads, with each file's SHA-256 *(row added 2026-11-27, before any run of part F)* |
@@ -1068,3 +1069,72 @@ revision](../sjl-13-001/decision-rule-revised-2026-11-02.md) counted runs "taken
 rehearsal, and are not derived again. Nothing is declared met or accepted by it: check 3b decides nothing, and part B
 and parts F and G of this bundle's rule are taken after the merge and read by the rule as planned. No rule file is added
 or edited, and no earlier output changes.
+
+*(Noted 2026-11-28, after SJL-15.2 stage 8's merge.)* **The tenth model commit is
+`159fd811f74d0f43e7ed7327081267a96f8f1196`**, the merge of Broiler-Platform/Broiler.JS#1151 (head `c8518398`), whose
+first parent is `b92ef028327b7420d4f489cb805ef5270623e760` (Broiler-Platform/Broiler.JS#1150, stage 7's part B
+records). It changes `Broiler.ECMAScript/Broiler.ECMAScript.Frontend/`, `Broiler.ECMAScript/Broiler.ECMAScript.Probe/`
+and the Frontend and Conformance tests, among others, and descends from W2 (`83a9bd82`) and from the first nine model
+commits `be6c4a5c`, `6c61879b`, `d87044c9`, `56272150`, `4d8aa93a`, `84d84cc3`, `30af0dad`, `2c48beb1` and `950bea8f`.
+Its first parent is no model commit: nothing from `950bea8f` to `b92ef028` changes a path under
+`Broiler.ECMAScript/Broiler.ECMAScript.Frontend*`, and the merges on the default branch's first parent from `4d8aa93a`
+that change such a path are exactly `84d84cc3`, `30af0dad`, `2c48beb1`, `950bea8f` and `159fd811`. The note above of
+2026-11-27 at SJL-15.2 stage 8 reads "This branch's merge will be the tenth model commit: SJL-15.2 stage 8, the
+library's last model commit, named here once it exists"; this names it. The section "The commits"' second item, "named
+here when each exists", is left as written: the library commit, the base commit and the after commit do not exist yet.
+Whether `159fd811` is the library commit is read only once the base commit exists (decision D-js-library-readings).
+
+*(Noted 2026-11-28, after part B's runs at `159fd811`.)* **Part B at the tenth model commit.** The note of 2026-11-27
+at SJL-15.2 stage 8 reads "Part B is taken after it, against its own first parent (decision D-js-part-b-method), with
+both workflows' push runs imported and decision D-js-part-b-attempt applying" and "The reading at it will be limited to
+the model commits taken so far." It is taken, in [`part-b-159fd811/`](part-b-159fd811/README.md), as part B at the
+first nine model commits was taken and in the same layout: bundle `sjl-12-001`'s tool, the same tree (`5ede6114`) at
+both commits, built and run as the rule says from a clean `git archive` of `159fd811` and of `b92ef028`, entry points P
+and K and the `--dump` mode over every input and variant of `conformance/parse/corpus.manifest`, the suite's archive
+checked by its SHA-256 before each run; compared by `scripts/compliance/compare_parse_corpus.py acceptance` with no
+classification file and by the dumps' hashes row for row; and both workflows' push runs at `159fd811` imported as at the
+ninth model commit. Nothing merged to the default branch from the merge until both push runs had concluded. What the
+runs say:
+- **Both runs are complete and identical in every field**: each report holds every input and variant of the manifest,
+  at P and K and once for the dumps, with its end line; the comparison finds no difference and every row line of both
+  modes is the same. The reports' headers differ only in each engine assembly's module version id, which is a build's
+  name, not an answer: two builds of `b92ef028` in two build trees differ the same way with every row the same, as two
+  builds of `26c6d6ec` did at the ninth model commit.
+- **Stage 8's change does not reach the tool's dumps or its answers.** Stage 8 adds no line kind to the library's
+  canonical dump and no member, type or row to the model; under the Frontend it changes only documentation lines and
+  the project file's comment and description, so the rows table, which its tests now hold equal to the stage table's
+  `semantics` rows but EA0006, is unchanged. Its one change of behaviour is the probe's corpus digest mode, which now
+  requests the model through `CorpusDigestRequest.WithModel`. This tool does not use the probe, which nothing under
+  `Broiler.JS/` or in bundle `sjl-12-001` names and no project the tool builds references (an inference from the
+  projects' references); it writes its own dump of Broiler.JS's tree, reaches the Frontend only through Broiler.JS's
+  parser, and nothing under `Broiler.JS/` or in bundle `sjl-12-001` changes between the two commits or sets
+  `ParseRequest.BuildSemanticModel`, so the earlier stages' model lines, as
+  [`part-b-950bea8f/identity/model-captures.txt`](part-b-950bea8f/identity/model-captures.txt) showed for stage 7's, are
+  written for neither commit's parses
+  ([`part-b-159fd811/identity/digest-model.txt`](part-b-159fd811/identity/digest-model.txt)). The `--dump` output and
+  P's and K's answers are identical at both commits.
+- **Shared libraries' push run concluded `success`** in its first attempt, every job green, both `native-aot-probe`
+  jobs among them; its Build and SL rules jobs test `Broiler.ECMAScript.slnf`, so its six `Broiler.ECMAScript.*` test
+  projects, each passed on both systems. Nothing was re-run.
+- **ci.yml's push run concluded `success`** in its first attempt, every job green, with no re-run: its Test step, which
+  since #1134 tests every project of `Broiler.JS.slnx` but those of `Broiler.ECMAScript.slnf`, passed the fifteen
+  `Broiler.JavaScript.*` test projects on Linux and on Windows, the isolated CompilerScaling step ran on both, and the
+  engine corpus passed in its two vectors jobs. So the re-run decision D-js-part-b-attempt allows was not needed.
+
+**The reading**, taken as recommended under the owner's direction ("Please do all recommended decisions and skip
+waiting for review."): **part B read MET on the retained runs at the model commits taken so far
+(`be6c4a5c3e389c7eb2aff71c34e31bdae5efe276`, `6c61879bce81b1a7badf987e16c7b0531030258d`,
+`d87044c9db5fe2a26841782308bd53e2f9294656`, `56272150fe23725a0e70978fb18e3c25f2548548`,
+`4d8aa93ad5023017b66534feb248c4c16f59bf6e`, `84d84cc3f68e3120299eb9faa44c6b9f0f2e7b8b`,
+`30af0dad83f73d2a5cf5495b2d4e3716cc7ed0df`, `2c48beb1e332dd7c9fa1577705ed5458b5686c1f`,
+`950bea8f315aa5f10d4b251a7d39ed7658912512`, `159fd811f74d0f43e7ed7327081267a96f8f1196`), limited to them; the part's
+verdict waits for the last model commit before the base.** At `159fd811` the rule's "the commit's CI run of every test
+project passed" is read on both workflows' push runs as they concluded, each in its first attempt, so the question of
+which attempt decides, flagged for the owner at the first model commit, does not arise here. Even now the verdict waits
+for the base: whether `159fd811` is the last model commit before the base is known only once the base commit exists,
+and the library commit is fixed only at SJL-15.5's merge. The readings at `be6c4a5c`, at `6c61879b`, at `d87044c9`, at
+`56272150`, at `4d8aa93a`, at `84d84cc3`, at `30af0dad`, at `2c48beb1` and at `950bea8f`, and the first one's flag, in
+the notes above of 2026-11-24, 2026-11-25, 2026-11-26 and 2026-11-27, stay as written. A NOT MET at any later model
+commit makes part B NOT MET. **Next:** parts F and G and bundle `sjl-13-001`'s part E at the tenth model commit
+(decision D-js-library-runs), read at stage 8's commit, the library commit if no model commit lands before the base
+commit; then stage 9's listing. No rule file is added or edited, and no earlier output changes.

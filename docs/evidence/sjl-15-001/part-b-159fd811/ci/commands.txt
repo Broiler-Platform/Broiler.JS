@@ -1,0 +1,46 @@
+# The push runs at the tenth model commit 159fd811f74d0f43e7ed7327081267a96f8f1196, imported 2026-11-28 as bundle
+# sjl-14-001's bridge/w1-ci/ imported W1's and part-b-be6c4a5c/ci/, part-b-6c61879b/ci/, part-b-d87044c9/ci/,
+# part-b-56272150/ci/, part-b-4d8aa93a/ci/, part-b-84d84cc3/ci/, part-b-30af0dad/ci/, part-b-2c48beb1/ci/ and
+# part-b-950bea8f/ci/ imported the first to ninth model commits': by read-only GitHub API calls (gh api, GET only), each
+# file the API's answer unchanged, but slnx-test-projects.txt, test-projects.tsv and artifact-digests.tsv, written from
+# them. Nothing was dispatched, re-run or cancelled by these reads. The run statuses were first read through the GitHub
+# API at 2026-11-28T00:20:30Z, before part B's runs, its answer kept (../logs/status-20261128T002030Z.tsv, runs only):
+# CI 46082299057 attempt 1 completed success (updated_at 2026-11-27T23:40:30Z) and Shared libraries 46082299097
+# attempt 1 completed success (updated_at 2026-11-27T23:33:05Z). The job-level answer of that read was not kept; the
+# evidence that every job of both runs' first attempt succeeded, both Native AOT probe jobs among them (linux-x64
+# 140783796376, completed 23:26:11Z; win-x64 140783796520, completed 23:26:19Z; part G's hosted half), is
+# jobs-46082299057.json and jobs-46082299097.json of the read below.
+#
+# One read, 2026-11-28T00:25:11Z-00:25:17Z, after both runs had concluded, each in its first attempt. Unlike stage 7's,
+# which was made between part B's base run and its after run, this read was made before either of part B's runs at this
+# commit (none had started; see ../logs/notes.log). The commands of that read (written down 2026-11-28 after the read,
+# from the stage's notes and the files' write times, which follow this order):
+R=repos/Broiler-Platform/Broiler.JS/actions/runs
+gh api "$R?head_sha=159fd811f74d0f43e7ed7327081267a96f8f1196&per_page=50" > runs-at-159fd811.json
+#   -> two runs at 159fd811, each event push, status completed, conclusion success, run_attempt 1:
+#      46082299057 CI (.github/workflows/ci.yml); 46082299097 Shared libraries (.github/workflows/shared-libraries.yml)
+for r in 46082299057 46082299097; do
+  gh api $R/$r > run-$r.json
+  gh api "$R/$r/jobs?per_page=100&filter=all" > jobs-$r.json
+  gh api "$R/$r/artifacts?per_page=100" > artifacts-$r.json
+  gh api $R/$r/logs > logs-$r.zip
+done
+#
+# The artifacts, every one both runs list, downloaded (2026-11-28T00:25:26Z-00:25:33Z) and checked against the API's
+# digest and size (artifact-digests.tsv, every one "match"); re-checked unchanged at 00:53Z, before part B's runs (that
+# re-check is recorded only in ../logs/notes.log, its entry of 01:08:00Z; its output was not kept, a note of 2026-11-28
+# on review). The
+# zips are not kept here (bridge/w1-ci/ and the first nine model commits' ci/ kept none). CI's three went to a scratch
+# folder art/; Shared libraries' three (part G's hosted half if 159fd811 is the library commit:
+# native-aot-probe-linux-x64, native-aot-probe-win-x64, shared-packages) went to the stage's scratch folder hosted/, for
+# the brief of parts F and G, checked there too against the same digests:
+for id in 15237902322 15238206491 15238570043; do
+  gh api repos/Broiler-Platform/Broiler.JS/actions/artifacts/$id/zip > art/$id.zip   # then sha256 and size against the API's
+done
+for id in 15237755717 15237538881 15237473927; do
+  gh api repos/Broiler-Platform/Broiler.JS/actions/artifacts/$id/zip > ../hosted/$id.zip   # then sha256 and size against the API's
+done
+git show 159fd811:Broiler.JS.slnx | grep -o 'Path="[^"]*\.csproj"' | sed 's/Path="//;s/"//' | grep -i test | sort > slnx-test-projects.txt
+python3 -I ../scripts/test_projects.py slnx-test-projects.txt . > test-projects.tsv
+# The last two re-run at about 2026-11-28T00:35Z (in ci/, into a temporary folder): both outputs byte-identical to the
+# files kept here.

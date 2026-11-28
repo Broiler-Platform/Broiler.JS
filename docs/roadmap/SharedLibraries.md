@@ -4866,6 +4866,39 @@ it: check 3b decides nothing, and part B and parts F and G of bundle [`sjl-15-00
 rule are taken after the merge and read by that rule as planned. None of it is accepted: no second holder exists to
 review it. Every SJL-15 clause is unmet, in both repositories.
 
+*(Noted 2026-11-28, after part B's runs at the tenth model commit.)* The note of 2026-11-27 at SJL-15.2 stage 8 reads
+"Part B is taken after the merge, against the merge's own first parent", and its merge condition reads "after the merge,
+nothing merges to `main` until both push runs at the merge have concluded". Stage 8 merged as
+Broiler-Platform/Broiler.JS#1151, `159fd811f74d0f43e7ed7327081267a96f8f1196`, **the tenth model commit**, named with its
+first parent `b92ef028` (Broiler-Platform/Broiler.JS#1150, no model commit) in bundle
+[`sjl-15-001`](../evidence/sjl-15-001/README.md)'s README. Nothing merged to the default branch until both push runs at it
+had concluded. Part B is taken at it and at its first parent and retained in the bundle's
+[`part-b-159fd811/`](../evidence/sjl-15-001/part-b-159fd811/README.md), as that README's note of 2026-11-28 records:
+bundle `sjl-12-001`'s tool byte-unchanged, built and run from a clean archive of each commit; both runs complete and
+identical in every field, compared by `scripts/compliance/compare_parse_corpus.py` with no admitted class and by the
+dumps' hashes, the reports' headers differing only in each assembly's module version id, which names a build; stage 8's
+one change of behaviour, the probe's corpus digest mode requesting the semantic model, not reaching the tool's dumps or
+its P and K answers, since the tool does not use the probe, writes its own dump of Broiler.JS's tree, and nothing in
+Broiler.JS sets `ParseRequest.BuildSemanticModel`; Shared libraries' push run, both `native-aot-probe` jobs among its
+jobs, and ci.yml's push run each green in its first attempt, with no re-run, so the one re-run decision
+D-js-part-b-attempt allows was not needed.
+
+**The reading**, taken as recommended under the owner's direction quoted above and recorded as the owner's decision of
+2026-11-28: **part B read MET on the retained runs at the model commits taken so far
+(`be6c4a5c3e389c7eb2aff71c34e31bdae5efe276`, `6c61879bce81b1a7badf987e16c7b0531030258d`,
+`d87044c9db5fe2a26841782308bd53e2f9294656`, `56272150fe23725a0e70978fb18e3c25f2548548`,
+`4d8aa93ad5023017b66534feb248c4c16f59bf6e`, `84d84cc3f68e3120299eb9faa44c6b9f0f2e7b8b`,
+`30af0dad83f73d2a5cf5495b2d4e3716cc7ed0df`, `2c48beb1e332dd7c9fa1577705ed5458b5686c1f`,
+`950bea8f315aa5f10d4b251a7d39ed7658912512`, `159fd811f74d0f43e7ed7327081267a96f8f1196`), limited to them; the part's
+verdict waits for the last model commit before the base.** At `159fd811` the rule's "the commit's CI run of every test
+project passed" is read on both workflows' push runs, each as it concluded in its first attempt. Even now the verdict
+waits for the base: the library commit is fixed only at SJL-15.5's merge. The readings at `be6c4a5c`, at `6c61879b`,
+at `d87044c9`, at `56272150`, at `4d8aa93a`, at `84d84cc3`, at `30af0dad`, at `2c48beb1` and at `950bea8f`, and the
+first one's flag for the owner, in the notes of 2026-11-24, 2026-11-25, 2026-11-26 and 2026-11-27 above, stay as
+written. Next: parts F and G and bundle `sjl-13-001`'s part E at the tenth model commit (decision D-js-library-runs),
+read at stage 8's commit, the library commit if no model commit lands before the base commit; then stage 9's listing.
+None of it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
