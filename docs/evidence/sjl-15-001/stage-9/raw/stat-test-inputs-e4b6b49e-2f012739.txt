@@ -1,0 +1,20 @@
+ conformance/vectors/REVISIONS.md                    |   1 +
+ conformance/vectors/collation/options.vectors       |   5 +++--
+ conformance/vectors/collation/root.vectors          | 141 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------------------------------------------------------------
+ conformance/vectors/collation/surrogates.vectors    |   5 +++--
+ conformance/vectors/collation/tailorings.vectors    |   5 +++--
+ conformance/vectors/intl/locales.vectors            |   2 +-
+ scripts/conformance/generate_collation_vectors.py   |  27 ++++++++++++++++++++-------
+ scripts/conformance/generate_date_vectors.py        |   2 +-
+ scripts/conformance/generate_intl_vectors.py        |  12 +++++++++---
+ scripts/conformance/generate_number_vectors.py      |   2 +-
+ scripts/conformance/generate_numerics_vectors.py    |   2 +-
+ scripts/conformance/generate_regexp_vectors.py      |   2 +-
+ scripts/conformance/generate_syntax_vectors.py      |   2 +-
+ scripts/conformance/generate_temporal_vectors.py    |   2 +-
+ scripts/conformance/generate_text_vectors.py        |   2 +-
+ scripts/conformance/generate_time_zone_vectors.py   |   2 +-
+ scripts/conformance/generate_unicode_vectors.py     |   2 +-
+ scripts/conformance/tests/test_collation_vectors.py |   5 ++++-
+ scripts/conformance/tests/test_intl_vectors.py      |   6 ++++--
+ 19 files changed, 128 insertions(+), 99 deletions(-)

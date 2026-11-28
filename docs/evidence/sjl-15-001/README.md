@@ -44,6 +44,7 @@ default branch on 2026-11-17.
 | [`tools/model_check.py`](tools/model_check.py) | Part F's checklist: the semantic model's public members against the milestone's facts and JSD-0080's rows, extending bundle `sjl-13-001`'s `contract_check.py` without editing it, with an outcome line per listing and per control of bundle `sjl-13-001`'s part H (decision D-js-part-f-tools) *(row added 2026-11-27, before any run of part F)* |
 | [`tools/row_sites.py`](tools/row_sites.py) | Part F's listing, per `semantics` row of the stage table, of the library's sites that report it, read from the library's code and the stage table; it judges nothing (decision D-js-part-f-tools) *(row added 2026-11-27, before any run of part F)* |
 | [`tools/broiler-vm-inputs.sha256`](tools/broiler-vm-inputs.sha256) | The Broiler.VM commit whose JSD-0080 and SJL-15 milestone file the checklist reads, with each file's SHA-256 *(row added 2026-11-27, before any run of part F)* |
+| [`stage-9/`](stage-9/listing-e4b6b49e-159fd811.md) | Stage 9's listing: by merge, every source change from tag `ecmascript-v0.1.0-preview.11` (`e4b6b49e`) to stage 8's commit `159fd811` for the four packages Broiler.VM pins, with the build, workflow, test and gate inputs outside their folders labelled, the raw `git` outputs in [`stage-9/raw/`](stage-9/raw/) and their commands in [`stage-9/commands.txt`](stage-9/commands.txt), for JSD-0083's decision D30's syntax-half check; a record, not a run of the rule, and it classifies nothing *(row added 2026-11-28, at SJL-15.2 stage 9)* |
 | [`hashes.txt`](hashes.txt) | The SHA-256 of every other file of the bundle |
 
 ## What it will hold
@@ -1242,3 +1243,53 @@ Every clause is unmet, and none of it is accepted. **Next:** stage 9's listing, 
 syntax-half check; then the publication, which the owner's answer of 2026-11-27 ("All publish-decisions can be done and
 run. So if a publish yes/no is the question, do the publish, wait for the nuget-package-availability and continue")
 answers as publish. No rule file is added or edited, and no earlier output changes.
+
+*(Noted 2026-11-28, at SJL-15.2 stage 9.)* **Stage 9's listing, and Q1.** The note above of 2026-11-28 after the runs of
+parts F and G names the next step: "**Next:** stage 9's listing, for JSD-0083's decision D30's syntax-half check; then
+the publication". The listing is taken, in [`stage-9/listing-e4b6b49e-159fd811.md`](stage-9/listing-e4b6b49e-159fd811.md),
+from Broiler.JS `5ad84ae2` (Broiler-Platform/Broiler.JS#1153) and Broiler.VM `d384611f` (Broiler-Platform/Broiler.VM#234),
+its raw `git` outputs in [`stage-9/raw/`](stage-9/raw/) and their commands in
+[`stage-9/commands.txt`](stage-9/commands.txt). It lists, by first-parent merge, every source change from tag
+`ecmascript-v0.1.0-preview.11` (`e4b6b49e`), the version Broiler.VM pins for `Algorithms`, `Frontend`, `Intl` and
+`Generation` (its `Directory.Packages.props`, lines 28, 34, 40 and 48 at `d384611f`), to stage 8's commit `159fd811`. The
+folders of `Algorithms`, `Intl` and `Generation` do not change. The Frontend's folder changes in the model commits alone,
+`be6c4a5c` to `159fd811`: nothing under it changed from `e4b6b49e` to preview.12's commit `2f012739`, so its diff since
+preview.11 is its diff since preview.12. The inputs outside the folders that changed are listed and labelled, in two
+groups: the build and workflow inputs, and the test and gate inputs the publish workflow's `validate` job reads (the
+corpus under `conformance/vectors/`, `scripts/conformance/` and `scripts/packaging/test_pristine_consumer.py`); the
+two changed paths in neither group, `scripts/compliance/run_test262.py` and the engine's folder `Broiler.JS/`, are
+named. Whether any of them counts as a "source diff" is Broiler.VM's to classify, and is not decided here. What changed
+from `2f012739` to `159fd811` is listed too, since preview.12 is published.
+
+**Q1**, "Publish a Broiler.ECMAScript stream version carrying the semantic model, from stage 8's commit, for Broiler.VM's
+pin commit (D-pin)?", which decision D-js-packable has asked "only after stage 8 and stage 9's listing", is answered by
+the owner's answer of 2026-11-27, given in chat, unasked, after the session listed the owner's open decisions: "All
+publish-decisions can be done and run. So if a publish yes/no is the question, do the publish, wait for the
+nuget-package-availability and continue". The session reads it as answering Q1 as publish, with D30's syntax-half check
+still read as the records require; the listing quotes the session's record of the answer whole, the session's reading
+with it, which the session holds and this repository does not. So the session
+publishes after this listing merges, by a dispatch of `publish-shared.yml` on `main`, and waits until nuget.org lists
+the version. With an empty version input, `eng/resolve-preview-version.mjs` resolves `0.1.0-preview.13`: nuget.org
+lists `0.1.0-preview.12` for all four packages and tag `ecmascript-v0.1.0-preview.12` exists, and nothing higher does.
+The suffix, `preview.12` (`Broiler.ECMAScript/Directory.Build.props:38`), need not move first: the resolver takes it as
+the floor and goes past every spent number, and "Moving it publishes nothing" (the same file, line 30); preview.11 and
+preview.12 were both published by dispatches from trees whose suffix read `preview.8`. Beyond preview.12, in the four
+packages' folders, the version carries the Frontend's model commits and nothing in the other three folders, and the
+tree it is built from differs from preview.12's commit also by the labelled inputs of both groups, if `main`'s tree
+outside `docs/` is still `159fd811`'s when it is packed.
+
+**D30's syntax-half check.** The listing quotes D30 whole from Broiler.VM `d384611f`. What it gives the check is the
+listing; listing the changes in SJL-15's cut-over record, classifying them "by SJL-15's rule here as a correction by
+row", and whether the labelled inputs count, are Broiler.VM's, at its pin commit. No such record exists before the pin
+commit, and the model commits touch syntax-half files and may not be corrections by row; the check is read neither as
+met nor as unmeetable. Carried as information: `Broiler.JavaScript.Parser`'s package depends on the Frontend at the
+shared folder's version (`Broiler.ECMAScript/Directory.Build.props:28-30`); whether the published source must be the
+library commit is unknown, since Broiler.VM's pin commit admits the version "as the owner published it"; a later
+version for SJL-15.4 needs a second pin commit; EP0017 and EP0018, and the other readings parts F and G rest on, are the
+session's readings flagged for the owner; and whether the rule admits the early runs at `159fd811` is the owner's, and is
+not decided.
+
+This records-only merge changes no `Broiler.ECMAScript/` path and is no model commit. No rule file is added or edited,
+no decision's text changes, and nothing is dispatched or published here. Every clause is unmet, and none of it is
+accepted. **Next:** the publication of `0.1.0-preview.13` by a dispatch of `publish-shared.yml` on `main` after this
+merge; then Broiler.VM's pin commit (its decision D-pin), whose classification of the listed changes is Broiler.VM's.

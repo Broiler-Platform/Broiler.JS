@@ -1,0 +1,81 @@
+Stage 9's listing (SJL-15.2): the commands that wrote raw/, run 2026-11-28 in a worktree of Broiler.JS at
+5ad84ae22a82743eb115e55aac40b6a05d15e263 (Broiler-Platform/Broiler.JS#1153), after `git fetch origin`. Read-only git
+commands, and GET requests to nuget.org's public flat-container index; nothing was built, run, dispatched or published.
+
+E=Broiler.ECMAScript
+P11=e4b6b49ed290983e02525ca1a9318fd46517dc2c   # tag ecmascript-v0.1.0-preview.11, peeled
+P12=2f012739cfc4d99e91b22d28a09941c49d8bd646   # tag ecmascript-v0.1.0-preview.12, peeled
+M8=159fd811f74d0f43e7ed7327081267a96f8f1196    # stage 8's commit, the tenth and last model commit (#1151)
+IN=(.gitattributes .editorconfig NuGet.config Directory.Build.props Directory.Build.targets Directory.Packages.props
+    "$E/Directory.Build.props" eng .github/workflows/publish-shared.yml .github/workflows/shared-libraries.yml
+    .github/workflows/ci.yml THIRD_PARTY_NOTICES.md "$E/README.md" Broiler.ECMAScript.slnf .config)
+    # the first group: the build and workflow inputs outside the package folders this listing names
+TI=(conformance/vectors scripts/conformance scripts/packaging/test_pristine_consumer.py)
+    # the second group: the test and gate inputs the publish workflow's validate job reads
+
+raw/ls-remote-tags.txt
+    git ls-remote --tags origin 'ecmascript-v*'
+raw/log-first-parent-all-e4b6b49e-159fd811.txt
+    git log --first-parent --format='%H %P %s' "$P11..$M8"
+raw/log-first-parent-<package>-e4b6b49e-159fd811.txt, for <package> in Algorithms Frontend Intl Generation
+    git log --first-parent --format='%H %P %s' "$P11..$M8" -- "$E/Broiler.ECMAScript.<package>/"
+raw/stat-<package>-e4b6b49e-159fd811.txt, raw/stat-<package>-e4b6b49e-2f012739.txt, raw/stat-<package>-2f012739-159fd811.txt
+    git diff --stat=200 "$P11" "$M8" -- "$E/Broiler.ECMAScript.<package>/"
+    git diff --stat=200 "$P11" "$P12" -- "$E/Broiler.ECMAScript.<package>/"
+    git diff --stat=200 "$P12" "$M8" -- "$E/Broiler.ECMAScript.<package>/"
+raw/stat-Frontend-by-merge-e4b6b49e-159fd811.txt
+    for m in $(git log --first-parent --format='%H' "$P11..$M8" -- "$E/Broiler.ECMAScript.Frontend/" | tac); do
+      echo "## $m (first parent $(git rev-parse "$m^1"))"
+      git diff --stat=200 "$m^1" "$m" -- "$E/Broiler.ECMAScript.Frontend/"
+    done
+raw/name-status-Frontend-e4b6b49e-159fd811.txt
+    git diff --name-status "$P11" "$M8" -- "$E/Broiler.ECMAScript.Frontend/"
+raw/log-first-parent-build-inputs-e4b6b49e-159fd811.txt
+    git log --first-parent --format='%H %P %s' "$P11..$M8" -- "${IN[@]}"
+raw/stat-build-inputs-e4b6b49e-159fd811.txt, raw/stat-build-inputs-e4b6b49e-2f012739.txt, raw/stat-build-inputs-2f012739-159fd811.txt
+    git diff --stat=200 "$P11" "$M8" -- "${IN[@]}"
+    git diff --stat=200 "$P11" "$P12" -- "${IN[@]}"
+    git diff --stat=200 "$P12" "$M8" -- "${IN[@]}"
+raw/stat-build-inputs-by-merge-e4b6b49e-159fd811.txt
+    the loop above over "${IN[@]}" in place of the Frontend's folder
+raw/stat-ECMAScript-e4b6b49e-2f012739.txt, raw/stat-ECMAScript-2f012739-159fd811.txt
+    git diff --stat=200 "$P11" "$P12" -- "$E"
+    git diff --stat=200 "$P12" "$M8" -- "$E"
+raw/log-first-parent-ECMAScript-2f012739-159fd811.txt
+    git log --first-parent --format='%H %P %s' "$P12..$M8" -- "$E"
+raw/log-first-parent-test-inputs-e4b6b49e-159fd811.txt
+    git log --first-parent --format='%H %P %s' "$P11..$M8" -- "${TI[@]}"
+raw/stat-test-inputs-e4b6b49e-159fd811.txt, raw/stat-test-inputs-e4b6b49e-2f012739.txt, raw/stat-test-inputs-2f012739-159fd811.txt
+    git diff --stat=200 "$P11" "$M8" -- "${TI[@]}"
+    git diff --stat=200 "$P11" "$P12" -- "${TI[@]}"
+    git diff --stat=200 "$P12" "$M8" -- "${TI[@]}"
+raw/stat-test-inputs-by-merge-e4b6b49e-159fd811.txt
+    the Frontend's loop above over "${TI[@]}" in place of the Frontend's folder
+raw/name-only-outside-e4b6b49e-159fd811.txt
+    git diff --name-only "$P11" "$M8" -- . ':!docs' ':!Broiler.ECMAScript' ':!Broiler.JS'
+raw/stat-Frontend-e4b6b49e-8b1fa311.txt
+    git diff --stat=200 "$P11" 8b1fa311da6af71baac6378e8b4f8597a99c1312 -- "$E/Broiler.ECMAScript.Frontend/"
+raw/tag-objects-preview.11-preview.12.txt
+    for t in 6b9ed763e1f116783f81a0c16978b6baba560308 bc2b24e3565ea25b8a709b8227be840768d1afd6; do
+      echo "## git cat-file -p $t"; git cat-file -p "$t"
+    done
+raw/version-suffix-by-commit.txt
+    for c in "$P11" "$P12" 83a9bd82a5d258d3001468095ebf43f9efc3e9a7^1 83a9bd82a5d258d3001468095ebf43f9efc3e9a7 "$M8"; do
+      echo "$c $(git show "$c:$E/Directory.Build.props" | grep -o '<VersionSuffix>[^<]*</VersionSuffix>')"
+    done
+raw/nuget-flat-container-broiler.ecmascript.<id>.json, for <id> in algorithms frontend intl generation
+    GET https://api.nuget.org/v3-flatcontainer/broiler.ecmascript.<id>/index.json   (read 2026-11-28T09:23:51Z)
+    as served, but with the response's CRLF line endings written as LF
+
+The second group's files, the first group's four additions to IN (THIRD_PARTY_NOTICES.md, $E/README.md,
+Broiler.ECMAScript.slnf, .config; unchanged in the range, so the first group's outputs are as before) and the outputs
+from raw/log-first-parent-test-inputs-e4b6b49e-159fd811.txt on were added on 2026-11-28 after review, from the same
+worktree at the same commits; every earlier output was written again by the same commands and is byte for byte as
+before (the remote's tags among them).
+
+Checked beside these, with no output file:
+    git diff --stat 159fd811 5ad84ae2 -- . ':!docs'        # empty: nothing outside docs/ changed after stage 8's commit
+    git merge-base --is-ancestor "$P11" "$M8"; git merge-base --is-ancestor "$P12" "$M8"   # both ancestors
+Broiler.VM was read at d384611fdb48c47325deba52561e4ce9bc3c146b (Broiler-Platform/Broiler.VM#234), fetched blob-less
+into a scratch repository, with `git show d384611f:<path>`: Directory.Packages.props, JSD-0083, JSD-0088 and bundle
+sjl-15-001's decision-rule-area.md.
