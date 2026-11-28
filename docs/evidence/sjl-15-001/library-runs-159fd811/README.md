@@ -58,7 +58,7 @@ The steps that did not run through, none producing an output a reading rests on,
 | [`part-f/control/`](part-f/control/listing.txt) | F | The rule's part F control, EE0018's report suppressed in a scratch archive (`applied.patch`): its run and listing, the revert (`revert-check.txt`, `revert/`) and the reverted run's listing against the run's (`revert-listing-against-run.txt`) |
 | [`part-g/part-c/`](part-g/part-c/sha256.txt) | G (bundle `sjl-13-001`'s part C) | The runs of the probe's corpus digest mode, whole, gzipped, with their logs and SHA-256 (`sha256.txt` names the files before compression), SL2 and SL9 (`sl2-sl9.log`), and `K1/` and `K2/`, each with its patch, its runs, the rule its patch is tested against and its revert |
 | [`part-g/part-d/local/`](part-g/part-d/local/sha256.txt) | G (bundle `sjl-13-001`'s part D, local half) | The linux-x64 Native AOT and JIT publications' logs, the runs' logs, the Native AOT report gzipped, the reports' SHA-256 and comparison, and `warnings.txt` |
-| [`part-g/part-d/workflow/`](part-g/part-d/workflow/run.txt) | G (bundle `sjl-13-001`'s part D, hosted half) | Shared libraries' push run `46082299097` at `159fd811`, by GET only: the run, its first attempt, the attempt's jobs, every job of every attempt, the artifacts' listing (`*.json`), every job's log gzipped (`jobs/`), each artifact checked against the API's digest and size (`artifact-digests.tsv`), both `native-aot-probe` artifacts' files (each report gzipped) and every artifact file's SHA-256 (`artifacts/sha256.txt`); `run.txt`, `probe-runs.txt` and `warnings.txt` read from them |
+| [`part-g/part-d/workflow/`](part-g/part-d/workflow/run.txt) | G (bundle `sjl-13-001`'s part D, hosted half) | Shared libraries' push run `46082299097` at `159fd811`, by GET only: the run, its first attempt, the attempt's jobs, every job of every attempt, the artifacts' listing (`*.json`), every job's log gzipped (`jobs/`), each artifact checked against the API's digest and size (`artifact-digests.tsv`), both `native-aot-probe` artifacts' files (each report gzipped) and every artifact file's SHA-256 as uploaded (`artifacts/sha256.txt`, as `scripts/hosted.sh` writes it, with a line for itself: see the disclosures); `run.txt`, `probe-runs.txt` and `warnings.txt` read from them |
 | [`rules/`](rules/architecture-tests.log) | bundle `sjl-13-001`'s part E, as checks | The architecture tests, `eng/pack.ps1 -ProjectSet Shared` rendered in bash (`pack-shared.sh`, its diff from bundle `sjl-13-001`'s rendering in `pack-shared.sh.vs-sjl-13-001.diff`), the packages' SHA-256, the pristine consumer, the assurance check, and the workflow's own pack and assurance jobs' logs (`hosted/`) |
 
 ## What the runs say
@@ -141,3 +141,27 @@ changes.)*
   readings (the note the stage's brief asks for "before any run") was written at 2026-11-28T07:25:14Z, after part F's
   steps, part G's part C runs and K1 had run, while K2's builds were under way. It quotes only records of stage 8's
   that are unchanged since `159fd811`, where they were recorded before any run of parts F and G.
+- **The hosted artifacts' hash list** *(added 2026-11-28, after the independent review of this folder, before it
+  merged; no run output other than this one file changes, and no reading changes)*. The review found that
+  [`part-g/part-d/workflow/artifacts/sha256.txt`](part-g/part-d/workflow/artifacts/sha256.txt) was not what
+  [`scripts/hosted.sh`](scripts/hosted.sh) writes, and that nothing retained recorded how it was made. The earlier
+  file (SHA-256 `0b8814467fd8f20030c16c0a2b183f200417a78bb90fd011182f569c855cd8a7`) had 10 lines, the digests of the
+  files kept here, after the reports were gzipped and `shared-packages` removed: `67db5a7c…` for each of the six
+  `./native-aot-probe-{linux,win}-x64/probe-{aot,jit-published,jit}.tsv.gz`, and the four publish logs; it had none of
+  `shared-packages`' 8 files. It is the same bytes as `find . -type f ! -name sha256.txt | LC_ALL=C sort | xargs
+  sha256sum` run over the kept `artifacts/`. So the row above, which read "every artifact file's SHA-256
+  (`artifacts/sha256.txt`)", and the last line of [`commands.txt`](part-g/part-d/workflow/commands.txt)
+  ("shared-packages' files listed in artifacts/sha256.txt"), were false for it. It is replaced by the file the retained `hosted.sh` writes:
+  on 2026-11-28 the script, unchanged, was run again into a scratch folder, by GET only, every artifact's zip
+  downloaded from the API and matching its digest and size; nothing was dispatched, cancelled or re-run. Its
+  `artifacts/sha256.txt` is this file, byte for byte, and the same bytes as the review's own regeneration; every other
+  output of that run (the artifacts' kept files, `run.txt`, `artifacts.list`, `artifact-digests.tsv`) is the same
+  bytes as this folder's. The new file has 19 lines: the uploaded reports before compression (`f34dcbb0…` for each of
+  the six, the local runs' digest), the four publish logs (unchanged), `shared-packages`' 8 files
+  (`Broiler.ECMAScript.{Algorithms,Frontend,Generation,Intl}.0.1.0-preview.12.{nupkg,snupkg}`), and a line for
+  `./sha256.txt` itself. That last line is a fault of the script: its output redirection creates the file before its
+  `find` runs, so the list lists itself, with the digest (`ff1f755f…`) of its own first ten lines as `sha256sum` read
+  them while writing it, not of the file kept. It names no artifact file and cannot be checked. The script is the one
+  that ran and is not changed, and the file is kept as it writes it. The reports' lines check against the kept
+  reports decompressed (`zcat`), the logs' against the kept logs; `shared-packages`' files are not kept, as bundle
+  `sjl-13-001`'s library commit did not keep them.
