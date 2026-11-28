@@ -1,4 +1,4 @@
-c0af70d7e2fbc68158f811036681337513ad27aca48573939e09487922dc10b5  ./README.md
+b36230273e6f2b365af7562bcc1bcb77048f37d64c3eb0ce83abceabe0219b76  ./README.md
 c618357fe96d185511b338bbfae4a473285758d220ad82640643083844b2a8c1  ./corrections.md
 4a7a6b9ce1defd5cd538116f7997b612623cef5f089e68556cfffebb1d1efd33  ./corrections/class-e.tsv
 5e184fb9ac9b8b0c7e2e2a2d4ccaec1f711d6f69b26ba3417f9aad8be454e848  ./corrections/class-t.tsv
@@ -1489,8 +1489,8 @@ a4a709b75e3bf4d8ac339030df6310e31d41290e608529cb4e9e36dec52d2174  ./probes/runs/
 150cb0f52f9fd4d68b77ca881db236ddbce1baad5854beb1e5b222df16c8308d  ./probes/runs/vm/answers.tsv
 c5ef34d4d00ca9f7c37b2d44021ed641a9defd74f0b4b3071282c9fa2dd833c6  ./probes/runs/vm/program.js
 7dce0e65bed63923d1e8e8e44a25e27d7edb0f24b861020448f4e47a71f3d48f  ./probes/runs/vm/transcript.txt
-da334e9202d6bb2ce59127ad2fe0dc28ab23446c2f4e0a8de3c3d77d7f2f1c77  ./stage-9/commands.txt
-8887743b8191679bd52640bf7b23cf19da06f0e73a7cd661107234abd675e765  ./stage-9/listing-e4b6b49e-159fd811.md
+d2063188b16e144313eb8209b0ad172ed19871cc754e481e49e1301c518a367f  ./stage-9/commands.txt
+d04819622bc7fa7942c4763cf34038f4ed24e69ba65864960c6af1e30a81ed0a  ./stage-9/listing-e4b6b49e-159fd811.md
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./stage-9/raw/log-first-parent-Algorithms-e4b6b49e-159fd811.txt
 4f28ce9734557106255be3d6c54592a571bbfa00fe30795fe69cc2cd0406a528  ./stage-9/raw/log-first-parent-ECMAScript-2f012739-159fd811.txt
 62cada6bbbc003f2eb21e750ff270f89666eb98de7dfd569f09f781797e01c22  ./stage-9/raw/log-first-parent-Frontend-e4b6b49e-159fd811.txt
@@ -1498,7 +1498,9 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./stage-9/raw/
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./stage-9/raw/log-first-parent-Intl-e4b6b49e-159fd811.txt
 ecde490776a492e915d2f09ba572a6e22579bda9645ff5c64c62b8e55c4a7ef1  ./stage-9/raw/log-first-parent-all-e4b6b49e-159fd811.txt
 859edaa5f9fc283828464fe17094d1ac1bf5e154a54cb06041a766241c8e3105  ./stage-9/raw/log-first-parent-build-inputs-e4b6b49e-159fd811.txt
+8da16b96cdf549300b71f6a7d50c7a28aec8eae9ccadf9d4d4d814c83c8891d5  ./stage-9/raw/log-first-parent-test-inputs-e4b6b49e-159fd811.txt
 fdd88ada8e8e4449e8cf76464ab95c48e827677d59deebeccd809638ae03c18a  ./stage-9/raw/ls-remote-tags.txt
+9ee03fb9475eab9bd42b724c0353d39cc9a7017f79ca583e8afdc147419496b7  ./stage-9/raw/name-only-outside-e4b6b49e-159fd811.txt
 3abee0907d171d94955119a4902d7a00a54476432ad7f8f1b3be379c338cf446  ./stage-9/raw/name-status-Frontend-e4b6b49e-159fd811.txt
 9fab23155e4b4482f1e52d882dad744cee4bac18463cba0d59790ef0dbe23474  ./stage-9/raw/nuget-flat-container-broiler.ecmascript.algorithms.json
 1a796e8261f449a867d86110fe6d3dfb345e6cf57f0fd5642697a4ef86fbb3a7  ./stage-9/raw/nuget-flat-container-broiler.ecmascript.frontend.json
@@ -1513,6 +1515,7 @@ ac9944119c833a81b95194f49464a81a39e0d858ac280e9e431e9e01e3dddc87  ./stage-9/raw/
 d83cfd1ee4eb5c9d0048beefdea86881445f5b268db05a4a3b365e2850daf8de  ./stage-9/raw/stat-Frontend-by-merge-e4b6b49e-159fd811.txt
 40dbe100462740c86bbcc64c5e138cc57fcf3a58c3949588e68b27d01e6515e0  ./stage-9/raw/stat-Frontend-e4b6b49e-159fd811.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./stage-9/raw/stat-Frontend-e4b6b49e-2f012739.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./stage-9/raw/stat-Frontend-e4b6b49e-8b1fa311.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./stage-9/raw/stat-Generation-2f012739-159fd811.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./stage-9/raw/stat-Generation-e4b6b49e-159fd811.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./stage-9/raw/stat-Generation-e4b6b49e-2f012739.txt
@@ -1523,6 +1526,12 @@ fdb5f9e72f6f8a0a87df3dfb73024d01387e78ab3a2e1655bb42fd725874bf1d  ./stage-9/raw/
 b3052a5548a095a8943b4f649751637a1e5df4be1b4f49d44a00ca902bf50b30  ./stage-9/raw/stat-build-inputs-by-merge-e4b6b49e-159fd811.txt
 fdb5f9e72f6f8a0a87df3dfb73024d01387e78ab3a2e1655bb42fd725874bf1d  ./stage-9/raw/stat-build-inputs-e4b6b49e-159fd811.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./stage-9/raw/stat-build-inputs-e4b6b49e-2f012739.txt
+59d4bb2553cfde694e83cac37aec0c39269e613ce2bba44805c6ab093ad13af3  ./stage-9/raw/stat-test-inputs-2f012739-159fd811.txt
+92802a176136cabb3cf96545e6b900ea1dfa20d33bd566da3048289dd8be0fc3  ./stage-9/raw/stat-test-inputs-by-merge-e4b6b49e-159fd811.txt
+7958da6d3cbcc5084304301052e40466bb79aca9145ebb617cff1c2a19461a34  ./stage-9/raw/stat-test-inputs-e4b6b49e-159fd811.txt
+ed3cf540d251cc2b62099e5345aa0cd712a2a3dacddfcfcb0f7f83f27e3ec446  ./stage-9/raw/stat-test-inputs-e4b6b49e-2f012739.txt
+6809eeac315825827bc68696f14f7d77a8e3218f47daeed011a7377a1bc851c9  ./stage-9/raw/tag-objects-preview.11-preview.12.txt
+09e77eca08b0d2f712525a9ba14d0915bc79a0124d899797da249bcb67cbacc7  ./stage-9/raw/version-suffix-by-commit.txt
 c05e34979a188e7ca4bacd3c42d5c21a2af7563084a59f2c9ebba5666cf05817  ./tools/broiler-vm-inputs.sha256
 5154625c061580bf52cfd18328357423f6affafc84b249d1e05050bc91836a55  ./tools/model_check.py
 11ab254df99d4ef32f44397d20f5597b2700e4874e83e1be8e075af8ddc85fee  ./tools/row_sites.py

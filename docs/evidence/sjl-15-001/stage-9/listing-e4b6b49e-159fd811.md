@@ -25,8 +25,11 @@ Every listing below is a `git` output kept in [`raw/`](raw/), written by the com
 - **What nuget.org lists** (flat-container index, GET, read 2026-11-28): `Broiler.ECMAScript.Algorithms`
   `0.1.0-preview.1` to `0.1.0-preview.12`; `Broiler.ECMAScript.Frontend` and `Broiler.ECMAScript.Intl`
   `0.1.0-preview.9` to `0.1.0-preview.12`; `Broiler.ECMAScript.Generation` `0.1.0-preview.5` to `0.1.0-preview.12`
-  ([`raw/nuget-flat-container-*.json`](raw/nuget-flat-container-broiler.ecmascript.frontend.json)). So preview.12 is
-  published, and no `0.1.0-preview.13` is listed or tagged.
+  ([Algorithms](raw/nuget-flat-container-broiler.ecmascript.algorithms.json),
+  [Frontend](raw/nuget-flat-container-broiler.ecmascript.frontend.json),
+  [Intl](raw/nuget-flat-container-broiler.ecmascript.intl.json),
+  [Generation](raw/nuget-flat-container-broiler.ecmascript.generation.json)). So preview.12 is published, and no
+  `0.1.0-preview.13` is listed or tagged.
 
 ## The four packages, by merge
 
@@ -61,22 +64,37 @@ No other first-parent merge in the range changes the Frontend's folder, so the F
 `159fd811` is the ten model commits' alone; and it equals its diff from `2f012739` to `159fd811`.
 
 **Taken again at `159fd811`**, the facts stage 8's brief gives at `d3e64b4d`: the diffs of `Algorithms`, `Intl` and
-`Generation` from `e4b6b49e` are empty; nothing under the Frontend's folder changed from `e4b6b49e` to `2f012739`; so
-the Frontend's diff is the model commits alone. Each holds at `159fd811`. From `e4b6b49e` to `2f012739` the whole of
+`Generation` from `e4b6b49e` are empty; nothing under the Frontend's folder changed from `e4b6b49e` to `2f012739`, or
+to `8b1fa311`, stage 1's first parent
+([`raw/stat-Frontend-e4b6b49e-8b1fa311.txt`](raw/stat-Frontend-e4b6b49e-8b1fa311.txt) is empty); so the Frontend's
+diff is the model commits alone. Each holds at `159fd811`. From `e4b6b49e` to `2f012739` the whole of
 `Broiler.ECMAScript/` changes in one test file only, `Broiler.ECMAScript.Conformance.Tests/LibraryRunTests.cs`, by
-#1118 itself ([`raw/stat-ECMAScript-e4b6b49e-2f012739.txt`](raw/stat-ECMAScript-e4b6b49e-2f012739.txt)), and no build
-input below changes ([`raw/stat-build-inputs-e4b6b49e-2f012739.txt`](raw/stat-build-inputs-e4b6b49e-2f012739.txt)).
+#1118 itself ([`raw/stat-ECMAScript-e4b6b49e-2f012739.txt`](raw/stat-ECMAScript-e4b6b49e-2f012739.txt)), and no
+build or workflow input of the first group below changes
+([`raw/stat-build-inputs-e4b6b49e-2f012739.txt`](raw/stat-build-inputs-e4b6b49e-2f012739.txt)); of the second group,
+the test and gate inputs, #1118 changes the corpus's collation and Intl files and their generators
+([`raw/stat-test-inputs-e4b6b49e-2f012739.txt`](raw/stat-test-inputs-e4b6b49e-2f012739.txt)).
 
 ## The build inputs outside the folders, labelled
 
 **Labelled: whether any of these counts as a "source diff" under JSD-0083's decision D30 is Broiler.VM's to classify,
-and is not decided here.** They are the files outside the four folders that MSBuild, the packing or the tests read and
-that changed in the range, by first-parent merge, oldest first
+and is not decided here.** They are the files outside the four folders that MSBuild, the packing, the tests or the
+workflows that build, test, pack and publish the shared set read, and that changed in the range, in two groups, each by
+first-parent merge, oldest first. Every path outside `docs/`, `Broiler.ECMAScript/` and `Broiler.JS/` that changed in the
+range is in [`raw/name-only-outside-e4b6b49e-159fd811.txt`](raw/name-only-outside-e4b6b49e-159fd811.txt); each is in one
+of the two groups but `scripts/compliance/run_test262.py`, below.
+
+**The first group, build and workflow inputs**
 ([`raw/log-first-parent-build-inputs-e4b6b49e-159fd811.txt`](raw/log-first-parent-build-inputs-e4b6b49e-159fd811.txt),
 [`raw/stat-build-inputs-by-merge-e4b6b49e-159fd811.txt`](raw/stat-build-inputs-by-merge-e4b6b49e-159fd811.txt)). Looked
-at and unchanged in the range: `.editorconfig`, `NuGet.config`, `Directory.Build.targets`, `eng/Broiler.Packaging.props`,
-`eng/pack.ps1`, `eng/resolve-preview-version.mjs`, `eng/verify-feed.ps1` and `.github/workflows/publish-shared.yml`. All
-of them changed after `2f012739`, so the same list is what the next version carries beyond preview.12
+at and unchanged in the range: `.editorconfig`, `NuGet.config`, `Directory.Build.targets`, `.config/` (the pinned
+`Hairs.Cli` the assurance job restores), `Broiler.ECMAScript.slnf` (the shared set, which the resolver, the packing and
+the pristine consumer read), `eng/Broiler.Packaging.props`, `eng/pack.ps1`, `eng/resolve-preview-version.mjs`,
+`eng/verify-feed.ps1`, `.github/workflows/publish-shared.yml`, and the three files packed from outside the package
+folders: `eng/icon.png` and the root `THIRD_PARTY_NOTICES.md` (`eng/Broiler.Packaging.props:86-95`) and
+`Broiler.ECMAScript/README.md` (`Broiler.ECMAScript/Directory.Build.props:65-68`, which packs it in place of the root's
+`README.md`). All of the group's changes come after `2f012739`, so the same list is how the tree the next version is
+built from differs from preview.12's commit in this group
 ([`raw/stat-build-inputs-2f012739-159fd811.txt`](raw/stat-build-inputs-2f012739-159fd811.txt)).
 
 | Commit | File | What changed |
@@ -88,6 +106,33 @@ of them changed after `2f012739`, so the same list is what the next version carr
 | `83a9bd82` (#1129) | `.gitattributes` | the line-ending rule's path for `JSUnicodeTableData.g.cs` moves from `Broiler.JavaScript.Ast` to `Broiler.JavaScript.Expressions` |
 | `be6c4a5c` (#1132, stage 1) | `Broiler.ECMAScript/Directory.Build.props` | a dated note in the suffix's comment (2026-11-24); the suffix is unchanged |
 | `2259fd4a` (#1134) | `eng/run-tests.sh`, `.github/workflows/ci.yml`, `.github/workflows/shared-libraries.yml` | `--engine-only` in `eng/run-tests.sh`; the test steps' `VSTEST_CONNECTION_TIMEOUT` of 300 s and, on Windows, `-m:2` (the owner's answer of 2026-11-25 kept the wait) |
+
+**The second group, test and gate inputs**: the files outside `Broiler.ECMAScript/` that the publish workflow's
+`validate` job reads, which is `.github/workflows/shared-libraries.yml` (`publish-shared.yml:64-72`). Its build job's
+`dotnet test` over the shared set and its `python -m unittest discover -s scripts/conformance/tests`
+(`shared-libraries.yml:82` and `:84`, the second the step "The corpus generator's own tests") read the corpus under
+`conformance/vectors/`; its Native AOT probe job runs the corpus `conformance/vectors` (lines 129, 146 and 151); its pack
+job runs `python scripts/packaging/test_pristine_consumer.py --set shared` (line 216). The group is
+`conformance/vectors/`, `scripts/conformance/` and `scripts/packaging/test_pristine_consumer.py`
+([`raw/log-first-parent-test-inputs-e4b6b49e-159fd811.txt`](raw/log-first-parent-test-inputs-e4b6b49e-159fd811.txt),
+[`raw/stat-test-inputs-by-merge-e4b6b49e-159fd811.txt`](raw/stat-test-inputs-by-merge-e4b6b49e-159fd811.txt); from
+`e4b6b49e` to `2f012739`, [`raw/stat-test-inputs-e4b6b49e-2f012739.txt`](raw/stat-test-inputs-e4b6b49e-2f012739.txt);
+from `2f012739` to `159fd811`,
+[`raw/stat-test-inputs-2f012739-159fd811.txt`](raw/stat-test-inputs-2f012739-159fd811.txt)). None of it is package
+content.
+
+| Merge | Range | What changed |
+|---|---|---|
+| `2f012739` (#1118, SJL-17.5) | `e4b6b49e` to `2f012739` | the corpus's revision 40: the collation files and `intl/locales.vectors`, `REVISIONS.md`, the generators (each one's revision line; the collation and Intl generators' content) and the collation and Intl generator tests |
+| `6fda6ca4` (#1119) | `2f012739` to `159fd811` | revision 41: the collation files, `REVISIONS.md`, `scripts/conformance/collation-divergences.txt` and the generators' revision lines |
+| `e4e45d38` (#1120, SJL-15.1) | `2f012739` to `159fd811` | revisions 42 and 43: the `semantics/` area's eight files and `scripts/conformance/generate_semantics_vectors.py`, `semantics-divergences.txt` and `tests/test_semantics_vectors.py` added; `README.md`, `REVISIONS.md` and the other generators' revision lines |
+| `83a9bd82` (#1129, SJL-14's W2) | `2f012739` to `159fd811` | `scripts/packaging/test_pristine_consumer.py`: the engine set's checks and feed (the Expressions and Parser packages' dependencies, the Parser's on `Broiler.ECMAScript.Frontend`; the `--control-remove` and `--feed` options; the local feed's source mapping). On the path the pack job runs with `--set shared`, the one change is that `shutil` is imported at the file's top rather than in its clean-up |
+| `8b1fa311` (#1131) | `2f012739` to `159fd811` | revision 44: `semantics/annex-b.vectors` and `semantics/scopes.vectors`, `REVISIONS.md`, the semantics generator, `semantics-divergences.txt`, its test and `tests/semantics-divergences-revision-43.txt`, and the generators' revision lines |
+
+**Changed and in neither group:** `scripts/compliance/run_test262.py` (#1129), which the test262 workflows and
+`compliance-scripts.yml` run and which neither `publish-shared.yml` nor `shared-libraries.yml` reads; and the engine's
+folder `Broiler.JS/`, which `Broiler.ECMAScript.slnf` does not include and which no step of the two workflows builds,
+tests or packs. Both are named so that the list can be checked, and classifying them too is Broiler.VM's.
 
 **Beyond the four folders and these inputs**, `Broiler.ECMAScript/` changes from `2f012739` to `159fd811` in its test
 projects, the Native AOT probe, the runners, `docs/frontend/design.md`, `CHANGELOG.md`, `CODE-ASSURANCE.md`,
@@ -114,19 +159,31 @@ neither refuses nor picks a used version; an input naming `preview.13` would be 
 `preview.12` or lower refused. The suffix's own comment says so: "Moving it publishes nothing"
 (`Broiler.ECMAScript/Directory.Build.props:30`). After the publication the comment's "The suffix names the stream's last
 published version, preview.12" no longer holds; moving the suffix is a separate change, the pending version-suffix
-change, and the session's, not this record's.
+change, and the session's, not this record's. The two last publications show the same: preview.11 and preview.12 were
+each recorded by a dispatch from a tree whose suffix read `<VersionSuffix>preview.8</VersionSuffix>` (at `e4b6b49e` and
+at `2f012739`; on the first-parent line the suffix reads `preview.12` only from `83a9bd82` on,
+[`raw/version-suffix-by-commit.txt`](raw/version-suffix-by-commit.txt)). Each tag is annotated by `github-actions[bot]`
+with the message "Broiler.ECMAScript 0.1.0-preview.11" or "Broiler.ECMAScript 0.1.0-preview.12" (tag objects `6b9ed763`
+and `bc2b24e3`, [`raw/tag-objects-preview.11-preview.12.txt`](raw/tag-objects-preview.11-preview.12.txt)), as the
+workflow's step "Record the published version as a tag" writes it, a step that runs on a dispatch only. The resolver,
+`publish-shared.yml`, `eng/pack.ps1`, `eng/verify-feed.ps1` and `Broiler.ECMAScript.slnf` are unchanged from `e4b6b49e`
+to `5ad84ae2`.
 
-**What it carries beyond preview.12**, if it is published from a commit whose four folders and build inputs are
-`159fd811`'s: the Frontend's ten model commits, listed above, and the build inputs listed above; nothing in the folders of
-`Algorithms`, `Intl` or `Generation`. A dispatch on `main` packs `main`'s head when it runs, which after this record
-merges is a records-only merge whose tree outside `docs/` is `159fd811`'s, unless something else merges first.
+**What it carries beyond preview.12**, if it is published from a commit whose tree outside `docs/` is `159fd811`'s:
+in the four packages' folders, the Frontend's ten model commits, listed above, and nothing in the folders of
+`Algorithms`, `Intl` or `Generation`. The tree it is built, packed and gated from also differs from preview.12's commit
+by the labelled inputs of both groups above. A dispatch on `main` packs `main`'s head when it runs, which after this
+record merges is a records-only merge whose tree outside `docs/` is `159fd811`'s, unless something else merges first.
 
 ## Q1 and JSD-0083's decision D30
 
 **Q1**, as the session framed it: "Publish a Broiler.ECMAScript stream version carrying the semantic model, from stage
 8's commit, for Broiler.VM's pin commit (D-pin)?" Decision D-js-packable has the owner asked "only after stage 8 and
 stage 9's listing" ([`SharedLibraries.md`](../../../roadmap/SharedLibraries.md), "Shared static semantics (SJL-15)"). The
-owner's answer of 2026-11-27, as the session's records of that day hold it, whole:
+owner's answer of 2026-11-27 follows whole, as the session's common rules hold it, a file of the session's and not of
+this repository. The owner's own words are the sentence in quotation marks after "Given"; the sentences from "Read as" on
+are the session's reading of them, as the session holds it. The committed record of the owner's words is
+`SharedLibraries.md`'s note of 2026-11-27 at SJL-15.2 stage 8, which quotes that sentence without the reading:
 
 > Given (2026-11-27, in chat, unasked, after the session listed the owner's open decisions): "All publish-decisions can be done and run. So if a publish yes/no is the question, do the publish, wait for the nuget-package-availability and continue". Read as: wherever a record leaves a publication (yes/no) to the owner, the answer is yes; the session dispatches the repository's own publish workflow (never `test262.yml`), waits until the published version is restorable from nuget.org, and continues. It answers Q1 (JSD-0083's D30, the Frontend stream version carrying SJL-15.2's model, after stage 9's listing) as "publish"; D30's syntax-half check is still read as the records require. It supersedes the earlier session rule "never publish to nuget.org" for owner-reserved publish questions only.
 
@@ -153,8 +210,9 @@ This record dispatches nothing and publishes nothing.
 
 **What this listing gives D30's check:** for `Algorithms`, `Intl` and `Generation`, which Broiler.VM pins and will
 re-pin, the source diff of each package's folder from `0.1.0-preview.11` to `159fd811` is empty; for the frontend, its
-diff since `0.1.0-preview.11` is the ten model commits, listed by merge with their files; and the build inputs outside
-the folders that changed, labelled. **What stays Broiler.VM's:** whether those build inputs count as a "source diff";
+diff since `0.1.0-preview.11` is the ten model commits, listed by merge with their files; and the inputs outside the
+folders that changed, labelled, in two groups (build and workflow inputs; test and gate inputs), with the two changed
+paths in neither group named. **What stays Broiler.VM's:** whether any of those inputs counts as a "source diff";
 listing the changes in SJL-15's cut-over record; their classification "by SJL-15's rule here as a correction by row", at
 its pin commit; and whether the model commits' files are the "syntax half". D30's syntax-half check (JSD-0083, lines
 1786 to 1788) asks that each change since the version step 2 adopted be listed in SJL-15's cut-over record and
