@@ -30,6 +30,12 @@ python3 -I docs/evidence/sjl-15-001/tools/row_sites.py --stages Broiler.ECMAScri
 #   with --control-absent "Broiler.ECMAScript.Semantics.SemanticModel.NamedEvaluationKey(" (control-1.txt); control 2, a
 #   public Broiler.VM.Witness.EngineStub in the code and PublicAPI.txt (control-2-*), with --control-engine
 #   "Broiler.VM.Witness.EngineStub" (control-2.txt)
+#   (Noted 2026-11-28, after review: this step ran under scripts/lib.sh's first newtree, which checked 8 GiB free before
+#   its own archive but not the archive's size, and part-f-tools.sh extracts control-1/ and control-2/, two more whole
+#   archives, with no check of the disk; control 1 ran with about 7.6 GiB free and control 2 with about 6.2 GiB, below
+#   the 8 GiB the machine rule asks before each run (part-f/tools/logs/disk.log; README.md, "Disclosures"). Checked by
+#   scripts/verify-controls.sh, the same commands with the disk checked before each extraction and run, over archives of
+#   the paths the tools read: part-f/tools-disk-check/, the same listings byte for byte; it decides nothing.)
 #   the library-level run, with the per-vector listing (scripts/ctest.sh, step lib-f-run-2; run/):
 dotnet build Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests -c Release --nologo --disable-build-servers
 dotnet test Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests -c Release --no-build --nologo \
@@ -50,6 +56,10 @@ dotnet <probe dll> --digest-corpus conformance/parse --out run-2.tsv --test262 <
 dotnet <probe dll> --digest-corpus conformance/parse --out run-3.tsv --test262 <test262> --two-threads
 dotnet test Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests -c Release --no-build --nologo \
   --filter "FullyQualifiedName~SL2|FullyQualifiedName~SL9" --logger "console;verbosity=normal"     (sl2-sl9.log)
+#   (Noted 2026-11-28, after review: this command, the K1 and K2 tests below and part F's two `dotnet test` commands
+#   above carry no --disable-build-servers, which bundle sjl-13-001's library-commit/commands.txt:51 has. With --no-build
+#   nothing is built; the run environment sets MSBUILDDISABLENODEREUSE=1, DOTNET_CLI_USE_MSBUILD_SERVER=0 and
+#   UseSharedCompilation=false (env.txt); every build before them carries the flag.)
 #   K1, K2 (scripts/ktest.sh, steps lib-g-k1-2 and lib-g-k2-2): a second archive of the same commit, the patch
 #   (patches/control-k1.patch to Parser.Expressions.cs, patches/control-k2.patch to DeclarationsWalk.cs, both predeclared
 #   at stage 8) applied, the probe and the architecture tests built there; run 1 and run 2 as above;
@@ -62,6 +72,8 @@ dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -r linux-x
 Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish/Broiler.ECMAScript.Probe conformance/vectors --report probe-aot.tsv
 dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -p:PublishAot=false --nologo --disable-build-servers
 dotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/publish/Broiler.ECMAScript.Probe.dll conformance/vectors --report probe-jit-published.tsv
+#   the JIT build: the probe project's own build here, where bundle sjl-13-001's library-commit/commands.txt:41-42 took
+#   probe-jit.tsv from the JIT build of the probe in the solution filter's build (noted 2026-11-28, after review)
 dotnet build Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release --nologo --disable-build-servers
 dotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll conformance/vectors --report probe-jit.tsv
 sha256sum probe-aot.tsv probe-jit-published.tsv probe-jit.tsv; cmp probe-aot.tsv probe-jit-published.tsv; cmp probe-aot.tsv probe-jit.tsv

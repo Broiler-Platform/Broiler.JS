@@ -20,3 +20,10 @@ attempt is kept, as the rule's part G reading of the hosted half asks of its own
   loop evaluated each project again for IsPackable alone, which msbuild prints as a bare value and not as JSON. The
   rendering was revised (rules/pack-shared.sh's header) and the whole step taken again as lib-e-rules-4
   (scripts/all-runs-4.sh).
+
+Added 2026-11-28, after review: all-runs.rc's "rc=" field, here and in ../logs/all-runs.rc, is the exit status of the
+$(date ...) substitution in the same echo, not the step's, so it reads 0 for every step that ended, the steps above
+among them. Each step's own exit status is ../logs/<label>.exit.txt (and ../logs/runs.tsv): lib-f-run 1, lib-f-control
+5, lib-g-c 82 (part-c/logs/commit.txt reads first-failure=82) and lib-e-rules-3 1; lib-g-d-2, stopped by its process
+ids, has none. The first driver's lib-g-k1 has a start line and no end: the driver was stopped before run.sh took the
+lock (../logs/gate.log has no line for it). The records are kept as they are (../README.md, "Disclosures").

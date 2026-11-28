@@ -38,19 +38,22 @@ whose first parent is `159fd811`):
 Every local step from a clean `git archive` of `159fd811` on disk, outside every working tree, built in Release with no
 build server, and run under `env -i`, so with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*` variable
 ([`env.txt`](env.txt)), one step at a time through the machine's run script, which holds the build lock behind its idle
-gate (the same `run.sh`, `gate.sh`, `machine.sh` and `timed.py` as part B's folders, byte for byte, in
-[`scripts/`](scripts/run.sh)), each step's build tree deleted at its end. The steps of part G's part D local half and of
-bundle `sjl-13-001`'s part E archived the commit less its top-level `docs/` and `logs/`, records which none of their
+gate (the same `run.sh`, `gate.sh`, `machine.sh` and `timed.py` as bundle `sjl-14-001`'s
+[`bridge/scripts/`](../../sjl-14-001/bridge/scripts/run.sh), byte for byte, the scripts part B's folders name, kept here
+in [`scripts/`](scripts/run.sh)), each step's build tree deleted at its end. The steps of part G's part D local half and
+of bundle `sjl-13-001`'s part E archived the commit less its top-level `docs/` and `logs/`, records which none of their
 commands reads, to keep the machine's disk margin. test262 at `ccaac100` was read from Broiler.VM's archive, checked by
 its SHA-256 against the manifest's `pin-test262-archive` line, and each input against the manifest's SHA-256 by the
 probe. The commands are in [`commands.txt`](commands.txt); the scripts and the predeclared patches in
 [`scripts/`](scripts/lib.sh) and [`patches/`](patches/control-f-ee0018.patch); the gate's records and the drivers'
-record in [`logs/`](logs/all-runs.rc). The steps that did not run through, none producing an output a reading rests
-on, are kept in [`first-attempt/`](first-attempt/README.txt) with what stopped each, and were taken again whole.
+record in [`logs/`](logs/all-runs.rc) (whose `rc=` field is not the step's exit status: see "Disclosures" below).
+The steps that did not run through, none producing an output a reading rests on, are kept in
+[`first-attempt/`](first-attempt/README.txt) with what stopped each, and were taken again whole.
 
 | Folder | Part | What it holds |
 |---|---|---|
 | [`part-f/tools/`](part-f/tools/model-check.txt) | F | The checklist's listing (`model-check.txt`), the site listing (`row-sites.txt`), the Broiler.VM inputs' digests (`vm-inputs.sha256`), and both of bundle `sjl-13-001`'s part H's controls over scratch archives, each with its diffs and listing (`control-1*`, `control-2*`) |
+| [`part-f/tools-disk-check/`](part-f/tools-disk-check/README.txt) | F, a check | Part F's tools step taken again after review with the disk checked before every extraction, over archives of the paths the tools read (`scripts/verify-controls.sh`), its listings compared with `part-f/tools/`'s; it decides nothing (see "Disclosures") |
 | [`part-f/run/`](part-f/run/listing.txt) | F | `Broiler.ECMAScript.Conformance.Tests`' library-level run: its `trx` log (`run/run.trx.gz`), its build and test logs, and the per-vector listing taken from the `trx` (`listing.txt`, decision D-js-vector-listing) |
 | [`part-f/control/`](part-f/control/listing.txt) | F | The rule's part F control, EE0018's report suppressed in a scratch archive (`applied.patch`): its run and listing, the revert (`revert-check.txt`, `revert/`) and the reverted run's listing against the run's (`revert-listing-against-run.txt`) |
 | [`part-g/part-c/`](part-g/part-c/sha256.txt) | G (bundle `sjl-13-001`'s part C) | The runs of the probe's corpus digest mode, whole, gzipped, with their logs and SHA-256 (`sha256.txt` names the files before compression), SL2 and SL9 (`sl2-sl9.log`), and `K1/` and `K2/`, each with its patch, its runs, the rule its patch is tested against and its revert |
@@ -104,3 +107,37 @@ on, are kept in [`first-attempt/`](first-attempt/README.txt) with what stopped e
   witnesses refused and SL6's public API equal to `PublicAPI.txt` in both directions; the shared packages pack with
   package validation and pass the rendering's checks; the pristine consumer passes; the assurance check reads
   "Broiler.ECMAScript: no violations."; the workflow's own pack and assurance jobs at `159fd811` succeeded.
+
+## Disclosures
+
+*(Added 2026-11-28, after review of the runs above, before this folder merged; no output above changes, and no reading
+changes.)*
+- **The disk margin at bundle `sjl-13-001`'s part H's controls.** Part F's tools (step `lib-f-tools`,
+  [`part-f/tools/`](part-f/tools/model-check.txt)) ran under the first version of [`scripts/lib.sh`](scripts/lib.sh),
+  whose `newtree` checked 8 GiB free before extracting its own archive but not the archive's size, and
+  [`scripts/part-f-tools.sh`](scripts/part-f-tools.sh) extracts two more whole archives of the commit, `control-1/` and
+  `control-2/`, each of 1370900480 bytes, with no check of the disk before either. Its
+  [`disk.log`](part-f/tools/logs/disk.log) has 10909274112 bytes free before the first archive and 6696357888 bytes
+  before the tree's delete, when control 2 had ended; so control 1 ran (07:07:11Z) with about 8.17e9 bytes free (about
+  7.6 GiB) and control 2 (07:07:18Z) with about 6.70e9 (about 6.2 GiB), both below the 8 GiB this stage's machine rule
+  asks before each run, though above its 6 GiB floor. The checklist and site listing ran before either control was
+  extracted, with about 9.54e9 bytes free. The step is not replaced, and its outputs stay the ones part F is read on:
+  the disk now free could not hold the script's three whole trees under the revised check. Instead it was checked, on
+  2026-11-28 after review, by [`part-f/tools-disk-check/`](part-f/tools-disk-check/README.txt), the same script with
+  the disk checked before every extraction and run and each archive holding only the paths the tools read: every
+  listing, both controls' among them, is the same bytes as `part-f/tools/`'s, and the controls' diffs differ only in the
+  time on their `+++` line. It decides nothing. The owner is told, in the records change's description. The steps
+  after `lib-f-tools` ran under the revised checks (`disk.log` in each folder).
+- **The drivers' record.** In [`logs/all-runs.rc`](logs/all-runs.rc) and
+  [`first-attempt/all-runs.rc`](first-attempt/all-runs.rc), each step's `rc=` field is the exit status of the `$(date
+  ...)` substitution in the same `echo`, not the step's, so it reads 0 for every step that ended. Each step's own exit
+  status is in `logs/<label>.exit.txt` and in [`logs/runs.tsv`](logs/runs.tsv). The steps that did not run through
+  exited: `lib-f-run` 1, `lib-f-control` 5, `lib-g-c` 82 (`first-attempt/part-c/logs/commit.txt` reads
+  `first-failure=82`) and `lib-e-rules-3` 1; `lib-g-d-2` was stopped by its process ids and has no exit status; and
+  the first driver's `lib-g-k1` has a start line and no end, the driver having been stopped before `run.sh` took the
+  lock (`logs/gate.log` has no line for it). Every step a reading rests on exited 0. The raw logs are kept as they
+  are.
+- **The session's note of Precondition 5.** This stage's working note quoting the owner's direction and stage 8's
+  readings (the note the stage's brief asks for "before any run") was written at 2026-11-28T07:25:14Z, after part F's
+  steps, part G's part C runs and K1 had run, while K2's builds were under way. It quotes only records of stage 8's
+  that are unchanged since `159fd811`, where they were recorded before any run of parts F and G.
