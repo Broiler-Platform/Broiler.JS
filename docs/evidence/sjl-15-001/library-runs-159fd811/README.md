@@ -151,17 +151,18 @@ changes.)*
   `shared-packages`' 8 files. It is the same bytes as `find . -type f ! -name sha256.txt | LC_ALL=C sort | xargs
   sha256sum` run over the kept `artifacts/`. So the row above, which read "every artifact file's SHA-256
   (`artifacts/sha256.txt`)", and the last line of [`commands.txt`](part-g/part-d/workflow/commands.txt)
-  ("shared-packages' files listed in artifacts/sha256.txt"), were false for it. It is replaced by the file the retained `hosted.sh` writes:
-  on 2026-11-28 the script, unchanged, was run again into a scratch folder, by GET only, every artifact's zip
-  downloaded from the API and matching its digest and size; nothing was dispatched, cancelled or re-run. Its
-  `artifacts/sha256.txt` is this file, byte for byte, and the same bytes as the review's own regeneration; every other
-  output of that run (the artifacts' kept files, `run.txt`, `artifacts.list`, `artifact-digests.tsv`) is the same
-  bytes as this folder's. The new file has 19 lines: the uploaded reports before compression (`f34dcbb0…` for each of
-  the six, the local runs' digest), the four publish logs (unchanged), `shared-packages`' 8 files
-  (`Broiler.ECMAScript.{Algorithms,Frontend,Generation,Intl}.0.1.0-preview.12.{nupkg,snupkg}`), and a line for
+  ("shared-packages' files listed in artifacts/sha256.txt"), were false for it. It is replaced by the file the retained
+  `hosted.sh` writes: on 2026-11-28 the script, unchanged, was run again into a scratch folder, by GET only, every
+  artifact's zip downloaded from the API and matching its digest and size; nothing was dispatched, cancelled or re-run.
+  Its `artifacts/sha256.txt` is this file, byte for byte, and the same bytes as the review's own regeneration; every
+  other output of that run (the artifacts' kept files, `run.txt`, `artifacts.list`, `artifact-digests.tsv`, the five
+  JSON files and the six `jobs/*.log.gz`) is the same bytes as this folder's, except its `commands.txt`, which is the
+  same but for its times and its scratch paths. The new file has 19 lines: the uploaded reports before compression
+  (`f34dcbb0…` for each of the six, the local runs' digest), the four publish logs (unchanged), `shared-packages`' 8
+  files (`Broiler.ECMAScript.{Algorithms,Frontend,Generation,Intl}.0.1.0-preview.12.{nupkg,snupkg}`), and a line for
   `./sha256.txt` itself. That last line is a fault of the script: its output redirection creates the file before its
   `find` runs, so the list lists itself, with the digest (`ff1f755f…`) of its own first ten lines as `sha256sum` read
   them while writing it, not of the file kept. It names no artifact file and cannot be checked. The script is the one
-  that ran and is not changed, and the file is kept as it writes it. The reports' lines check against the kept
-  reports decompressed (`zcat`), the logs' against the kept logs; `shared-packages`' files are not kept, as bundle
+  that ran and is not changed, and the file is kept as it writes it. The reports' lines check against the kept reports
+  decompressed (`zcat`), the logs' against the kept logs; `shared-packages`' files are not kept, as bundle
   `sjl-13-001`'s library commit did not keep them.
