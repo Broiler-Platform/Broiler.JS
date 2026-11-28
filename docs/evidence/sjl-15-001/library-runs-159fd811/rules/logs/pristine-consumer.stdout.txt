@@ -1,0 +1,28 @@
++ dotnet pack /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj -c Release -p:IncludeSymbols=false --output /home/user/js-s158-lib-build/rules/tmp/broiler-pristine-shared-qetkyh3r/feed
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Successfully created package '/home/user/js-s158-lib-build/rules/tmp/broiler-pristine-shared-qetkyh3r/feed/Broiler.ECMAScript.Algorithms.0.1.0-preview.12.nupkg'.
++ dotnet pack /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj -c Release -p:IncludeSymbols=false --output /home/user/js-s158-lib-build/rules/tmp/broiler-pristine-shared-qetkyh3r/feed
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Successfully created package '/home/user/js-s158-lib-build/rules/tmp/broiler-pristine-shared-qetkyh3r/feed/Broiler.ECMAScript.Frontend.0.1.0-preview.12.nupkg'.
++ dotnet pack /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Generation/Broiler.ECMAScript.Generation.csproj -c Release -p:IncludeSymbols=false --output /home/user/js-s158-lib-build/rules/tmp/broiler-pristine-shared-qetkyh3r/feed
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Generation -> /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Generation/bin/Release/net10.0/Broiler.ECMAScript.Generation.dll
+  Successfully created package '/home/user/js-s158-lib-build/rules/tmp/broiler-pristine-shared-qetkyh3r/feed/Broiler.ECMAScript.Generation.0.1.0-preview.12.nupkg'.
++ dotnet pack /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj -c Release -p:IncludeSymbols=false --output /home/user/js-s158-lib-build/rules/tmp/broiler-pristine-shared-qetkyh3r/feed
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Successfully created package '/home/user/js-s158-lib-build/rules/tmp/broiler-pristine-shared-qetkyh3r/feed/Broiler.ECMAScript.Intl.0.1.0-preview.12.nupkg'.
++ dotnet restore --configfile /home/user/js-s158-lib-build/rules/tmp/broiler-pristine-shared-qetkyh3r/NuGet.Config --no-http-cache
+  Determining projects to restore...
+  Restored /home/user/js-s158-lib-build/rules/tmp/broiler-pristine-shared-qetkyh3r/consumer/Consumer.csproj (in 932 ms).
++ dotnet run -c Release --no-restore
+pristine-consumer: Broiler.ECMAScript contract types
+Validated Broiler.ECMAScript.Algorithms 0.1.0-preview.12, Broiler.ECMAScript.Frontend 0.1.0-preview.12, Broiler.ECMAScript.Generation 0.1.0-preview.12, Broiler.ECMAScript.Intl 0.1.0-preview.12 from a local feed in an isolated cache

@@ -1,0 +1,103 @@
+=== lib-g-c-2 before
+time: 2026-11-28T07:13:02Z
+loadavg: 0.89 1.17 0.61 1/114 12007
+nproc: 4
+sdk: 10.0.404
+os: Ubuntu 24.04.5 LTS
+disk: 10402 MiB free
+procs-matching:
+kernel: Linux 6.18.44-fc-v880 x86_64
+processes:
+      1       19:58 process_api     /process_api --firecracker-init --addr 0.0.0.0:2024 --max-ws-buffer-size 32768 --block-local-connections --log-vsock-port 5002 --control-vsock-port 5001 --listen-vsoc
+      2       19:58 kthreadd        [kthreadd]
+      3       19:58 pool_workqueue_ [pool_workqueue_release]
+      4       19:58 kworker/R-rcu_g [kworker/R-rcu_gp]
+      5       19:58 kworker/R-sync_ [kworker/R-sync_wq]
+      6       19:58 kworker/R-kvfre [kworker/R-kvfree_rcu_reclaim]
+      7       19:58 kworker/R-slub_ [kworker/R-slub_flushwq]
+      8       19:58 kworker/R-netns [kworker/R-netns]
+     10       19:58 kworker/0:0H-ev [kworker/0:0H-events_highpri]
+     11       19:58 kworker/0:1-eve [kworker/0:1-events]
+     12       19:58 kworker/u16:0-k [kworker/u16:0-kvfree_rcu_reclaim]
+     13       19:58 kworker/R-mm_pe [kworker/R-mm_percpu_wq]
+     14       19:58 ksoftirqd/0     [ksoftirqd/0]
+     15       19:58 rcu_preempt     [rcu_preempt]
+     16       19:58 rcu_exp_par_gp_ [rcu_exp_par_gp_kthread_worker/0]
+     17       19:58 rcu_exp_gp_kthr [rcu_exp_gp_kthread_worker]
+     18       19:58 migration/0     [migration/0]
+     19       19:58 cpuhp/0         [cpuhp/0]
+     20       19:58 cpuhp/1         [cpuhp/1]
+     21       19:58 migration/1     [migration/1]
+     22       19:58 ksoftirqd/1     [ksoftirqd/1]
+     24       19:58 kworker/1:0H-ev [kworker/1:0H-events_highpri]
+     25       19:58 cpuhp/2         [cpuhp/2]
+     26       19:58 migration/2     [migration/2]
+     27       19:58 ksoftirqd/2     [ksoftirqd/2]
+     28       19:58 kworker/2:0-mm_ [kworker/2:0-mm_percpu_wq]
+     29       19:58 kworker/2:0H-kb [kworker/2:0H-kblockd]
+     30       19:58 cpuhp/3         [cpuhp/3]
+     31       19:58 migration/3     [migration/3]
+     32       19:58 ksoftirqd/3     [ksoftirqd/3]
+     34       19:58 kworker/3:0H-kb [kworker/3:0H-kblockd]
+     35       19:58 kdevtmpfs       [kdevtmpfs]
+     36       19:58 kworker/R-inet_ [kworker/R-inet_frag_wq]
+     37       19:58 rcu_tasks_kthre [rcu_tasks_kthread]
+     38       19:58 rcu_tasks_rude_ [rcu_tasks_rude_kthread]
+     39       19:58 rcu_tasks_trace [rcu_tasks_trace_kthread]
+     40       19:58 kauditd         [kauditd]
+     41       19:58 khungtaskd      [khungtaskd]
+     42       19:58 oom_reaper      [oom_reaper]
+     43       19:58 kworker/u16:1-e [kworker/u16:1-events_unbound]
+     44       19:58 kworker/R-write [kworker/R-writeback]
+     46       19:58 kcompactd0      [kcompactd0]
+     47       19:58 ksmd            [ksmd]
+     48       19:58 khugepaged      [khugepaged]
+     49       19:58 kworker/R-kbloc [kworker/R-kblockd]
+     50       19:58 kworker/R-blkcg [kworker/R-blkcg_punt_bio]
+     51       19:58 kworker/3:1-eve [kworker/3:1-events]
+     53       19:58 kworker/1:1-eve [kworker/1:1-events]
+     54       19:58 watchdogd       [watchdogd]
+     55       19:58 kworker/R-quota [kworker/R-quota_events_unbound]
+     56       19:58 kworker/1:1H-kb [kworker/1:1H-kblockd]
+     57       19:58 kswapd0         [kswapd0]
+     58       19:58 kworker/R-xfsal [kworker/R-xfsalloc]
+     59       19:58 kworker/R-xfs_m [kworker/R-xfs_mru_cache]
+     60       19:58 kworker/u17:0   [kworker/u17:0]
+     61       19:58 kworker/R-kthro [kworker/R-kthrotld]
+     62       19:58 irq/24-ACPI:Ged [irq/24-ACPI:Ged]
+     63       19:58 irq/25-ACPI:Ged [irq/25-ACPI:Ged]
+     64       19:58 hwrng           [hwrng]
+     65       19:58 kworker/R-kstrp [kworker/R-kstrp]
+     68       19:58 kworker/0:1H-kb [kworker/0:1H-kblockd]
+     84       19:58 kworker/R-ext4- [kworker/R-ext4-rsv-conversion]
+     85       19:58 kworker/3:1H-kb [kworker/3:1H-kblockd]
+     88       19:58 kworker/R-ext4- [kworker/R-ext4-rsv-conversion]
+     89       19:58 kworker/R-ext4- [kworker/R-ext4-rsv-conversion]
+     91       19:58 8               sbx-telemetry-collector
+     92       19:57 sh              /bin/sh -c if ! { [ ! -L /var/lib/ccr-ca-store ] && { [ ! -e /var/lib/ccr-ca-store ] || { [ -d /var/lib/ccr-ca-store ] && [ -O /var/lib/ccr-ca-store ] ; } ; } ; } ; t
+     95       19:57 environment-man /usr/local/bin/environment-manager task-run --stdin --session cse_01EvynDJNoDfZb8zqpgEWykW --session-mode resume --upgrade-claude-code=False
+    103       19:57 claude          /opt/claude-code/bin/claude --preload /home/claude/.claude/remote/spare.sock
+    104       19:57 kworker/2:1H-kb [kworker/2:1H-kblockd]
+    258       16:54 kworker/2:2-eve [kworker/2:2-events]
+    296       16:39 kworker/1:2     [kworker/1:2]
+   1648       05:45 kworker/u16:3-e [kworker/u16:3-events_unbound]
+   2031       05:37 kworker/3:2-mm_ [kworker/3:2-mm_percpu_wq]
+   3914       05:24 kworker/0:2     [kworker/0:2]
+   5887       04:22 bash            bash /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s158-lib/scripts/all-runs.sh
+   6586       04:00 kworker/2:1-mm_ [kworker/2:1-mm_percpu_wq]
+  10198       01:22 bash            bash /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/s2/ev2/scripts/run.sh lib-g-c-2 /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-902
+  10733       00:53 bash            /bin/bash -c source /root/.claude/shell-snapshots/snapshot-bash-1795848793618-jrabik.sh 2>/dev/null || true && \builtin export BUN_OPTIONS="--smol${BUN_OPTIONS:+ $BUN
+  10735       00:53 timeout         timeout 590 bash -c until grep -q 'lib-g-c-2 rc=' /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s158-lib/logs/all-runs.rc; do s
+  10736       00:53 bash            bash -c until grep -q 'lib-g-c-2 rc=' /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s158-lib/logs/all-runs.rc; do sleep 10; don
+  11623       00:03 sleep           sleep 10
+  12190       00:00 ps              ps -eo pid=,etime=,comm=,args=
+  12191       00:00 cut             cut -c1-200
+  12192       00:00 sed             sed s/^/  /
+=== lib-g-c-2 after (rc=0 started=2026-11-28T07:13:02Z)
+time: 2026-11-28T07:18:42Z
+loadavg: 1.51 1.47 0.94 1/118 13011
+nproc: 4
+sdk: 10.0.404
+os: Ubuntu 24.04.5 LTS
+disk: 10329 MiB free
+procs-matching:

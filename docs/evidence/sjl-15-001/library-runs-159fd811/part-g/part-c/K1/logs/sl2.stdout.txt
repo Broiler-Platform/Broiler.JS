@@ -1,0 +1,29 @@
+Test run for /home/user/js-s158-lib-build/ktest-k1/src/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.21]   Discovering: Broiler.ECMAScript.Architecture.Tests
+[xUnit.net 00:00:00.47]   Discovered:  Broiler.ECMAScript.Architecture.Tests
+[xUnit.net 00:00:00.70]   Starting:    Broiler.ECMAScript.Architecture.Tests
+[xUnit.net 00:00:00.94]       Assert.Empty() Failure: Collection was not empty
+[xUnit.net 00:00:00.94]       Collection: ["Broiler.ECMAScript.Frontend: Broiler.ECMAScript.Sy"···]
+[xUnit.net 00:00:00.94]       Stack Trace:
+[xUnit.net 00:00:00.94]         /home/user/js-s158-lib-build/ktest-k1/src/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/SharedRuleTests.cs(79,0): at Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_No_shared_library_holds_mutable_static_state()
+[xUnit.net 00:00:00.94]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.94]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_No_shared_library_holds_mutable_static_state [85 ms]
+  Error Message:
+   Assert.Empty() Failure: Collection was not empty
+Collection: ["Broiler.ECMAScript.Frontend: Broiler.ECMAScript.Sy"···]
+  Stack Trace:
+     at Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_No_shared_library_holds_mutable_static_state() in /home/user/js-s158-lib-build/ktest-k1/src/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/SharedRuleTests.cs:line 79
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:02.31]   Finished:    Broiler.ECMAScript.Architecture.Tests (ID = '97f3b2058975edc4c08bf47a7d665f0c31338e5a56941e150c9a3162454f355d')
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Passed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_The_witness_is_refused_for_each_kind_of_state [1 s]
+
+Total tests: 2
+     Passed: 1
+     Failed: 1
+ Total time: 2.9945 Seconds
+VSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.

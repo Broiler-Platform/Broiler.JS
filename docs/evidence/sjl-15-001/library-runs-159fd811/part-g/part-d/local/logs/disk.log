@@ -1,0 +1,9 @@
+2026-11-28T07:44:08Z before-archive disk ok: 9387913216 bytes free, archive 221911040 bytes, paths: . :(exclude)docs :(exclude)logs
+2026-11-28T07:44:09Z build disk ok: 9147666432 bytes free
+2026-11-28T07:45:00Z run-aot disk ok: 8883982336 bytes free
+2026-11-28T07:45:06Z build-jit-publish disk ok: 8872349696 bytes free
+2026-11-28T07:45:24Z run-jit-published disk ok: 8780902400 bytes free
+2026-11-28T07:45:33Z build-jit disk ok: 8769347584 bytes free
+2026-11-28T07:45:50Z run-jit disk ok: 8769298432 bytes free
+2026-11-28T07:45:58Z before delete: 8757719040
+2026-11-28T07:46:00Z after delete: 9352925184

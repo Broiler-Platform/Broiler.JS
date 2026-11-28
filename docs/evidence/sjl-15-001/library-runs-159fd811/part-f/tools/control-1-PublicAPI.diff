@@ -1,0 +1,10 @@
+--- src/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt	2026-11-27 23:24:09.000000000 +0000
++++ control-1/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt	2026-11-28 07:07:11.823642261 +0000
+@@ -164,7 +164,6 @@
+ Broiler.ECMAScript.Semantics.SemanticModel.EnvironmentOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.EnvironmentFacts
+ Broiler.ECMAScript.Semantics.SemanticModel.FactsOf(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Semantics.FunctionFacts
+ Broiler.ECMAScript.Semantics.SemanticModel.FreeNames(Broiler.ECMAScript.Syntax.SyntaxNode) method System.Collections.Generic.IReadOnlyList`1<System.String>
+-Broiler.ECMAScript.Semantics.SemanticModel.NamedEvaluationKey(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Syntax.ComputedPropertyName
+ Broiler.ECMAScript.Semantics.SemanticModel.NamedEvaluationName(Broiler.ECMAScript.Syntax.SyntaxNode) method System.String
+ Broiler.ECMAScript.Semantics.SemanticModel.ParentOf(Broiler.ECMAScript.Semantics.Scope) method Broiler.ECMAScript.Semantics.Scope
+ Broiler.ECMAScript.Semantics.SemanticModel.PrivateEnvironmentOf(Broiler.ECMAScript.Syntax.ClassNode) method Broiler.ECMAScript.Semantics.PrivateEnvironment

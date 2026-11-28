@@ -1,0 +1,21 @@
+  Determining projects to restore...
+  Restored /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/Broiler.ECMAScript.Architecture.Tests.csproj (in 370 ms).
+  Restored /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj (in 368 ms).
+  Restored /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj (in 368 ms).
+  Restored /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Probe/Broiler.ECMAScript.Probe.csproj (in 368 ms).
+  Restored /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/Broiler.ECMAScript.Conformance.csproj (in 2 ms).
+  Restored /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Generation/Broiler.ECMAScript.Generation.csproj (in 2 ms).
+  Restored /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 2 ms).
+  Broiler.ECMAScript.Conformance -> /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/bin/Release/net10.0/Broiler.ECMAScript.Conformance.dll
+  Broiler.ECMAScript.Algorithms -> /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Generation -> /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Generation/bin/Release/net10.0/Broiler.ECMAScript.Generation.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.ECMAScript.Probe -> /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll
+  Broiler.ECMAScript.Architecture.Tests -> /home/user/js-s158-lib-build/rules/src/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:43.57

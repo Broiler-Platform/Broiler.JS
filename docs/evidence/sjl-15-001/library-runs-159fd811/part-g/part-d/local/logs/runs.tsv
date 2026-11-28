@@ -1,0 +1,6 @@
+probe-publish-aot	rc=0	wall=51.5s maxrss=312MB	started=2026-11-28T07:44:09Z	ended=2026-11-28T07:45:00Z
+probe-aot	rc=0	wall=5.4s maxrss=680MB	started=2026-11-28T07:45:00Z	ended=2026-11-28T07:45:06Z
+probe-publish-jit	rc=0	wall=18.6s maxrss=2172MB	started=2026-11-28T07:45:06Z	ended=2026-11-28T07:45:24Z
+probe-jit-published	rc=0	wall=8.0s maxrss=814MB	started=2026-11-28T07:45:24Z	ended=2026-11-28T07:45:33Z
+probe-build-jit	rc=0	wall=17.4s maxrss=2172MB	started=2026-11-28T07:45:33Z	ended=2026-11-28T07:45:50Z
+probe-jit	rc=0	wall=8.2s maxrss=796MB	started=2026-11-28T07:45:50Z	ended=2026-11-28T07:45:58Z

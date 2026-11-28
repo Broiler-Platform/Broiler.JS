@@ -1,0 +1,7 @@
+# Bundle sjl-15-001's library-runs-159fd811/: parts F and G and bundle sjl-13-001's part E taken at stage 8's commit, each
+# file named by its SHA-256 in the bundle's hashes.txt, so they are checked out exactly as committed (no end-of-line
+# conversion), and git's whitespace checks skip them: the run logs, the patches and the imported job logs and artifacts
+# keep the whitespace they were written with (as bundle sjl-14-001's base/part-c/ does). The folder's README is checked.
+# Added 2026-11-28.
+* -text -whitespace
+README.md -text whitespace

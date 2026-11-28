@@ -1,0 +1,18 @@
+Test run for /home/user/js-s158-lib-build/partc/src/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v4.0.1+0f7d528729 (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.19]   Discovering: Broiler.ECMAScript.Architecture.Tests
+[xUnit.net 00:00:00.43]   Discovered:  Broiler.ECMAScript.Architecture.Tests
+[xUnit.net 00:00:00.67]   Starting:    Broiler.ECMAScript.Architecture.Tests
+  Passed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL9_Two_runs_and_two_threads_over_the_corpus_give_identical_output [22 s]
+  Passed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL9_The_witness_library_is_refused [4 s]
+[xUnit.net 00:00:29.62]   Finished:    Broiler.ECMAScript.Architecture.Tests (ID = '74d2ffdb236b5d5bad54be0261a966517bf63d00b7575568def4b313b06280f1')
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Passed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_No_shared_library_holds_mutable_static_state [46 ms]
+  Passed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL2_The_witness_is_refused_for_each_kind_of_state [1 s]
+
+Test Run Successful.
+Total tests: 4
+     Passed: 4
+ Total time: 30.3473 Seconds
+VSTEST_ARTIFACTS_DIRECTORY environment variable was not found, falling back to a user-private temporary directory. This is most likely caused by an outdated Microsoft.NET.Test.Sdk package reference in the test project.

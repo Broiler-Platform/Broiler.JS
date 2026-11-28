@@ -1,0 +1,17 @@
+  Determining projects to restore...
+  Restored /home/user/js-s158-lib-build/partc/src/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj (in 331 ms).
+  Restored /home/user/js-s158-lib-build/partc/src/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 331 ms).
+  Restored /home/user/js-s158-lib-build/partc/src/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/Broiler.ECMAScript.Conformance.csproj (in 331 ms).
+  Restored /home/user/js-s158-lib-build/partc/src/Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj (in 3 ms).
+  Restored /home/user/js-s158-lib-build/partc/src/Broiler.ECMAScript/Broiler.ECMAScript.Probe/Broiler.ECMAScript.Probe.csproj (in 850 ms).
+  Broiler.ECMAScript.Conformance -> /home/user/js-s158-lib-build/partc/src/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/bin/Release/net10.0/Broiler.ECMAScript.Conformance.dll
+  Broiler.ECMAScript.Algorithms -> /home/user/js-s158-lib-build/partc/src/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Intl -> /home/user/js-s158-lib-build/partc/src/Broiler.ECMAScript/Broiler.ECMAScript.Intl/bin/Release/net10.0/Broiler.ECMAScript.Intl.dll
+  Broiler.ECMAScript.Frontend -> /home/user/js-s158-lib-build/partc/src/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/bin/Release/net10.0/Broiler.ECMAScript.Frontend.dll
+  Broiler.ECMAScript.Probe -> /home/user/js-s158-lib-build/partc/src/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:35.65

@@ -1,0 +1,7 @@
+2026-11-28T07:07:36Z before-archive disk ok: 10908864512 bytes free
+2026-11-28T07:07:44Z build disk ok: 9504673792 bytes free
+2026-11-28T07:07:44Z run disk ok: 9504649216 bytes free
+2026-11-28T07:07:46Z revert-build disk ok: 9504620544 bytes free
+2026-11-28T07:07:46Z revert-run disk ok: 9504604160 bytes free
+2026-11-28T07:07:46Z before delete: 9504583680
+2026-11-28T07:07:47Z after delete: 10908766208

@@ -1,0 +1,1 @@
+wall=3.8s maxrss=247MB

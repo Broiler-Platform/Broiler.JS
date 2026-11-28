@@ -1,0 +1,11 @@
+commit: 159fd811f74d0f43e7ed7327081267a96f8f1196
+tree: d1d0461bf52a648b3810506e354b2fdca59f0c4b
+sdk: 10.0.404
+started: 2026-11-28T07:53:00Z
+arch-build rc=0
+architecture-tests rc=0
+pack rc=0
+pristine-consumer rc=0
+hairs-restore rc=0
+assurance-check rc=0
+ended: 2026-11-28T07:55:05Z first-failure=0

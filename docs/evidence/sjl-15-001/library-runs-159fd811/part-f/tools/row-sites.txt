@@ -1,0 +1,130 @@
+# Per semantics row of the stage table, the library's sites (bundle sjl-15-001's part F; this listing judges nothing)
+row	EE0015	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:50	vector
+site	EE0015	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1532	report not tied by this listing	MethodHome.ObjectLiteral => SemanticRows.EE0015,
+row	EE0018	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:55	vector
+site	EE0018	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2838	reports here	Report(SemanticRows.EE0018, definition, "__proto__");
+row	EE0021	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:60	no vector
+site	EE0021	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1649	reports here	Report(SemanticRows.EE0021, template);
+label	EE0021	site; no source reaches it
+label	EE0021	no vector
+row	EE0054	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:65	vector
+site	EE0054	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3128	reports here	Report(SemanticRows.EE0054, target);
+row	EE0058	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:70	vector
+site	EE0058	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3338	reports here	Report(continues ? SemanticRows.EE0058 : SemanticRows.EE0059, jump);
+row	EE0059	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:75	vector
+site	EE0059	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3338	reports here	Report(continues ? SemanticRows.EE0058 : SemanticRows.EE0059, jump);
+row	EE0074	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:80	vector
+site	EE0074	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1511	report not tied by this listing	Shape.Function => inBody ? new(SemanticRows.EE0075, SemanticRows.EE0077, null) : new(SemanticRows.EE0074, SemanticRows.EE0076, null),
+row	EE0075	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:85	vector
+site	EE0075	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1511	report not tied by this listing	Shape.Function => inBody ? new(SemanticRows.EE0075, SemanticRows.EE0077, null) : new(SemanticRows.EE0074, SemanticRows.EE0076, null),
+row	EE0076	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:90	vector
+site	EE0076	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1511	report not tied by this listing	Shape.Function => inBody ? new(SemanticRows.EE0075, SemanticRows.EE0077, null) : new(SemanticRows.EE0074, SemanticRows.EE0076, null),
+row	EE0077	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:95	vector
+site	EE0077	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1511	report not tied by this listing	Shape.Function => inBody ? new(SemanticRows.EE0075, SemanticRows.EE0077, null) : new(SemanticRows.EE0074, SemanticRows.EE0076, null),
+row	EE0081	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:100	vector
+site	EE0081	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3346	report not tied by this listing	LabelOwner.Function => continues ? SemanticRows.EE0082 : SemanticRows.EE0081,
+row	EE0082	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:105	vector
+site	EE0082	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3346	report not tied by this listing	LabelOwner.Function => continues ? SemanticRows.EE0082 : SemanticRows.EE0081,
+row	EE0093	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:110	vector
+site	EE0093	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1527	report not tied by this listing	Shape.GeneratorMethod => SemanticRows.EE0093,
+row	EE0102	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:115	vector
+site	EE0102	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1512	report not tied by this listing	Shape.Generator => inBody ? new(SemanticRows.EE0103, SemanticRows.EE0105, null) : new(SemanticRows.EE0102, SemanticRows.EE0104, null),
+row	EE0103	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:120	vector
+site	EE0103	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1512	report not tied by this listing	Shape.Generator => inBody ? new(SemanticRows.EE0103, SemanticRows.EE0105, null) : new(SemanticRows.EE0102, SemanticRows.EE0104, null),
+row	EE0104	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:125	vector
+site	EE0104	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1512	report not tied by this listing	Shape.Generator => inBody ? new(SemanticRows.EE0103, SemanticRows.EE0105, null) : new(SemanticRows.EE0102, SemanticRows.EE0104, null),
+row	EE0105	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:130	vector
+site	EE0105	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1512	report not tied by this listing	Shape.Generator => inBody ? new(SemanticRows.EE0103, SemanticRows.EE0105, null) : new(SemanticRows.EE0102, SemanticRows.EE0104, null),
+row	EE0106	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:135	vector
+site	EE0106	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1529	report not tied by this listing	Shape.AsyncGeneratorMethod => SemanticRows.EE0106,
+row	EE0117	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:140	vector
+site	EE0117	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1513	report not tied by this listing	Shape.AsyncGenerator => inBody ? new(SemanticRows.EE0118, SemanticRows.EE0120, null) : new(SemanticRows.EE0117, SemanticRows.EE0119, null),
+row	EE0118	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:145	vector
+site	EE0118	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1513	report not tied by this listing	Shape.AsyncGenerator => inBody ? new(SemanticRows.EE0118, SemanticRows.EE0120, null) : new(SemanticRows.EE0117, SemanticRows.EE0119, null),
+row	EE0119	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:150	vector
+site	EE0119	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1513	report not tied by this listing	Shape.AsyncGenerator => inBody ? new(SemanticRows.EE0118, SemanticRows.EE0120, null) : new(SemanticRows.EE0117, SemanticRows.EE0119, null),
+row	EE0120	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:155	vector
+site	EE0120	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1513	report not tied by this listing	Shape.AsyncGenerator => inBody ? new(SemanticRows.EE0118, SemanticRows.EE0120, null) : new(SemanticRows.EE0117, SemanticRows.EE0119, null),
+row	EE0121	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:160	vector
+site	EE0121	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1535	report not tied by this listing	MethodHome.BaseConstructor => SemanticRows.EE0121,
+row	EE0124	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:165	vector
+site	EE0124	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1533	report not tied by this listing	MethodHome.Class => SemanticRows.EE0124,
+row	EE0126	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:170	vector
+site	EE0126	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1534	report not tied by this listing	MethodHome.StaticClass => SemanticRows.EE0126,
+row	EE0130	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:175	vector
+site	EE0130	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2542	report not tied by this listing	Semantic = semantics ? new SemanticContext(null, SemanticRows.EE0131, new ArgumentsAnchors(SemanticRows.EE0130, field, elementContext.Semantic!.Arguments)) { Privates = elementContext.Semantic!.Privates } : null,
+row	EE0131	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:180	vector
+site	EE0131	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2542	report not tied by this listing	Semantic = semantics ? new SemanticContext(null, SemanticRows.EE0131, new ArgumentsAnchors(SemanticRows.EE0130, field, elementContext.Semantic!.Arguments)) { Privates = elementContext.Semantic!.Privates } : null,
+row	EE0136	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:185	vector
+site	EE0136	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3345	report not tied by this listing	LabelOwner.StaticBlock => continues ? SemanticRows.EE0137 : SemanticRows.EE0136,
+row	EE0137	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:190	vector
+site	EE0137	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3345	report not tied by this listing	LabelOwner.StaticBlock => continues ? SemanticRows.EE0137 : SemanticRows.EE0136,
+row	EE0138	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:195	vector
+site	EE0138	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2600	report not tied by this listing	Semantic = semantics ? new SemanticContext(null, SemanticRows.EE0139, new ArgumentsAnchors(SemanticRows.EE0138, block, outer.Semantic!.Arguments)) { Privates = outer.Semantic!.Privates } : null,
+row	EE0139	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:200	vector
+site	EE0139	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:2600	report not tied by this listing	Semantic = semantics ? new SemanticContext(null, SemanticRows.EE0139, new ArgumentsAnchors(SemanticRows.EE0138, block, outer.Semantic!.Arguments)) { Privates = outer.Semantic!.Privates } : null,
+row	EE0142	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:205	vector
+site	EE0142	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1528	report not tied by this listing	Shape.AsyncMethod => SemanticRows.EE0142,
+row	EE0150	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:210	vector
+site	EE0150	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1514	report not tied by this listing	Shape.AsyncFunction => inBody ? new(SemanticRows.EE0151, SemanticRows.EE0153, null) : new(SemanticRows.EE0150, SemanticRows.EE0152, null),
+row	EE0151	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:215	vector
+site	EE0151	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1514	report not tied by this listing	Shape.AsyncFunction => inBody ? new(SemanticRows.EE0151, SemanticRows.EE0153, null) : new(SemanticRows.EE0150, SemanticRows.EE0152, null),
+row	EE0152	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:220	vector
+site	EE0152	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1514	report not tied by this listing	Shape.AsyncFunction => inBody ? new(SemanticRows.EE0151, SemanticRows.EE0153, null) : new(SemanticRows.EE0150, SemanticRows.EE0152, null),
+row	EE0153	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:225	vector
+site	EE0153	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1514	report not tied by this listing	Shape.AsyncFunction => inBody ? new(SemanticRows.EE0151, SemanticRows.EE0153, null) : new(SemanticRows.EE0150, SemanticRows.EE0152, null),
+row	EE0162	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:230	vector
+site	EE0162	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1489	report not tied by this listing	return new SemanticContext(SemanticRows.EE0162, SemanticRows.EE0162, null);
+site	EE0162	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1489	report not tied by this listing	return new SemanticContext(SemanticRows.EE0162, SemanticRows.EE0162, null);
+row	EE0165	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:235	vector
+site	EE0165	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3347	report not tied by this listing	_ => continues ? SemanticRows.EE0166 : SemanticRows.EE0165,
+row	EE0166	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:240	vector
+site	EE0166	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3347	report not tied by this listing	_ => continues ? SemanticRows.EE0166 : SemanticRows.EE0165,
+row	EE0167	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:245	vector
+site	EE0167	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:279	report not tied by this listing	ParseGoal.Script => SemanticRows.EE0167,
+row	EE0170	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:250	no vector
+site	EE0170	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3541	reports here	Report(SemanticRows.EE0170, at, name);
+label	EE0170	site; no vector names it
+row	EE0171	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:255	no vector
+site	EE0171	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3561	reports here	Report(SemanticRows.EE0171, specifier, local.Name);
+label	EE0171	site; no vector names it
+row	EE0172	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:260	no vector
+site	EE0172	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1471	report not tied by this listing	return new SemanticContext(SemanticRows.EE0172, SemanticRows.EE0172, null);
+site	EE0172	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1471	report not tied by this listing	return new SemanticContext(SemanticRows.EE0172, SemanticRows.EE0172, null);
+label	EE0172	no vector
+row	EE0175	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:265	no vector
+site	EE0175	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3344	report not tied by this listing	LabelOwner.Module => continues ? SemanticRows.EE0176 : SemanticRows.EE0175,
+label	EE0175	no vector
+row	EE0176	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:270	no vector
+site	EE0176	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:3344	report not tied by this listing	LabelOwner.Module => continues ? SemanticRows.EE0176 : SemanticRows.EE0175,
+label	EE0176	no vector
+row	EE0177	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:275	no vector
+site	EE0177	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:280	report not tied by this listing	ParseGoal.Module => SemanticRows.EE0177,
+label	EE0177	no vector
+row	EA0003	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:280	vector
+site	EA0003	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1476	report not tied by this listing	caller.InMethod ? null : SemanticRows.EA0003,
+row	EA0004	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:285	vector
+site	EA0004	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1477	report not tied by this listing	caller.InDerivedConstructor ? null : SemanticRows.EA0004,
+row	EA0005	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:290	vector
+site	EA0005	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1478	report not tied by this listing	caller.InClassFieldInitializer ? new ArgumentsAnchors(SemanticRows.EA0005, null, null) : null)
+row	EA0006	basis	run-time	no entry	-	vector
+no-site	EA0006	run-time
+reason	EA0006	docs/evidence/sjl-15-001/decision-rule.md:170	MET if and only if every fact has a public member and no public type names an engine type, every semantics row has a site in the library or is named, with its reason, as no row the model can report (the stage table's rows that only a run reaches, EA0006 to EA0008), every vector the adapter answers matches, and the control is reported.
+row	EA0007	basis	run-time	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:295	vector
+site	EA0007	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1385	reports here	Report(annexB ? SemanticRows.EA0007 : SemanticRows.EA0008, declaration.Node, declaration.Name);
+row	EA0008	basis	run-time	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:300	no vector
+site	EA0008	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:1385	reports here	Report(annexB ? SemanticRows.EA0007 : SemanticRows.EA0008, declaration.Node, declaration.Name);
+label	EA0008	site; reachable only with Annex B off; no vector
+row	EA0009	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:305	vector
+site	EA0009	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs:281	report not tied by this listing	ParseGoal.Eval => request.Context!.VisiblePrivateNames is null ? null : SemanticRows.EA0009,
+row	EP0017	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:310	no vector
+no-site	EP0017	carried	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:310
+label	EP0017	no site, carried
+label	EP0017	no vector
+reason	EP0017	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:31-32	/// order (the session's decisions D-js-channel and D-js-semantic-rows). EP0017 and EP0018 have no report of their own: no goal is ShadowRealm's, and EA0003, EA0004 or EE0162 refuses their source first.
+row	EP0018	basis	no-parser	entry	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:315	no vector
+no-site	EP0018	carried	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:315
+label	EP0018	no site, carried
+label	EP0018	no vector
+reason	EP0018	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs:31-32	/// order (the session's decisions D-js-channel and D-js-semantic-rows). EP0017 and EP0018 have no report of their own: no goal is ShadowRealm's, and EA0003, EA0004 or EE0162 refuses their source first.
+stage-table-cell	EA0008	rows	no parse-time site (eval-time; neither engine refuses: CAT `neither`)	stale for the library: a site exists

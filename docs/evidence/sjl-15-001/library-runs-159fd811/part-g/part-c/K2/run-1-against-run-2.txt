@@ -1,0 +1,3 @@
+/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s158-lib/runs/part-g/part-c/K2/run-1.tsv /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s158-lib/runs/part-g/part-c/K2/run-2.tsv differ: char 139, line 2
+run 1 and run 2 differ
+lines of run 1 not in run 2 (diff '<' lines): 227706

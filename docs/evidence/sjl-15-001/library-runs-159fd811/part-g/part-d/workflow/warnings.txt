@@ -1,0 +1,25 @@
+leg	where	pattern	lines
+linux-x64	job 140783796376 log, publish step (aot)	coded	0
+linux-x64	job 140783796376 log, publish step (aot)	any-case	0
+linux-x64	job 140783796376 log, publish step (aot)	IL code	0
+linux-x64	job 140783796376 log, publish step (jit)	coded	0
+linux-x64	job 140783796376 log, publish step (jit)	any-case	0
+linux-x64	job 140783796376 log, publish step (jit)	IL code	0
+linux-x64	artifact probe-publish.log	coded	0
+linux-x64	artifact probe-publish.log	any-case	0
+linux-x64	artifact probe-publish.log	IL code	0
+linux-x64	artifact probe-publish-jit.log	coded	0
+linux-x64	artifact probe-publish-jit.log	any-case	0
+linux-x64	artifact probe-publish-jit.log	IL code	0
+win-x64	job 140783796520 log, publish step (aot)	coded	0
+win-x64	job 140783796520 log, publish step (aot)	any-case	0
+win-x64	job 140783796520 log, publish step (aot)	IL code	0
+win-x64	job 140783796520 log, publish step (jit)	coded	0
+win-x64	job 140783796520 log, publish step (jit)	any-case	0
+win-x64	job 140783796520 log, publish step (jit)	IL code	0
+win-x64	artifact probe-publish.log	coded	0
+win-x64	artifact probe-publish.log	any-case	0
+win-x64	artifact probe-publish.log	IL code	0
+win-x64	artifact probe-publish-jit.log	coded	0
+win-x64	artifact probe-publish-jit.log	any-case	0
+win-x64	artifact probe-publish-jit.log	IL code	0
