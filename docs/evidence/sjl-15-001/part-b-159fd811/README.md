@@ -32,7 +32,11 @@ the ninth model commit `950bea8f` to it changes a path under `Broiler.ECMAScript
 (`git diff --stat 950bea8f b92ef028 -- 'Broiler.ECMAScript/Broiler.ECMAScript.Frontend*'` is empty, and
 `git diff --quiet 950bea8f 159fd811^1 -- 'Broiler.ECMAScript/Broiler.ECMAScript.Frontend*'` exits 0); and the loop over
 the default branch's first-parent merges from the fifth model commit `4d8aa93a` that lists each merge changing such a
-path lists exactly `84d84cc3`, `30af0dad`, `2c48beb1`, `950bea8f` and `159fd811` (`logs/notes.log`). Bundle
+path lists exactly `84d84cc3`, `30af0dad`, `2c48beb1`, `950bea8f` and `159fd811` (`logs/notes.log`; the loop, added
+2026-11-28 on review: `for m in $(git rev-list --reverse --first-parent --merges
+4d8aa93ad5023017b66534feb248c4c16f59bf6e..origin/main); do git diff --quiet $m^1 $m --
+'Broiler.ECMAScript/Broiler.ECMAScript.Frontend*' || echo $m; done`, asked at 2026-11-28T00:21:59Z after `git fetch`,
+with `origin/main` at `159fd811`). Bundle
 `sjl-12-001`'s tool, `docs/evidence/sjl-12-001/tools/parse-corpus`, is the same tree at both commits,
 `5ede61145de01136368c49354acc1de1c469fcb6`, the tree it had at the first nine model commits and their first parents,
 so it ran byte-unchanged; the manifest `conformance/parse/corpus.manifest` is the same blob at both,
@@ -224,6 +228,11 @@ retention (`activity-main-*.tsv`), and the stage's notes (`notes.log`).
   after checking the archive's SHA-256 (`b92ef028/logs/suite.log`, `159fd811/logs/suite.log`; `logs/notes.log`). That
   rehearsal's script differs from this stage's in its disk checks only
   ([`identity/two-builds-b92ef028/commands.txt`](identity/two-builds-b92ef028/commands.txt)).
+  Note 2026-11-28 (review), replacing "differs from this stage's in its disk checks only" above, which stays as
+  written: that rehearsal's script differs from this stage's in its disk checks, in the worktree it archives from
+  (`/home/user/js-s158` against `/home/user/js-s158-pb`, two worktrees of the one repository), in the build tree it
+  names, and in its header comments; none of these changes the commit's archive (13679 files in each build's
+  `commit.txt`) or the tool's answers (every row identical), as the same `commands.txt` now says.
 - Nothing was set aside at this commit: no run was stopped or re-taken, and no CI job was re-run.
 
 [`../hashes.txt`](../hashes.txt) gives the SHA-256 of every file here.

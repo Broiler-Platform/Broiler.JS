@@ -71,7 +71,7 @@ b789a9732a41700293de655ee6981b4fca6b67a019e9108e298d1efe76178b84  ./part-b-159fd
 4d076bf3f930c38fcb8adc59a52532215cb335a95ab0586f374b4d08f6ce3277  ./part-b-159fd811/159fd811/parse-corpus-c.tsv.gz
 dcdd98e0559afcbcdfbe66b302660abef645dc75c233c2a132b4616a3507260c  ./part-b-159fd811/159fd811/parse-corpus-d1.tsv.gz
 89cb24cf40b99d2a4dd16d53978d1a6dae02b7ff8c064bc6f13d93599713f7c3  ./part-b-159fd811/159fd811/reports.sha256.txt
-83ed67fe8ebc35e526c17fa18ffb099a8fad8ac25242428841e56c562ed356d2  ./part-b-159fd811/README.md
+9bf4c68d4eeaeeecb14a194a6a718d9a2d581ce2f0001f4b6722bf823727c1eb  ./part-b-159fd811/README.md
 98f9aa517972e6a5ca5ce63c29d725d8b274a83c54d0097b423291414d1e013e  ./part-b-159fd811/b92ef028/logs/binaries.sha256.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./part-b-159fd811/b92ef028/logs/build-parse-corpus.stderr.txt
 4b5841a5f34e761a5e00d84dddfc559a3abe753a1f4046af2dce21c00ed98680  ./part-b-159fd811/b92ef028/logs/build-parse-corpus.stdout.txt
@@ -100,7 +100,7 @@ f320eea2292234becd96d433346d9ebabc5c461c7c8ae1ca2ee9085cb99ff2d5  ./part-b-159fd
 f5e3826be629aa99f7a8676bb192a44b43510acb4fac3749f858e012a01d84f8  ./part-b-159fd811/ci/artifact-digests.tsv
 f46a36eafec3def1ce2f86de48358eede7079a6bb71841f5732fc9c240be5e1d  ./part-b-159fd811/ci/artifacts-46082299057.json
 89c5c8cbec726198dd64c4f125751414e6b923c8017a6893a03c7fdef1352b15  ./part-b-159fd811/ci/artifacts-46082299097.json
-41c6e7acb5bf434b88e52ea8bcfbf892a493538e6a2c80a135bf2424c4178e50  ./part-b-159fd811/ci/commands.txt
+494abdb73f5b5a49bbc936826da756dfc08c497e1d0cec374e8507fe8a78adcf  ./part-b-159fd811/ci/commands.txt
 be3417a76b181b2fded8c9e46a5b62924fe7ac2bbedb0a1b4e327b025f3915d6  ./part-b-159fd811/ci/jobs-46082299057.json
 fadad04aecb9257501f25be417df9aed307f99ffbfb98c8e01dd05500b4087f7  ./part-b-159fd811/ci/jobs-46082299097.json
 ec7d4576bfd20871ffc5ae14b25130884bfc35a57869bf3f5ced4d311ddd1b67  ./part-b-159fd811/ci/logs-46082299057.zip
@@ -118,7 +118,7 @@ d10a2f8f4d7ac5383258e5c2e8489d59b8e7dde8731eca9b01566b9d7b28a830  ./part-b-159fd
 7f59b874937ef0f718fdb2e412d3ed288005cb3adb8e3e02af3ce4e182308067  ./part-b-159fd811/identity/inputs.txt
 f8dbef5b1233cc5703bcbbfa69be9d4f49bfab57c05213f4573b26a64fa0b9bc  ./part-b-159fd811/identity/rows-c.txt
 99dab1e4a39375f34f979c4daa4f14af2ce4b96a014d221c30b26bbe84991b36  ./part-b-159fd811/identity/rows-d1.txt
-76a75650c8e001400859b746600735428438bbe018df0468f7e3d2bf1333cb5f  ./part-b-159fd811/identity/two-builds-b92ef028/commands.txt
+16c4f4058f578719abafd88be2d6894a6cc0527e7c04e645e6b8dda9e6a96fa6  ./part-b-159fd811/identity/two-builds-b92ef028/commands.txt
 ad9bbb813aee2faa0bea22786a64502c1d8a4df8994d1dc7e290ba6ec4588dda  ./part-b-159fd811/identity/two-builds-b92ef028/rehearsal-b92ef028-commit.txt
 a34b47306cdd032c371c6ea8d6572538143295b2ba5d5ff8666c6fd97ccca420  ./part-b-159fd811/identity/two-builds-b92ef028/rehearsal-b92ef028-reports.sha256.txt
 4d966c5f8fdda2f7348134a9c2275ab0d2e7725c3cdbfdfb26b49c2e298e0365  ./part-b-159fd811/identity/two-builds-b92ef028/rows-c.txt
@@ -127,7 +127,7 @@ a34b47306cdd032c371c6ea8d6572538143295b2ba5d5ff8666c6fd97ccca420  ./part-b-159fd
 1826a4696e153c2a77302bfb373b1804050f69ae0e80e154e463afea74a5189b  ./part-b-159fd811/logs/commands.log
 44fb4ff8b19c289b59156eac0af520b8feda979675e3af58100f577b56fe8b12  ./part-b-159fd811/logs/gate.log
 0ec1630bc9c124f29f72406d20a411657c113957d07adcee6cc422cc8be8a465  ./part-b-159fd811/logs/main-checks.log
-7b06b611f62aa22a13f6be5c21db0a74aca632d60b853176be4c19bed35356d0  ./part-b-159fd811/logs/notes.log
+922bb8a79f7ad0a9a10fe1b0b54d83c0be7de5154a58762783fe058a645e8214  ./part-b-159fd811/logs/notes.log
 f8e33ff385132ebe6a3cb7eabb0bb5ce3e547d605bc0d7ad7bcb41c2f6442e67  ./part-b-159fd811/logs/runs.tsv
 90d584bb4cb5060fcd7507afd6d26491f8a549e59c64dd8a0e731a02bcc44f3c  ./part-b-159fd811/logs/status-20261128T002030Z.tsv
 8ef08488629854493fe58ac99e7d6c2658b8ac89723081c6d3df198c94de0766  ./part-b-159fd811/scripts/completeness.py

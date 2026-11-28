@@ -27,7 +27,9 @@ for r in 46082299057 46082299097; do
 done
 #
 # The artifacts, every one both runs list, downloaded (2026-11-28T00:25:26Z-00:25:33Z) and checked against the API's
-# digest and size (artifact-digests.tsv, every one "match"); re-checked unchanged at 00:53Z, before part B's runs. The
+# digest and size (artifact-digests.tsv, every one "match"); re-checked unchanged at 00:53Z, before part B's runs (that
+# re-check is recorded only in ../logs/notes.log, its entry of 01:08:00Z; its output was not kept, a note of 2026-11-28
+# on review). The
 # zips are not kept here (bridge/w1-ci/ and the first nine model commits' ci/ kept none). CI's three went to a scratch
 # folder art/; Shared libraries' three (part G's hosted half if 159fd811 is the library commit:
 # native-aot-probe-linux-x64, native-aot-probe-win-x64, shared-packages) went to the stage's scratch folder hosted/, for

@@ -5,5 +5,15 @@
 # script differs from part B's in its disk checks only (it asked 8 GiB once before the archive's extraction and 6 GiB at
 # each later check, where part B's asks 8 GiB at each); no answer of the tool depends on them. Compared by the same
 # identity.py; written 2026-11-28:
+#
+# Note 2026-11-28 (review), replacing "differs from part B's in its disk checks only" above, which stays as written: the
+# rehearsal's script (SCRATCH/sjl-rest/js-s158/scripts/pb.sh) differs from part B's
+# (SCRATCH/sjl-rest/js-s158-pb/scripts/pb.sh) in its disk checks, in the worktree it archives from (REPO=/home/user/js-s158
+# against /home/user/js-s158-pb, two worktrees of the one repository), in the build tree it names
+# (BLD=/home/user/js-s158-build/pb against /home/user/js-s158-pb-build), and in its header comments (seventeen lines
+# against five); its method's commands are otherwise the same. None of these changes the commit's archive or the tool's
+# answers: `git archive` of the one commit gives the same files whichever worktree runs it (rehearsal-b92ef028-commit.txt
+# and ../../b92ef028/logs/commit.txt each count 13679 archive files), and rows-c.txt and rows-d1.txt, written by the commands
+# below, find every row identical.
 python3 -I /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s158-pb/scripts/identity.py /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s158/base/rehearsal-b92ef028/parse-corpus-c.tsv.gz /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s158-pb/base/b92ef028/parse-corpus-c.tsv.gz > rows-c.txt; echo rc=$? >> rows-c.txt
 python3 -I /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s158-pb/scripts/identity.py /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s158/base/rehearsal-b92ef028/parse-corpus-d1.tsv.gz /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s158-pb/base/b92ef028/parse-corpus-d1.tsv.gz > rows-d1.txt; echo rc=$? >> rows-d1.txt
