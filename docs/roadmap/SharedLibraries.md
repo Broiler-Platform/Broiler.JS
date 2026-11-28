@@ -4987,7 +4987,7 @@ nuget-package-availability and continue", `Publish shared libraries` (run 461338
 `publish-shared.yml` on `main`) published `Broiler.ECMAScript.Algorithms`, `Broiler.ECMAScript.Frontend`,
 `Broiler.ECMAScript.Intl` and `Broiler.ECMAScript.Generation` `0.1.0-preview.13` to nuget.org from `cc69a455`
 (Broiler-Platform/Broiler.JS#1154, stage 9's listing), whose tree outside `docs/` is stage 8's commit `159fd811`'s, and
-tagged that commit `ecmascript-v0.1.0-preview.13`. nuget.org's flat-container indexes list the version for all four
+tagged `cc69a455` `ecmascript-v0.1.0-preview.13`. nuget.org's flat-container indexes list the version for all four
 packages. The source's suffix moves to `preview.13`, so this engine's packages depend on the shared packages at the
 version nuget.org serves, `Broiler.JavaScript.Parser`'s and `Broiler.JavaScript.Portable.Compiler`'s on
 `Broiler.ECMAScript.Frontend` among them, and the shared changelog's entry is retitled as published; that entry also
@@ -5005,7 +5005,7 @@ and pin commit", the tools commit first, which is Broiler.VM's to record; then t
 which admits the version through its allow-list `src/tests/Broiler.VM.Architecture.Tests/admitted-packages.json`
 (Broiler.VM's `Directory.Packages.props` pins the four packages at `0.1.0-preview.11` at `d384611f`), and whose
 classification of the listed changes is Broiler.VM's. No decision's text changes. Every clause is unmet, and none of it
-is accepted. No second holder exists to review it, and every SJL-15 clause is unmet, in both repositories.
+is accepted. No second holder exists to review it.
 
 ## Invariants
 

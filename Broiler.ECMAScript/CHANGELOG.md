@@ -61,8 +61,9 @@ overturn. Not taken: splitting the entry into headings per version by tag, which
 and attribute each item to a version after the fact.)*
 
 *(Noted 2026-11-28, when it was published: items below read "No observable change: no published version carries the
-member, and with it off nothing moves." (this file's lines 641, 682, 733, 763, 802, 882, 909 and 921 at `cc69a455`) and
-"A minor change under convention 16, which no published version carries" (lines 577, 740 and 807 there).
+member, and with it off nothing moves." (this file's lines 615-616, 641, 682, 733, 763, 802, 882, 909 and 921 at
+`cc69a455`) and "A minor change under convention 16, which no published version carries" (lines 577, 621-622, 647-648,
+688-689, 740, 767-768, 807 and 887-888 there, some of them wrapped across a line break).
 `0.1.0-preview.13` now carries those members, each off by default, so from this publication a published version carries
 them; "with it off nothing moves", and the parse answering as before with the request member off, are not changed by the
 publication. The lines are left as written.)*
