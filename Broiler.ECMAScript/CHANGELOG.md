@@ -18,6 +18,58 @@ Not yet packed under a version of its own: the stream's next version is set when
 
 ### Added
 
+None.
+
+### Changed
+
+None.
+
+### Observable changes
+
+None.
+
+### Data
+
+None.
+
+## 0.1.0-preview.13 — published to nuget.org
+
+*(Heading corrected 2026-11-28, when it was published; read "Unreleased". This entry was published as
+`0.1.0-preview.13` by `Publish shared libraries`, run 46133866748, on 2026-11-28, from `cc69a455`, whose tree outside
+`docs/` is `159fd811`'s, and tagged `ecmascript-v0.1.0-preview.13`.)*
+
+Packed and published as `0.1.0-preview.13`, the stream keeping its `0.1.0` prefix while it is a preview: the owner's
+answer of 2026-11-27, "All publish-decisions can be done and run. So if a publish yes/no is the question, do the
+publish, wait for the nuget-package-availability and continue", answered the publication of a stream version carrying
+SJL-15.2's semantic model (JSD-0083's decision D30) as publish, and `Broiler.ECMAScript.Algorithms`,
+`Broiler.ECMAScript.Frontend`, `Broiler.ECMAScript.Intl` and `Broiler.ECMAScript.Generation` were pushed at that
+version. The next actions are Broiler.VM's: its tools commit, then its pin commit, which admits the version, restored
+from nuget.org. The source's suffix is `preview.13` since the publication. *(Corrected 2026-11-28, when it was
+published; read "Not yet packed under a version of its own: the stream's next version is set when this entry is
+published.")*
+
+*(Noted 2026-11-28, when it was published: this entry also holds changes already published in `0.1.0-preview.8` to
+`0.1.0-preview.12` (tags `ecmascript-v0.1.0-preview.8` at `3b4b6860`, `ecmascript-v0.1.0-preview.9` at `6f7284da`,
+`ecmascript-v0.1.0-preview.10` at `29061d65`, `ecmascript-v0.1.0-preview.11` at `e4b6b49e` and
+`ecmascript-v0.1.0-preview.12` at `2f012739`), which got no heading of their own when they were published; its text
+names some of them, as `0.1.0-preview.9`, `0.1.0-preview.10` and `0.1.0-preview.12`. The entry is not split after the
+fact. The rule above reads "A release without an entry here is not published."; those versions are published all the
+same, as the tags and nuget.org's indexes show: all four packages list `0.1.0-preview.9` to `0.1.0-preview.12`, and
+`Broiler.ECMAScript.Algorithms` and `Broiler.ECMAScript.Generation` list `0.1.0-preview.8` too. This is the session's
+decision of 2026-11-28, taken under the owner's direction of 2026-10-18 as the recommended choice, which the owner may
+overturn. Not taken: splitting the entry into headings per version by tag, which would rewrite text written as one entry
+and attribute each item to a version after the fact.)*
+
+*(Noted 2026-11-28, when it was published: items below read "No observable change: no published version carries the
+member, and with it off nothing moves." (this file's lines 615-616, 641, 682, 733, 763, 802, 882, 909 and 921 at
+`cc69a455`) and "A minor change under convention 16, which no published version carries" (lines 577, 621-622, 647-648,
+688-689, 740, 767-768, 807 and 887-888 there, some of them wrapped across a line break).
+`0.1.0-preview.13` now carries those members, each off by default, so from this publication a published version carries
+them; "with it off nothing moves", and the parse answering as before with the request member off, are not changed by the
+publication. The lines are left as written.)*
+
+### Added
+
 - `Broiler.ECMAScript.Generation`: the Intl data home's generator, namespace
   `Broiler.ECMAScript.Generation.Intl` (milestone SJL-9.2b; Broiler.VM's decision JSD-0082, decisions D10, D11
   and D12). Ported from Broiler.VM's `CldrTableGenerator`, `UnicodeDatabase` and `CldrPin` at Broiler.VM
