@@ -1,4 +1,4 @@
-7e55dd5c39379b6c20bff9cfd0b0d4a2a963e41bb233d4fd00d9f452d3b13e1b  ./README.md
+ebe17d587be635bc24f2e2d79e482c2ee7bd846691a904aac900fbd793c32e28  ./README.md
 c618357fe96d185511b338bbfae4a473285758d220ad82640643083844b2a8c1  ./corrections.md
 4a7a6b9ce1defd5cd538116f7997b612623cef5f089e68556cfffebb1d1efd33  ./corrections/class-e.tsv
 5e184fb9ac9b8b0c7e2e2a2d4ccaec1f711d6f69b26ba3417f9aad8be454e848  ./corrections/class-t.tsv
