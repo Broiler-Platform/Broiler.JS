@@ -4950,6 +4950,35 @@ decision D30's syntax-half check; then the publication, which the owner's answer
 nuget-package-availability and continue", answers as publish. Every clause is unmet, and none of it is accepted. No
 second holder exists to review it, and every SJL-15 clause is unmet, in both repositories.
 
+*(Noted 2026-11-28, at SJL-15.2 stage 9.)* The note above of 2026-11-28 after the runs of parts F and G reads "Next:
+stage 9's listing, for JSD-0083's decision D30's syntax-half check; then the publication". The listing is taken, in
+bundle [`sjl-15-001`](../evidence/sjl-15-001/README.md)'s
+[`stage-9/listing-e4b6b49e-159fd811.md`](../evidence/sjl-15-001/stage-9/listing-e4b6b49e-159fd811.md), with its raw `git`
+outputs beside it, as that README's note of 2026-11-28 at stage 9 records: by first-parent merge, every source change
+from tag `ecmascript-v0.1.0-preview.11` (`e4b6b49e`), the version Broiler.VM pins for `Algorithms`, `Frontend`, `Intl` and
+`Generation`, to stage 8's commit `159fd811`. The folders of `Algorithms`, `Intl` and `Generation` do not change; the
+Frontend's changes are the model commits' alone, nothing under its folder having changed from `e4b6b49e` to preview.12's
+commit `2f012739`; and the build inputs outside the folders that changed are listed, labelled, whether they count as a
+"source diff" being Broiler.VM's to classify. It is a records-only merge: no `Broiler.ECMAScript/` path changes, and it
+is no model commit.
+
+**Q1** ("Publish a Broiler.ECMAScript stream version carrying the semantic model, from stage 8's commit, for Broiler.VM's
+pin commit (D-pin)?"), which decision D-js-packable has asked "only after stage 8 and stage 9's listing", is answered by
+the owner's answer of 2026-11-27 above, "All publish-decisions can be done and run. So if a publish yes/no is the
+question, do the publish, wait for the nuget-package-availability and continue", read as publish, with D30's syntax-half
+check still read as the records require. So the session publishes after this listing merges, by a dispatch of
+`publish-shared.yml` on `main`, and waits until nuget.org lists the version, which with an empty version input
+`eng/resolve-preview-version.mjs` resolves as `0.1.0-preview.13`, since preview.12 is published and tagged and nothing
+higher is; the suffix need not move first, since "Moving it publishes nothing" (`Broiler.ECMAScript/Directory.Build.props`).
+Beyond preview.12 it carries the Frontend's model commits and the labelled build inputs. D30's syntax-half check gets the
+listing; listing the changes in SJL-15's cut-over record and classifying them "by SJL-15's rule here as a correction by
+row" are Broiler.VM's, at its pin commit, and the check is read neither as met nor as unmeetable. Whether the published
+source must be the library commit is unknown; a later version for SJL-15.4 needs a second pin commit; the readings parts
+F and G rest on, EP0017's and EP0018's among them, are the session's, flagged for the owner; and whether the rule admits
+the early runs is the owner's, and is not decided. No decision's text changes, and nothing is dispatched or published
+here. Next: the publication, then Broiler.VM's pin commit. No second holder exists to review it, and every SJL-15 clause
+is unmet, in both repositories.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
