@@ -1,0 +1,163 @@
+# Why stage 8's change cannot reach part B's --dump output or its P and K answers; read 2026-11-28 by read-only git in
+# the stage's worktree, each command with its output below it. Stage 8 (159fd811) adds no line kind to the shared
+# library's canonical dump, Broiler.ECMAScript/runners/SyntaxDump.cs, and no member, type or row to the model: under
+# Broiler.ECMAScript.Frontend it changes only documentation lines (remarks citing the edition's clauses, and one comment of
+# SemanticRows.cs, whose rows table is unchanged and which the Frontend tests now hold equal to the stage table's
+# semantics rows but EA0006) and the project file's comment and package Description. Its one change of behaviour is in
+# the probe, Broiler.ECMAScript.Probe: its corpus digest mode (--digest-corpus, CorpusDigest.cs) now parses each request
+# through CorpusDigestRequest.WithModel, a copy of the corpus reader's request with ParseRequest.BuildSemanticModel on.
+# Part B's tool, docs/evidence/sjl-12-001/tools/parse-corpus, writes its own canonical dump (CanonicalDump.cs) of
+# Broiler.JS's tree and reaches the Frontend only through Broiler.JS's parser, whose request never sets the member; it
+# does not use the probe, which no project of Broiler.JS or of the bundle references (an inference from the references
+# below).
+
+$ git diff --stat b92ef028 159fd811 -- Broiler.JS docs/evidence/sjl-12-001
+(exit 0)
+
+$ git grep -n -e model-captures -e model-captured -e model-named 159fd811 -- Broiler.ECMAScript/runners
+159fd811:Broiler.ECMAScript/runners/SyntaxDump.cs:83:/// <c>model-captures</c> line (its node, its dynamic-reach and self-name flags, and its free names in order) and one
+159fd811:Broiler.ECMAScript/runners/SyntaxDump.cs:84:/// <c>model-captured</c> line (its node and each captured declaration in order, named as the resolution lines name a
+159fd811:Broiler.ECMAScript/runners/SyntaxDump.cs:85:/// declaration); then, per function and class node in tree order that has an answer, one <c>model-named</c> line: the node
+159fd811:Broiler.ECMAScript/runners/SyntaxDump.cs:436:            text.Append("model-captures ").Append(Reference(order, function.Node)).Append(' ')
+159fd811:Broiler.ECMAScript/runners/SyntaxDump.cs:445:            text.Append("model-captured ").Append(Reference(order, function.Node));
+159fd811:Broiler.ECMAScript/runners/SyntaxDump.cs:457:                text.Append("model-named ").Append(Reference(order, node)).Append(" key ").Append(Reference(order, key)).Append('\n');
+159fd811:Broiler.ECMAScript/runners/SyntaxDump.cs:461:                text.Append("model-named ").Append(Reference(order, node)).Append(' ');
+(exit 0)
+
+$ git grep -n -e model-captures -e model-captured -e model-named b92ef028 -- Broiler.ECMAScript/runners
+b92ef028:Broiler.ECMAScript/runners/SyntaxDump.cs:83:/// <c>model-captures</c> line (its node, its dynamic-reach and self-name flags, and its free names in order) and one
+b92ef028:Broiler.ECMAScript/runners/SyntaxDump.cs:84:/// <c>model-captured</c> line (its node and each captured declaration in order, named as the resolution lines name a
+b92ef028:Broiler.ECMAScript/runners/SyntaxDump.cs:85:/// declaration); then, per function and class node in tree order that has an answer, one <c>model-named</c> line: the node
+b92ef028:Broiler.ECMAScript/runners/SyntaxDump.cs:436:            text.Append("model-captures ").Append(Reference(order, function.Node)).Append(' ')
+b92ef028:Broiler.ECMAScript/runners/SyntaxDump.cs:445:            text.Append("model-captured ").Append(Reference(order, function.Node));
+b92ef028:Broiler.ECMAScript/runners/SyntaxDump.cs:457:                text.Append("model-named ").Append(Reference(order, node)).Append(" key ").Append(Reference(order, key)).Append('\n');
+b92ef028:Broiler.ECMAScript/runners/SyntaxDump.cs:461:                text.Append("model-named ").Append(Reference(order, node)).Append(' ');
+(exit 0)
+
+$ git grep -n -e 'if (model && result.Model is' -e 'Captures(text, semantic, order, nodes);' -e 'private static void Captures(' 159fd811 -- Broiler.ECMAScript/runners
+159fd811:Broiler.ECMAScript/runners/SyntaxDump.cs:178:        if (model && result.Model is { } semantic)
+159fd811:Broiler.ECMAScript/runners/SyntaxDump.cs:181:            Captures(text, semantic, order, nodes);
+159fd811:Broiler.ECMAScript/runners/SyntaxDump.cs:420:    private static void Captures(StringBuilder text, SemanticModel model, Dictionary<SyntaxNode, int> order, List<SyntaxNode> nodes)
+(exit 0)
+
+$ git grep -n 'BuildSemanticModel { get; init; }' 159fd811 -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs
+159fd811:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs:236:    public bool BuildSemanticModel { get; init; }
+(exit 0)
+
+$ git grep -n BuildSemanticModel 159fd811 -- Broiler.JS docs/evidence/sjl-12-001
+(exit 1)
+
+$ git grep -n SyntaxDump 159fd811 -- Broiler.JS docs/evidence/sjl-12-001/tools
+(exit 1)
+
+$ git grep -n -e NamedEvaluationName -e NamedEvaluationKey -e DirectEvalOrWithWithin -e FunctionNameReferenced -e ModuleRecord -e ImportNameKind -e ModuleRequestAttribute -e CallerScope -e DirectEvalCalls -e AnnexBAlias -e BlockFunctionAlias -e DynamicReason -e EnvironmentOf -e ResolutionKind 159fd811 -- Broiler.JS docs/evidence/sjl-12-001
+(exit 1)
+
+$ git grep -n -e 'using Broiler.ECMAScript.Semantics' -e Broiler.ECMAScript.Semantics. 159fd811 -- Broiler.JS docs/evidence/sjl-12-001
+159fd811:Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs:4:using Broiler.ECMAScript.Semantics;
+159fd811:Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs:5:using Broiler.ECMAScript.Semantics;
+(exit 0)
+
+$ git grep -n -w -e Model -e FreeNames -e Captured -e NamedEvaluationName -e NamedEvaluationKey -e EnvironmentOf -e EnvironmentFacts -e DirectEvalOrWithWithin -e FunctionNameReferenced 159fd811 -- Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeScopes.cs Broiler.JS/Broiler.JavaScript.Parser/Bridge/BridgeTreeBuilder.cs
+(exit 1)
+
+$ git grep -l -w -e FreeNames -e Captured 159fd811 -- Broiler.JS docs/evidence/sjl-12-001
+159fd811:Broiler.JS/Broiler.JavaScript.BuiltIns/Function/JSAsyncFunction.cs
+159fd811:Broiler.JS/Broiler.JavaScript.Compiler.Tests/DeferralPopulationTests.cs
+159fd811:Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.CreateFunction.cs
+159fd811:Broiler.JS/Broiler.JavaScript.Expressions/CompilationStack.cs
+159fd811:Broiler.JS/Broiler.JavaScript.Expressions/DeferredCaptureLayout.cs
+(exit 0)
+
+$ git grep -n ProjectReference 159fd811 -- docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj
+159fd811:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:24:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj" />
+159fd811:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:25:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj" />
+159fd811:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:26:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj" />
+159fd811:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:27:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj" />
+159fd811:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:28:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj" />
+159fd811:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:29:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj" />
+159fd811:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:30:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj" />
+159fd811:docs/evidence/sjl-12-001/tools/parse-corpus/parse-corpus.csproj:31:    <ProjectReference Include="../../../../../Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj" />
+(exit 0)
+
+$ git grep -n 'new ParseRequest(' 159fd811 -- Broiler.JS
+159fd811:Broiler.JS/Broiler.JavaScript.Parser/Bridge/SharedSyntaxBridge.cs:168:        return new ParseRequest(source, goal, request.UnicodeTables ?? JSUnicodeTables.Instance, BridgeRegularExpressions.Instance)
+159fd811:Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs:84:        var request = new ParseRequest(new SourceText(source, string.Empty, 0), ParseGoal.Script, JSUnicode.Tables, RegularExpressions.Instance)
+(exit 0)
+
+$ git diff --stat b92ef028 159fd811 -- Broiler.ECMAScript/runners Broiler.ECMAScript/Broiler.ECMAScript.Frontend Broiler.ECMAScript/Broiler.ECMAScript.Probe
+ .../Broiler.ECMAScript.Frontend.csproj             | 10 +++-
+ .../Broiler.ECMAScript.Frontend/SemanticModel.cs   | 54 ++++++++++++++++++++++
+ .../Broiler.ECMAScript.Frontend/SemanticRows.cs    |  8 ++--
+ .../Broiler.ECMAScript.Frontend/SyntaxParser.cs    |  1 +
+ .../Broiler.ECMAScript.Probe/CorpusDigest.cs       | 11 ++++-
+ .../CorpusDigestRequest.cs                         | 38 +++++++++++++++
+ 6 files changed, 116 insertions(+), 6 deletions(-)
+(exit 0)
+
+$ bash -c 'git diff -U0 b92ef028 159fd811 -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend | grep -E "^[+-]" | grep -v -E "^(\+\+\+|---) " | grep -v -E "^[+-][[:space:]]*///"'
++
++    (Added 2026-11-27, at SJL-15.2 stage 8.) From milestone SJL-15.2 the same declarations walk also builds the
++    semantic model in Broiler.ECMAScript.Semantics, the facts Broiler.VM's milestone SJL-15 lists, from scopes and
++    declarations to module records, named-evaluation names and captures, and reports the catalogue's semantics rows,
++    each only when the request's BuildSemanticModel member is on; it is off by default (the session's decision
++    D-js-default-off), and with it off nothing moves. The Description below gains a sentence that says so. IsPackable
++    and the InternalsVisibleTo items are unchanged; publishing a version that carries the model is the owner's
++    (decision D30).
+-    <Description>The shared syntax library of the Broiler JavaScript engines (ECMA-262): an immutable parse request with goals, switches, the inherited context of eval code, proposal flags, a lexer extension, limits and providers (Broiler.Unicode's tables, a regular-expression validator each engine supplies, an optional work meter), an immutable syntax tree with full spans and raw facts, and diagnostics with shared codes, message identifiers, phases and spans. The tokenizer reads the lexical grammar of ECMA-262 and the parser its syntactic grammar for scripts, modules, eval code and the dynamic function's parameters and body, with cover grammars converted, the declarations walk reports the parse-time early errors with side tables of each scope's declarations, and the nesting depth and tree depth are checked before the stack is.</Description>
++    <Description>The shared syntax library of the Broiler JavaScript engines (ECMA-262): an immutable parse request with goals, switches, the inherited context of eval code, proposal flags, a lexer extension, limits and providers (Broiler.Unicode's tables, a regular-expression validator each engine supplies, an optional work meter), an immutable syntax tree with full spans and raw facts, and diagnostics with shared codes, message identifiers, phases and spans. The tokenizer reads the lexical grammar of ECMA-262 and the parser its syntactic grammar for scripts, modules, eval code and the dynamic function's parameters and body, with cover grammars converted, the declarations walk reports the parse-time early errors with side tables of each scope's declarations, and the nesting depth and tree depth are checked before the stack is. With a request member that is off by default, the same walk also builds a semantic model of the source (scopes and declarations, resolution, the function facts, labels, private names, module records, named-evaluation names, free names and captures) and reports the static-semantics early errors.</Description>
+(exit 0)
+
+$ git grep -n -e 'BuildSemanticModel = true' -e 'CorpusDigestRequest.WithModel(' 159fd811 -- Broiler.ECMAScript/Broiler.ECMAScript.Probe
+159fd811:Broiler.ECMAScript/Broiler.ECMAScript.Probe/CorpusDigest.cs:101:                var result = SyntaxParser.Parse(CorpusDigestRequest.WithModel(corpus.Request(text, variant, "V", AlgorithmsLibrary.RunnerRegularExpressions.Instance)));
+159fd811:Broiler.ECMAScript/Broiler.ECMAScript.Probe/CorpusDigestRequest.cs:32:            BuildSemanticModel = true,
+(exit 0)
+
+$ git grep -n -e Broiler.ECMAScript.Probe -e CorpusDigest 159fd811 -- Broiler.JS docs/evidence/sjl-12-001
+(exit 1)
+
+$ git grep -n -o 'ProjectReference Include="[^"]*Broiler\.ECMAScript\.[A-Za-z]*\.csproj"' 159fd811 -- 'Broiler.JS/*.csproj' ':!Broiler.JS/*Tests*'
+159fd811:Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj:19:ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj"
+159fd811:Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj:42:ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj"
+159fd811:Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj:44:ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Intl\Broiler.ECMAScript.Intl.csproj"
+159fd811:Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj:22:ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj"
+159fd811:Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj:22:ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Frontend\Broiler.ECMAScript.Frontend.csproj"
+159fd811:Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj:23:ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj"
+159fd811:Broiler.JS/Broiler.JavaScript.Portable.Compiler/Broiler.JavaScript.Portable.Compiler.csproj:15:ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Frontend\Broiler.ECMAScript.Frontend.csproj"
+159fd811:Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj:10:ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj"
+159fd811:Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj:10:ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj"
+(exit 0)
+
+$ bash -c 'git diff -U0 b92ef028 159fd811 -- Broiler.ECMAScript/Broiler.ECMAScript.Frontend ":!*.csproj" | grep -E "^[+-]" | grep -v -E "^(\+\+\+|---) " | grep -v -E "^[+-][[:space:]]*///"'
+(exit 1)
+
+$ git grep -n ProjectReference 159fd811 -- 'Broiler.ECMAScript/Broiler.ECMAScript.Frontend/*.csproj' 'Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/*.csproj' 'Broiler.ECMAScript/Broiler.ECMAScript.Intl/*.csproj'
+159fd811:Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj:51:    <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
+159fd811:Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj:54:    <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
+(exit 0)
+
+# Notes: the first command's empty output says that no file of Broiler.JS/ or of bundle sjl-12-001 (the tool
+# included) differs between the two commits; the second's and third's that the dump's line kinds of stage 7, the last
+# stage that added any, are written by the same lines of SyntaxDump.cs at both commits, and the fourteenth's that stage 8
+# changes no file under Broiler.ECMAScript/runners, so the library's canonical dump gains no line kind; the fourth's that
+# the model section is written only beside Model, when the parse built a model. The sixth's, seventh's and eighth's
+# (exit 1, no match): nothing in Broiler.JS or the bundle sets BuildSemanticModel, uses the library's SyntaxDump or names
+# a member of the model by a name of its own (stage 7's, 6's, 5c's, 5b's and 5a's; stage 8 adds none). The ninth's: only
+# the bridge's BridgeScopes.cs and BridgeTreeBuilder.cs use the Frontend's Semantics namespace; the tenth's (exit 1, no
+# match): neither names the model, a member stage 7 added or the environment facts; the eleventh's: the files of
+# Broiler.JS that use the words FreeNames or Captured are its own compiler's, expressions', builtins' and tests'. The
+# tool references only Broiler.JS projects (twelfth command), and the two ParseRequest constructions in Broiler.JS (the
+# bridge's, which the tool's P and K reach, and the portable compiler's) set no BuildSemanticModel (thirteenth and sixth
+# commands), so the member keeps its default, false, and the parse builds no model. The fifteenth's lines are every
+# line stage 8 changes under Broiler.ECMAScript.Frontend but its /// documentation lines: the project file's comment and
+# its package Description, so no statement of the library's code changes (SemanticModel.cs, SemanticRows.cs and
+# SyntaxParser.cs change only in /// lines). The sixteenth's: the probe turns BuildSemanticModel on in its corpus digest
+# mode, through CorpusDigestRequest.WithModel; the seventeenth's (exit 1, no match): nothing in Broiler.JS or the bundle
+# names the probe or its corpus digest; the eighteenth's: Broiler.JS's own projects reference the shared Algorithms,
+# Frontend and Intl projects, not the probe. The nineteenth's (exit 1, no match): with the project files left out, no line
+# stage 8 changes under the Frontend is other than a /// line, so the fifteenth's lines are all the project file's. The
+# twentieth's: the Frontend and Intl projects reference only Algorithms, and Algorithms references nothing, so the probe
+# is reachable from no project the tool builds. So part B's tool neither runs nor builds the probe (an inference from
+# these references), and with the member off the parse builds no model at either commit. So the dumps' hashes are
+# identical in every row at both commits (rows-d1.txt), as P's and K's answers are (rows-c.txt): both written by the
+# comparison after both runs, before this file was written again.
