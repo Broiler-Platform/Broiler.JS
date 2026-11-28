@@ -1,0 +1,14 @@
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj |   10 +-
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/CallerScope.cs                     |   90 ++++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationTables.cs               |  332 +++++++++++++--
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs                | 2516 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/InheritedContext.cs                |   97 ++++-
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseGoal.cs                       |    7 +-
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs                    |   26 +-
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseSwitches.cs                   |    8 +
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt                      |  148 +++++++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Rows.cs                            |    7 +-
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs                   | 1838 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs                    |  316 ++++++++++++++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SyntaxParser.cs                    |   35 +-
+ 13 files changed, 5295 insertions(+), 135 deletions(-)

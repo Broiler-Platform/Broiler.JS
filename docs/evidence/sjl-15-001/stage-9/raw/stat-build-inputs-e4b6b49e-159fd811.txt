@@ -1,0 +1,8 @@
+ .gitattributes                           |  6 +++++-
+ .github/workflows/ci.yml                 | 19 +++++++++++++++++--
+ .github/workflows/shared-libraries.yml   | 12 +++++++++++-
+ Broiler.ECMAScript/Directory.Build.props | 14 ++++++++++++--
+ Directory.Build.props                    |  8 +++++++-
+ Directory.Packages.props                 | 16 ++++++++--------
+ eng/run-tests.sh                         | 70 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------
+ 7 files changed, 124 insertions(+), 21 deletions(-)

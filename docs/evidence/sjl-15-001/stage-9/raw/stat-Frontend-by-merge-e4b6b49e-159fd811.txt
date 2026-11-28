@@ -1,0 +1,70 @@
+## be6c4a5c3e389c7eb2aff71c34e31bdae5efe276 (first parent 8b1fa311da6af71baac6378e8b4f8597a99c1312)
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationTables.cs | 211 ++++++++++++++++++++++++++++++++++++++++++++++++------
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs  | 483 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs      |  21 ++++--
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt        |  38 ++++++++++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs     | 265 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SyntaxParser.cs      |  18 +++--
+ 6 files changed, 954 insertions(+), 82 deletions(-)
+## 6c61879bce81b1a7badf987e16c7b0531030258d (first parent 2259fd4a1860aefc68d49b8f6f9f0200fcb6cc4d)
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs | 309 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseGoal.cs        |   7 ++-
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs     |  11 +++--
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Rows.cs             |   7 ++-
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs    |   6 ++-
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs     | 219 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SyntaxParser.cs     |  16 +++++--
+ 7 files changed, 539 insertions(+), 36 deletions(-)
+## d87044c9db5fe2a26841782308bd53e2f9294656 (first parent 77fe27aa4bc6e0a8a0819b32a2b1b1158a9fe913)
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs | 244 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----------------
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt       |   5 +++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs    | 129 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs     |  64 +++++++++++++++++++++++++++++----
+ 4 files changed, 389 insertions(+), 53 deletions(-)
+## 56272150fe23725a0e70978fb18e3c25f2548548 (first parent 9ae6aee09012d6b7139856f253b43f7701cf7b8b)
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs | 235 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/InheritedContext.cs |  15 +++++---
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt       |  17 +++++++++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs    | 232 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs     |  32 +++++++++++++----
+ 5 files changed, 475 insertions(+), 56 deletions(-)
+## 4d8aa93ad5023017b66534feb248c4c16f59bf6e (first parent 746591d22142a25dd68c2a9d132930b1008cd9dd)
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationTables.cs |  97 ++++++++++++++++++++++++-----
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs  | 413 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt        |  30 +++++++++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs     | 374 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
+ 4 files changed, 875 insertions(+), 39 deletions(-)
+## 84d84cc3f68e3120299eb9faa44c6b9f0f2e7b8b (first parent d3e64b4df2c35acf706fca91707c3f198b53e6cd)
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationTables.cs |  46 ++++++++++++++++++++++++---
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs  | 211 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseSwitches.cs     |   4 +++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt        |   3 ++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs     | 216 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------
+ 5 files changed, 435 insertions(+), 45 deletions(-)
+## 30af0dad83f73d2a5cf5495b2d4e3716cc7ed0df (first parent 4e27f13d3dc1bd3c38c5f29ea28ff4391ec8771b)
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/CallerScope.cs       |  90 ++++++++++++++++++++++++++++++++++++++++++++++++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationTables.cs |   6 ++++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs  | 234 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-------------
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/InheritedContext.cs  |  82 ++++++++++++++++++++++++++++++++++++++++----
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseSwitches.cs     |   4 +++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt        |  10 ++++++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs     | 180 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------------
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs      |  20 ++++++++---
+ 8 files changed, 566 insertions(+), 60 deletions(-)
+## 2c48beb1e332dd7c9fa1577705ed5458b5686c1f (first parent 59ccb11cc1279fe2a6f015acbccd7f6dbff185f2)
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs | 353 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt       |  39 ++++++++++++++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs    | 363 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs     |  21 ++++++--
+ 4 files changed, 750 insertions(+), 26 deletions(-)
+## 950bea8f315aa5f10d4b251a7d39ed7658912512 (first parent 26c6d6ecc0b071a47267daa1b504f7ff04a6a854)
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs | 310 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--------
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt       |   6 +++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs    | 251 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----
+ 3 files changed, 538 insertions(+), 29 deletions(-)
+## 159fd811f74d0f43e7ed7327081267a96f8f1196 (first parent b92ef028327b7420d4f489cb805ef5270623e760)
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj | 10 +++++++++-
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs                   | 54 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs                    |  8 +++++---
+ Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SyntaxParser.cs                    |  1 +
+ 4 files changed, 69 insertions(+), 4 deletions(-)

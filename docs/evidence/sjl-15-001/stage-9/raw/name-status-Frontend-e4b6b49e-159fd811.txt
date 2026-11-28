@@ -1,0 +1,13 @@
+M	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj
+A	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/CallerScope.cs
+M	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationTables.cs
+M	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs
+M	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/InheritedContext.cs
+M	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseGoal.cs
+M	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseRequest.cs
+M	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/ParseSwitches.cs
+M	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt
+M	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Rows.cs
+A	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs
+A	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs
+M	Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SyntaxParser.cs
