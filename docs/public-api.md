@@ -133,6 +133,13 @@ Frontend package ever had, to `preview.12`, and publishes nothing). `Broiler.Jav
 `Expressions`; `Broiler.JavaScript.Portable.Compiler` depends on the Frontend, `Expressions`, `Portable` and
 `Broiler.Regex`.
 
+*(Noted 2026-11-28, after the publication of the shared stream's `0.1.0-preview.13`: the paragraph above reads
+"depends on `Broiler.ECMAScript.Frontend` at the shared stream's `0.1.0-preview.12`, published from tag
+`ecmascript-v0.1.0-preview.12`". From the change that moves `Broiler.ECMAScript/Directory.Build.props`' suffix to
+`preview.13`, the dependency is `0.1.0-preview.13`, published by `Publish shared libraries` (run 46133866748) from
+`cc69a455` and tagged `ecmascript-v0.1.0-preview.13`, whose `Broiler.ECMAScript/` equals the default branch's but for
+that file's suffix and comment and the shared changelog. The paragraph is left as written.)*
+
 **Removed, all internal:** the test-only switch of W1 (`JSCompilationOptions.ParseThroughBridge`, `ParsesThroughBridge`
 and `BridgeByDefault`, `JSContext.ParseThroughBridge`, the shell's `--parse-through-bridge` and the build property
 `BroilerParseThroughBridge`), so `JSCompilationOptions`' synthesized `GetHashCode` folds in one `bool` fewer and hash
@@ -291,7 +298,10 @@ overload are internal. Two things a consumer could notice, neither a contract:
   waits for a published Frontend: that is W2's. *(Noted 2026-11-19, at window W2: "which has no published version yet" no longer holds.
   The shared stream's `0.1.0-preview.12` is published, from `2f012739` (tag `ecmascript-v0.1.0-preview.12`), and its
   `Broiler.ECMAScript/` equals the default branch's at W2's branch point; W2's `Parser` package depends on that version,
-  as "Public API changes, 2026-11-19" above records.)*
+  as "Public API changes, 2026-11-19" above records.)* *(Noted 2026-11-28: the note above ends "W2's `Parser`
+  package depends on that version", `0.1.0-preview.12`. From the change that moves the shared stream's suffix to
+  `preview.13`, it depends on `0.1.0-preview.13`, published from `cc69a455` (tag `ecmascript-v0.1.0-preview.13`), as
+  the note of 2026-11-28 under "Public API changes, 2026-11-19" above records.)*
 - **`JSCompilationOptions`, a public record struct, gains an internal property.** Its synthesized `GetHashCode` folds
   in one more `bool`, so hash values differ from the previous release's for every instance; equality, `ToString` and
   the code cache's keys are unchanged while the switch is off.

@@ -32,10 +32,19 @@
        SJL-15.2's semantic model, which is unpublished, so "whose Broiler.ECMAScript/ equals this tree's but for this file's
        suffix and comment" no longer holds; the suffix still names the stream's last published version, and a version
        carrying the model is published only by the owner's choice (decision D30; the session's decision D-js-packable of
-       2026-11-24).) -->
+       2026-11-24).)
+       (Noted 2026-11-28, after the publication: the comment reads "preview.12 (tag ecmascript-v0.1.0-preview.12, whose
+       Broiler.ECMAScript/ equals this tree's but for this file's suffix and comment)", and the note of 2026-11-24 "the
+       suffix still names the stream's last published version, and a version carrying the model is published only by
+       the owner's choice". The owner's answer of 2026-11-27 on publication (docs/roadmap/SharedLibraries.md, "Shared
+       static semantics (SJL-15)") answered that choice as publish: Publish shared libraries, run 46133866748, published
+       0.1.0-preview.13 from cc69a455 (tag ecmascript-v0.1.0-preview.13). The suffix now names it, and this tree's
+       Broiler.ECMAScript/ equals the tag's but for this file's suffix and comment and CHANGELOG.md; from it
+       Broiler.JavaScript.Parser's package depends on Broiler.ECMAScript.Frontend 0.1.0-preview.13. The suffix is a
+       floor: the next dispatch resolves preview.14 whether it reads preview.12 or preview.13.) -->
   <PropertyGroup>
     <VersionPrefix>0.1.0</VersionPrefix>
-    <VersionSuffix>preview.12</VersionSuffix>
+    <VersionSuffix>preview.13</VersionSuffix>
   </PropertyGroup>
 
   <PropertyGroup>
