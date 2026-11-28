@@ -1,0 +1,2 @@
+[xUnit.net 00:00:06.74]     Broiler.ECMAScript.Conformance.Tests.SemanticsAdapterTests.Every_answered_semantics_vector_agrees_at_the_parse [FAIL]
+Test Run Failed.

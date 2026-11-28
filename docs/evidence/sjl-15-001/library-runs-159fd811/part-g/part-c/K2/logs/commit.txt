@@ -1,0 +1,10 @@
+commit: 159fd811f74d0f43e7ed7327081267a96f8f1196
+patch: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s158-lib/patches/control-k2.patch
+rule: SL9
+sdk: 10.0.404
+started: 2026-11-28T07:24:47Z
+run-1 rc=0
+run-2 rc=0
+rule SL9 rc=0
+revert-run-1 rc=0
+ended: 2026-11-28T07:30:11Z rc=0

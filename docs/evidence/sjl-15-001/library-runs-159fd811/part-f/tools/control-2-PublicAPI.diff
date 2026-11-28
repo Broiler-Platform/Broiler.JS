@@ -1,0 +1,7 @@
+--- src/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt	2026-11-27 23:24:09.000000000 +0000
++++ control-2/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt	2026-11-28 07:07:18.174189073 +0000
+@@ -969,3 +969,4 @@
+ Broiler.ECMAScript.Syntax.YieldExpression sealed class : Broiler.ECMAScript.Syntax.Expression
+ Broiler.ECMAScript.Syntax.YieldExpression.get_Argument() method Broiler.ECMAScript.Syntax.Expression
+ Broiler.ECMAScript.Syntax.YieldExpression.get_IsDelegate() method System.Boolean
++Broiler.VM.Witness.EngineStub sealed class

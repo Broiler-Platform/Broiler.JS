@@ -1,0 +1,34 @@
+--- src/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs	2026-11-27 23:24:09.000000000 +0000
++++ control-1/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticModel.cs	2026-11-28 08:20:15.317604779 +0000
+@@ -792,31 +792,6 @@
+         return namedEvaluationNameOf.TryGetValue(node, out var name) ? name : null;
+     }
+ 
+-    /// <summary>
+-    /// The computed key whose value names an anonymous function or class definition at run time (JSD-0080:
+-    /// "named-evaluation names"; correspondence row NE1; ECMA-262 NamedEvaluation and SetFunctionName; the session's
+-    /// decision D-js-named-evaluation): for the node <see cref="NamedEvaluationName"/> takes, the
+-    /// <see cref="ComputedPropertyName"/> of the object literal entry <c>[k]: f</c> or the class field <c>[k] = f</c>, a
+-    /// static one among them, whose value it is. The name is SetFunctionName's of the key's ToPropertyKey: a String as it
+-    /// is, a Symbol as <c>"["</c>, its description and <c>"]"</c>, or the empty string for a Symbol without one; so
+-    /// <c>{ ["__proto__"]: f }</c> names <c>f</c> "__proto__". Where named evaluation applies this member or
+-    /// <see cref="NamedEvaluationName"/> answers, never both; every other node answers null. A key whose value the source
+-    /// writes, <c>['x']</c>, is not folded: the specification evaluates it at run time. <i>(Added 2026-11-27, at SJL-15.2
+-    /// stage 7.)</i>
+-    /// </summary>
+-    /// <param name="node">A node of the model's tree.</param>
+-    /// <returns>The key, or null.</returns>
+-    /// <exception cref="ArgumentNullException">The node is null.</exception>
+-    /// <exception cref="ArgumentException">The node is not in the model's tree.</exception>
+-    // Hairs-AI:           Origin=AI; Spec=ECMA-262 NamedEvaluation SetFunctionName PropertyDefinitionEvaluation ClassFieldDefinitionEvaluation, JSD-0080 named-evaluation names; IP=Low; Security=Medium; Resources=1; Fingerprint=FE39C8
+-    // Hairs-Human:        PENDING
+-    public ComputedPropertyName? NamedEvaluationKey(SyntaxNode node)
+-    {
+-        ArgumentNullException.ThrowIfNull(node);
+-        if (!scopeOf.ContainsKey(node))
+-            throw new ArgumentException("The node is not in the semantic model's tree.", nameof(node));
+-        return namedEvaluationKeyOf.TryGetValue(node, out var key) ? key : null;
+-    }
+ 
+     /// <summary>
+     /// The free names of the program, a <see cref="FunctionNode"/>, a <see cref="StaticBlock"/> or an initialised

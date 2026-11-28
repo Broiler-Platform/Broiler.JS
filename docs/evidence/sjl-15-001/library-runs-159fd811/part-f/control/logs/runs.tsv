@@ -1,0 +1,4 @@
+build	rc=0	wall=22.1s maxrss=217MB	started=2026-11-28T07:10:44Z	ended=2026-11-28T07:11:06Z
+test	rc=1	wall=10.1s maxrss=768MB	started=2026-11-28T07:11:06Z	ended=2026-11-28T07:11:16Z
+revert-build	rc=0	wall=7.5s maxrss=339MB	started=2026-11-28T07:11:18Z	ended=2026-11-28T07:11:25Z
+revert-test	rc=0	wall=10.3s maxrss=748MB	started=2026-11-28T07:11:25Z	ended=2026-11-28T07:11:35Z

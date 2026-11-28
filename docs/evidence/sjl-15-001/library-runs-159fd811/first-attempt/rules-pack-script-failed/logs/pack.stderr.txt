@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json,sys; print(json.loads(sys.argv[1])["Properties"]["IsPackable"])
+                           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+TypeError: 'bool' object is not subscriptable

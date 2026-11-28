@@ -1,0 +1,8 @@
+2026-11-28T07:52:59Z before-archive disk ok: 9348222976 bytes free, archive 221911040 bytes, paths: . :(exclude)docs :(exclude)logs
+2026-11-28T07:53:00Z build disk ok: 9107976192 bytes free
+2026-11-28T07:53:42Z arch-test disk ok: 8990007296 bytes free
+2026-11-28T07:54:29Z pack disk ok: 8990543872 bytes free
+2026-11-28T07:54:43Z pristine disk ok: 8989327360 bytes free
+2026-11-28T07:55:01Z assurance disk ok: 8989274112 bytes free
+2026-11-28T07:55:05Z before delete: 8989110272
+2026-11-28T07:55:06Z after delete: 9348419584

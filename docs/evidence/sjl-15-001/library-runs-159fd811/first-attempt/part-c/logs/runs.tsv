@@ -1,0 +1,6 @@
+probe-build	rc=82	wall=0.2s maxrss=71MB	started=2026-11-28T07:07:58Z	ended=2026-11-28T07:07:59Z
+arch-build	rc=82	wall=0.2s maxrss=71MB	started=2026-11-28T07:07:59Z	ended=2026-11-28T07:07:59Z
+run-1	rc=1	wall=0.3s maxrss=58MB	started=2026-11-28T07:08:00Z	ended=2026-11-28T07:08:00Z
+run-2	rc=1	wall=0.1s maxrss=58MB	started=2026-11-28T07:08:00Z	ended=2026-11-28T07:08:00Z
+run-3	rc=1	wall=0.2s maxrss=58MB	started=2026-11-28T07:08:00Z	ended=2026-11-28T07:08:01Z
+sl2-sl9	rc=82	wall=0.3s maxrss=71MB	started=2026-11-28T07:08:01Z	ended=2026-11-28T07:08:01Z

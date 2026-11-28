@@ -1,0 +1,4 @@
+2026-11-28T08:20:12Z lock fix-verify-controls WAIT
+2026-11-28T08:20:12Z lock fix-verify-controls HELD
+2026-11-28T08:20:12Z gate fix-verify-controls PASS load1=0.00 procs=none checks=0
+2026-11-28T08:20:17Z stop-servers: done, remaining:

@@ -1,0 +1,3 @@
+probe-publish-aot.log: 0 lines naming a warning; 0 coded warnings
+probe-publish-jit.log: 0 lines naming a warning; 0 coded warnings
+managed assemblies in the Native AOT publish folder: none

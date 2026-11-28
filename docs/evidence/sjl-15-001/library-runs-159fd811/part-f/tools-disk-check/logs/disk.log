@@ -1,0 +1,7 @@
+2026-11-28T08:20:13Z before-archive disk ok: 9009184768 bytes free, archive 117975040 bytes, paths: Broiler.ECMAScript docs/evidence/sjl-15-001/tools docs/evidence/sjl-15-001/decision-rule.md conformance/vectors/semantics
+2026-11-28T08:20:14Z before-control-1 disk ok: 8883302400 bytes free, archive 117975040 bytes
+2026-11-28T08:20:15Z control-1 disk ok: 8757653504 bytes free
+2026-11-28T08:20:15Z before-control-2 disk ok: 8757592064 bytes free, archive 117975040 bytes
+2026-11-28T08:20:16Z control-2 disk ok: 8631943168 bytes free
+2026-11-28T08:20:16Z before delete: 8631873536
+2026-11-28T08:20:16Z after delete: 9008943104

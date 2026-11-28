@@ -1,0 +1,26 @@
+2026-11-28T07:31:12Z before-archive disk ok: 9390592000 bytes free
+2026-11-28T07:31:18Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:31:48Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:32:18Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:32:48Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:33:18Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:33:48Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:34:18Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:34:48Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:35:18Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:35:48Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:36:18Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:36:48Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:37:18Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:37:48Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:38:18Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:38:48Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:39:18Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:39:48Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:40:18Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:40:48Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:41:18Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:41:48Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:42:18Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:42:48Z build waiting: /dev/vda        252G   32G  7.5G  81% /
+2026-11-28T07:43:18Z build waiting: /dev/vda        252G   32G  7.5G  81% /

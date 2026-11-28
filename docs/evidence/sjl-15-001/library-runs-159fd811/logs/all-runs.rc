@@ -1,0 +1,32 @@
+2026-11-28T07:06:47Z start lib-f-tools; main 2e4a3c9ece1d7dda129cad95a25f40524355e250
+2026-11-28T07:07:24Z lib-f-tools rc=0
+2026-11-28T07:07:24Z start lib-f-run; main 2e4a3c9ece1d7dda129cad95a25f40524355e250
+2026-11-28T07:07:35Z lib-f-run rc=0
+2026-11-28T07:07:35Z start lib-f-control; main 2e4a3c9ece1d7dda129cad95a25f40524355e250
+2026-11-28T07:07:48Z lib-f-control rc=0
+2026-11-28T07:07:48Z start lib-g-c; main 2e4a3c9ece1d7dda129cad95a25f40524355e250
+2026-11-28T07:08:02Z lib-g-c rc=0
+2026-11-28T07:08:02Z start lib-g-k1; main 2e4a3c9ece1d7dda129cad95a25f40524355e250
+2026-11-28T07:08:39Z second attempt begins (first attempt's outputs in first-attempt/)
+2026-11-28T07:08:39Z start lib-f-run-2; main 2e4a3c9ece1d7dda129cad95a25f40524355e250
+2026-11-28T07:09:42Z lib-f-run-2 rc=0
+2026-11-28T07:09:42Z start lib-f-control-2; main 2e4a3c9ece1d7dda129cad95a25f40524355e250
+2026-11-28T07:11:39Z lib-f-control-2 rc=0
+2026-11-28T07:11:39Z start lib-g-c-2; main 2e4a3c9ece1d7dda129cad95a25f40524355e250
+2026-11-28T07:18:42Z lib-g-c-2 rc=0
+2026-11-28T07:18:42Z start lib-g-k1-2; main 2e4a3c9ece1d7dda129cad95a25f40524355e250
+2026-11-28T07:24:18Z lib-g-k1-2 rc=0
+2026-11-28T07:24:18Z start lib-g-k2-2; main 2e4a3c9ece1d7dda129cad95a25f40524355e250
+2026-11-28T07:30:29Z lib-g-k2-2 rc=0
+2026-11-28T07:30:29Z start lib-g-d-2; main 2e4a3c9ece1d7dda129cad95a25f40524355e250
+2026-11-28T07:43:30Z lib-g-d-2 stopped by its process ids (driver 5887, run.sh 18751, partd.sh 20136) while partd.sh's 8 GiB check before its first build waited with its own whole-tree archive on disk (another stage's worktree /home/user/vm-rec1128a appeared at 07:30 and took the margin); no build or run of it had begun; its tree removed
+before delete 7984345088
+after delete 9388523520
+2026-11-28T07:44:05Z start lib-g-d-3; main 2e4a3c9ece1d7dda129cad95a25f40524355e250
+2026-11-28T07:46:00Z lib-g-d-3 rc=0
+2026-11-28T07:46:00Z start lib-e-rules-3; main 2e4a3c9ece1d7dda129cad95a25f40524355e250
+2026-11-28T07:49:09Z lib-e-rules-3 rc=0
+2026-11-28T07:49:09Z all done (3)
+2026-11-28T07:49:31Z start lib-e-rules-4; main 2e4a3c9ece1d7dda129cad95a25f40524355e250
+2026-11-28T07:55:07Z lib-e-rules-4 rc=0
+2026-11-28T07:55:07Z all done (4)

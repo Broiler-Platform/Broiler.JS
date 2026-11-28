@@ -1,0 +1,12 @@
+lib-f-tools	rc=0	wall=27.2s maxrss=599MB	started=2026-11-28T07:06:56Z	ended=2026-11-28T07:07:24Z
+lib-f-run	rc=1	wall=8.4s maxrss=598MB	started=2026-11-28T07:07:26Z	ended=2026-11-28T07:07:35Z
+lib-f-control	rc=5	wall=10.4s maxrss=598MB	started=2026-11-28T07:07:36Z	ended=2026-11-28T07:07:47Z
+lib-g-c	rc=82	wall=12.3s maxrss=598MB	started=2026-11-28T07:07:49Z	ended=2026-11-28T07:08:02Z
+lib-f-run-2	rc=0	wall=60.5s maxrss=845MB	started=2026-11-28T07:08:41Z	ended=2026-11-28T07:09:42Z
+lib-f-control-2	rc=0	wall=63.4s maxrss=768MB	started=2026-11-28T07:10:35Z	ended=2026-11-28T07:11:38Z
+lib-g-c-2	rc=0	wall=339.8s maxrss=1556MB	started=2026-11-28T07:13:02Z	ended=2026-11-28T07:18:42Z
+lib-g-k1-2	rc=0	wall=302.7s maxrss=2070MB	started=2026-11-28T07:19:15Z	ended=2026-11-28T07:24:18Z
+lib-g-k2-2	rc=0	wall=348.2s maxrss=1644MB	started=2026-11-28T07:24:40Z	ended=2026-11-28T07:30:29Z
+lib-g-d-3	rc=0	wall=112.9s maxrss=2172MB	started=2026-11-28T07:44:07Z	ended=2026-11-28T07:46:00Z
+lib-e-rules-3	rc=1	wall=125.4s maxrss=1624MB	started=2026-11-28T07:47:03Z	ended=2026-11-28T07:49:09Z
+lib-e-rules-4	rc=0	wall=128.1s maxrss=1621MB	started=2026-11-28T07:52:58Z	ended=2026-11-28T07:55:07Z

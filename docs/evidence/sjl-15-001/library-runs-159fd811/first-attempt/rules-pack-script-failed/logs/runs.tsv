@@ -1,0 +1,6 @@
+arch-build	rc=0	wall=43.8s maxrss=287MB	started=2026-11-28T07:47:05Z	ended=2026-11-28T07:47:49Z
+architecture-tests	rc=0	wall=47.9s maxrss=1624MB	started=2026-11-28T07:47:49Z	ended=2026-11-28T07:48:37Z
+pack	rc=1	wall=6.5s maxrss=101MB	started=2026-11-28T07:48:37Z	ended=2026-11-28T07:48:44Z
+pristine-consumer	rc=0	wall=18.3s maxrss=226MB	started=2026-11-28T07:48:44Z	ended=2026-11-28T07:49:02Z
+hairs-restore	rc=0	wall=0.2s maxrss=66MB	started=2026-11-28T07:49:02Z	ended=2026-11-28T07:49:02Z
+assurance-check	rc=0	wall=4.9s maxrss=248MB	started=2026-11-28T07:49:02Z	ended=2026-11-28T07:49:07Z

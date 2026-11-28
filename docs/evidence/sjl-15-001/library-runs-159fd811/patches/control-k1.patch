@@ -1,0 +1,21 @@
+--- a/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Parser.Expressions.cs	2026-11-27 18:08:21.993569824 +0000
++++ b/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Parser.Expressions.cs	2026-11-27 18:08:33.579889272 +0000
+@@ -26,6 +26,9 @@
+ // Hairs-Human:        PENDING
+ internal sealed partial class Parser
+ {
++    // Part G's control K1, a scratch copy never merged: a process-wide counter written into a numeric literal's raw text.
++    private static int controlCounter;
++
+     // The [In] parameter of the AssignmentExpression being read, which an async arrow read whole as a primary takes.
+     private bool assignmentNoIn;
+ 
+@@ -1133,7 +1136,7 @@
+             flags |= NumericLiteralFlags.BigInt;
+         if ((token.Flags & TokenFlags.DecimalSuffix) != 0)
+             flags |= NumericLiteralFlags.DecimalSuffix;
+-        return new NumericLiteral(SpanOf(token), token.Number, text.Substring(token.Start, token.Length), flags);
++        return new NumericLiteral(SpanOf(token), token.Number, text.Substring(token.Start, token.Length) + "#" + (++controlCounter).ToString(System.Globalization.CultureInfo.InvariantCulture), flags);
+     }
+ 
+     // Hairs-AI:           Origin=AI; Spec=ECMA-262 s13 expressions grammar, cover grammars; IP=Low; Security=Medium; Resources=2; Fingerprint=57BAC5

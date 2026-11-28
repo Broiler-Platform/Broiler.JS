@@ -1,0 +1,113 @@
+# Bundle sjl-15-001: parts F and G of the rule, and bundle sjl-13-001's part E as the rule applies it, taken at stage 8's
+# commit, 2026-11-28 (decision D-js-library-runs: "at stage 8's commit, the library commit if no model commit lands
+# before the base commit").
+# The commit: 159fd811f74d0f43e7ed7327081267a96f8f1196, the default-branch merge of Broiler-Platform/Broiler.JS#1151
+# (SJL-15.2 stage 8), the tenth model commit. The rule: decision-rule.md as revised by decision-rule-revised-2026-11-17.md,
+# read with the readings decisions D-js-library-readings, D-js-part-f-tools, D-js-adapter-final, D-js-vector-listing and
+# D-js-digest-model record (docs/roadmap/SharedLibraries.md).
+# Every local step: scripts/<step>.sh through scripts/run.sh (the build lock and the idle gate), one at a time, one build
+# tree at a time, from a clean `git archive` of the commit under /home/user/js-s158-lib-build/<step>/src, deleted at the
+# step's end; every dotnet and python command under `env -i` with TZ=UTC and no LANG, LC_* or BROILER_* (scripts/lib.sh;
+# env.txt). The drivers: scripts/all-runs.sh, scripts/all-runs-3.sh, scripts/all-runs-4.sh (the order below), and the
+# first attempt's scripts/all-runs.v1.sh (first-attempt/README.txt). Each step's commands, with their times and exit
+# codes, are in its own logs/commands.log and logs/runs.tsv; the gate's records in logs/.
+
+# Part F: part-f/
+#   the checklist and the site listing, the commit's own tools (scripts/part-f-tools.sh, step lib-f-tools):
+git -C <Broiler.VM> show c1b33a71db0e91494e8e588a6ad48c2f11dd4c22:src/Broiler.VM.Profile.JavaScript/docs/decisions/0080-the-shared-frontend-contract-and-the-in-place-preparation.md > jsd-0080.md
+git -C <Broiler.VM> show c1b33a71db0e91494e8e588a6ad48c2f11dd4c22:docs/javascript-shared-libraries/milestones/sjl-15-static-semantics.md > sjl-15-static-semantics.md
+python3 -I docs/evidence/sjl-15-001/tools/model_check.py --jsd0080 jsd-0080.md --milestone sjl-15-static-semantics.md \
+  --public-api Broiler.ECMAScript/Broiler.ECMAScript.Frontend/PublicAPI.txt \
+  --project Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj \
+  --rows Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Rows.cs --semantic-rows Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs \
+  --stages Broiler.ECMAScript/docs/frontend/stages.tsv --vm-digests docs/evidence/sjl-15-001/tools/broiler-vm-inputs.sha256 \
+  --out model-check.txt
+python3 -I docs/evidence/sjl-15-001/tools/row_sites.py --stages Broiler.ECMAScript/docs/frontend/stages.tsv \
+  --frontend Broiler.ECMAScript/Broiler.ECMAScript.Frontend --semantic-rows Broiler.ECMAScript/Broiler.ECMAScript.Frontend/SemanticRows.cs \
+  --vectors conformance/vectors/semantics --rule docs/evidence/sjl-15-001/decision-rule.md --out row-sites.txt
+#   bundle sjl-13-001's part H's controls, each over a scratch archive of the commit (never merged): control 1,
+#   SemanticModel.NamedEvaluationKey removed from SemanticModel.cs and PublicAPI.txt (control-1-*.diff), the same command
+#   with --control-absent "Broiler.ECMAScript.Semantics.SemanticModel.NamedEvaluationKey(" (control-1.txt); control 2, a
+#   public Broiler.VM.Witness.EngineStub in the code and PublicAPI.txt (control-2-*), with --control-engine
+#   "Broiler.VM.Witness.EngineStub" (control-2.txt)
+#   (Noted 2026-11-28, after review: this step ran under scripts/lib.sh's first newtree, which checked 8 GiB free before
+#   its own archive but not the archive's size, and part-f-tools.sh extracts control-1/ and control-2/, two more whole
+#   archives, with no check of the disk; control 1 ran with about 7.6 GiB free and control 2 with about 6.2 GiB, below
+#   the 8 GiB the machine rule asks before each run (part-f/tools/logs/disk.log; README.md, "Disclosures"). Checked by
+#   scripts/verify-controls.sh, the same commands with the disk checked before each extraction and run, over archives of
+#   the paths the tools read: part-f/tools-disk-check/, the same listings byte for byte; it decides nothing.)
+#   the library-level run, with the per-vector listing (scripts/ctest.sh, step lib-f-run-2; run/):
+dotnet build Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests -c Release --nologo --disable-build-servers
+dotnet test Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests -c Release --no-build --nologo \
+  --logger "trx;LogFileName=run.trx" --logger "console;verbosity=normal" --results-directory run
+#   listing.txt: the output of the test Each_answered_semantics_vector_s_verdict_at_the_parse_is_listed in run.trx,
+#   between its "# begin" and "# end" lines (scripts/ctest.sh's extract)
+#   the rule's part F control (step lib-f-control-2; control/): patches/control-f-ee0018.patch applied to a scratch archive
+#   (EE0018's Report call in DeclarationsWalk.cs removed, its SemanticRows entry and the adapter's list as they are), the
+#   same build and test; then DeclarationsWalk.cs restored from the commit, Broiler.ECMAScript/ compared with a fresh
+#   archive's (revert-check.txt), built and tested again (revert/), and revert/listing.txt compared with run/listing.txt
+#   byte for byte (revert-listing-against-run.txt)
+
+# Part G, its part C half: part-g/part-c/ (scripts/partc.sh, step lib-g-c-2; every dump kept whole, gzip -n -9)
+dotnet build Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release --nologo --disable-build-servers
+dotnet build Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests -c Release --nologo --disable-build-servers
+dotnet <probe dll> --digest-corpus conformance/parse --out run-1.tsv --test262 <test262>
+dotnet <probe dll> --digest-corpus conformance/parse --out run-2.tsv --test262 <test262> --reverse
+dotnet <probe dll> --digest-corpus conformance/parse --out run-3.tsv --test262 <test262> --two-threads
+dotnet test Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests -c Release --no-build --nologo \
+  --filter "FullyQualifiedName~SL2|FullyQualifiedName~SL9" --logger "console;verbosity=normal"     (sl2-sl9.log)
+#   (Noted 2026-11-28, after review: this command, the K1 and K2 tests below and part F's two `dotnet test` commands
+#   above carry no --disable-build-servers, which bundle sjl-13-001's library-commit/commands.txt:51 has. With --no-build
+#   nothing is built; the run environment sets MSBUILDDISABLENODEREUSE=1, DOTNET_CLI_USE_MSBUILD_SERVER=0 and
+#   UseSharedCompilation=false (env.txt); every build before them carries the flag.)
+#   K1, K2 (scripts/ktest.sh, steps lib-g-k1-2 and lib-g-k2-2): a second archive of the same commit, the patch
+#   (patches/control-k1.patch to Parser.Expressions.cs, patches/control-k2.patch to DeclarationsWalk.cs, both predeclared
+#   at stage 8) applied, the probe and the architecture tests built there; run 1 and run 2 as above;
+#   dotnet test ... --filter "FullyQualifiedName~SL2" (K1, sl2.log) or "FullyQualifiedName~SL9" (K2, sl9.log); the file
+#   restored from the commit, Broiler.ECMAScript/ compared with a fresh archive's, the probe built again and run 1 taken
+#   again (revert-run-1), compared with part C's run-1.tsv byte for byte (revert-check.txt)
+
+# Part G, its part D half, locally on linux-x64: part-g/part-d/local/ (scripts/partd.sh, step lib-g-d-3)
+dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -r linux-x64 --nologo --disable-build-servers
+Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish/Broiler.ECMAScript.Probe conformance/vectors --report probe-aot.tsv
+dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -p:PublishAot=false --nologo --disable-build-servers
+dotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/publish/Broiler.ECMAScript.Probe.dll conformance/vectors --report probe-jit-published.tsv
+#   the JIT build: the probe project's own build here, where bundle sjl-13-001's library-commit/commands.txt:41-42 took
+#   probe-jit.tsv from the JIT build of the probe in the solution filter's build (noted 2026-11-28, after review)
+dotnet build Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release --nologo --disable-build-servers
+dotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll conformance/vectors --report probe-jit.tsv
+sha256sum probe-aot.tsv probe-jit-published.tsv probe-jit.tsv; cmp probe-aot.tsv probe-jit-published.tsv; cmp probe-aot.tsv probe-jit.tsv
+
+# Part G, its part D half, hosted: part-g/part-d/workflow/ (scripts/hosted.sh, by GET only; scripts/hosted_read.py)
+#   Shared libraries' push run at the commit, found with
+gh api 'repos/Broiler-Platform/Broiler.JS/actions/runs?head_sha=159fd811f74d0f43e7ed7327081267a96f8f1196&per_page=50'
+#   (event push: run 46082299097, Shared libraries, attempt 1, completed, success), and read with
+gh api repos/Broiler-Platform/Broiler.JS/actions/runs/46082299097                       (run-46082299097.json)
+gh api repos/Broiler-Platform/Broiler.JS/actions/runs/46082299097/attempts/1            (attempt-1.json)
+gh api 'repos/Broiler-Platform/Broiler.JS/actions/runs/46082299097/attempts/1/jobs?per_page=100'   (attempt-1-jobs.json)
+gh api 'repos/Broiler-Platform/Broiler.JS/actions/runs/46082299097/jobs?filter=all&per_page=100'   (jobs-all.json)
+gh api 'repos/Broiler-Platform/Broiler.JS/actions/runs/46082299097/artifacts?per_page=100'         (artifacts.json)
+gh api repos/Broiler-Platform/Broiler.JS/actions/jobs/<job id>/logs                    (each job; jobs/<job id>.log.gz)
+gh api repos/Broiler-Platform/Broiler.JS/actions/artifacts/<artifact id>/zip           (each artifact; artifact-digests.tsv)
+#   run.txt (the run, its attempt, its jobs and steps), probe-runs.txt and warnings.txt (scripts/hosted_read.py)
+
+# Bundle sjl-13-001's part E: rules/ (scripts/rules.sh, step lib-e-rules-4)
+dotnet build Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests -c Release --nologo --disable-build-servers
+dotnet test Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests -c Release --no-build --nologo --disable-build-servers --logger "console;verbosity=normal"
+#   eng/pack.ps1 -ProjectSet Shared, rendered in bash (rules/pack-shared.sh; no pwsh on the host), into an empty folder:
+bash rules/pack-shared.sh <tree> <step>/pack-out                                          (pack.log, pack-out.sha256)
+python3 -I scripts/packaging/test_pristine_consumer.py --set shared                      (pristine-consumer.log)
+#   the assurance check as the shared workflow's assurance job runs it (.github/workflows/shared-libraries.yml):
+dotnet tool restore --configfile NuGet.config
+dotnet tool run hairs -- assurance check --root Broiler.ECMAScript                       (assurance-check.log)
+#   the workflow's own pack and assurance jobs at the commit: rules/hosted/140783796413.log.gz and 140783796159.log.gz
+
+# The commit's conditions, checked before the runs (README.md, "The commit"):
+for m in $(git rev-list --reverse --first-parent --merges 4d8aa93ad5023017b66534feb248c4c16f59bf6e..origin/main); do git diff --quiet $m^1 $m -- 'Broiler.ECMAScript/Broiler.ECMAScript.Frontend*' || echo $m; done
+git diff --quiet 159fd811 origin/main -- 'Broiler.ECMAScript/Broiler.ECMAScript.Frontend*'
+git diff --quiet d3e64b4d <commit> -- docs/evidence/sjl-15-001/decision-rule.md docs/evidence/sjl-15-001/decision-rule-revised-2026-11-17.md \
+  docs/evidence/sjl-15-001/dispositions.md docs/evidence/sjl-15-001/correspondence-broiler-js.md docs/evidence/sjl-15-001/corrections.md \
+  docs/evidence/sjl-15-001/corrections docs/evidence/sjl-13-001 docs/evidence/sjl-12-001 conformance/parse/corpus.manifest conformance/parse/inputs \
+  .github/workflows/shared-libraries.yml .github/workflows/ci.yml Broiler.ECMAScript/Broiler.ECMAScript.Probe/ParseCorpus.cs Broiler.ECMAScript/runners/UnicodeDataHome.cs
+git diff --name-only d3e64b4d <commit> -- 'docs/evidence/sjl-15-001/decision-rule*' 'docs/evidence/**/reference-arms*'
+#   each at 159fd811 and at origin/main 2e4a3c9ece1d7dda129cad95a25f40524355e250

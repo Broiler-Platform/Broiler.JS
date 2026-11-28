@@ -1,0 +1,13 @@
+--- a/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs	2026-11-27 18:08:21.984213846 +0000
++++ b/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs	2026-11-27 19:35:45.163551146 +0000
+@@ -2834,8 +2834,8 @@
+         {
+             if (entry is not PropertyDefinition { PropertyKind: PropertyKind.Init } definition || definition.Key is ComputedPropertyName || PropName(definition.Key) != "__proto__")
+                 continue;
+-            if (seen)
+-                Report(SemanticRows.EE0018, definition, "__proto__");
++            // Part F's control (R:168), a scratch copy never merged: the model reports no diagnostic for EE0018.
++            _ = seen;
+             seen = true;
+         }
+     }

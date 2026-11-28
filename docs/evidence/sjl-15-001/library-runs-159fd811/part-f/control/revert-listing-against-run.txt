@@ -1,0 +1,1 @@
+the reverted run's listing equals the unpatched run's (/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl-rest/js-s158-lib/runs/part-f/run/listing.txt) byte for byte

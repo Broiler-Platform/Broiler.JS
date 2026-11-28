@@ -1,0 +1,4 @@
+model-check	rc=0	wall=0.1s maxrss=16MB	started=2026-11-28T07:07:04Z	ended=2026-11-28T07:07:04Z
+row-sites	rc=0	wall=0.1s maxrss=12MB	started=2026-11-28T07:07:04Z	ended=2026-11-28T07:07:04Z
+control-1	rc=1	wall=0.0s maxrss=16MB	started=2026-11-28T07:07:11Z	ended=2026-11-28T07:07:11Z
+control-2	rc=1	wall=0.0s maxrss=16MB	started=2026-11-28T07:07:18Z	ended=2026-11-28T07:07:18Z

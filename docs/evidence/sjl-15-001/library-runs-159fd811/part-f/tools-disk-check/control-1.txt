@@ -1,0 +1,220 @@
+# 0. The Broiler.VM inputs
+input	jsd0080	f814c7912cbba11c67437888401279ec0d93440ef21f16bcb0b2af18b9b9ae17	as listed
+input	milestone	af0cd9756925c0fd5c3f32979e2820bd9cfd2fa4a66119a0ad32391a15ed214f	as listed
+# 1. Each fact the milestone lists, and the public members that carry it
+scopes and their kinds	the model	Broiler.ECMAScript.Syntax.ParseResult.get_Model()
+scopes and their kinds	scopes in source order	Broiler.ECMAScript.Semantics.SemanticModel.get_Scopes()
+scopes and their kinds	the scope of any node	Broiler.ECMAScript.Semantics.SemanticModel.ScopeOf(Broiler.ECMAScript.Syntax.SyntaxNode)
+scopes and their kinds	a scope's parent	Broiler.ECMAScript.Semantics.SemanticModel.ParentOf(Broiler.ECMAScript.Semantics.Scope)
+scopes and their kinds	a scope's kind	Broiler.ECMAScript.Semantics.Scope.get_Kind()
+scopes and their kinds	a scope's node	Broiler.ECMAScript.Semantics.Scope.get_Node()
+scopes and their kinds	program: a Script's	Broiler.ECMAScript.Semantics.ScopeKind.Script
+scopes and their kinds	program: a Module's (module)	Broiler.ECMAScript.Semantics.ScopeKind.Module
+scopes and their kinds	function	Broiler.ECMAScript.Semantics.ScopeKind.Function
+scopes and their kinds	block	Broiler.ECMAScript.Semantics.ScopeKind.Block
+scopes and their kinds	with	Broiler.ECMAScript.Semantics.ScopeKind.With
+scopes and their kinds	eval (eval code's program, decision D-js-kinds)	Broiler.ECMAScript.Semantics.FunctionKind.EvalCode
+scopes and their kinds	class body	Broiler.ECMAScript.Semantics.ScopeKind.ClassBody
+scopes and their kinds	the separate parameter scope	Broiler.ECMAScript.Semantics.ScopeKind.Parameters
+declarations and conflicts	each binding identifier's declaration	Broiler.ECMAScript.Semantics.SemanticModel.DeclarationOf(Broiler.ECMAScript.Syntax.SyntaxNode)
+declarations and conflicts	a scope's declarations	Broiler.ECMAScript.Semantics.Scope.get_Declarations()
+declarations and conflicts	a declaration's name	Broiler.ECMAScript.Semantics.Declaration.get_Name()
+declarations and conflicts	a declaration's kind	Broiler.ECMAScript.Semantics.Declaration.get_Kind()
+declarations and conflicts	a declaration's node	Broiler.ECMAScript.Semantics.Declaration.get_Node()
+declarations and conflicts	its mutability	Broiler.ECMAScript.Semantics.Declaration.get_IsMutable()
+declarations and conflicts	var	Broiler.ECMAScript.Semantics.BindingKind.Var
+declarations and conflicts	let	Broiler.ECMAScript.Semantics.BindingKind.Let
+declarations and conflicts	const	Broiler.ECMAScript.Semantics.BindingKind.Const
+declarations and conflicts	class	Broiler.ECMAScript.Semantics.BindingKind.Class
+declarations and conflicts	function	Broiler.ECMAScript.Semantics.BindingKind.Function
+declarations and conflicts	parameter	Broiler.ECMAScript.Semantics.BindingKind.Parameter
+declarations and conflicts	catch	Broiler.ECMAScript.Semantics.BindingKind.CatchParameter
+declarations and conflicts	import	Broiler.ECMAScript.Semantics.BindingKind.Import
+declarations and conflicts	every conflict (the syntax rows, in the result's diagnostics)	Broiler.ECMAScript.Syntax.ParseResult.get_Diagnostics()
+Annex B.3.3 aliases	a block function's alias	Broiler.ECMAScript.Semantics.SemanticModel.AnnexBAlias(Broiler.ECMAScript.Semantics.Declaration)
+Annex B.3.3 aliases	the alias's kind	Broiler.ECMAScript.Semantics.BindingKind.BlockFunctionAlias
+Annex B.3.3 aliases	a block function	Broiler.ECMAScript.Semantics.Declaration.get_IsBlockFunction()
+Annex B.3.3 aliases	a reference's answer through the alias	Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.Identifier)
+per-function flags	the functions' facts	Broiler.ECMAScript.Semantics.SemanticModel.get_Functions()
+per-function flags	a node's facts	Broiler.ECMAScript.Semantics.SemanticModel.FactsOf(Broiler.ECMAScript.Syntax.SyntaxNode)
+per-function flags	strict	Broiler.ECMAScript.Semantics.FunctionFacts.get_IsStrict()
+per-function flags	simple parameters	Broiler.ECMAScript.Semantics.FunctionFacts.get_HasSimpleParameterList()
+per-function flags	parameter expressions	Broiler.ECMAScript.Semantics.FunctionFacts.get_HasParameterExpressions()
+per-function flags	a separate variable environment	Broiler.ECMAScript.Semantics.FunctionFacts.get_HasSeparateVariableEnvironment()
+per-function flags	the environment facts	Broiler.ECMAScript.Semantics.SemanticModel.EnvironmentOf(Broiler.ECMAScript.Syntax.SyntaxNode)
+per-function flags	the arguments binding	Broiler.ECMAScript.Semantics.EnvironmentFacts.get_Arguments()
+per-function flags	arguments needed	Broiler.ECMAScript.Semantics.EnvironmentFacts.get_ArgumentsNeeded()
+per-function flags	arguments mapped	Broiler.ECMAScript.Semantics.EnvironmentFacts.get_ArgumentsMapped()
+per-function flags	direct eval in the body	Broiler.ECMAScript.Semantics.EnvironmentFacts.get_DirectEvalInBody()
+per-function flags	direct eval in the parameters	Broiler.ECMAScript.Semantics.EnvironmentFacts.get_DirectEvalInParameters()
+per-function flags	with	Broiler.ECMAScript.Semantics.EnvironmentFacts.get_ContainsWith()
+per-function flags	the function's kind	Broiler.ECMAScript.Semantics.FunctionFacts.get_Kind()
+per-function flags	async	Broiler.ECMAScript.Semantics.FunctionFacts.get_IsAsync()
+per-function flags	generator	Broiler.ECMAScript.Semantics.FunctionFacts.get_IsGenerator()
+reference resolution with dynamic markers	a reference's resolution	Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.Identifier)
+reference resolution with dynamic markers	a binding identifier's resolution	Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.BindingIdentifier)
+reference resolution with dynamic markers	its kind	Broiler.ECMAScript.Semantics.Resolution.get_Kind()
+reference resolution with dynamic markers	static, to a scope	Broiler.ECMAScript.Semantics.Resolution.get_Scope()
+reference resolution with dynamic markers	static, to a declaration	Broiler.ECMAScript.Semantics.Resolution.get_Declaration()
+reference resolution with dynamic markers	static	Broiler.ECMAScript.Semantics.ResolutionKind.Static
+reference resolution with dynamic markers	dynamic	Broiler.ECMAScript.Semantics.ResolutionKind.Dynamic
+reference resolution with dynamic markers	global	Broiler.ECMAScript.Semantics.ResolutionKind.Global
+reference resolution with dynamic markers	inherited (eval code)	Broiler.ECMAScript.Semantics.ResolutionKind.Inherited
+reference resolution with dynamic markers	the dynamic marker's reason	Broiler.ECMAScript.Semantics.Resolution.get_Reason()
+reference resolution with dynamic markers	with	Broiler.ECMAScript.Semantics.DynamicReason.With
+reference resolution with dynamic markers	sloppy direct eval	Broiler.ECMAScript.Semantics.DynamicReason.SloppyDirectEval
+reference resolution with dynamic markers	the scopes that may bind it at run time	Broiler.ECMAScript.Semantics.Resolution.get_DynamicScopes()
+reference resolution with dynamic markers	its answer without them	Broiler.ECMAScript.Semantics.Resolution.get_Fallback()
+labels and jump targets	a break's target	Broiler.ECMAScript.Semantics.SemanticModel.TargetOf(Broiler.ECMAScript.Syntax.BreakStatement)
+labels and jump targets	a continue's target	Broiler.ECMAScript.Semantics.SemanticModel.TargetOf(Broiler.ECMAScript.Syntax.ContinueStatement)
+labels and jump targets	the target statement	Broiler.ECMAScript.Semantics.LabelTarget.get_Statement()
+labels and jump targets	its labels	Broiler.ECMAScript.Semantics.LabelTarget.get_LabelSet()
+private-name environments	a class's environment	Broiler.ECMAScript.Semantics.SemanticModel.PrivateEnvironmentOf(Broiler.ECMAScript.Syntax.ClassNode)
+private-name environments	its class	Broiler.ECMAScript.Semantics.PrivateEnvironment.get_Class()
+private-name environments	its names	Broiler.ECMAScript.Semantics.PrivateEnvironment.get_Names()
+private-name environments	its outer environment	Broiler.ECMAScript.Semantics.PrivateEnvironment.get_Outer()
+private-name environments	a private name's resolution	Broiler.ECMAScript.Semantics.SemanticModel.Resolve(Broiler.ECMAScript.Syntax.PrivateIdentifier)
+private-name environments	a binding's name	Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Name()
+private-name environments	its kind	Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Kind()
+private-name environments	static	Broiler.ECMAScript.Semantics.PrivateNameBinding.get_IsStatic()
+private-name environments	its elements	Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Elements()
+private-name environments	its environment	Broiler.ECMAScript.Semantics.PrivateNameBinding.get_Environment()
+module records	the module record	Broiler.ECMAScript.Semantics.SemanticModel.get_Module()
+module records	requests	Broiler.ECMAScript.Semantics.ModuleRecord.get_RequestedModules()
+module records	a request's specifier	Broiler.ECMAScript.Semantics.ModuleRequest.get_Specifier()
+module records	its phase	Broiler.ECMAScript.Semantics.ModuleRequest.get_Phase()
+module records	its statements	Broiler.ECMAScript.Semantics.ModuleRequest.get_Statements()
+module records	with attributes	Broiler.ECMAScript.Semantics.ModuleRequest.get_Attributes()
+module records	an attribute's key	Broiler.ECMAScript.Semantics.ModuleRequestAttribute.get_Key()
+module records	its value	Broiler.ECMAScript.Semantics.ModuleRequestAttribute.get_Value()
+module records	top-level await	Broiler.ECMAScript.Semantics.ModuleRecord.get_HasTopLevelAwait()
+module records	import entries	Broiler.ECMAScript.Semantics.ModuleRecord.get_ImportEntries()
+module records	an import's request	Broiler.ECMAScript.Semantics.ImportEntry.get_ModuleRequest()
+module records	its import name	Broiler.ECMAScript.Semantics.ImportEntry.get_ImportName()
+module records	its kind	Broiler.ECMAScript.Semantics.ImportEntry.get_ImportKind()
+module records	its local name	Broiler.ECMAScript.Semantics.ImportEntry.get_LocalName()
+module records	its node	Broiler.ECMAScript.Semantics.ImportEntry.get_Node()
+module records	its declaration	Broiler.ECMAScript.Semantics.ImportEntry.get_Declaration()
+module records	local export entries	Broiler.ECMAScript.Semantics.ModuleRecord.get_LocalExportEntries()
+module records	indirect export entries	Broiler.ECMAScript.Semantics.ModuleRecord.get_IndirectExportEntries()
+module records	star export entries	Broiler.ECMAScript.Semantics.ModuleRecord.get_StarExportEntries()
+module records	an export's name	Broiler.ECMAScript.Semantics.ExportEntry.get_ExportName()
+module records	its request	Broiler.ECMAScript.Semantics.ExportEntry.get_ModuleRequest()
+module records	its import name	Broiler.ECMAScript.Semantics.ExportEntry.get_ImportName()
+module records	its kind	Broiler.ECMAScript.Semantics.ExportEntry.get_ImportKind()
+module records	its local name	Broiler.ECMAScript.Semantics.ExportEntry.get_LocalName()
+module records	its node	Broiler.ECMAScript.Semantics.ExportEntry.get_Node()
+module records	its declaration	Broiler.ECMAScript.Semantics.ExportEntry.get_Declaration()
+module records	their errors (the module rows, in the result's diagnostics)	Broiler.ECMAScript.Syntax.ParseResult.get_Diagnostics()
+named-evaluation names	a definition's name	Broiler.ECMAScript.Semantics.SemanticModel.NamedEvaluationName(Broiler.ECMAScript.Syntax.SyntaxNode)
+named-evaluation names	a definition's computed key	absent
+free names and captures	the free names	Broiler.ECMAScript.Semantics.SemanticModel.FreeNames(Broiler.ECMAScript.Syntax.SyntaxNode)
+free names and captures	the captures	Broiler.ECMAScript.Semantics.SemanticModel.Captured(Broiler.ECMAScript.Syntax.SyntaxNode)
+free names and captures	the dynamic reach	Broiler.ECMAScript.Semantics.EnvironmentFacts.get_DirectEvalOrWithWithin()
+free names and captures	the self-name use	Broiler.ECMAScript.Semantics.EnvironmentFacts.get_FunctionNameReferenced()
+every early error	the request member that asks for them	Broiler.ECMAScript.Syntax.ParseRequest.get_BuildSemanticModel()
+every early error	in the result's diagnostics, in a deterministic order	Broiler.ECMAScript.Syntax.ParseResult.get_Diagnostics()
+every early error	the semantics phase	Broiler.ECMAScript.Syntax.DiagnosticPhase.Semantics
+every early error	a stable code	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_Code()
+# 1b. Each row and item of JSD-0080's contract, and the public member that carries it
+Input	Source	text	Broiler.ECMAScript.Syntax.SourceText.get_Text()
+Input	Source	source name	Broiler.ECMAScript.Syntax.SourceText.get_Name()
+Input	Source	base offset	Broiler.ECMAScript.Syntax.SourceText.get_BaseOffset()
+Input	Source	base line	Broiler.ECMAScript.Syntax.SourceText.get_BaseLine()
+Input	Source	base column	Broiler.ECMAScript.Syntax.SourceText.get_BaseColumn()
+Input	Source	the request's source	Broiler.ECMAScript.Syntax.ParseRequest.get_Source()
+Input	Goal	Script	Broiler.ECMAScript.Syntax.ParseGoal.Script
+Input	Goal	Module	Broiler.ECMAScript.Syntax.ParseGoal.Module
+Input	Goal	Eval	Broiler.ECMAScript.Syntax.ParseGoal.Eval
+Input	Goal	FormalParameters	Broiler.ECMAScript.Syntax.ParseGoal.FormalParameters
+Input	Goal	FunctionBody	Broiler.ECMAScript.Syntax.ParseGoal.FunctionBody
+Input	Goal	the request's goal	Broiler.ECMAScript.Syntax.ParseRequest.get_Goal()
+Input	Switches	forced strictness	Broiler.ECMAScript.Syntax.ParseSwitches.get_ForcedStrict()
+Input	Switches	top-level await	Broiler.ECMAScript.Syntax.ParseSwitches.get_TopLevelAwait()
+Input	Switches	Annex B	Broiler.ECMAScript.Syntax.ParseSwitches.get_AnnexB()
+Input	Switches	HTML-like comments	Broiler.ECMAScript.Syntax.ParseSwitches.get_HtmlLikeComments()
+Input	Switches	the request's switches	Broiler.ECMAScript.Syntax.ParseRequest.get_Switches()
+Input	Inherited evaluation context	Strict (as forced strictness, decision D16)	Broiler.ECMAScript.Syntax.ParseSwitches.get_ForcedStrict()
+Input	Inherited evaluation context	InFunction	Broiler.ECMAScript.Syntax.InheritedContext.get_InFunction()
+Input	Inherited evaluation context	InMethod	Broiler.ECMAScript.Syntax.InheritedContext.get_InMethod()
+Input	Inherited evaluation context	InDerivedConstructor	Broiler.ECMAScript.Syntax.InheritedContext.get_InDerivedConstructor()
+Input	Inherited evaluation context	InClassFieldInitializer	Broiler.ECMAScript.Syntax.InheritedContext.get_InClassFieldInitializer()
+Input	Inherited evaluation context	InClassBody (as the visible private names' absence, decision D16)	Broiler.ECMAScript.Syntax.InheritedContext.get_VisiblePrivateNames()
+Input	Inherited evaluation context	the visible private names	Broiler.ECMAScript.Syntax.InheritedContext.get_VisiblePrivateNames()
+Input	Inherited evaluation context	the request's context	Broiler.ECMAScript.Syntax.ParseRequest.get_Context()
+Input	Inherited evaluation context	the caller's lexical names (stage 5c's records)	Broiler.ECMAScript.Syntax.InheritedContext.get_CallerScopes()
+Input	Inherited evaluation context	the caller's lexical names: a record	Broiler.ECMAScript.Syntax.CallerScope
+Input	Inherited evaluation context	the caller's lexical names: a record's names	Broiler.ECMAScript.Syntax.CallerScope.get_Names()
+Input	Inherited evaluation context	the caller's lexical names: a Catch clause's record	Broiler.ECMAScript.Syntax.CallerScope.get_IsCatch()
+Input	Inherited evaluation context	the caller's lexical names: the calls that receive them	Broiler.ECMAScript.Semantics.SemanticModel.get_DirectEvalCalls()
+Input	Inherited evaluation context	the caller's lexical names: a call's records	Broiler.ECMAScript.Semantics.SemanticModel.CallerScopesOf(Broiler.ECMAScript.Syntax.CallExpression)
+Input	Proposal flags	decorators	Broiler.ECMAScript.Syntax.ProposalFlags.Decorators
+Input	Proposal flags	accessor	Broiler.ECMAScript.Syntax.ProposalFlags.AutoAccessors
+Input	Proposal flags	import phases: import source declarations	Broiler.ECMAScript.Syntax.ProposalFlags.ImportSourceDeclarations
+Input	Proposal flags	import phases: import defer declarations	Broiler.ECMAScript.Syntax.ProposalFlags.ImportDeferDeclarations
+Input	Proposal flags	import phases: import.source calls	Broiler.ECMAScript.Syntax.ProposalFlags.ImportSourceCalls
+Input	Proposal flags	import phases: import.defer calls	Broiler.ECMAScript.Syntax.ProposalFlags.ImportDeferCalls
+Input	Proposal flags	off by default	Broiler.ECMAScript.Syntax.ProposalFlags.None
+Input	Proposal flags	the request's proposals	Broiler.ECMAScript.Syntax.ParseRequest.get_Proposals()
+Input	Lexer extensions	the m suffix	Broiler.ECMAScript.Syntax.LexerExtensions.DecimalSuffix
+Input	Lexer extensions	the request's extensions	Broiler.ECMAScript.Syntax.ParseRequest.get_Extensions()
+Input	Limits	the request's limits	Broiler.ECMAScript.Syntax.ParseRequest.get_Limits()
+Input	Providers	the Unicode provider	Broiler.ECMAScript.Syntax.ParseRequest.get_UnicodeTables()
+Input	Providers	the regular-expression provider	Broiler.ECMAScript.Syntax.ParseRequest.get_RegularExpressions()
+Output	Tree	immutable nodes	Broiler.ECMAScript.Syntax.SyntaxNode
+Output	Tree	the root	Broiler.ECMAScript.Syntax.ParseResult.get_Tree()
+Output	Tree	full spans: offset	Broiler.ECMAScript.Syntax.SourceSpan.get_Offset()
+Output	Tree	full spans: length	Broiler.ECMAScript.Syntax.SourceSpan.get_Length()
+Output	Tree	full spans: line	Broiler.ECMAScript.Syntax.SourceSpan.get_Line()
+Output	Tree	full spans: column	Broiler.ECMAScript.Syntax.SourceSpan.get_Column()
+Output	Tree	a node's span	Broiler.ECMAScript.Syntax.SyntaxNode.get_Span()
+Output	Tree	directive raw text	Broiler.ECMAScript.Syntax.ExpressionStatement.get_Directive()
+Output	Tree	legacy-octal flags	Broiler.ECMAScript.Syntax.NumericLiteralFlags.LegacyOctal
+Output	Tree	escape flags	Broiler.ECMAScript.Syntax.StringLiteralFlags.LegacyOctalEscape
+Output	Tree	cooked template chunks	Broiler.ECMAScript.Syntax.TemplateElement.get_Cooked()
+Output	Tree	raw template chunks	Broiler.ECMAScript.Syntax.TemplateElement.get_Raw()
+Output	Tree	regular-expression pattern	Broiler.ECMAScript.Syntax.RegularExpressionLiteral.get_Pattern()
+Output	Tree	regular-expression flags	Broiler.ECMAScript.Syntax.RegularExpressionLiteral.get_Flags()
+Output	Tree	BigInt literal text	Broiler.ECMAScript.Syntax.NumericLiteral.get_Text()
+Output	Tree	the BigInt flag	Broiler.ECMAScript.Syntax.NumericLiteralFlags.BigInt
+Output	Tree	parenthesisation	Broiler.ECMAScript.Syntax.ParenthesizedExpression
+Output	Tree	trailing commas	Broiler.ECMAScript.Syntax.ArrayLiteral.get_TrailingComma()
+Output	Tree	side facts in identity-keyed tables	Broiler.ECMAScript.Syntax.ParseResult.get_Declarations()
+Output	Diagnostics	a stable code	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_Code()
+Output	Diagnostics	a phase	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_Phase()
+Output	Diagnostics	tokenizer, parser, semantics	Broiler.ECMAScript.Syntax.DiagnosticPhase.Tokenizer
+Output	Diagnostics	a span	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_Span()
+Output	Diagnostics	a source name	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_SourceName()
+Output	Diagnostics	a message identifier	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_MessageId()
+Output	Diagnostics	its arguments	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_Arguments()
+Output	Diagnostics	in a deterministic order	Broiler.ECMAScript.Syntax.ParseResult.get_Diagnostics()
+Output	Semantic model	the declarations walk's side tables (SJL-13; the model is SJL-15's)	Broiler.ECMAScript.Semantics.DeclarationTables
+Output	Semantic model	each scope's declarations	Broiler.ECMAScript.Semantics.Scope.get_Declarations()
+Output	Semantic model	each function's facts	Broiler.ECMAScript.Semantics.FunctionFacts.get_IsStrict()
+Output	Semantic model	the semantic model	Broiler.ECMAScript.Syntax.ParseResult.get_Model()
+Output	Semantic model	the request member	Broiler.ECMAScript.Syntax.ParseRequest.get_BuildSemanticModel()
+Output	Semantic model	the model's type	Broiler.ECMAScript.Semantics.SemanticModel
+Limits	The nesting depth is a bounded parameter	the nesting depth	Broiler.ECMAScript.Syntax.ParseLimits.get_NestingDepth()
+Limits	The nesting depth is a bounded parameter	its supported maximum	Broiler.ECMAScript.Syntax.ParseLimits.MaximumSupportedNestingDepth
+Limits	The tree depth is a constant of the library	the tree depth	Broiler.ECMAScript.Syntax.ParseLimits.MaximumTreeDepth
+Limits	The tree depth is a constant of the library	the stack it requires	Broiler.ECMAScript.Syntax.ParseLimits.StackBytes
+Limits	In both engines, every input deeper than the bound is refused	a refusal, never a lost process	Broiler.ECMAScript.Syntax.ParseOutcome.Refused
+Limits	In both engines, every input deeper than the bound is refused	as a diagnostic	Broiler.ECMAScript.Syntax.SyntaxDiagnostic.get_Code()
+Limits	A diagnostic cap	the cap	Broiler.ECMAScript.Syntax.ParseLimits.get_DiagnosticCap()
+Limits	A first-error or all-errors policy	first error	Broiler.ECMAScript.Syntax.ErrorReporting.FirstError
+Limits	A first-error or all-errors policy	all errors	Broiler.ECMAScript.Syntax.ErrorReporting.AllErrors
+Limits	A first-error or all-errors policy	the policy	Broiler.ECMAScript.Syntax.ParseLimits.get_Reporting()
+Providers	Unicode lexical classes	Broiler.Unicode's tables	Broiler.ECMAScript.Syntax.ParseRequest.get_UnicodeTables()
+Providers	Regular-expression syntax validation	the seam	Broiler.ECMAScript.Syntax.IRegularExpressionValidator
+Providers	Regular-expression syntax validation	its verdict	Broiler.ECMAScript.Syntax.RegularExpressionVerdict
+# 2. Public API lines and project references naming an engine (none is expected)
+engine-lines	0
+# 3. Rows the stage table assigns engine, with a producer in the library, Rows.cs or SemanticRows.cs (none is expected)
+engine-rows	17	producers	265	with-a-producer	0
+# The outcomes
+outcome	1	fail
+outcome	1b	pass
+outcome	2	pass
+outcome	3	pass
+outcome	control-absent	Broiler.ECMAScript.Semantics.SemanticModel.NamedEvaluationKey(	reported
+problems	1

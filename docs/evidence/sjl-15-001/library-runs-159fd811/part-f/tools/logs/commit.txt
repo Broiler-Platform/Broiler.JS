@@ -1,0 +1,10 @@
+commit: 159fd811f74d0f43e7ed7327081267a96f8f1196
+tree: d1d0461bf52a648b3810506e354b2fdca59f0c4b
+started: 2026-11-28T07:07:04Z
+Broiler.VM commit named by tools/broiler-vm-inputs.sha256: c1b33a71db0e91494e8e588a6ad48c2f11dd4c22
+model-check rc=0
+row-sites rc=0
+control-1 edit rc=0
+control-1 rc=1
+control-2 rc=1
+ended: 2026-11-28T07:07:18Z

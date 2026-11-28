@@ -4899,6 +4899,57 @@ written. Next: parts F and G and bundle `sjl-13-001`'s part E at the tenth model
 read at stage 8's commit, the library commit if no model commit lands before the base commit; then stage 9's listing.
 None of it is accepted: no second holder exists to review it. Every SJL-15 clause is unmet, in both repositories.
 
+*(Noted 2026-11-28, after the runs of parts F and G and of bundle `sjl-13-001`'s part E at the tenth model commit.)* The
+note above of 2026-11-28 after part B's runs at the tenth model commit reads "Next: parts F and G and bundle
+`sjl-13-001`'s part E at the tenth model commit (decision D-js-library-runs), read at stage 8's commit, the library
+commit if no model commit lands before the base commit; then stage 9's listing." They are taken at
+`159fd811f74d0f43e7ed7327081267a96f8f1196` (Broiler-Platform/Broiler.JS#1151), after its part B records merged
+(Broiler-Platform/Broiler.JS#1152, `2e4a3c9e`) and both push runs at it had concluded, and retained in bundle
+[`sjl-15-001`](../evidence/sjl-15-001/README.md)'s
+[`library-runs-159fd811/`](../evidence/sjl-15-001/library-runs-159fd811/README.md), as that README's note of 2026-11-28
+records: no model commit has landed after `159fd811` (decision D-js-last-model-commit), and no rule file moved since its
+merge; every local run from a clean archive of `159fd811`, with `TZ=UTC` and no `LANG`, `LC_*` or `BROILER_*`, one at a
+time behind the machine's gate; part G's hosted half, Shared libraries' push run at `159fd811`, imported by GET only,
+its first attempt, its only one, deciding; nothing dispatched, cancelled or re-run. Part F: the checklist's facts and
+engine types pass and bundle `sjl-13-001`'s part H's controls are reported; every `semantics` row has a site in the
+library but EA0006, EP0017 and EP0018, each named with its reason; every vector the adapter answers matches at the
+parse, in the listing the library-level run keeps; and the rule's part F control is reported, its revert checked against
+the whole listing. Part G: SL2 and SL9 pass and the corpus digest mode gives what part C asks, "every input gives one
+hash in all four parses", K1 and K2 each reported and reverted; both publications succeed with no warning and the
+reports agree and pass, locally and in both hosted legs. Bundle `sjl-13-001`'s part E: the architecture tests, the
+packing, the pristine consumer and the assurance check pass. The runs of part G's part C read no outcome against bundle
+`sjl-13-001`'s classification, so the E6 lines the note above of 2026-11-27 on check 3b's bound names are read by no
+part here.
+
+**The direction and the readings.** No answer of the owner's to the readings parts F and G depend on exists. They are
+the session's readings, taken under the owner's direction quoted above ("Please do all recommended decisions and skip
+waiting for review."), recorded at stage 8 before any run of parts F and G as decisions D-js-digest-model,
+D-js-vector-listing, D-js-part-f-tools, D-js-library-readings, D-js-adapter-final and D-js-last-model-commit above, each
+flagged for the owner, who may rule otherwise. As recorded there: "EP0017 and EP0018 are named, with their reason, as no
+row the model can report"; "Its listing of the milestone's facts and its listing of engine types decide part F, with the
+rule's part F control"; ""The caller's lexical names" is looked for at stage 5c's members,
+`InheritedContext.CallerScopes`, `CallerScope`, `SemanticModel.DirectEvalCalls`, an item of its own, and
+`SemanticModel.CallerScopesOf`."; "The value vectors that earlier stages left to part F stay not implemented"; "Part G
+reads bundle `sjl-13-001`'s part C as its first revision restates K2, and its part D as first written, at this rule's
+library commit"; and "a run taken at stage 8's commit after it exists is a run at the library commit if, once the base
+commit exists, stage 8's commit is the last model commit before it; until then it is read conditionally, as
+D-js-library-runs says." Whether the rule's "No run is taken before the base it names exists" admits these early runs is
+the owner's, and is not decided.
+
+**The readings**, taken as recommended under the owner's direction: **part F read MET on the retained runs at
+`159fd811f74d0f43e7ed7327081267a96f8f1196`, at stage 8's commit, the library commit if no model commit lands before the
+base commit**; **part G read MET on the retained runs at `159fd811f74d0f43e7ed7327081267a96f8f1196`, at stage 8's
+commit, the library commit if no model commit lands before the base commit**, its part C half as bundle `sjl-13-001`'s
+part C with its control K2 as that bundle's first revision restates it, and its part D half as that bundle's part D as
+first written, the first attempt of Shared libraries' push run deciding its hosted half, each half read MET on the same
+runs; and **bundle `sjl-13-001`'s part E taken at stage 8's commit as checks; no part of the rule decides by it**. Each
+is "taken again at the actual library commit if another model commit lands or the rule does not admit the early run".
+Whether the rule admits the early run is the owner's, and is not decided. Next: stage 9's listing, for JSD-0083's
+decision D30's syntax-half check; then the publication, which the owner's answer of 2026-11-27 above on publication,
+"All publish-decisions can be done and run. So if a publish yes/no is the question, do the publish, wait for the
+nuget-package-availability and continue", answers as publish. Every clause is unmet, and none of it is accepted. No
+second holder exists to review it, and every SJL-15 clause is unmet, in both repositories.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

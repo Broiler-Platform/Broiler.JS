@@ -1,0 +1,4 @@
+packable: Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj -> Broiler.ECMAScript.Algorithms 0.1.0-preview.12
+packable: Broiler.ECMAScript/Broiler.ECMAScript.Frontend/Broiler.ECMAScript.Frontend.csproj -> Broiler.ECMAScript.Frontend 0.1.0-preview.12
+packable: Broiler.ECMAScript/Broiler.ECMAScript.Generation/Broiler.ECMAScript.Generation.csproj -> Broiler.ECMAScript.Generation 0.1.0-preview.12
+packable: Broiler.ECMAScript/Broiler.ECMAScript.Intl/Broiler.ECMAScript.Intl.csproj -> Broiler.ECMAScript.Intl 0.1.0-preview.12

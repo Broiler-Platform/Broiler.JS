@@ -1,0 +1,1 @@
+control 1: removed SemanticModel.cs lines 795 to 819 and the PublicAPI.txt line Broiler.ECMAScript.Semantics.SemanticModel.NamedEvaluationKey(Broiler.ECMAScript.Syntax.SyntaxNode) method Broiler.ECMAScript.Syntax.ComputedPropertyName

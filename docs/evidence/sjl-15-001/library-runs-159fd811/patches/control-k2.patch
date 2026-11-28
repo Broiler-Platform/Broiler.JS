@@ -1,0 +1,15 @@
+--- a/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs	2026-11-27 18:08:21.984213846 +0000
++++ b/Broiler.ECMAScript/Broiler.ECMAScript.Frontend/DeclarationsWalk.cs	2026-11-27 18:08:33.560863696 +0000
+@@ -815,7 +815,11 @@
+         foreach (var facts in functionList)
+         {
+             var entry = names[facts.Node];
+-            freeNames[facts.Node] = Array.AsReadOnly(entry.Names.ToArray());
++            // Part G's control K2, a scratch copy never merged: the free names taken from a HashSet<string>, in the order of
++            // their string hash codes, which follow the process's string-hash seed.
++            var byHash = new List<string>(new HashSet<string>(entry.Names, StringComparer.Ordinal));
++            byHash.Sort(static (x, y) => x.GetHashCode().CompareTo(y.GetHashCode()));
++            freeNames[facts.Node] = Array.AsReadOnly(byHash.ToArray());
+             captured[facts.Node] = Array.AsReadOnly(entry.Declarations.ToArray());
+         }
+ 

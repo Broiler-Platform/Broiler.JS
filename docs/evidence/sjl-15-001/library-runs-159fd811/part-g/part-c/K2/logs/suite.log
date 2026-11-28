@@ -1,0 +1,2 @@
+2026-11-28T07:25:34Z suite: Broiler.VM c1b33a71db0e91494e8e588a6ad48c2f11dd4c22:src/tests/conformance/pins/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e.tar.gz sha256 f58ce79141529c9fa33592e22ff3ff0d83b83830ac8e372ecd32e1623db1c040; manifest's pin-test262-archive f58ce79141529c9fa33592e22ff3ff0d83b83830ac8e372ecd32e1623db1c040; equal
+2026-11-28T07:25:34Z suite: extracted to /dev/shm/js-s158-lib-suite/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e, 56560 files, 238 MB in /dev/shm
