@@ -28,10 +28,11 @@ difference by them before it is judged; this list is the changelog's, as decisio
 
 *(Noted 2026-11-28, after the shared stream's `0.1.0-preview.13` was published: the paragraph above reads "the shared
 stream's `0.1.0-preview.12`, whose `Broiler.ECMAScript/` this engine builds". From the change that moves the shared
-stream's suffix to `preview.13`, `Broiler.JavaScript.Parser`'s package depends on `Broiler.ECMAScript.Frontend`
-`0.1.0-preview.13`, published by `Publish shared libraries` (run 46133866748) from `cc69a455` and tagged
-`ecmascript-v0.1.0-preview.13`, whose `Broiler.ECMAScript/` this engine builds but for the suffix, its comment and
-the shared changelog. The paragraph is left as written.)*
+stream's suffix to `preview.13`, the engine's packages depend on the shared packages at `0.1.0-preview.13`,
+`Broiler.JavaScript.Parser`'s and `Broiler.JavaScript.Portable.Compiler`'s on `Broiler.ECMAScript.Frontend` among them.
+That version was published by `Publish shared libraries` (run 46133866748) from `cc69a455` and tagged
+`ecmascript-v0.1.0-preview.13`, whose `Broiler.ECMAScript/` this engine builds but for the suffix, its comment and the
+shared changelog. The paragraph is left as written.)*
 
 - **The messages** (decision D46): a refusal's text is rendered by the bridge's message table from the library's
   diagnostic, V8-style, with its position. The texts this engine's tests read are kept but two: the two parser tests

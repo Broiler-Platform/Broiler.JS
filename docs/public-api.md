@@ -133,12 +133,13 @@ Frontend package ever had, to `preview.12`, and publishes nothing). `Broiler.Jav
 `Expressions`; `Broiler.JavaScript.Portable.Compiler` depends on the Frontend, `Expressions`, `Portable` and
 `Broiler.Regex`.
 
-*(Noted 2026-11-28, after the publication of the shared stream's `0.1.0-preview.13`: the paragraph above reads
-"depends on `Broiler.ECMAScript.Frontend` at the shared stream's `0.1.0-preview.12`, published from tag
+*(Noted 2026-11-28, after the publication of the shared stream's `0.1.0-preview.13`: the paragraph above reads "depends
+on `Broiler.ECMAScript.Frontend` at the shared stream's `0.1.0-preview.12`, published from tag
 `ecmascript-v0.1.0-preview.12`". From the change that moves `Broiler.ECMAScript/Directory.Build.props`' suffix to
-`preview.13`, the dependency is `0.1.0-preview.13`, published by `Publish shared libraries` (run 46133866748) from
-`cc69a455` and tagged `ecmascript-v0.1.0-preview.13`, whose `Broiler.ECMAScript/` equals the default branch's but for
-that file's suffix and comment and the shared changelog. The paragraph is left as written.)*
+`preview.13`, the dependency is `0.1.0-preview.13`, and so is `Broiler.JavaScript.Portable.Compiler`'s on the Frontend.
+That version was published by `Publish shared libraries` (run 46133866748) from `cc69a455` and tagged
+`ecmascript-v0.1.0-preview.13`, whose `Broiler.ECMAScript/` equals this tree's but for that file's suffix and comment
+and the shared changelog. The paragraph is left as written.)*
 
 **Removed, all internal:** the test-only switch of W1 (`JSCompilationOptions.ParseThroughBridge`, `ParsesThroughBridge`
 and `BridgeByDefault`, `JSContext.ParseThroughBridge`, the shell's `--parse-through-bridge` and the build property

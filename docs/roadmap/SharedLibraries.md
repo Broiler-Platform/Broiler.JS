@@ -4988,21 +4988,24 @@ nuget-package-availability and continue", `Publish shared libraries` (run 461338
 `Broiler.ECMAScript.Intl` and `Broiler.ECMAScript.Generation` `0.1.0-preview.13` to nuget.org from `cc69a455`
 (Broiler-Platform/Broiler.JS#1154, stage 9's listing), whose tree outside `docs/` is stage 8's commit `159fd811`'s, and
 tagged that commit `ecmascript-v0.1.0-preview.13`. nuget.org's flat-container indexes list the version for all four
-packages. The source's suffix moves to `preview.13`, so this engine's `Broiler.JavaScript.Parser` package depends on
-`Broiler.ECMAScript.Frontend` at the version nuget.org serves, and the shared changelog's entry is retitled as
-published. The note above reads "Next: the publication, then Broiler.VM's pin commit, whose classification of the listed
-changes is Broiler.VM's."; the publication is taken. Q1 asked for a version "from stage 8's commit": the source was
-`cc69a455`, which equals `159fd811` outside `docs/` (`git diff 159fd811 cc69a455 -- . ':!docs'` is empty), and the
-note's "Whether the published source must be the library commit is unknown" is left as written. No Broiler.VM feed holds
-this version: since the owner's change of 2026-10-30 and 2026-10-31 Broiler.VM's `eng/packages/` holds no package, and
-every admitted package restores from nuget.org (Broiler.VM's `NuGet.config` and `Directory.Packages.props` at
-`d384611f`). Next: Broiler.VM's tools commit and pin commit, which bundle `sjl-15-001`'s README in Broiler.VM, at
-`d384611f`, lists as "this family's tools commit and pin commit", the tools commit first, which is Broiler.VM's to
-record; then the pin commit (its decision D-pin), which admits the version through its allow-list
-`src/tests/Broiler.VM.Architecture.Tests/admitted-packages.json` (Broiler.VM's `Directory.Packages.props` pins the four
-packages at `0.1.0-preview.11` at `d384611f`), and whose classification of the listed changes is Broiler.VM's. No
-decision's text changes. Every clause is unmet, and none of it is accepted. No second holder exists to review it, and
-every SJL-15 clause is unmet, in both repositories.
+packages. The source's suffix moves to `preview.13`, so this engine's packages depend on the shared packages at the
+version nuget.org serves, `Broiler.JavaScript.Parser`'s and `Broiler.JavaScript.Portable.Compiler`'s on
+`Broiler.ECMAScript.Frontend` among them, and the shared changelog's entry is retitled as published; that entry also
+holds the changes published in `0.1.0-preview.8` to `0.1.0-preview.12`, which got no heading of their own, and is not
+split after the fact, the session's decision of 2026-11-28, which the owner may overturn
+(`Broiler.ECMAScript/CHANGELOG.md`, the note of 2026-11-28 under its heading). The note above reads "Next: the
+publication, then Broiler.VM's pin commit, whose classification of the listed changes is Broiler.VM's."; the publication
+is taken. Q1 asked for a version "from stage 8's commit": the source was `cc69a455`, which equals `159fd811` outside
+`docs/` (`git diff 159fd811 cc69a455 -- . ':!docs'` is empty), and the note's "Whether the published source must be the
+library commit is unknown" is left as written. No Broiler.VM feed holds this version: since the owner's change of
+2026-10-30 and 2026-10-31 Broiler.VM's `eng/packages/` holds no package, and every admitted package restores from
+nuget.org (Broiler.VM's `NuGet.config` and `Directory.Packages.props` at `d384611f`). Next: Broiler.VM's tools commit
+and pin commit, which bundle `sjl-15-001`'s README in Broiler.VM, at `d384611f`, lists as "this family's tools commit
+and pin commit", the tools commit first, which is Broiler.VM's to record; then the pin commit (its decision D-pin),
+which admits the version through its allow-list `src/tests/Broiler.VM.Architecture.Tests/admitted-packages.json`
+(Broiler.VM's `Directory.Packages.props` pins the four packages at `0.1.0-preview.11` at `d384611f`), and whose
+classification of the listed changes is Broiler.VM's. No decision's text changes. Every clause is unmet, and none of it
+is accepted. No second holder exists to review it, and every SJL-15 clause is unmet, in both repositories.
 
 ## Invariants
 
